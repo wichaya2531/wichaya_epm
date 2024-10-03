@@ -1,0 +1,76 @@
+{
+    "_id": "6632fae0a67bf44b884f39be",
+    "emp_number": "1005",
+    "email": "markzuck@gmail.com",
+    "name": "Mark Zuck",
+    "role": "Admin Group",
+    "team": "team1",
+    "workgroup": "WORKGROUP#5",
+    "workgroup_id": "6629f7235c49892a9ddf6b6b",
+    "actions": [
+        {
+            "_id": "6632e932eccb576a719dfa75",
+            "name": "view-users-in-workgroup"
+        },
+        {
+            "_id": "6632f9e4eccb576a719dfa7a",
+            "name": "create-job-template"
+        },
+        {
+            "_id": "663845e3d81a314967236de6",
+            "name": "view-all-jobs-templates"
+        },
+        {
+            "_id": "663313bbeccb576a719dfa9c",
+            "name": "edit-job-template"
+        },
+        {
+            "_id": "663313b1eccb576a719dfa9a",
+            "name": "remove-job-template"
+        },
+        {
+            "_id": "6638600dd81a314967236df5",
+            "name": "add-job-item-template"
+        },
+        {
+            "_id": "66386025d81a314967236df7",
+            "name": "remove-job-item-template"
+        },
+        {
+            "_id": "66309730242be72e399d5a82",
+            "name": "add-user-to-workgroup"
+        },
+        {
+            "_id": "66309740242be72e399d5a84",
+            "name": "remove-user-from-workgroup"
+        },
+        {
+            "_id": "66388393d81a314967236e01",
+            "name": "view-all-jobs"
+        },
+        {
+            "_id": "66389056d81a314967236e07",
+            "name": "activate-job-template"
+        }
+    ]
+}
+
+{
+    "jobData": {
+        "JobID": "663dd8e1685240b57e970c52",
+        "timeout": "qwdqwdq",
+        "status": "dqw"
+    },
+    "jobItemsData": [
+        {
+            "jobItemID": "663dd8e1685240b57e970c57",
+            "value": "wdqw",
+            "comment": null
+        },
+        {
+            "jobItemID": "663dd8e1685240b57e970c5b",
+            "value": "dqwd",
+            "comment": null
+        }
+    ]
+}

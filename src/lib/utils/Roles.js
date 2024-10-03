@@ -1,0 +1,13 @@
+export const Roles = {
+    SUPER_ADMIN: "SA",
+    SUPER_ADMIN_ID: "662b40b6b00e49b604698393",
+    ADMIN_GROUP: "ADMIN_GROUP",
+    ADMIN_GROUP_ID: "662884f794ded7042143d843",
+    CHECKER: "CHECKER",
+    CHECKER_ID: "662f6bc9b198fbd46d07b7cb",
+    OWNER: "OWNER",
+    OWNER_ID: "662f6bc4b198fbd46d07b7c6"
+  };
+  
+
+  
