@@ -86,24 +86,26 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="lg:pt-[500px] lg:pb-[100px] w-screen h-screen flex justify-center items-center bg-[#0061ffb5] lg:overflow-scroll xl:overflow-hidden xl:pt-0 xl:pb-0">
-      <div className="w-full absolute top-0 text-white flex items-start p-3 flex flex-col">
-        <Image
-          src="/assets/images/wd-logo-white.jpg"
-          alt="wd logo"
-          width={200}
-          height={200}
-        />
-      </div>
-      <div className="flex flex-col shadow-lg pb-5 rounded-3xl bg-white w-11/12 sm:w-10/12 md:w-8/12 lg:w-5/12 xl:w-4/12 mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-center bg-blue-700 p-4 text-gray-100 rounded-t-3xl w-full">
+    <div className="lg:pt-[100px] lg:pb-[50px] w-screen h-screen flex justify-center items-center bg-[#0061ffb5] overflow-auto">
+      <div className="w-full max-w-md mx-auto rounded-3xl shadow-lg">
+        <div className="flex justify-center">
+          <Image
+            src="/assets/images/wd-logo-white.jpg"
+            alt="wd logo"
+            width={200}
+            height={200}
+          />
+        </div>{" "}
+        <h1 className="text-3xl md:text-4xl font-bold text-center bg-blue-700 p-4 text-gray-100 rounded-t-3xl ">
           e - PM System
         </h1>
-        <h2 className="text-2xl font-bold text-center py-4">
+        <h2 className="text-2xl font-bold text-center py-4  bg-white">
           <HowToRegIcon className="text-gray-500 size-20" />
         </h2>
-
-        <form className="px-4 sm:px-6 md:px-8" onSubmit={handleSubmit}>
+        <form
+          className="px-4 sm:px-6 md:px-8 bg-white rounded-b-3xl"
+          onSubmit={handleSubmit}
+        >
           <div className="grid gap-4 mb-4 md:grid-cols-2">
             <div>
               <label
@@ -143,6 +145,7 @@ export default function RegisterForm() {
               </select>
             </div>
           </div>
+
           <div className="mb-4">
             <label
               htmlFor="full_name"
@@ -158,6 +161,7 @@ export default function RegisterForm() {
               required
             />
           </div>
+
           <div className="mb-4">
             <label
               htmlFor="email"
@@ -173,6 +177,7 @@ export default function RegisterForm() {
               required
             />
           </div>
+
           <div className="mb-4">
             <label
               htmlFor="username"
@@ -188,6 +193,7 @@ export default function RegisterForm() {
               required
             />
           </div>
+
           <div className="mb-4">
             <label
               htmlFor="password"
@@ -195,16 +201,15 @@ export default function RegisterForm() {
             >
               Password
             </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10"
-                placeholder="•••••••••"
-                required
-              />
-            </div>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10"
+              placeholder="•••••••••"
+              required
+            />
           </div>
+
           <div className="mb-4">
             <label
               htmlFor="confirm_password"
@@ -212,16 +217,14 @@ export default function RegisterForm() {
             >
               Confirm password
             </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="confirm_password"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10"
-                placeholder="•••••••••"
-                required
-              />
-            </div>
-            <div className="cursor-pointer translate-y-5">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="confirm_password"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10"
+              placeholder="•••••••••"
+              required
+            />
+            <div className="flex items-center mt-2">
               <input
                 type="checkbox"
                 onChange={togglePasswordVisibility}

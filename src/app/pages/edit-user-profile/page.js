@@ -349,7 +349,7 @@ const Page = () => {
           )}
         </h1>
         {/* Password and Confirm Password */}
-        <div
+        {/* <div
           className={`mb-6 grid grid-rows-2 ${isShowPassword ? "" : "hidden"}`}
         >
           <div className="mb-6">
@@ -400,14 +400,68 @@ const Page = () => {
               Show passwords
             </label>
           </div>
+        </div> */}
+        <div
+          className={`mb-6 grid grid-rows-2 ${isShowPassword ? "" : "hidden"}`}
+        >
+          <div className="mb-6">
+            <label
+              htmlFor="password"
+              className="block mb-2 text-sm font-medium text-black"
+            >
+              Password
+            </label>
+            <input
+              autoComplete="off"
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password || ""} // อ้างอิงค่า password จาก state
+              onChange={handleChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="•••••••••"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="confirm_password"
+              className="block mb-2 text-sm font-medium text-black"
+            >
+              Confirm password
+            </label>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="confirm_password"
+              value={formData.confirm_password || ""} // อ้างอิงค่า confirm_password จาก state
+              onChange={handleChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="•••••••••"
+            />
+          </div>
+          <div className="-translate-y-2">
+            <input
+              type="checkbox"
+              id="togglePassword"
+              name="togglePassword"
+              checked={showPassword}
+              onChange={handleTogglePasswordVisibility}
+              className="mr-2"
+            />
+            <label
+              htmlFor="togglePassword"
+              className="text-sm text-gray-900 text-dark"
+            >
+              Show passwords
+            </label>
+          </div>
         </div>
+
         <hr className="border-gray-300 dark:border-gray-600" />
 
         <button
           type="submit"
-          className="mt-10 bg-[#347EC2] text-white text-sm px-4 py-2 rounded-sm  hover:bg-[#4398E7] hover:text-white shadow-lg"
+          className="mt-10 bg-transparent border border-[#347EC2] text-[#347EC2] text-sm px-4 py-2 rounded-md hover:bg-[#347EC2] hover:text-white transition duration-200 ease-in-out shadow-sm hover:shadow-lg"
         >
-          <div className="flex justify-center items-center gap-2 font-bold">
+          <div className="flex justify-center items-center gap-2 font-semibold">
             <p>Save Changes</p>
           </div>
         </button>

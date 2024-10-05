@@ -141,11 +141,11 @@ const Page = () => {
 
     if (
       validLineNames.some((option) => option.value === requestData.LINE_NAME) ||
-      ["N/A", "NA", "na", "n/a"].includes(requestData.LINE_NAME)
+      ["N/A", "NA", "na", "n/a", "Na"].includes(requestData.LINE_NAME)
     ) {
       if (
         requestData.LINE_NAME &&
-        ["N/A", "NA", "na", "n/a"].includes(requestData.LINE_NAME)
+        ["N/A", "NA", "na", "n/a", "Na"].includes(requestData.LINE_NAME)
       ) {
         showInvalidLineNamePopup(validLineNames, requestData);
       } else {
@@ -172,6 +172,9 @@ const Page = () => {
               title: "สำเร็จ",
               text: "Checklist template ถูกเปิดใช้งานเรียบร้อยแล้ว",
               confirmButtonText: "ตกลง",
+            }).then(async () => {
+              // ดึงข้อมูล jobs ใหม่
+              await fetchJobs(user.workgroup_id);
             });
           }
         } catch (error) {
@@ -218,7 +221,6 @@ const Page = () => {
             styles={{
               control: (base) => ({
                 ...base,
-                zIndex: 25,
                 width: "400px",
                 padding: "8px",
                 borderRadius: "4px",
@@ -231,7 +233,7 @@ const Page = () => {
               }),
               menu: (base) => ({
                 ...base,
-                zIndex: 25, // กำหนดค่า z-index ให้สูงกว่า SweetAlert2
+                zIndex: 10001, // กำหนดค่า z-index ให้สูงกว่า SweetAlert2
                 maxHeight: "400px", // เพิ่มความสูงสูงสุดของเมนู
                 overflowY: "auto", // เพิ่มการเลื่อนแนวตั้งเมื่อมีตัวเลือกเยอะ
                 pointerEvents: "auto", // ทำให้การคลิกเมนูมีผล
@@ -286,6 +288,9 @@ const Page = () => {
           text: "สร้าง job ใหม่เรียบร้อยแล้ว!",
           icon: "success",
           confirmButtonText: "ตกลง",
+        }).then(() => {
+          // อัปเดตข้อมูล jobTemplates และ jobs โดยไม่ต้องรีเฟรชหน้า
+          setRefresh((prev) => !prev);
         });
       } else {
         Swal.fire({
