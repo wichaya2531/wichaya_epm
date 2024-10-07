@@ -78,12 +78,12 @@ const TableComponent = ({
 
   return (
     <div className="flex flex-col justify-center gap-5 items-center relative">
-      <div className="flex flex-col md:flex-row justify-start items-center w-full my-4 gap-2">
+      <div className="flex flex-col md:flex-row flex-wrap justify-start items-center w-full my-4 gap-2">
         <div className="flex md:flex-row flex-col gap-2 w-full">
           <select
             value={pageSize}
             onChange={handlePageSizeChange}
-            className="mx-2 p-2 border rounded-md flex-shrink-0"
+            className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-full"
           >
             <option value={5}>5</option>
             <option value={10}>10</option>
@@ -96,7 +96,7 @@ const TableComponent = ({
             <select
               value={selectedFilter}
               onChange={handleFilterChange}
-              className="border border-gray-300 rounded-md p-2 mx-2 flex-shrink-0"
+              className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-full"
             >
               <option value="">All</option>
               {uniqueFilterOptions.map((option, index) => (
@@ -108,9 +108,9 @@ const TableComponent = ({
           )}
         </div>
 
-        <div className="relative mx-2 w-full md:w-auto flex-shrink-0 ">
+        <div className="relative mx-2 w-full md:w-auto flex-shrink-0 max-w-full">
           <input
-            className="border border-gray-300 rounded-md p-2 pl-9 pr-4 w-full"
+            className="border border-gray-300 rounded-md p-2 pl-9 pr-4 w-full max-w-full"
             type="text"
             placeholder="Search..."
             value={searchTerm}

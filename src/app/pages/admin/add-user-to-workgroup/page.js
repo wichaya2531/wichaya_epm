@@ -311,7 +311,7 @@ const Page = () => {
   });
 
   return (
-    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2">
+    <Layout className="container flex flex-col left-0 right-0 mx-auto px-6 justify-start font-sans mt-2">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
         <div className="flex items-center gap-4">
           <Image
@@ -329,7 +329,7 @@ const Page = () => {
         </h1>
       </div>
 
-      <div className="w-full h-full bg-white container  rounded-lg flex flex-col gap-4 p-4">
+      <div className="w-full h-full bg-white container  rounded-lg flex flex-col gap-4 mb-4 p-4 bg-white rounded-xl">
         <h1 className="text-2xl font-bold text-primary flex  items-center ">
           Current Workgroup: {user.workgroup}{" "}
         </h1>

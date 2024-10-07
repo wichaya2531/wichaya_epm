@@ -294,51 +294,44 @@ const Page = () => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
-      <h1 className="text-3xl font-bold text-primary flex  items-center">
-        {">"} WorkGroup: {user.workgroup}{" "}
-      </h1>
-      <h1 className="text-2xl font-bold">Checklist Templates</h1>{" "}
-      <div className="gap-4">
-        <label htmlFor="line-name-filter" className="text-lg font-bold">
-          LINE NAME:
-        </label>
-        <select
-          id="line-name-filter"
-          className="mx-2 border border-gray-300 p-2 rounded"
-          value={selectedLineName}
-          onChange={(e) => setSelectedLineName(e.target.value)}
-        >
-          <option value="">All</option>
-          {uniqueLineNames.map((lineName, index) => (
-            <option key={index} value={lineName}>
-              {lineName}
-            </option>
-          ))}
-        </select>
-
-        <label htmlFor="template-name-filter" className="text-lg font-bold">
-          Checklist Template Name:
-        </label>
-        <select
-          id="template-name-filter"
-          className="mx-2 border border-gray-300 p-2 rounded"
-          value={selectedTemplateName}
-          onChange={(e) => setSelectedTemplateName(e.target.value)}
-        >
-          <option value="">All</option>
-          {uniqueTemplateNames.map((templateName, index) => (
-            <option key={index} value={templateName}>
-              {templateName}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
+        {" "}
+        <h1 className="text-3xl font-bold text-primary flex  items-center ">
+          {">"} WorkGroup: {user.workgroup}{" "}
+        </h1>
+        <h1 className="text-2xl font-bold">Checklist Templates</h1>{" "}
       </div>
-      <TableComponent
-        headers={jobItemTemplateHeader}
-        datas={jobItemTemplateBody}
-        TableName="Checklist Templates"
-        searchColumn="Checklist Template Name"
-      />
+
+      <div className="flex flex-col gap-4 mb-4 p-4 bg-white rounded-xl">
+        <div className="flex flex-col">
+          <label
+            htmlFor="template-name-filter"
+            className="text-lg font-bold mb-2"
+          >
+            Checklist Template Name:
+          </label>
+          <select
+            id="template-name-filter"
+            className="w-64 ml-0 border border-gray-300 p-2 rounded" // ปรับให้ตัวเลือกอยู่ทางซ้าย
+            value={selectedTemplateName}
+            onChange={(e) => setSelectedTemplateName(e.target.value)}
+          >
+            <option value="">All</option>
+            {uniqueTemplateNames.map((templateName, index) => (
+              <option key={index} value={templateName}>
+                {templateName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <TableComponent
+          headers={jobItemTemplateHeader}
+          datas={jobItemTemplateBody}
+          TableName="Checklist Templates"
+          filterColumn="LINE NAME"
+          searchColumn="Checklist Template Name"
+        />
+      </div>
     </Layout>
   );
 };

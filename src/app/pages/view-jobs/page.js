@@ -12,6 +12,7 @@ import JobForm from "./JobForm.js";
 import { useRouter } from "next/navigation";
 import mqtt from "mqtt";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
@@ -24,8 +25,15 @@ const Page = ({ searchParams }) => {
   const job_id = searchParams.job_id;
   const [view, setView] = useState(searchParams.view);
   const [refresh, setRefresh] = useState(false);
-  const { jobData, jobItems, isLoading, error } = useFetchJobValue(job_id, refresh);
-  const { machines, isLoading: machinesLoading, error: machinesError } = useFetchMachines();
+  const { jobData, jobItems, isLoading, error } = useFetchJobValue(
+    job_id,
+    refresh
+  );
+  const {
+    machines,
+    isLoading: machinesLoading,
+    error: machinesError,
+  } = useFetchMachines();
   const { user } = useFetchUser(refresh);
   const [isShowJobInfo, setIsShowJobInfo] = useState(true);
   const [isShowJobItem, setIsShowJobItem] = useState(true);
@@ -65,8 +73,6 @@ const Page = ({ searchParams }) => {
   useEffect(() => {
     const asyncEffect = async () => {
       if (user && jobData) {
-
-
         // Ensure both user.workgroup_id and jobData.WorkGroupID are defined
         if (user.workgroup_id && jobData.WorkGroupID) {
           if (user.workgroup_id.toString() !== jobData.WorkGroupID.toString()) {
@@ -80,12 +86,10 @@ const Page = ({ searchParams }) => {
             }
           }
         } else {
-
         }
       }
 
-      mqttClient.on("connect", () => {
-      });
+      mqttClient.on("connect", () => {});
 
       mqttClient.on("error", (err) => {
         mqttClient.end();
@@ -116,7 +120,6 @@ const Page = ({ searchParams }) => {
     }
   }, [view]);
 
-
   mqttClient.on("message", (topic, message) => {
     document.getElementById(topic.toString()).placeholder = message.toString();
   });
@@ -128,7 +131,9 @@ const Page = ({ searchParams }) => {
   const handleBeforeValue = (e, item) => {
     const value = e.target.value;
     setInputValues((prev) => {
-      const existingIndex = prev.findIndex((entry) => entry.jobItemID === item.JobItemID);
+      const existingIndex = prev.findIndex(
+        (entry) => entry.jobItemID === item.JobItemID
+      );
       if (existingIndex !== -1) {
         const updatedValues = [...prev];
         updatedValues[existingIndex] = {
@@ -151,7 +156,9 @@ const Page = ({ searchParams }) => {
   const handleInputChange = (e, item) => {
     const value = e.target.value;
     setInputValues((prev) => {
-      const existingIndex = prev.findIndex((entry) => entry.jobItemID === item.JobItemID);
+      const existingIndex = prev.findIndex(
+        (entry) => entry.jobItemID === item.JobItemID
+      );
       if (existingIndex !== -1) {
         const updatedValues = [...prev];
         updatedValues[existingIndex] = {
@@ -175,7 +182,9 @@ const Page = ({ searchParams }) => {
     e.preventDefault();
     const comment = e.target.comment.value;
     setInputValues((prev) => {
-      const existingIndex = prev.findIndex((entry) => entry.jobItemID === commentDetail.JobItemID);
+      const existingIndex = prev.findIndex(
+        (entry) => entry.jobItemID === commentDetail.JobItemID
+      );
       if (existingIndex !== -1) {
         const updatedValues = [...prev];
         updatedValues[existingIndex] = {
@@ -287,7 +296,14 @@ const Page = ({ searchParams }) => {
   };
 
   return (
-    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
+    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 ">
+      <div className="flex justify-start items-center text-3xl font-bold text-primary mb-4 p-4 bg-white rounded-xl">
+        <h1 className="flex items-center">
+          <ArrowForwardIosIcon />
+          <span className="ml-2">Checklist Name: {jobData.Name}</span>
+        </h1>
+      </div>
+
       <JobForm
         jobData={jobData}
         jobItems={jobItems}
@@ -313,7 +329,10 @@ const Page = ({ searchParams }) => {
         />
       )}
       {jobItemDetail && (
-        <ItemInformationModal setJobItemDetail={setJobItemDetail} jobItemDetail={jobItemDetail} />
+        <ItemInformationModal
+          setJobItemDetail={setJobItemDetail}
+          jobItemDetail={jobItemDetail}
+        />
       )}
       {AddCommentForm && (
         <AddCommentModal
@@ -327,3 +346,5 @@ const Page = ({ searchParams }) => {
 };
 
 export default Page;
+
+// mb-4 p-4 bg-white rounded-xl

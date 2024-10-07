@@ -11,6 +11,7 @@ import useFetchJobTemplate from "@/lib/hooks/useFetchJobTemplate.js";
 import useFetchUsers from "@/lib/hooks/useFetchUsers.js";
 import Swal from "sweetalert2";
 import { config } from "@/config/config.js";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 const approverHeader = ["ID", "Name", "Action"];
 const notifyHeader = ["ID", "Name", "Action"];
@@ -329,216 +330,223 @@ const Page = ({ searchParams }) => {
   };
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
-      <h1 className="text-2xl font-bold">Edit Checklist Template</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-6 mb-6 md:grid-cols-3">
-          <div>
-            <label
-              for="author"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Author
-            </label>
-            <input
-              type="text"
-              id="author"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              value={user.name}
-              name="author"
-              required
-              disabled
-            />
-          </div>
-          <div>
-            <label
-              for="workgroup"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Workgroup
-            </label>
-            <input
-              type="text"
-              id="workgroup"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              value={user.workgroup}
-              name="workgroup"
-              required
-              disabled
-            />
-          </div>
+      <h1 className="text-2xl font-bold mb-4 p-4 bg-white rounded-xl">
+        Edit Checklist Template
+        <ArrowForwardIosIcon />
+        {jobTemplate.JOB_TEMPLATE_NAME}
+      </h1>
 
-          <div>
-            <label
-              for="due_date"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Due Date
-            </label>
-            <input
-              type="date"
-              id="due_date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              name="due_date"
-              required
-            />
-          </div>
-          <div>
-            <label
-              for="job_template_name"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Checklist Template Name
-            </label>
-            <input
-              type="text"
-              id="job_template_name"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              defaultValue={jobTemplate.JOB_TEMPLATE_NAME}
-              name="job_template_name"
-              required
-            />
-          </div>
-          <div>
-            <label
-              for="doc_num"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Document no.
-            </label>
-            <input
-              type="text"
-              id="doc_num"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              name="doc_num"
-              defaultValue={jobTemplate.DOC_NUMBER}
-              required
-            />
-          </div>
-          <div>
-            <label
-              for="checklist_ver"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Checklist Version
-            </label>
-            <input
-              type="text"
-              id="checklist_ver"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              name="checklist_ver"
-              defaultValue={jobTemplate.CHECKLIST_VERSION}
-              required
-            />
-          </div>
-          <div>
-            <label
-              for="line_name"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Line Name
-            </label>
-            <input
-              type="text"
-              id="line_name"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              name="line_name"
-              defaultValue={jobTemplate.LINE_NAME}
-              required
-            />
-          </div>
-          <div className="z-50">
-            <label
-              for="timeout"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Timeout
-            </label>
-            <Select
-              id="timeout-select"
-              options={[
-                { value: "12 hrs", label: "12 hrs" },
-                { value: "1 days", label: "1 days" },
-                { value: "7 days", label: "7 days" },
-                { value: "15 days", label: "15 days" },
-                { value: "30 days", label: "30 days" },
-                { value: "3 months", label: "3 months" },
-                { value: "6 months", label: "6 months" },
-                { value: "12 months", label: "12 months" },
-              ]}
-              isSearchable={true}
-              name="timeout"
-              value={timeout}
-              onChange={setTimeout}
-            />
-          </div>
-          <div className="flex gap-5 ">
-            <div className="flex flex-col w-full">
+      <div className="mb-4 p-4 bg-white rounded-xl">
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-6 mb-6 md:grid-cols-3">
+            <div>
               <label
-                htmlFor="visitors"
+                for="author"
                 className="block mb-2 text-sm font-medium text-black"
               >
-                Add Approver
+                Author
               </label>
-              <Select
-                options={options}
-                value={selectedApprover}
-                onChange={setSelectedApprover}
-                isSearchable={true}
+              <input
+                type="text"
+                id="author"
+                className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                value={user.name}
+                name="author"
+                required
+                disabled
               />
             </div>
-            <button
-              type="button"
-              onClick={handleAddApprover}
-              className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-            >
-              Add
-            </button>
-          </div>
-          <div className="flex gap-5 ">
-            <div className="flex flex-col w-full">
+            <div>
               <label
-                htmlFor="visitors"
+                for="workgroup"
                 className="block mb-2 text-sm font-medium text-black"
               >
-                Add Notify
+                Workgroup
               </label>
-              <Select
-                options={options}
-                value={selectedNotify}
-                onChange={setSelectedNotify}
-                isSearchable={true}
-                className="z-50"
+              <input
+                type="text"
+                id="workgroup"
+                className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                value={user.workgroup}
+                name="workgroup"
+                required
+                disabled
               />
             </div>
-            <button
-              type="button"
-              onClick={handleAddNotify}
-              className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-            >
-              Add
-            </button>
-          </div>
-        </div>
 
-        <button
-          type="submit"
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 "
-        >
-          Save
-        </button>
-      </form>
-      <TableComponent
-        headers={approverHeader}
-        datas={dataApprover}
-        TableName="Approver List"
-      />
-      <TableComponent
-        headers={notifyHeader}
-        datas={dataNotify}
-        TableName="Notify List"
-      />
+            <div>
+              <label
+                for="due_date"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Due Date
+              </label>
+              <input
+                type="date"
+                id="due_date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                name="due_date"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="job_template_name"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Checklist Template Name
+              </label>
+              <input
+                type="text"
+                id="job_template_name"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                defaultValue={jobTemplate.JOB_TEMPLATE_NAME}
+                name="job_template_name"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="doc_num"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Document no.
+              </label>
+              <input
+                type="text"
+                id="doc_num"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                name="doc_num"
+                defaultValue={jobTemplate.DOC_NUMBER}
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="checklist_ver"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Checklist Version
+              </label>
+              <input
+                type="text"
+                id="checklist_ver"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                name="checklist_ver"
+                defaultValue={jobTemplate.CHECKLIST_VERSION}
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="line_name"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Line Name
+              </label>
+              <input
+                type="text"
+                id="line_name"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                name="line_name"
+                defaultValue={jobTemplate.LINE_NAME}
+                required
+              />
+            </div>
+            <div className="z-50">
+              <label
+                for="timeout"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Timeout
+              </label>
+              <Select
+                id="timeout-select"
+                options={[
+                  { value: "12 hrs", label: "12 hrs" },
+                  { value: "1 days", label: "1 days" },
+                  { value: "7 days", label: "7 days" },
+                  { value: "15 days", label: "15 days" },
+                  { value: "30 days", label: "30 days" },
+                  { value: "3 months", label: "3 months" },
+                  { value: "6 months", label: "6 months" },
+                  { value: "12 months", label: "12 months" },
+                ]}
+                isSearchable={true}
+                name="timeout"
+                value={timeout}
+                onChange={setTimeout}
+              />
+            </div>
+            <div className="flex gap-5 ">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="visitors"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Add Approver
+                </label>
+                <Select
+                  options={options}
+                  value={selectedApprover}
+                  onChange={setSelectedApprover}
+                  isSearchable={true}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddApprover}
+                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex gap-5 ">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="visitors"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Add Notify
+                </label>
+                <Select
+                  options={options}
+                  value={selectedNotify}
+                  onChange={setSelectedNotify}
+                  isSearchable={true}
+                  className="z-50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddNotify}
+                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 "
+          >
+            Save
+          </button>
+        </form>
+        <TableComponent
+          headers={approverHeader}
+          datas={dataApprover}
+          TableName="Approver List"
+        />
+        <TableComponent
+          headers={notifyHeader}
+          datas={dataNotify}
+          TableName="Notify List"
+        />
+      </div>
     </Layout>
   );
 };
