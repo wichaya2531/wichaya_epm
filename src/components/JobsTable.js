@@ -246,7 +246,7 @@ const JobsTable = ({ refresh }) => {
             htmlFor="startDate"
             className="block text-sm font-medium text-gray-900 text-black"
           >
-            Filter by Date
+            Start Date
           </label>
           <input
             type="date"
@@ -257,7 +257,7 @@ const JobsTable = ({ refresh }) => {
             className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
           />
         </div>
-        {/* <div className="flex-2">
+        <div className="flex-2">
           <label
             htmlFor="endDate"
             className="block text-sm font-medium text-gray-900 "
@@ -272,7 +272,7 @@ const JobsTable = ({ refresh }) => {
             onChange={handleEndDateChange}
             className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
           />
-        </div> */}
+        </div>
       </div>
       <TableComponent
         headers={jobsActiveHeader}

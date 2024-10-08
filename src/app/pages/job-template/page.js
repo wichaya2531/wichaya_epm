@@ -807,6 +807,7 @@ const Page = () => {
             )
           }
         </form>
+        <hr className="mt-5" />
         <TableComponent
           headers={approverHeader}
           datas={dataApprover}
