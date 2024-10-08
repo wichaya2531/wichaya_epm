@@ -501,8 +501,8 @@ const Page = () => {
   };
 
   return (
-    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-20">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
+    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-10">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-2">
         {/* Checklist Template Section */}
         <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl flex-grow">
           <div className="flex items-center">

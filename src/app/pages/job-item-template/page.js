@@ -217,7 +217,7 @@ const Page = () => {
       Action: (
         <div className="flex gap-2 items-center justify-center">
           <Link
-            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
             href={{
               pathname: "/pages/edit-job-template",
               query: { jobTemplate_id: jobTemplate._id },
@@ -239,7 +239,7 @@ const Page = () => {
           </Link>
           <button
             onClick={() => handleCopy(jobTemplate._id)}
-            className="bg-slate-600 hover:bg-blue-700 text-white font-semibold py-2 px-2 rounded"
+            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
           >
             Copy
           </button>
@@ -266,7 +266,7 @@ const Page = () => {
             Remove
           </button>
           <Link
-            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-2 rounded"
+            className="bg-teal-500 hover:bg-teal-700 text-white font-semibold py-2 px-2 rounded"
             href={{
               pathname: "/pages/job-item-template/add-job-item-template",
               query: { jobTemplate_id: jobTemplate._id },
