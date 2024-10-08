@@ -12,7 +12,8 @@ import JobForm from "./JobForm.js";
 import { useRouter } from "next/navigation";
 import mqtt from "mqtt";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Link from "next/link.js";
 
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
@@ -299,7 +300,9 @@ const Page = ({ searchParams }) => {
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 ">
       <div className="flex justify-start items-center text-3xl font-bold text-primary mb-4 p-4 bg-white rounded-xl">
         <h1 className="flex items-center">
-          <ArrowForwardIosIcon />
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
           <span className="ml-2">Checklist Name: {jobData.Name}</span>
         </h1>
       </div>
