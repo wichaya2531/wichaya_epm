@@ -3,7 +3,8 @@
 import Layout from "@/components/Layout.js";
 import Select from "react-select";
 import TableComponent from "@/components/TableComponent.js";
-import NextPlanIcon from "@mui/icons-material/NextPlan";
+import PageviewIcon from "@mui/icons-material/Pageview";
+import SettingsIcon from "@mui/icons-material/Settings";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { config } from "../../../config/config.js";
@@ -40,6 +41,8 @@ const Page = () => {
   const [machinesOptions, setMachinesOptions] = useState([]);
   const [userEnableFunctions, setUserEnableFunctions] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const togglePopup = () => setShowPopup(!showPopup);
 
   // แปลงข้อมูล selectLineNames ให้เข้ากับโครงสร้างของตาราง
   const selectLineNameBody = selectLineNames.map((lineName, index) => {
@@ -517,23 +520,20 @@ const Page = () => {
             Manage Checklist Template and its items
           </p>
         </div>
-
-        {/* Manage Line Name Button
-        <Link
-          href="/pages/manage-line-name"
-          className={`align-left text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mb-4 lg:mb-0 lg:ml-4
-      ${
-        !userEnableFunctions.some(
-          (action) => action._id === enabledFunction["manage-line-name"]
-        ) && "opacity-50 cursor-not-allowed"
-      }`}
+        {/* Button Manage Line Name */}
+        <button
+          className={`align-left text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mb-4 lg:mb-0 lg:ml-4 ${
+            !userEnableFunctions.some(
+              (action) => action._id === enabledFunction["manage-line-name"]
+            ) && "opacity-50 cursor-not-allowed"
+          }`}
+          onClick={togglePopup} // ใช้ฟังก์ชัน togglePopup เพื่อแสดงป๊อปอัป
         >
-          <div className="flex gap-3 items-center ">
-            <p>Manage Line Name..</p>
-            <NextPlanIcon />
+          <div className="flex gap-3 items-center">
+            <p>Manage Line Name</p>
+            <SettingsIcon />
           </div>
-        </Link> */}
-
+        </button>
         {/* View All Checklist Templates Button */}
         <Link
           href="/pages/job-item-template"
@@ -546,46 +546,48 @@ const Page = () => {
         >
           <div className="flex gap-3 items-center">
             <p>View all Checklist Templates</p>
-            <NextPlanIcon />
+            <PageviewIcon />
           </div>
         </Link>
       </div>
 
-      <div
-        className="max-w-md mx-auto my-4 p-4 border border-gray-300 rounded bg-white shadow-md"
-        style={{ display: "none" }}
-      >
-        <h2 className="text-xl font-bold mb-4 text-center">
-          Create Select Line Name
-        </h2>
-        <div className="mb-4">
-          <label htmlFor="lineName" className="block text-sm font-medium mb-1">
-            Line Name:
-          </label>
-          <input
-            type="text"
-            id="lineName" // รักษาชื่อ id ไว้เหมือนเดิม
-            className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring focus:ring-blue-300"
-            value={selectLineName} // ใช้ selectLineName แทน lineName
-            onChange={(e) => setSelectLineName(e.target.value)} // ใช้ setSelectLineName แทน setLineName
-            placeholder="Enter Line Name"
+      {showPopup && (
+        <div className="max-w-md mx-auto my-4 p-4 border border-gray-300 rounded bg-white shadow-md">
+          <h2 className="text-xl font-bold mb-4 text-center">
+            Create Select Line Name
+          </h2>
+          <div className="mb-4">
+            <label
+              htmlFor="lineName"
+              className="block text-sm font-medium mb-1"
+            >
+              Line Name:
+            </label>
+            <input
+              type="text"
+              id="lineName"
+              className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring focus:ring-blue-300"
+              value={selectLineName}
+              onChange={(e) => setSelectLineName(e.target.value)}
+              placeholder="Enter Line Name"
+            />
+          </div>
+          <button
+            className="w-full bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50"
+            onClick={handleCreate}
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating..." : "Create"}
+          </button>
+          <TableComponent
+            headers={lineNameHeader}
+            datas={selectLineNameBody}
+            TableName="Line name list"
+            searchColumn="Line Name"
+            filterColumn="Line Name"
           />
         </div>
-        <button
-          className="w-full bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50"
-          onClick={handleCreate}
-          disabled={isLoading}
-        >
-          {isLoading ? "Creating..." : "Create"}
-        </button>
-        <TableComponent
-          headers={lineNameHeader}
-          datas={selectLineNameBody}
-          TableName="Line name list"
-          searchColumn="Line Name"
-          filterColumn="Line Name"
-        />
-      </div>
+      )}
 
       <div className="mb-4 p-4 bg-white rounded-xl">
         <form onSubmit={handleSubmit}>
