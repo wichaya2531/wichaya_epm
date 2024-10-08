@@ -2,12 +2,17 @@
 import Layout from "@/components/Layout";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const Page = () => {
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white ">
         <div className="flex items-center gap-4">
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
           <Image
             src="/assets/card-logo/help.png"
             alt="wd logo"

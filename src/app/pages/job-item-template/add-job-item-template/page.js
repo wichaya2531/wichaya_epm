@@ -9,6 +9,7 @@ import useFetchTestLocations from "@/lib/hooks/useFetchTestLocations";
 import Select from "react-select";
 import { useState } from "react";
 import Link from "next/link";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
@@ -188,8 +189,11 @@ const Page = ({ searchParams }) => {
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-7">
       <div className="flex flex-col gap-3 mb-4 p-4 bg-white rounded-xl">
-        <h1 className="text-2xl font-bold text-primary flex items-center">
-          {">"} {jobTemplate.JOB_TEMPLATE_NAME}{" "}
+        <h1 className="flex text-2xl font-bold text-primary flex items-center">
+          <Link href="/pages/job-item-template">
+            <ArrowBackIosNewIcon />
+          </Link>
+          {jobTemplate.JOB_TEMPLATE_NAME}{" "}
         </h1>
         <h1 className="text-1xl font-semibold">
           Add Checklist Item to Checklist Template

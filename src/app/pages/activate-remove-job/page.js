@@ -10,6 +10,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import Swal from "sweetalert2";
 import JobPlan from "@/components/JobPlan";
 import SearchIcon from "@mui/icons-material/Search";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Link from "next/link";
 
 const jobTemplatesHeader = [
   "ID",
@@ -595,8 +597,11 @@ const Page = () => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
-      <h1 className="text-3xl font-bold text-primary flex  items-center mb-4 p-4 bg-white rounded-xl">
-        {">"} WorkGroup: {user?.workgroup}{" "}
+      <h1 className="text-3xl font-bold text-primary flex items-center mb-4 p-4 bg-white rounded-xl">
+        <Link href="/pages/job-manage">
+          <ArrowBackIosNewIcon />
+        </Link>
+        WorkGroup: {user?.workgroup}{" "}
       </h1>
       <div className="mb-4 p-4 bg-white rounded-xl">
         <h1 className="text-2xl font-bold">Checklist Templates</h1>

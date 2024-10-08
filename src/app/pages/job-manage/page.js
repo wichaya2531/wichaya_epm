@@ -6,6 +6,7 @@ import KeyboardTabIcon from "@mui/icons-material/KeyboardTab";
 import JobsTable from "@/components/JobsTable";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import Image from "next/image";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 {
   /* <div className="flex items-center gap-4 mb-4 p-4 bg-white ">
@@ -23,6 +24,9 @@ const Page = () => {
         <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl w-full sm:w-auto">
           <div className="flex items-center">
             <div className="flex items-center gap-4">
+              <Link href="/pages/dashboard">
+                <ArrowBackIosNewIcon />
+              </Link>
               <Image
                 src="/assets/card-logo/management.png"
                 alt="wd logo"

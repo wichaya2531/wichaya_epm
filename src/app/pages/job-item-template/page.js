@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { config } from "@/config/config.js";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const jobItemTemplateHeader = [
   "ID",
@@ -297,7 +298,10 @@ const Page = () => {
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
         {" "}
         <h1 className="text-3xl font-bold text-primary flex  items-center ">
-          {">"} WorkGroup: {user.workgroup}{" "}
+          <Link href="/pages/job-template">
+            <ArrowBackIosNewIcon />
+          </Link>{" "}
+          WorkGroup: {user.workgroup}{" "}
         </h1>
         <h1 className="text-2xl font-bold">Checklist Templates</h1>{" "}
       </div>

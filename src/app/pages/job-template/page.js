@@ -11,6 +11,7 @@ import { config } from "../../../config/config.js";
 import { getSession } from "@/lib/utils/utils.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const enabledFunction = {
   "create-job-template": "6632f9e4eccb576a719dfa7a",
@@ -505,6 +506,9 @@ const Page = () => {
         {/* Checklist Template Section */}
         <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl flex-grow">
           <div className="flex items-center">
+            <Link href="/pages/dashboard">
+              <ArrowBackIosNewIcon />
+            </Link>
             <Image
               src="/assets/card-logo/template.png"
               alt="wd logo"
