@@ -189,7 +189,7 @@ const JobsTable = ({ refresh }) => {
 
   return (
     <div className="w-full flex flex-col mt-5">
-      <div className="flex mb-4 justify-start items-center gap-4">
+      <div className="flex flex-wrap mb-4 justify-start items-center gap-4">
         <div className="flex-1.5">
           <label
             htmlFor="statusFilter"
