@@ -4,18 +4,17 @@ import React, { useEffect, useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import useFetchJobEvents from "@/lib/hooks/useFetchJobEvents";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import ShowmoreData from "@/app/pages/job-calendar/ShowmoreData";
 import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
-
 import Image from "next/image";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Link from "next/link";
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
@@ -141,6 +140,9 @@ const Page = () => {
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
         <div className="flex items-center gap-4">
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
           <Image
             src="/assets/card-logo/calendar.png"
             alt="wd logo"

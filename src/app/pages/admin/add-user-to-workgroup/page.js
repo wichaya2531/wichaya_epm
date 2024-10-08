@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { config } from "../../../../config/config.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Link from "next/link.js";
 
 const workgroupHeader = ["id", "EMP_number", "Email", "Name", "Role", "Action"];
 const userHeader = ["id", "EMP_number", "Email", "Name", "Role", "Action"];
@@ -314,6 +316,9 @@ const Page = () => {
     <Layout className="container flex flex-col left-0 right-0 mx-auto px-6 justify-start font-sans mt-2">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
         <div className="flex items-center gap-4">
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
           <Image
             src="/assets/card-logo/workgroup.png"
             alt="wd logo"

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { config } from "@/config/config.js";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const jobItemTemplateHeader = [
   "ID",
@@ -216,7 +217,7 @@ const Page = () => {
       Action: (
         <div className="flex gap-2 items-center justify-center">
           <Link
-            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
             href={{
               pathname: "/pages/edit-job-template",
               query: { jobTemplate_id: jobTemplate._id },
@@ -238,7 +239,7 @@ const Page = () => {
           </Link>
           <button
             onClick={() => handleCopy(jobTemplate._id)}
-            className="bg-slate-600 hover:bg-blue-700 text-white font-semibold py-2 px-2 rounded"
+            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
           >
             Copy
           </button>
@@ -265,7 +266,7 @@ const Page = () => {
             Remove
           </button>
           <Link
-            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-2 rounded"
+            className="bg-teal-500 hover:bg-teal-700 text-white font-semibold py-2 px-2 rounded"
             href={{
               pathname: "/pages/job-item-template/add-job-item-template",
               query: { jobTemplate_id: jobTemplate._id },
@@ -297,7 +298,10 @@ const Page = () => {
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
         {" "}
         <h1 className="text-3xl font-bold text-primary flex  items-center ">
-          {">"} WorkGroup: {user.workgroup}{" "}
+          <Link href="/pages/job-template">
+            <ArrowBackIosNewIcon />
+          </Link>{" "}
+          WorkGroup: {user.workgroup}{" "}
         </h1>
         <h1 className="text-2xl font-bold">Checklist Templates</h1>{" "}
       </div>

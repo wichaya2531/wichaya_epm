@@ -83,10 +83,10 @@ const Page = () => {
             })}
         </div>
 
-        <hr className="border-gray-300 mt-10" />
+        <hr className="border-gray-300 my-10" />
 
         {/* Jobs table section */}
-        <div className="flex flex-col gap-5 w-full text-sm font-thin">
+        <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
           <JobsTable refresh={refresh} />
         </div>
       </div>

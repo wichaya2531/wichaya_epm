@@ -5,6 +5,7 @@ import useFetchJobApproves from "@/lib/hooks/useFetchJobApproves";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import Link from "next/link";
 import Image from "next/image";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const jobApprovesHeader = [
   "ID",
@@ -63,6 +64,9 @@ const Page = () => {
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 ">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
         <div className="flex items-center gap-4">
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
           <Image
             src="/assets/card-logo/approve.png"
             alt="wd logo"

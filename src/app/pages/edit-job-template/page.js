@@ -12,6 +12,7 @@ import useFetchUsers from "@/lib/hooks/useFetchUsers.js";
 import Swal from "sweetalert2";
 import { config } from "@/config/config.js";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const approverHeader = ["ID", "Name", "Action"];
 const notifyHeader = ["ID", "Name", "Action"];
@@ -330,9 +331,11 @@ const Page = ({ searchParams }) => {
   };
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
-      <h1 className="text-2xl font-bold mb-4 p-4 bg-white rounded-xl">
-        Edit Checklist Template
-        <ArrowForwardIosIcon />
+      <h1 className="flex items-center text-2xl font-bold mb-4 p-4 bg-white rounded-xl">
+        <Link href="/pages/job-item-template">
+          <ArrowBackIosNewIcon />
+        </Link>
+        Edit Checklist Template: {""}
         {jobTemplate.JOB_TEMPLATE_NAME}
       </h1>
 
