@@ -120,7 +120,7 @@ const Page = () => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
-      <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white ">
+      <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
         <div className="flex items-center gap-4">
           <Image
             src="/assets/card-logo/profile.png"
@@ -136,7 +136,7 @@ const Page = () => {
           Edit user information, adding profile image.
         </h1>
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="mb-4 p-4 bg-white rounded-xl">
         {/* Profile Picture Dropzone */}
         <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
           Edit Profile Picture

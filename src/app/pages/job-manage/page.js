@@ -47,7 +47,7 @@ const Page = () => {
         </Link>
       </div>
 
-      <div className="flex flex-col gap-5 w-full text-sm font-thin">
+      <div className="flex flex-col gap-5 w-full text-sm font-thin mb-4 p-4 bg-white rounded-xl">
         <div className="min-w-full">
           <JobsTable refresh={refresh} />
         </div>

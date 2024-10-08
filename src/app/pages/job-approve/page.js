@@ -77,17 +77,19 @@ const Page = () => {
           Approve/Disapprove Checklist.
         </h1>
       </div>
-      <h1 className="text-md font-bold text-secondary flex  items-center">
-        There are {jobApproves.length} submitted jobs, that you need to be
-        reviewed.
-      </h1>
-      <hr className="border-gray-300 mt-4" />
-      <TableComponent
-        headers={jobApprovesHeader}
-        datas={jobApprovesBody}
-        TableName="Active Jobs"
-        PageSize={5}
-      />
+      <div className="mb-4 p-4 bg-white rounded-xl">
+        <h1 className="text-md font-bold text-secondary flex items-center ">
+          There are {jobApproves.length} submitted jobs, that you need to be
+          reviewed.
+        </h1>
+        <hr className="border-gray-300 mt-4" />
+        <TableComponent
+          headers={jobApprovesHeader}
+          datas={jobApprovesBody}
+          TableName="Active Jobs"
+          PageSize={5}
+        />
+      </div>
     </Layout>
   );
 };

@@ -176,8 +176,8 @@ const Page = () => {
     if (!selectLineName) {
       Swal.fire({
         icon: "warning",
-        title: "คำเตือน",
-        text: "กรุณากรอกชื่อ Select Line Name",
+        title: "Warning",
+        text: "Please enter the Select Line Name",
       });
       return;
     }
@@ -199,8 +199,8 @@ const Page = () => {
       if (response.ok && data.success) {
         Swal.fire({
           icon: "success",
-          title: "สำเร็จ",
-          text: "สร้างข้อมูลสำเร็จ",
+          title: "Success",
+          text: "Data created successfully",
         });
 
         // ตรวจสอบว่า data.lineName มีฟิลด์ name หรือไม่
@@ -210,22 +210,22 @@ const Page = () => {
           // เพิ่มข้อมูลใหม่ลงในตารางโดยไม่ต้องรีเฟรชหน้า
           setSelectLineNames((prevData) => [...prevData, newLineName]);
         } else {
-          console.warn("newLineName ไม่สมบูรณ์:", newLineName);
+          console.warn("newLineName is incomplete:", newLineName);
         }
 
         setSelectLineName(""); // ล้างข้อมูลในช่องกรอก
       } else {
         Swal.fire({
           icon: "error",
-          title: "เกิดข้อผิดพลาด",
-          text: `ไม่สามารถสร้างข้อมูลได้: ${data.message || "Unknown error"}`,
+          title: "Error occurred",
+          text: `Unable to create data: ${data.message || "Unknown error"}`,
         });
       }
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: `ไม่สามารถสร้างข้อมูลได้: ${error.message}`,
+        title: "Error occurred",
+        text: `Unable to create data: ${error.message}`,
       });
     } finally {
       setIsLoading(false);
@@ -518,7 +518,7 @@ const Page = () => {
           </p>
         </div>
 
-        {/* Manage Line Name Button */}
+        {/* Manage Line Name Button
         <Link
           href="/pages/manage-line-name"
           className={`align-left text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mb-4 lg:mb-0 lg:ml-4
@@ -528,11 +528,11 @@ const Page = () => {
         ) && "opacity-50 cursor-not-allowed"
       }`}
         >
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center ">
             <p>Manage Line Name..</p>
             <NextPlanIcon />
           </div>
-        </Link>
+        </Link> */}
 
         {/* View All Checklist Templates Button */}
         <Link
@@ -551,9 +551,12 @@ const Page = () => {
         </Link>
       </div>
 
-      <div className="max-w-md mx-auto my-4 p-4 border border-gray-300 rounded bg-white shadow-md">
+      <div
+        className="max-w-md mx-auto my-4 p-4 border border-gray-300 rounded bg-white shadow-md"
+        style={{ display: "none" }}
+      >
         <h2 className="text-xl font-bold mb-4 text-center">
-          สร้าง Select Line Name
+          Create Select Line Name
         </h2>
         <div className="mb-4">
           <label htmlFor="lineName" className="block text-sm font-medium mb-1">
@@ -565,7 +568,7 @@ const Page = () => {
             className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring focus:ring-blue-300"
             value={selectLineName} // ใช้ selectLineName แทน lineName
             onChange={(e) => setSelectLineName(e.target.value)} // ใช้ setSelectLineName แทน setLineName
-            placeholder="กรอกชื่อ Line Name"
+            placeholder="Enter Line Name"
           />
         </div>
         <button
@@ -573,7 +576,7 @@ const Page = () => {
           onClick={handleCreate}
           disabled={isLoading}
         >
-          {isLoading ? "กำลังสร้าง..." : "สร้าง"}
+          {isLoading ? "Creating..." : "Create"}
         </button>
         <TableComponent
           headers={lineNameHeader}
@@ -584,231 +587,233 @@ const Page = () => {
         />
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-6 mb-6 md:grid-cols-3">
-          <div>
-            <label
-              for="author"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              Author
-            </label>
-            <input
-              type="text"
-              id="author"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              value={user.name}
-              name="author"
-              required
-              disabled
-            />
-          </div>
-          <div>
-            <label
-              for="workgroup"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              Workgroup
-            </label>
-            <input
-              type="text"
-              id="workgroup"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              value={user.workgroup}
-              name="workgroup"
-              required
-              disabled
-            />
-          </div>
-
-          <div>
-            <label
-              for="due_date"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              Due Date
-            </label>
-            <input
-              type="date"
-              id="due_date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              name="due_date"
-              required
-            />
-          </div>
-          <div>
-            <label
-              for="job_template_name"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              Checklist Template Name
-            </label>
-            <input
-              type="text"
-              id="job_template_name"
-              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Template Name"
-              name="job_template_name"
-              required
-            />
-          </div>
-          <div>
-            <label
-              for="doc_num"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Document no.
-            </label>
-            <input
-              type="text"
-              id="doc_num"
-              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="2092-810000-000"
-              name="doc_num"
-              required
-            />
-          </div>
-          <div>
-            <label
-              for="checklist_ver"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Checklist Version
-            </label>
-            <input
-              type="text"
-              id="checklist_ver"
-              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="AE,AF,07,08"
-              name="checklist_ver"
-              required
-            />
-          </div>
-
-          <div className="z-50">
-            <label
-              for="timeout"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Line Name
-            </label>
-            <input
-              type="text"
-              id="line_name"
-              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="@line_name"
-              name="line_name"
-              required
-            />
-          </div>
-          <div className="z-50">
-            <label
-              for="timeout"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Timeout
-            </label>
-            <Select
-              options={[
-                { value: "12 hrs", label: "12 hrs" },
-                { value: "1 days", label: "1 days" },
-                { value: "7 days", label: "7 days" },
-                { value: "15 days", label: "15 days" },
-                { value: "30 days", label: "30 days" },
-                { value: "3 mounths", label: "3 months" },
-                { value: "6 months", label: "6 months" },
-                { value: "12 months", label: "12 months" },
-              ]}
-              isSearchable={true}
-              name="timeout"
-            />
-          </div>
-
-          <div className="flex gap-5 ">
-            <div className="flex flex-col w-full">
+      <div className="mb-4 p-4 bg-white rounded-xl">
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-6 mb-6 md:grid-cols-3">
+            <div>
               <label
-                htmlFor="visitors"
-                className="block mb-2 text-sm font-medium text-black"
+                for="author"
+                className="block mb-2 text-sm font-medium text-black "
               >
-                Add Approver
+                Author
               </label>
-              <Select
-                options={options}
-                value={selectedApprover}
-                onChange={setSelectedApprover}
-                isSearchable={true}
-                className="z-50"
+              <input
+                type="text"
+                id="author"
+                className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                value={user.name}
+                name="author"
+                required
+                disabled
               />
             </div>
-            <button
-              type="button"
-              onClick={handleAddApprover}
-              className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-            >
-              Add
-            </button>
-          </div>
-          <div className="flex gap-5 ">
-            <div className="flex flex-col w-full">
+            <div>
               <label
-                htmlFor="visitors"
-                className="block mb-2 text-sm font-medium text-black"
+                for="workgroup"
+                className="block mb-2 text-sm font-medium text-black "
               >
-                Add Notify
+                Workgroup
               </label>
-              <Select
-                options={options}
-                value={selectedNotify}
-                onChange={setSelectedNotify}
-                isSearchable={true}
-                className="z-50"
+              <input
+                type="text"
+                id="workgroup"
+                className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                value={user.workgroup}
+                name="workgroup"
+                required
+                disabled
               />
             </div>
-            <button
-              type="button"
-              onClick={handleAddNotify}
-              className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-            >
-              Add
-            </button>
+
+            <div>
+              <label
+                for="due_date"
+                className="block mb-2 text-sm font-medium text-black "
+              >
+                Due Date
+              </label>
+              <input
+                type="date"
+                id="due_date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                name="due_date"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="job_template_name"
+                className="block mb-2 text-sm font-medium text-black "
+              >
+                Checklist Template Name
+              </label>
+              <input
+                type="text"
+                id="job_template_name"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Template Name"
+                name="job_template_name"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="doc_num"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Document no.
+              </label>
+              <input
+                type="text"
+                id="doc_num"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="2092-810000-000"
+                name="doc_num"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="checklist_ver"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Checklist Version
+              </label>
+              <input
+                type="text"
+                id="checklist_ver"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="AE,AF,07,08"
+                name="checklist_ver"
+                required
+              />
+            </div>
+
+            <div className="z-50">
+              <label
+                for="timeout"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Line Name
+              </label>
+              <input
+                type="text"
+                id="line_name"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="@line_name"
+                name="line_name"
+                required
+              />
+            </div>
+            <div className="z-50">
+              <label
+                for="timeout"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Timeout
+              </label>
+              <Select
+                options={[
+                  { value: "12 hrs", label: "12 hrs" },
+                  { value: "1 days", label: "1 days" },
+                  { value: "7 days", label: "7 days" },
+                  { value: "15 days", label: "15 days" },
+                  { value: "30 days", label: "30 days" },
+                  { value: "3 mounths", label: "3 months" },
+                  { value: "6 months", label: "6 months" },
+                  { value: "12 months", label: "12 months" },
+                ]}
+                isSearchable={true}
+                name="timeout"
+              />
+            </div>
+
+            <div className="flex gap-5 ">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="visitors"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Add Approver
+                </label>
+                <Select
+                  options={options}
+                  value={selectedApprover}
+                  onChange={setSelectedApprover}
+                  isSearchable={true}
+                  className="z-50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddApprover}
+                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex gap-5 ">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="visitors"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Add Notify
+                </label>
+                <Select
+                  options={options}
+                  value={selectedNotify}
+                  onChange={setSelectedNotify}
+                  isSearchable={true}
+                  className="z-50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddNotify}
+                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+              >
+                Add
+              </button>
+            </div>
           </div>
-        </div>
-        {
-          // check if user has permission to create Checklist template
-          userEnableFunctions.some(
-            (action) => action._id === enabledFunction["create-job-template"]
-          ) ? (
-            <button
-              type="submit"
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
-              Create Checklist Template
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-not-allowed"
-              disabled
-            >
-              Create Checklist Template
-            </button>
-          )
-        }
-      </form>
-      <TableComponent
-        headers={approverHeader}
-        datas={dataApprover}
-        TableName="Approver List"
-        searchColumn="Name"
-      />
-      <TableComponent
-        headers={notifyHeader}
-        datas={dataNotify}
-        TableName="Notify List"
-        searchColumn="Name"
-      />
+          {
+            // check if user has permission to create Checklist template
+            userEnableFunctions.some(
+              (action) => action._id === enabledFunction["create-job-template"]
+            ) ? (
+              <button
+                type="submit"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Create Checklist Template
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-not-allowed"
+                disabled
+              >
+                Create Checklist Template
+              </button>
+            )
+          }
+        </form>
+        <TableComponent
+          headers={approverHeader}
+          datas={dataApprover}
+          TableName="Approver List"
+          searchColumn="Name"
+        />
+        <TableComponent
+          headers={notifyHeader}
+          datas={dataNotify}
+          TableName="Notify List"
+          searchColumn="Name"
+        />
+      </div>
     </Layout>
   );
 };

@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import BarChart from "./BarChart";
 import Image from "next/image";
+import BarChart2 from "./BarChart2";
 
 const Page = () => {
   return (
@@ -22,6 +23,7 @@ const Page = () => {
         </h1>
       </div>
       <BarChart />
+      <BarChart2 />
     </Layout>
   );
 };

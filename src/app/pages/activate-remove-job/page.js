@@ -595,44 +595,49 @@ const Page = () => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
-      <h1 className="text-3xl font-bold text-primary flex  items-center">
+      <h1 className="text-3xl font-bold text-primary flex  items-center mb-4 p-4 bg-white rounded-xl">
         {">"} WorkGroup: {user?.workgroup}{" "}
       </h1>
-      <h1 className="text-2xl font-bold">Checklist Templates</h1>
-      <TableComponent
-        headers={jobTemplatesHeader}
-        datas={jobTemplatesBody}
-        TableName="Checklist Templates"
-        searchColumn="Checklist Template Name"
-        filterColumn="Line Name"
-      />
-      <h1 className="text-2xl font-bold">Active Jobs</h1>
-      {/* ฟิลเตอร์สถานะ */}
-      <div className="mb-4 flex items-center">
-        <label htmlFor="status-filter" className="mr-2 font-semibold">
-          Filter by Status:
-        </label>
-        <select
-          id="status-filter"
-          className="border border-gray-300 rounded p-2 "
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          {statusOptions.map((status, index) => (
-            <option key={index} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
+      <div className="mb-4 p-4 bg-white rounded-xl">
+        <h1 className="text-2xl font-bold">Checklist Templates</h1>
+        <TableComponent
+          headers={jobTemplatesHeader}
+          datas={jobTemplatesBody}
+          TableName="Checklist Templates"
+          searchColumn="Checklist Template Name"
+          filterColumn="Line Name"
+        />
       </div>
 
-      <TableComponent
-        headers={jobsHeader}
-        datas={jobsBody}
-        TableName="Active Checklist"
-        searchColumn="Checklist Name"
-        filterColumn="Line Name"
-      />
+      <div className="mb-4 p-4 bg-white rounded-xl">
+        <h1 className="mb-4 text-2xl font-bold">Active Jobs</h1>
+        {/* ฟิลเตอร์สถานะ */}
+        <div className="flex items-center">
+          <label htmlFor="status-filter" className="mr-2 font-semibold">
+            Filter by Status:
+          </label>
+          <select
+            id="status-filter"
+            className="border border-gray-300 rounded p-2 "
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            {statusOptions.map((status, index) => (
+              <option key={index} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <TableComponent
+          headers={jobsHeader}
+          datas={jobsBody}
+          TableName="Active Checklist"
+          searchColumn="Checklist Name"
+          filterColumn="Line Name"
+        />
+      </div>
       {isShowDetail && <ShowDetailModal />}
       {isShowPlan && (
         <JobPlan

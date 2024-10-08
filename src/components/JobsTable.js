@@ -210,7 +210,7 @@ const JobsTable = ({ refresh }) => {
             <input
               type="search"
               id="search"
-              className="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search"
               required
               onChange={handleSearch}
@@ -246,7 +246,7 @@ const JobsTable = ({ refresh }) => {
             htmlFor="startDate"
             className="block text-sm font-medium text-gray-900 text-black"
           >
-            Start Date
+            Filter by Date
           </label>
           <input
             type="date"
