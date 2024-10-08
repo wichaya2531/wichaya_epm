@@ -27,7 +27,7 @@ const SA = {
   ],
 };
 
-console.log("middle ware A");
+//console.log("middle ware A");
 
 export default async function middleware(req) {
   const endpoint = req.nextUrl.pathname;
@@ -36,7 +36,7 @@ export default async function middleware(req) {
   if (publicRoutes.includes(endpoint) || developingRoutes.includes(endpoint)) {
     return NextResponse.next();
   }
-  console.log("middle ware B");
+  //console.log("middle ware B");
   // Get user session and role
   const token = await getSession();
   const userRoleId = token?.Role;
@@ -44,14 +44,14 @@ export default async function middleware(req) {
   if (!userRoleId) {
     return NextResponse.redirect(new URL("/pages/login", req.nextUrl));
   }
-  console.log("middle ware C");
+  //console.log("middle ware C");
 
   // Check role-based access
   if (userRoleId !== SA.ID && SA.accessible_pages.includes(endpoint)) {
     return NextResponse.redirect(new URL("/pages/denied", req.nextUrl));
   }
 
-  console.log("middle ware E");
+  //console.log("middle ware E");
   // Add CORS headers to all API responses
   const response = NextResponse.next();
   response.headers.set("Access-Control-Allow-Origin", "*");
