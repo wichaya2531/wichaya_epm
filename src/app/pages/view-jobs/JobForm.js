@@ -3,8 +3,9 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import InfoIcon from "@mui/icons-material/Info";
 import Select from "react-select";
-import { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import Webcam from "react-webcam";
 
 const JobForm = ({
   jobData,
@@ -24,7 +25,36 @@ const JobForm = ({
   view,
   toggleAddComment,
 }) => {
+  const [image, setImage] = useState(null);
+  const webcamRef = useRef(null);
   const [showWebcam, setShowWebcam] = useState(false);
+
+  const capture = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (imageSrc) {
+      // สร้าง Blob จากภาพที่จับได้
+      fetch(imageSrc)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const file = new File([blob], "webcam_image.jpg", {
+            type: "image/jpeg",
+          });
+          setImage(URL.createObjectURL(file)); // ตั้งค่าภาพที่ถูกจับให้แสดง
+          setShowWebcam(false); // ปิดเว็บแคมหลังจับภาพ
+        });
+    }
+  }, [webcamRef]);
+
+  const handleUploadImage = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result); // แสดงภาพที่อัปโหลด
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleAddImages = () => {
     setShowWebcam(true);
@@ -167,6 +197,54 @@ const JobForm = ({
             />
           )}
         </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="upload-image"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Upload Image
+          </label>
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleUploadImage}
+            className="mb-5"
+          />
+          <button
+            type="button"
+            onClick={handleAddImages}
+            className="inline-flex items-center mb-5 bg-primary text-white rounded-lg px-4 py-2"
+          >
+            <CameraAltIcon className="mr-2" />
+            Open Webcam
+          </button>
+          {showWebcam && (
+            <div>
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                width={300}
+              />
+              <button
+                type="button"
+                onClick={capture}
+                className="bg-secondary text-white rounded-lg px-4 py-2"
+              >
+                Capture
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseWebcam}
+                className="bg-red-600 text-white rounded-lg px-4 py-2"
+              >
+                Close Webcam
+              </button>
+            </div>
+          )}
+          {image && <img src={image} alt="Captured" className="mt-4" />}
+        </div>
       </div>
 
       <hr />
@@ -194,9 +272,6 @@ const JobForm = ({
             <thead className="text-center">
               <tr className="bg-gray-200">
                 <th className="w-[50px]">Item Title </th>
-                {/* <th className="w-[50px] px-4 py-2">
-                                    Test Method
-                                </th> */}
                 <th className="w-[50px] px-4 py-2">Lower Spec</th>
                 <th className="w-[50px] px-4 py-2">Upper Spec</th>
                 <th className="w-[150px] py-2">Before Value</th>
@@ -219,15 +294,6 @@ const JobForm = ({
                       onClick={() => handleShowTestMethodDescription(item)}
                     />
                   </td>
-                  {/* <td className="border px-4 py-2 relative">
-                                        <div>{item.TestMethod} </div>
-
-                                        <InfoIcon
-                                            className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
-                                            onClick={() => handleShowTestMethodDescription(item)}
-
-                                        />
-                                    </td> */}
                   <td className="border px-4 py-2">{item.UpperSpec}</td>
                   <td className="border px-4 py-2">{item.LowerSpec}</td>
                   <td className="border  py-2 relative">
@@ -294,10 +360,6 @@ const JobForm = ({
                       onClick={() => toggleAddComment(item)}
                     />
                   </td>
-
-                  {/* <td className="border py-2 relative">
-                                        <CameraAltIcon className="text-blue-600 size-8 cursor-pointer" onClick={handleAddImages} />
-                                    </td> */}
                 </tr>
               ))}
             </tbody>
@@ -314,15 +376,6 @@ const JobForm = ({
           )}
         </div>
       </div>
-      {/* <Modal
-                open={showWebcam}
-                onClose={handleCloseWebcam}
-            >
-                <Box className="fixed inset-0 flex items-center justify-center z-50 w-screen h-screen">
-                    <WebcamEditted handleCloseWebcam={handleCloseWebcam} />
-                </Box>
-
-            </Modal> */}
     </form>
   );
 };

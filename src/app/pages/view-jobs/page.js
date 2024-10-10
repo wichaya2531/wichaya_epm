@@ -216,10 +216,10 @@ const Page = ({ searchParams }) => {
   };
 
   const handleSubmit = async (e) => {
-    //alert('Submit jobs !!');
-    //return;
     e.preventDefault();
-    const wdTag = e.target.wd_tag.value;
+
+    const wdTag = e.currentTarget.wd_tag.value; // ใช้ e.currentTarget
+    const imageFile = e.currentTarget.image.files[0];
 
     const body = {
       jobData: {
@@ -229,26 +229,31 @@ const Page = ({ searchParams }) => {
       },
       jobItemsData: [...inputValues],
     };
+
     if (
       inputValues.length === 0 ||
       inputValues.length < jobItems.length ||
       !wdTag ||
-      inputValues.some((item) => !item.value)
+      inputValues.some((item) => !item.value) ||
+      !imageFile // ตรวจสอบว่ามีการเลือกไฟล์ภาพหรือไม่
     ) {
       Swal.fire({
         title: "Error!",
-        text: "Please fill all the fields!",
+        text: "Please fill all the fields and upload an image!",
         icon: "error",
       });
       return;
     }
+
     try {
+      const formData = new FormData();
+      formData.append("jobData", JSON.stringify(body));
+      formData.append("jobItemsData", JSON.stringify([...inputValues]));
+      formData.append("image", imageFile); // เพิ่มไฟล์ภาพลงใน FormData
+
       const response = await fetch(`/api/job/update-job`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+        body: formData, // ส่ง FormData แทน JSON
         next: { revalidate: 10 },
       });
 
@@ -271,7 +276,7 @@ const Page = ({ searchParams }) => {
           }
         });
       }
-      e.target.reset();
+      e.currentTarget.reset();
       setRefresh((prev) => !prev);
     } catch (err) {
       console.error("Error:", err);
@@ -349,5 +354,3 @@ const Page = ({ searchParams }) => {
 };
 
 export default Page;
-
-// mb-4 p-4 bg-white rounded-xl
