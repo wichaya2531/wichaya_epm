@@ -69,7 +69,7 @@ const BarChart = () => {
       },
       title: {
         display: true,
-        text: "Number of Checklists Activated by Each User",
+        text: "Top of Checklists Activated by Each Employee Name",
       },
     },
     scales: {

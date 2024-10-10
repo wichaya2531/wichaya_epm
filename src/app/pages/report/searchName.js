@@ -22,7 +22,7 @@ ChartJS.register(
   Legend
 );
 
-const BarChart2 = () => {
+const SearchName = () => {
   const [refresh, setRefresh] = useState(false);
   const [searchName, setSearchName] = useState(""); // state สำหรับเก็บค่าชื่อ userName ที่จะค้นหา
   const { report, isLoading, error } = useFetchReport(refresh);
@@ -81,32 +81,31 @@ const BarChart2 = () => {
   };
 
   return (
-    <div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault(); // ป้องกันการ refresh หน้าเมื่อ submit ฟอร์ม
-          setRefresh(!refresh); // รีเฟรชข้อมูล
-        }}
-      >
-        <label>
-          Search by user name:
-          <input
-            type="text"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)} // อัปเดตค่าที่ค้นหา
-            placeholder="Enter username"
-          />
+    <div className="flex flex-col items-center justify-center p-6">
+      <div className="flex flex-wrap items-center space-x-4 w-full max-w-lg">
+        <label
+          htmlFor="searchName"
+          className="font-semibold text-lg whitespace-nowrap"
+        >
+          Search by Employee Name:
         </label>
-        <button type="submit">Search</button>
-      </form>
+        <input
+          type="text"
+          id="searchName"
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)} // อัปเดตค่าที่ค้นหา
+          placeholder="Enter username"
+          className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
       {filteredReport.length > 0 ? (
         <Bar data={data} options={options} />
       ) : (
-        <div>No data found for this user.</div>
+        <div className="mt-5">No data found for this Employee Name.</div>
       )}
     </div>
   );
 };
 
-export default BarChart2;
+export default SearchName;

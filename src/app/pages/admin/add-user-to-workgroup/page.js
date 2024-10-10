@@ -160,32 +160,48 @@ const Page = () => {
 
   const handleAdd = async (user_id, role_id) => {
     const workgroup_id = user.workgroup_id;
-    // Update user role
-    const res = await fetch(`/api/user/update-user/${user_id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ROLE: role_id,
-      }),
-      next: { revalidate: 10 },
-    });
 
-    // Add user to workgroup
-    await fetch(`/api/workgroup/add-user-to-workgroup-admin`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user_id: user_id,
-        workgroup_id: workgroup_id,
-      }),
-      next: { revalidate: 10 },
-    });
+    try {
+      // Update user role
+      const resUpdate = await fetch(`/api/user/update-user/${user_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ROLE: role_id,
+        }),
+        next: { revalidate: 10 },
+      });
 
-    setRefresh(!refresh);
+      if (!resUpdate.ok) {
+        throw new Error("Failed to update user role");
+      }
+
+      // Add user to workgroup
+      const resAdd = await fetch(`/api/workgroup/add-user-to-workgroup-admin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: user_id,
+          workgroup_id: workgroup_id,
+        }),
+        next: { revalidate: 10 },
+      });
+
+      if (!resAdd.ok) {
+        throw new Error("Failed to add user to workgroup");
+      }
+
+      // รีเฟรชข้อมูล
+      setRefresh(!refresh);
+      return true; // เพิ่มผู้ใช้และอัปเดตสำเร็จ
+    } catch (error) {
+      console.error("Error:", error);
+      return false; // เกิดข้อผิดพลาด
+    }
   };
 
   const handleRemove = async (user_id) => {
@@ -213,30 +229,40 @@ const Page = () => {
         if (result.isConfirmed) {
           // Remove user from workgroup
           try {
-            await fetch(`/api/workgroup/remove-user-from-workgroup`, {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                user_id: user_id,
-                workgroup_id: workgroup_id,
-              }),
-              next: { revalidate: 10 },
-            });
-            swalWithBootstrapButtons.fire({
-              title: "Removed!",
-              text: "The user has been removed from the workgroup.",
-              icon: "success",
-            });
-            setRefresh(!refresh);
+            const response = await fetch(
+              `/api/workgroup/remove-user-from-workgroup`,
+              {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  user_id: user_id,
+                  workgroup_id: workgroup_id,
+                }),
+                next: { revalidate: 10 },
+              }
+            );
+
+            if (response.ok) {
+              swalWithBootstrapButtons.fire({
+                title: "Removed!",
+                text: "The user has been removed from the workgroup.",
+                icon: "success",
+              });
+              setRefresh(!refresh);
+            } else {
+              throw new Error("Failed to remove user from workgroup");
+            }
           } catch (error) {
             console.error("Error removing user from workgroup:", error);
+            swalWithBootstrapButtons.fire({
+              title: "Error!",
+              text: "An error occurred while removing the user.",
+              icon: "error",
+            });
           }
-        } else if (
-          /* Read more about handling dismissals below */
-          result.dismiss === Swal.DismissReason.cancel
-        ) {
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
           swalWithBootstrapButtons.fire({
             title: "Cancelled",
             text: "The removal action was cancelled.",
@@ -262,12 +288,32 @@ const Page = () => {
         action: [
           <span className="pl-4 flex justify-center items-center" key={index}>
             <button
-              onClick={() => {
+              onClick={async () => {
                 const role_id = selectedRoles[user._id];
                 if (role_id) {
-                  handleAdd(user._id, role_id);
+                  const success = await handleAdd(user._id, role_id);
+                  if (success) {
+                    Swal.fire({
+                      icon: "success",
+                      title: "Added Successfully",
+                      text: `${user.name} has been added to the workgroup.`,
+                      confirmButtonText: "OK",
+                    });
+                  } else {
+                    Swal.fire({
+                      icon: "error",
+                      title: "Error",
+                      text: "Failed to add user. Please try again.",
+                      confirmButtonText: "OK",
+                    });
+                  }
                 } else {
-                  console.log("Please select a role");
+                  Swal.fire({
+                    icon: "warning",
+                    title: "Select a Role",
+                    text: "Please select a role before adding.",
+                    confirmButtonText: "OK",
+                  });
                 }
               }}
               className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ${

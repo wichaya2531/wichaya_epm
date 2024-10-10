@@ -284,7 +284,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="job_item_template_title"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Item Title"
                 name="job_item_template_title"
                 required
@@ -300,7 +300,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="job_item_template_name"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Item Name"
                 name="job_item_template_name"
                 required
@@ -316,7 +316,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="upper_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Upper Spec"
                 name="upper_spec"
                 required
@@ -332,7 +332,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="lower_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Lower Spec"
                 name="lower_spec"
                 required
@@ -348,7 +348,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="test_method"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="test method"
                 name="test_method"
                 required
@@ -402,7 +402,7 @@ const Page = ({ searchParams }) => {
             Add Checklist Item Template
           </button>
         </form>
-
+        <hr className="mt-2" />
         <TableComponent
           headers={jobItemTemplateHeader}
           datas={jobItemTemplateBody}
