@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
-import BarChart from "./BarChart";
+import BarChart from "./barChart";
 import BarChart2 from "./BarChart2";
 import SearchName from "./searchName";
 
