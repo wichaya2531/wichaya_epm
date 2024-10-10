@@ -8,7 +8,7 @@ import { useState } from "react";
 import Link from "next/link";
 import useFetchJobItemTemplate from "@/lib/hooks/useFetchJobItemTemplate";
 import Swal from "sweetalert2";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const Page = ({ searchParams }) => {
   const jobTemplate_id = searchParams.jobTemplate_id;
@@ -81,23 +81,23 @@ const Page = ({ searchParams }) => {
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-7">
       <div className="flex flex-row justify-between items-center gap-4 mb-4 p-4 bg-white rounded-xl">
         <div className="flex flex-col gap-3">
-          <h1 className="text-2xl font-bold text-primary flex  items-center">
-            {">"} {jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE}{" "}
+          <h1 className="text-2xl font-bold text-primary flex items-center">
+            <span className="text-black">
+              <Link
+                href={{
+                  pathname: "/pages/job-item-template/add-job-item-template/",
+                  query: { jobTemplate_id: jobTemplate_id },
+                }}
+              >
+                <ArrowBackIosNewIcon />
+              </Link>
+            </span>
+            {jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE}{" "}
           </h1>
           <h1 className="text-1xl font-semibold">
             Edit Item to Checklist Template
           </h1>
         </div>
-        <Link
-          href={{
-            pathname: "/pages/job-item-template/add-job-item-template/",
-            query: { jobTemplate_id: jobTemplate_id },
-          }}
-          className="text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center bg-gray-500 hover:bg-gray-700"
-        >
-          <ArrowBackIcon />
-          Back
-        </Link>
       </div>
       <div className="flex flex-col gap-3 mb-4 p-4 bg-white rounded-xl">
         <form onSubmit={HandleSubmit}>
@@ -129,7 +129,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="job_item_template_title"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="title"
                 defaultValue={jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE || ""}
                 name="job_item_template_title"
@@ -147,7 +147,7 @@ const Page = ({ searchParams }) => {
                 type="text"
                 id="job_item_template_name"
                 placeholder="name"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 defaultValue={jobItemTemplate.JOB_ITEM_TEMPLATE_NAME || ""}
                 name="job_item_template_name"
                 required
@@ -163,7 +163,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="upper_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 defaultValue={jobItemTemplate.UPPER_SPEC || ""}
                 name="upper_spec"
                 required
@@ -179,7 +179,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="lower_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 defaultValue={jobItemTemplate.LOWER_SPEC || ""}
                 name="lower_spec"
                 required
@@ -195,7 +195,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="test_method"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 defaultValue={jobItemTemplate.TEST_METHOD || ""}
                 name="test_method"
                 required

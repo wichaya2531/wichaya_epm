@@ -336,7 +336,7 @@ const Page = ({ searchParams }) => {
           <ArrowBackIosNewIcon />
         </Link>
         Edit Checklist Template: {""}
-        {jobTemplate.JOB_TEMPLATE_NAME}
+        <span className="text-blue-700">{jobTemplate.JOB_TEMPLATE_NAME}</span>
       </h1>
 
       <div className="mb-4 p-4 bg-white rounded-xl">
@@ -389,7 +389,7 @@ const Page = ({ searchParams }) => {
                 id="due_date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="due_date"
                 required
               />
@@ -404,7 +404,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="job_template_name"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 defaultValue={jobTemplate.JOB_TEMPLATE_NAME}
                 name="job_template_name"
                 required
@@ -420,7 +420,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="doc_num"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="doc_num"
                 defaultValue={jobTemplate.DOC_NUMBER}
                 required
@@ -436,7 +436,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="checklist_ver"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="checklist_ver"
                 defaultValue={jobTemplate.CHECKLIST_VERSION}
                 required
@@ -452,7 +452,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="line_name"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="line_name"
                 defaultValue={jobTemplate.LINE_NAME}
                 required
@@ -539,6 +539,7 @@ const Page = ({ searchParams }) => {
             Save
           </button>
         </form>
+        <hr className="mt-4" />
         <TableComponent
           headers={approverHeader}
           datas={dataApprover}

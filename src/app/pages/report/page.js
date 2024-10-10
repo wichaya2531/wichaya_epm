@@ -1,9 +1,10 @@
 import Layout from "@/components/Layout";
-import BarChart from "./BarChart";
 import Image from "next/image";
-import BarChart2 from "./BarChart2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
+import BarChart from "./BarChart";
+import BarChart2 from "./BarChart2";
+import SearchName from "./searchName";
 
 const Page = () => {
   return (
@@ -27,8 +28,16 @@ const Page = () => {
           Summarize the data.
         </h1>
       </div>
-      <BarChart />
-      <BarChart2 />
+
+      <div className="mb-4 p-4 bg-white rounded-xl">
+        <BarChart />
+      </div>
+      <div className="mb-4 p-4 bg-white rounded-xl">
+        <SearchName />
+      </div>
+      {/* <div className="mb-4 p-4 bg-white rounded-xl">
+        <BarChart2 />
+      </div> */}
     </Layout>
   );
 };

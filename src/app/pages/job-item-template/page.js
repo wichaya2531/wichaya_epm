@@ -296,11 +296,10 @@ const Page = () => {
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
-        {" "}
         <h1 className="text-3xl font-bold text-primary flex  items-center ">
           <Link href="/pages/job-template">
             <ArrowBackIosNewIcon />
-          </Link>{" "}
+          </Link>
           WorkGroup: {user.workgroup}{" "}
         </h1>
         <h1 className="text-2xl font-bold">Checklist Templates</h1>{" "}
