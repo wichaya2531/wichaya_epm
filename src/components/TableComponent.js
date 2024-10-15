@@ -77,7 +77,14 @@ const TableComponent = ({
   if (Array.isArray(data) && filterColumn) {
     uniqueFilterOptions = Array.from(
       new Set(data.map((item) => item[filterColumn]))
+<<<<<<< HEAD
     ).filter(Boolean);
+=======
+    ).filter(Boolean); // ใช้ filter(Boolean) เพื่อลบค่า null หรือ undefined
+  } else {
+
+       //console.error("Data is not valid or filterColumn is undefined");
+>>>>>>> 6bc8019 (update tb_job filter)
   }
 
   const totalPages = Math.ceil(finalFilteredData.length / pageSize);
@@ -185,6 +192,7 @@ const TableComponent = ({
   };
 
   return (
+<<<<<<< HEAD
     <div className="flex flex-col justify-center gap-5 items-center relative w-full">
       <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left"
       style={{display: (disableFilter & disablePageSize) ? 'none':''}}
@@ -199,11 +207,23 @@ const TableComponent = ({
               className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-[100%] inline-block"
               id="table-rows-num"
               
+=======
+    <div className="flex flex-col justify-center gap-5 items-center relative">
+      <div className="flex flex-col md:flex-row flex-wrap justify-start items-center w-full my-4 gap-2">
+        <div className="flex md:flex-row flex-col gap-2 w-full" style={{display:'inline-block',width:'15em'}}>
+         
+          <div  style={{display:'inline-block',width:'6em',border:'1px solid none'}} >
+          <select
+              value={pageSize}
+              onChange={handlePageSizeChange}
+              className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-full"
+>>>>>>> 6bc8019 (update tb_job filter)
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
               <option value={15}>15</option>
               <option value={20}>20</option>
+<<<<<<< HEAD
               <option value={25}>25</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
@@ -236,6 +256,45 @@ const TableComponent = ({
             />
             <SearchIcon className="absolute left-2 top-2 text-gray-500" />
           </div>
+=======
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+
+          </div>
+           
+
+          <div className="relative mx-2 w-full md:w-auto flex-shrink-0 max-w-full" style={{display:'inline-block',
+            width:'6em',
+            border:'1px solid none'}}>
+                {filterColumn && (
+                  <select
+                    value={selectedFilter}
+                    onChange={handleFilterChange}
+                    className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-full"
+                  >
+                    <option value="">All</option>
+                    {uniqueFilterOptions.map((option, index) => (
+                      <option key={index} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                )}
+          </div>
+               
+        </div>
+
+        <div className="relative mx-2 w-full md:w-auto flex-shrink-0 max-w-full" style={{display:'none'}}>
+          <input
+            className="border border-gray-300 rounded-md p-2 pl-9 pr-4 w-full max-w-full"
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+          <SearchIcon className="absolute left-2 top-2 text-gray-500" />
+>>>>>>> 6bc8019 (update tb_job filter)
         </div>
       </div>
 
