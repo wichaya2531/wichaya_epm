@@ -24,6 +24,16 @@ const JobForm = ({
   view,
   toggleAddComment,
 }) => {
+  const [showWebcam, setShowWebcam] = useState(false);
+
+  const handleAddImages = () => {
+    setShowWebcam(true);
+  };
+
+  const handleCloseWebcam = () => {
+    setShowWebcam(false);
+  };
+
   // console.log("jobData",jobData);
   return (
     <form
