@@ -3,9 +3,8 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import InfoIcon from "@mui/icons-material/Info";
 import Select from "react-select";
-import React, { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import Webcam from "react-webcam";
 
 const JobForm = ({
   jobData,
@@ -25,36 +24,7 @@ const JobForm = ({
   view,
   toggleAddComment,
 }) => {
-  const [image, setImage] = useState(null);
-  const webcamRef = useRef(null);
   const [showWebcam, setShowWebcam] = useState(false);
-
-  const capture = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    if (imageSrc) {
-      // สร้าง Blob จากภาพที่จับได้
-      fetch(imageSrc)
-        .then((res) => res.blob())
-        .then((blob) => {
-          const file = new File([blob], "webcam_image.jpg", {
-            type: "image/jpeg",
-          });
-          setImage(URL.createObjectURL(file)); // ตั้งค่าภาพที่ถูกจับให้แสดง
-          setShowWebcam(false); // ปิดเว็บแคมหลังจับภาพ
-        });
-    }
-  }, [webcamRef]);
-
-  const handleUploadImage = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result); // แสดงภาพที่อัปโหลด
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleAddImages = () => {
     setShowWebcam(true);
@@ -66,10 +36,7 @@ const JobForm = ({
 
   // console.log("jobData",jobData);
   return (
-    <form
-      className="flex flex-col gap-8 mb-4 p-4 bg-white rounded-xl"
-      onSubmit={handleSubmit}
-    >
+    <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
       <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
         Checklist Information
         {isShowJobInfo ? (
@@ -85,42 +52,220 @@ const JobForm = ({
         )}
       </h1>
       <div
-        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 w-full gap-y-2 ${
+        className={`grid grid-cols-4 ipadmini:grid-cols-4 gap-x-6 w-full gap-y-2 ${
           isShowJobInfo ? "" : "hidden"
         }`}
       >
-        {[
-          { label: "Checklist Id", value: jobData.JobID },
-          { label: "Checklist Name", value: jobData.Name },
-          { label: "Document No.", value: jobData.DocumentNo },
-          { label: "Line Name", value: jobData.LINE_NAME },
-          { label: "Checklist Version", value: jobData.ChecklistVer },
-          { label: "Workgroup Name", value: jobData.WorkgroupName },
-          { label: "Activated By", value: jobData.ActivatedBy },
-          { label: "Submitted By", value: jobData.SubmittedBy },
-          { label: "Timeout", value: jobData.Timeout },
-          { label: "Activated At", value: jobData.ActivatedAt },
-          { label: "Lastest Update At", value: jobData.LastestUpdate },
-          { label: "Submitted At", value: jobData.SubmitedAt },
-          { label: "Status", value: jobData.Status },
-        ].map(({ label, value }, index) => (
-          <div className="flex flex-col" key={index}>
-            <label
-              htmlFor={`text-input-${index}`}
-              className="text-sm ipadmini:text-md font-bold text-gray-600"
-            >
-              {label}
-            </label>
-            <input
-              type="text"
-              id={`disabled-input-${index}`}
-              aria-label="disabled input"
-              className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-              value={value}
-              disabled
-            />
-          </div>
-        ))}
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Checklist Id
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.JobID}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Checklist Name
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.Name}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Document No.
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.DocumentNo}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Line Name.
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.LINE_NAME}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Checklist Version
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.ChecklistVer}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Workgroup Name
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.WorkgroupName}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Activated By
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.ActivatedBy}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Submitted By
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.SubmittedBy}
+            disabled
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Timeout
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.Timeout}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Activated At
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.ActivatedAt}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            LastestUpdate At
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.LastestUpdate}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Submitted At
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.SubmitedAt}
+            disabled
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="text-input"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >
+            Status
+          </label>
+          <input
+            type="text"
+            id="disabled-input"
+            aria-label="disabled input"
+            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            value={jobData.Status}
+            disabled
+          />
+        </div>
+
         <div className="flex flex-col">
           <label
             htmlFor="text-input"
@@ -197,56 +342,7 @@ const JobForm = ({
             />
           )}
         </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="upload-image"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Upload Image
-          </label>
-          <input
-            type="file"
-            name="image"
-            accept="image/*"
-            onChange={handleUploadImage}
-            className="mb-5"
-          />
-          <button
-            type="button"
-            onClick={handleAddImages}
-            className="inline-flex items-center mb-5 bg-primary text-white rounded-lg px-4 py-2"
-          >
-            <CameraAltIcon className="mr-2" />
-            Open Webcam
-          </button>
-          {showWebcam && (
-            <div>
-              <Webcam
-                audio={false}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                width={300}
-              />
-              <button
-                type="button"
-                onClick={capture}
-                className="bg-secondary text-white rounded-lg px-4 py-2"
-              >
-                Capture
-              </button>
-              <button
-                type="button"
-                onClick={handleCloseWebcam}
-                className="bg-red-600 text-white rounded-lg px-4 py-2"
-              >
-                Close Webcam
-              </button>
-            </div>
-          )}
-          {image && <img src={image} alt="Captured" className="mt-4" />}
-        </div>
       </div>
-
       <hr />
       <div className="flex flex-col gap-8">
         <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
@@ -272,6 +368,9 @@ const JobForm = ({
             <thead className="text-center">
               <tr className="bg-gray-200">
                 <th className="w-[50px]">Item Title </th>
+                {/* <th className="w-[50px] px-4 py-2">
+                                    Test Method
+                                </th> */}
                 <th className="w-[50px] px-4 py-2">Lower Spec</th>
                 <th className="w-[50px] px-4 py-2">Upper Spec</th>
                 <th className="w-[150px] py-2">Before Value</th>
@@ -294,6 +393,15 @@ const JobForm = ({
                       onClick={() => handleShowTestMethodDescription(item)}
                     />
                   </td>
+                  {/* <td className="border px-4 py-2 relative">
+                                        <div>{item.TestMethod} </div>
+
+                                        <InfoIcon
+                                            className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
+                                            onClick={() => handleShowTestMethodDescription(item)}
+
+                                        />
+                                    </td> */}
                   <td className="border px-4 py-2">{item.UpperSpec}</td>
                   <td className="border px-4 py-2">{item.LowerSpec}</td>
                   <td className="border  py-2 relative">
@@ -360,6 +468,10 @@ const JobForm = ({
                       onClick={() => toggleAddComment(item)}
                     />
                   </td>
+
+                  {/* <td className="border py-2 relative">
+                                        <CameraAltIcon className="text-blue-600 size-8 cursor-pointer" onClick={handleAddImages} />
+                                    </td> */}
                 </tr>
               ))}
             </tbody>
@@ -376,6 +488,15 @@ const JobForm = ({
           )}
         </div>
       </div>
+      {/* <Modal
+                open={showWebcam}
+                onClose={handleCloseWebcam}
+            >
+                <Box className="fixed inset-0 flex items-center justify-center z-50 w-screen h-screen">
+                    <WebcamEditted handleCloseWebcam={handleCloseWebcam} />
+                </Box>
+
+            </Modal> */}
     </form>
   );
 };

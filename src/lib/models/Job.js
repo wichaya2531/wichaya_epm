@@ -33,7 +33,6 @@ const jobSchema = new mongoose.Schema(
       required: false,
     },
     SUBMITTED_DATE: { type: Date, default: null },
-    IMAGE_FILENAME: { type: String, default: null },
   },
   { timestamps: true }
 );
