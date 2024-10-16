@@ -24,19 +24,12 @@ const JobForm = ({
   view,
   toggleAddComment,
 }) => {
-  const [showWebcam, setShowWebcam] = useState(false);
-
-  const handleAddImages = () => {
-    setShowWebcam(true);
-  };
-
-  const handleCloseWebcam = () => {
-    setShowWebcam(false);
-  };
-
   // console.log("jobData",jobData);
   return (
-    <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
+    <form
+      className="flex flex-col gap-8 p-4 bg-white rounded-xl"
+      onSubmit={handleSubmit}
+    >
       <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
         Checklist Information
         {isShowJobInfo ? (
