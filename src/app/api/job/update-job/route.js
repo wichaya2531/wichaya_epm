@@ -50,7 +50,7 @@ export const POST = async (req) => {
     // ค้นหาผู้ส่งข้อมูล
     const submittedUser = await User.findById(jobData.submittedBy);
     // const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
-    // ปิดไว้เมื่อต้องการทดสอบ local
+    // ปิดไว้เมื่อต้องการทดสอบ local  Jack Wichaya 
 
     // // ตรวจสอบหมายเลขเอกสาร
     // if (latestDocNo.message) {
