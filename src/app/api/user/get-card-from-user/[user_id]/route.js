@@ -39,7 +39,7 @@ export const GET = async (req, { params }) => {
         ]);
 
 
-        const cards = await Card.find().sort({ _id: 1 });
+        const cards = await Card.find().sort({ _id: -1});
 
         const matchedCards = cards.filter(card => {
             return card.ACTION_LIST.some(actionId => {
