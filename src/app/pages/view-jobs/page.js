@@ -183,10 +183,21 @@ const Page = ({ searchParams }) => {
     });
   };
 
-  const handleAddImages = () => {
-    setShowWebcam(true);
-  };
 
+  var imgItemFileSelected = null;
+
+  const handleAddImages = (b) => {
+             imgItemFileSelected=b;
+             document.getElementById("fileInput-1").click();          
+  };
+  const handleFileChangeOnItem = (event) => {
+    const file = event.target.files[0];
+    try {
+            document.getElementById("item-img-"+imgItemFileSelected).src = URL.createObjectURL(file);
+    } catch (error) {
+      
+    }    
+  };
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -349,6 +360,7 @@ const Page = ({ searchParams }) => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
+      <input type="file" style={{display:'none'}} id="fileInput-1" onChange={handleFileChangeOnItem}  />  
       <form
         className="flex flex-col gap-8 p-4 bg-white rounded-xl"
         onSubmit={handleSubmit}
@@ -716,57 +728,53 @@ const Page = ({ searchParams }) => {
                 </tr>
               </thead>
               <tbody className="text-center">
-                {jobItems.map((item, index) => (
+              {jobItems.map((item, index) => (
                   <tr key={index}>
                     <td className="border px-4 py-2 relative">
                       <div>{item.JobItemTitle} </div>
                       <InfoIcon
-                        className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
+                        className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer"
                         onClick={() => handleShowJobItemDescription(item)}
                       />
 
                       <InfoIcon
-                        className="absolute right-1 bottom-0 text-blue-600 size-4 cursor-pointer text-orange-600"
+                        className="absolute right-1 bottom-0 text-orange-600 size-4 cursor-pointer"
                         onClick={() => handleShowTestMethodDescription(item)}
                       />
                     </td>
                     <td className="border px-4 py-2">
-                         <div>Upper:{item.UpperSpec}</div>
-                         <div>Lower:{item.LowerSpec}</div>               
+                      <div>Upper <b>↑</b> : {item.UpperSpec}</div>
+                      <div>Lower <b>↓</b> : {item.LowerSpec}</div>
                     </td>
-                    {/* <td className="border px-4 py-2">{item.LowerSpec}</td> */}
-                    <td className="border  py-2 relative">
-                      {
-                        //if view is true then disable the input field
-                        view === "true" ? (
-                          <input
-                            type="text"
-                            id={`before_value_${item.JobItemID}`}
-                            value={item.BeforeValue}
-                            className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                            disabled
-                            title={"Lastest Update: " + item.LastestUpdate}
-                          />
-                        ) : item.BeforeValue ? (
-                          <input
-                            type="text"
-                            id={`before_value_${item.JobItemID}`}
-                            value={item.BeforeValue}
-                            className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                            title={"Lastest Update: " + item.LastestUpdate}
-                            disabled
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            id={`before_value_${item.JobItemID}`}
-                            onChange={(e) => handleBeforeValue(e, item)}
-                            className="bg-white border border-gray-300 text-gray-900 text-sm rounded-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500  w-full p-1.5"
-                            placeholder="fill in value"
-                            title={"Lastest Update: " + item.LastestUpdate}
-                          />
-                        )
-                      }
+                    <td className="border py-2 relative">
+                      {view === "true" ? (
+                        <input
+                          type="text"
+                          id={`before_value_${item.JobItemID}`}
+                          value={item.BeforeValue}
+                          className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                          disabled
+                          title={"Lastest Update: " + item.LastestUpdate}
+                        />
+                      ) : item.BeforeValue ? (
+                        <input
+                          type="text"
+                          id={`before_value_${item.JobItemID}`}
+                          value={item.BeforeValue}
+                          className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                          title={"Lastest Update: " + item.LastestUpdate}
+                          disabled
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          id={`before_value_${item.JobItemID}`}
+                          onChange={(e) => handleBeforeValue(e, item)}
+                          className="bg-white border border-gray-300 text-gray-900 text-sm rounded-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 w-full p-1.5"
+                          placeholder="fill in value"
+                          title={"Lastest Update: " + item.LastestUpdate}
+                        />
+                      )}
                     </td>
                     <td className="border px-4 py-2 relative">
                       {view === "true" ? (
@@ -799,9 +807,20 @@ const Page = ({ searchParams }) => {
                         onClick={() => toggleAddComment(item)}
                       />
                     </td>
-
                     <td className="border py-2 relative">
-                                        <CameraAltIcon className="text-blue-600 size-8 cursor-pointer" onClick={handleAddImages} />
+                        
+                     <center>
+                          <img id={'item-img-'+item.JobItemID}  width={200} className="mt-4" />
+                     </center>  
+                      
+                      <div>
+                          <CameraAltIcon
+                            className="text-blue-600 size-10 cursor-pointer"
+                            style={{ transform: 'scale(1.5)' }}
+                            onClick={() => handleAddImages(item.JobItemID)}
+                          />
+                      </div>
+                    
                     </td>
                   </tr>
                 ))}
