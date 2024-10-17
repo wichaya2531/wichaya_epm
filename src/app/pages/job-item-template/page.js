@@ -307,12 +307,12 @@ const Page = () => {
 
       <div className="flex flex-col gap-4 mb-4 p-4 bg-white rounded-xl">
         <div className="flex flex-col">
-          <label
+          {/* <label
             htmlFor="template-name-filter"
             className="text-lg font-bold mb-2"
           >
             Checklist Template Name:
-          </label>
+          </label> */}
           <select
             id="template-name-filter"
             className="w-64 ml-0 border border-gray-300 p-2 rounded" // ปรับให้ตัวเลือกอยู่ทางซ้าย
