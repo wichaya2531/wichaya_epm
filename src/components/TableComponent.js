@@ -110,7 +110,7 @@ const TableComponent = ({
           )}
         </div>
 
-        <div className="relative mx-2 w-full md:w-auto flex-shrink-0 max-w-full">
+        <div style={{display:'none'}} className="relative mx-2 w-full md:w-auto flex-shrink-0 max-w-full">
           <input
             className="border border-gray-300 rounded-md p-2 pl-9 pr-4 w-full max-w-full"
             type="text"
