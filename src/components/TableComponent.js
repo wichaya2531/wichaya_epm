@@ -17,7 +17,7 @@ const TableComponent = ({
   const [selectedFilter, setSelectedFilter] = useState("");
 
   const data = datas;
-
+   //console.log("filterColumn=>",filterColumn); 
   // ฟิลเตอร์ข้อมูลตาม searchTerm
   const filteredData =
     data && data.length > 0
@@ -48,7 +48,7 @@ const TableComponent = ({
       new Set(data.map((item) => item[filterColumn]))
     ).filter(Boolean); // ใช้ filter(Boolean) เพื่อลบค่า null หรือ undefined
   } else {
-    console.error("Data is not valid or filterColumn is undefined");
+        //console.error("Data is not valid or filterColumn is undefined");
   }
 
   const totalPages = Math.ceil(finalFilteredData.length / pageSize);

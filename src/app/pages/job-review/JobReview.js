@@ -21,7 +21,8 @@ const JobForm = (
         view
     }
 ) => {
-    console.log("jobData", jobData);
+    //console.log("jobData=>", jobData);
+    //console.log("jobItems.=>", jobItems);
     return (
         <form className="flex flex-col gap-8"
             onSubmit={handleApprove}

@@ -19,9 +19,10 @@ export const POST = async (req) => {
     // รับ jobData และ jobItemsData จาก FormData
     const jobData = JSON.parse(form.get("jobData"));
     const jobItemsData = JSON.parse(form.get("jobItemsData"));
-    console.log("jobData:", jobData);
-    console.log("jobItemsData:", jobItemsData);
-
+    //console.log("jobData:", jobData);
+    //console.log("jobItemsData:", jobItemsData);
+    
+    //return NextResponse.json({ status: 200, message: "Job updated successfully." });
     // ตรวจสอบข้อมูลที่จำเป็น
     if (!jobData || !jobItemsData) {
       return NextResponse.json({
@@ -41,7 +42,7 @@ export const POST = async (req) => {
 
     // ค้นหา job ในฐานข้อมูล
     const job = await Job.findOne({ _id: jobData.JobID });
-    console.log("Job found:", job);
+    //console.log("Job found:", job);
 
     if (!job) {
       return NextResponse.json({ status: 404, message: "Job not found." });

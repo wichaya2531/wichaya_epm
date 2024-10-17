@@ -264,6 +264,9 @@ const Page = ({ searchParams }) => {
       return;
     }
 
+
+
+
     // ตรวจสอบว่า wd_tag ไม่ว่างเปล่า
     if (!wdTag) {
       Swal.fire({
@@ -283,6 +286,12 @@ const Page = ({ searchParams }) => {
       });
       return;
     }
+    
+    //console.log("inputValues", inputValues);
+      
+
+    //return ;
+    //inputValues[0].ActualValue = 99;
 
     const jobInfo = {
       JobID: jobData.JobID,

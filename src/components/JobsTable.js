@@ -37,7 +37,7 @@ const JobsTable = ({ refresh }) => {
   const [endDate, setEndDate] = useState(null); // Default end date as null
   const [searchQuery, setSearchQuery] = useState("");
 
-  console.log("jobs=>", jobs);
+ // console.log("jobs=>", jobs);
   const filteredJobs =
     jobs &&
     jobs.filter((job) => {
