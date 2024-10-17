@@ -49,10 +49,17 @@ export const POST = async (req) => {
 
     // ค้นหาผู้ส่งข้อมูล
     const submittedUser = await User.findById(jobData.submittedBy);
-    console.log("Submitted user:", submittedUser);
+    const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
 
-    if (!submittedUser) {
-      return NextResponse.json({ status: 404, message: "User not found." });
+    // ตรวจสอบหมายเลขเอกสาร
+    if (latestDocNo.message) {
+      console.log("Doc number error");
+      return NextResponse.json({ status: 455, message: latestDocNo.message });
+    } else if (job.CHECKLIST_VERSION !== latestDocNo) {
+      return NextResponse.json({
+        status: 455,
+        message: "This Checklist does not have the latest revision",
+      });
     }
 
     // อัปเดต job items
