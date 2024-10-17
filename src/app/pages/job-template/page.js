@@ -526,6 +526,7 @@ const Page = () => {
         </div>
         {/* Button Manage Line Name */}
         <button
+          style={{ display: "none" }}
           className={`align-left text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mb-4 lg:mb-0 lg:ml-4 ${
             !userEnableFunctions.some(
               (action) => action._id === enabledFunction["manage-line-name"]
@@ -533,7 +534,7 @@ const Page = () => {
           }`}
           onClick={togglePopup} // ใช้ฟังก์ชัน togglePopup เพื่อแสดงป๊อปอัป
         >
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center" style={{display:'none'}}>
             <p>Manage Line Name</p>
             <SettingsIcon />
           </div>
