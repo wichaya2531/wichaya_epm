@@ -378,7 +378,7 @@ const JobForm = ({
                 <th className="w-[50px] px-4 py-2">Upper Spec</th>
                 <th className="w-[150px] py-2">Before Value</th>
                 <th className="w-[150px] px-4 py-2">Actual Value</th>
-                {/* <th className="w-[5px] py-2">Add images</th> */}
+                 {/* <th className="w-[5px] py-2">Add images</th>  */}
               </tr>
             </thead>
             <tbody className="text-center">
@@ -472,9 +472,9 @@ const JobForm = ({
                     />
                   </td>
 
-                  {/* <td className="border py-2 relative">
+                 {/* <td className="border py-2 relative">
                                         <CameraAltIcon className="text-blue-600 size-8 cursor-pointer" onClick={handleAddImages} />
-                                    </td> */}
+                                    </td>  */}
                 </tr>
               ))}
             </tbody>

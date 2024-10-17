@@ -183,6 +183,11 @@ const Page = ({ searchParams }) => {
     });
   };
 
+  const handleAddImages = () => {
+    setShowWebcam(true);
+  };
+
+
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     const comment = e.target.comment.value;
@@ -703,10 +708,11 @@ const Page = ({ searchParams }) => {
               <thead className="text-center">
                 <tr className="bg-gray-200">
                   <th className="w-[50px]">Item Title </th>
-                  <th className="w-[50px] px-4 py-2">Lower Spec</th>
-                  <th className="w-[50px] px-4 py-2">Upper Spec</th>
+                  <th className="w-[50px] px-4 py-2">Lower/Upper</th>
+                  {/* <th className="w-[50px] px-4 py-2"></th> */}
                   <th className="w-[150px] py-2">Before Value</th>
                   <th className="w-[150px] px-4 py-2">Actual Value</th>
+                  <th className="w-[150px] px-4 py-2">Attach</th>
                 </tr>
               </thead>
               <tbody className="text-center">
@@ -724,8 +730,11 @@ const Page = ({ searchParams }) => {
                         onClick={() => handleShowTestMethodDescription(item)}
                       />
                     </td>
-                    <td className="border px-4 py-2">{item.UpperSpec}</td>
-                    <td className="border px-4 py-2">{item.LowerSpec}</td>
+                    <td className="border px-4 py-2">
+                         <div>Upper:{item.UpperSpec}</div>
+                         <div>Lower:{item.LowerSpec}</div>               
+                    </td>
+                    {/* <td className="border px-4 py-2">{item.LowerSpec}</td> */}
                     <td className="border  py-2 relative">
                       {
                         //if view is true then disable the input field
@@ -789,6 +798,10 @@ const Page = ({ searchParams }) => {
                         className="absolute right-[2px] top-1 text-blue-600 size-4 cursor-pointer"
                         onClick={() => toggleAddComment(item)}
                       />
+                    </td>
+
+                    <td className="border py-2 relative">
+                                        <CameraAltIcon className="text-blue-600 size-8 cursor-pointer" onClick={handleAddImages} />
                     </td>
                   </tr>
                 ))}
