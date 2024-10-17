@@ -183,20 +183,18 @@ const Page = ({ searchParams }) => {
     });
   };
 
-
   var imgItemFileSelected = null;
 
   const handleAddImages = (b) => {
-             imgItemFileSelected=b;
-             document.getElementById("fileInput-1").click();          
+    imgItemFileSelected = b;
+    document.getElementById("fileInput-1").click();
   };
   const handleFileChangeOnItem = (event) => {
     const file = event.target.files[0];
     try {
-            document.getElementById("item-img-"+imgItemFileSelected).src = URL.createObjectURL(file);
-    } catch (error) {
-      
-    }    
+      document.getElementById("item-img-" + imgItemFileSelected).src =
+        URL.createObjectURL(file);
+    } catch (error) {}
   };
 
   const handleSubmitComment = async (e) => {
@@ -326,6 +324,11 @@ const Page = ({ searchParams }) => {
           title: "Success!",
           text: "Checklist updated successfully!",
           icon: "success",
+        }).then(() => {
+          window.history.replaceState({}, "", "/pages/dashboard");
+          if (router) {
+            router.push("/pages/dashboard");
+          }
         });
         e.target.reset();
         setRefresh((prev) => !prev);
@@ -360,7 +363,12 @@ const Page = ({ searchParams }) => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
-      <input type="file" style={{display:'none'}} id="fileInput-1" onChange={handleFileChangeOnItem}  />  
+      <input
+        type="file"
+        style={{ display: "none" }}
+        id="fileInput-1"
+        onChange={handleFileChangeOnItem}
+      />
       <form
         className="flex flex-col gap-8 p-4 bg-white rounded-xl"
         onSubmit={handleSubmit}
@@ -728,7 +736,7 @@ const Page = ({ searchParams }) => {
                 </tr>
               </thead>
               <tbody className="text-center">
-              {jobItems.map((item, index) => (
+                {jobItems.map((item, index) => (
                   <tr key={index}>
                     <td className="border px-4 py-2 relative">
                       <div>{item.JobItemTitle} </div>
@@ -743,8 +751,12 @@ const Page = ({ searchParams }) => {
                       />
                     </td>
                     <td className="border px-4 py-2">
-                      <div>Upper <b>↑</b> : {item.UpperSpec}</div>
-                      <div>Lower <b>↓</b> : {item.LowerSpec}</div>
+                      <div>
+                        Upper <b>↑</b> : {item.UpperSpec}
+                      </div>
+                      <div>
+                        Lower <b>↓</b> : {item.LowerSpec}
+                      </div>
                     </td>
                     <td className="border py-2 relative">
                       {view === "true" ? (
@@ -808,19 +820,21 @@ const Page = ({ searchParams }) => {
                       />
                     </td>
                     <td className="border py-2 relative">
-                        
-                     <center>
-                          <img id={'item-img-'+item.JobItemID}  width={200} className="mt-4" />
-                     </center>  
-                      
+                      <center>
+                        <img
+                          id={"item-img-" + item.JobItemID}
+                          width={200}
+                          className="mt-4"
+                        />
+                      </center>
+
                       <div>
-                          <CameraAltIcon
-                            className="text-blue-600 size-10 cursor-pointer"
-                            style={{ transform: 'scale(1.5)' }}
-                            onClick={() => handleAddImages(item.JobItemID)}
-                          />
+                        <CameraAltIcon
+                          className="text-blue-600 size-10 cursor-pointer"
+                          style={{ transform: "scale(1.5)" }}
+                          onClick={() => handleAddImages(item.JobItemID)}
+                        />
                       </div>
-                    
                     </td>
                   </tr>
                 ))}
