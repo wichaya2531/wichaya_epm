@@ -13,6 +13,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 
+import SelectContainer from "@/components/SelectContainer.js";  // นำเข้า SelectContainer
+
+
 const jobTemplatesHeader = [
   "ID",
   "Checklist Template Name",
@@ -197,9 +200,42 @@ const Page = () => {
   const showInvalidLineNamePopup = (validLineNames, requestData) => {
     let selectedValue = null;
 
+
+    const customSelectStyles = () => ({
+      control: (base) => ({
+        ...base,
+        width: "400px",
+        padding: "8px",
+        borderRadius: "4px",
+        border: "1px solid #ccc",
+        boxShadow: "none",
+        "&:hover": {
+          borderColor: "#999",
+        },
+        height: "50px",
+      }),
+      menu: (base) => ({
+        ...base,
+        zIndex: 9999, // เพิ่มค่า z-index ให้สูงกว่า SweetAlert
+        maxHeight: "400px",
+        overflowY: "auto", // เพิ่มการเลื่อนแนวตั้งเมื่อมีตัวเลือกเยอะ
+      }),
+      option: (base, { isFocused }) => ({
+        ...base,
+        padding: "10px",
+        backgroundColor: isFocused ? "#f0f0f0" : "#fff", // เปลี่ยนสีเมื่อเลือก
+        cursor: "pointer",
+      }),
+    });
+
+    const selectContainer = document.createElement('div'); // ประกาศ selectContainer
+    selectContainer.id = 'select-container';
+    document.body.appendChild(selectContainer);  // เพิ่มเข้าไปใน document.body
+  
+    // เปิด SweetAlert popup
     Swal.fire({
-      title: "เลือก Line Name ที่ต้องการ",
-      html: '<div id="select-container" style="margin-top: 10px; height: 300px; overflow: auto; z-index: 20;"></div>',
+      title: "",
+      html: "<div id='label-tag' style='height:50px;'></div>",
       showCancelButton: true,
       confirmButtonText: "ส่ง",
       cancelButtonText: "ยกเลิก",
@@ -213,56 +249,62 @@ const Page = () => {
         return false;
       },
       willOpen: () => {
-        const selectContainer = document.getElementById("select-container");
+        // เรนเดอร์ SelectContainer ลงใน selectContainer ที่ถูกสร้างใน document.body
+        const popup = Swal.getPopup();  // ดึง DOM ของ SweetAlert
+        const rect = popup.getBoundingClientRect();
+        const x = rect.left + window.scrollX;  // ตำแหน่ง X ของ SweetAlert
+        const y = rect.top + window.scrollY;   // ตำแหน่ง Y ของ SweetAlert
+
 
         ReactDOM.render(
-          <Select
-            options={validLineNames}
-            isSearchable={true}
-            placeholder="เลือกชื่อ line name"
-            styles={{
-              control: (base) => ({
-                ...base,
-                width: "400px",
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                boxShadow: "none",
-                "&:hover": {
-                  borderColor: "#999",
-                },
-                height: "60px",
-              }),
-              menu: (base) => ({
-                ...base,
-                zIndex: 10001, // กำหนดค่า z-index ให้สูงกว่า SweetAlert2
-                maxHeight: "400px", // เพิ่มความสูงสูงสุดของเมนู
-                overflowY: "auto", // เพิ่มการเลื่อนแนวตั้งเมื่อมีตัวเลือกเยอะ
-                pointerEvents: "auto", // ทำให้การคลิกเมนูมีผล
-                position: "absolute",
-              }),
-              option: (base, { isFocused }) => ({
-                ...base,
-                padding: "10px",
-                backgroundColor: isFocused ? "#f0f0f0" : "#fff", // เปลี่ยนสีเมื่อเลือก
-                cursor: "pointer", // เปลี่ยนเคอร์เซอร์เมื่อเลื่อนผ่าน
-              }),
-            }}
-            menuPlacement="auto" // ทำให้เมนูเปิดขึ้นหรือลงอัตโนมัติขึ้นอยู่กับตำแหน่ง
-            maxMenuHeight={400} // กำหนดความสูงสูงสุดของเมนูเมื่อมีตัวเลือกเยอะ
-            onChange={(selected) => {
-              selectedValue = selected ? selected.value : null;
-            }}
+          <SelectContainer 
+            validLineNames={validLineNames}
+            onSelect={(value) => selectedValue = value}             
+            position={{ x, y }}  // ส่งตำแหน่ง x, y ไปยัง SelectContainer 
+
           />,
-          selectContainer
+          selectContainer,  // เรนเดอร์ SelectContainer ใน selectContainer
+          () => {
+            // Callback function นี้จะถูกเรียกเมื่อการเรนเดอร์เสร็จสมบูรณ์
+               // console.log('SelectContainer has been rendered');
+               setTimeout(() => {
+                      var labelTag = document.getElementById('label-tag');
+
+                      const labelTagRect = labelTag.getBoundingClientRect();
+                      const labelTagTop = labelTagRect.top + window.scrollY;
+                      const labelTagLeft = labelTagRect.left + window.scrollX;
+                      //console.log("Label Tag Position - Top:", labelTagTop, "Left:", labelTagLeft);
+                      try {
+                              var lineElement=document.getElementById('select-container-1');
+                              lineElement.style.top = labelTagTop + 'px';
+                              lineElement.style.left = labelTagLeft + 'px';
+                      } catch (error) {
+                        
+                      } 
+                }, 20);
+        
+          }
+            
         );
+
+       
+
+
+       
+
       },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // ส่งค่า line name ใหม่ไปที่ API
-        handleSubmitWithNewLineName(result.value, requestData);
+      willClose: () => {
+        // ลบ SelectContainer ออกจาก DOM เมื่อ SweetAlert ปิด
+        ReactDOM.unmountComponentAtNode(selectContainer);
+        document.body.removeChild(selectContainer);
       }
+    }).then((result) => {
+            if (result.isConfirmed) {
+              // ส่งค่า line name ใหม่ไปที่ API
+              handleSubmitWithNewLineName(selectedValue, requestData);
+            }
     });
+    
   };
 
   // ฟังก์ชันสำหรับการส่งค่า line name ใหม่
