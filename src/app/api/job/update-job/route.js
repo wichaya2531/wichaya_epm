@@ -50,11 +50,7 @@ export const POST = async (req) => {
     // ค้นหาผู้ส่งข้อมูล
     const submittedUser = await User.findById(jobData.submittedBy);
     // const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
-<<<<<<< HEAD
-    // ปิดไว้เมื่อต้องการทดสอบ local  jack Wichaya
-=======
     // ปิดไว้เมื่อต้องการทดสอบ local fee
->>>>>>> f22de4b5cc7aa08cc76b6424a1071cfb28fdf99a
 
     // // ตรวจสอบหมายเลขเอกสาร
     // if (latestDocNo.message) {
