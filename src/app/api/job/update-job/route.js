@@ -43,16 +43,16 @@ export const POST = async (req) => {
     const submittedUser = await User.findById(jobData.submittedBy);
     const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
 
-    // ตรวจสอบหมายเลขเอกสาร
-    if (latestDocNo.message) {
-      console.log("Doc number error");
-      return NextResponse.json({ status: 455, message: latestDocNo.message });
-    } else if (job.CHECKLIST_VERSION !== latestDocNo) {
-      return NextResponse.json({
-        status: 455,
-        message: "This Checklist does not have the latest revision",
-      });
-    }
+    // ตรวจสอบหมายเลขเอกสาร  ปิดเมื่อทดสอบใน Local
+    // if (latestDocNo.message) {
+    //   console.log("Doc number error");
+    //   return NextResponse.json({ status: 455, message: latestDocNo.message });
+    // } else if (job.CHECKLIST_VERSION !== latestDocNo) {
+    //   return NextResponse.json({
+    //     status: 455,
+    //     message: "This Checklist does not have the latest revision",
+    //   });
+    // }
 
     // อัปเดต job items
     await updateJobItems(jobItemsData);
