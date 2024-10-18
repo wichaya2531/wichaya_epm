@@ -14,6 +14,9 @@ export const GET = async (req, res) => {
     await connectToDb();
     const searchParams = req.nextUrl.searchParams;
     const JobID = searchParams.get("job_id");
+
+     console.log('JobID=>', JobID);
+
     try {
         let machineName;
         const job = await Job.findOne({ _id: JobID });
@@ -33,6 +36,9 @@ export const GET = async (req, res) => {
         } else {
             machineName = null;
         }
+
+        console.log('job=>', job);
+
         const jobData = {
             "JobID": JobID,
             "Status": statusName,
@@ -44,6 +50,7 @@ export const GET = async (req, res) => {
             "ChecklistVer": job.CHECKLIST_VERSION,
             "MachineName": machineName,
             "WorkGroupID": job.WORKGROUP_ID,
+            "IMAGE_FILENAME": job.IMAGE_FILENAME,
             "WorkgroupName": workgroupName,
             "ActivatedBy": activatedBy,
             "ActivatedAt": job.createdAt.toLocaleString(),

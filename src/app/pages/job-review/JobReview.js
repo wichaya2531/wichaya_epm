@@ -288,7 +288,7 @@ const JobForm = ({
           >
             Image
           </label>
-          {jobData.IMAGE_FILENAME ? (
+          {/* {jobData.IMAGE_FILENAME ? (
             <Image
               src={job.IMAGE_FILENAME}
               alt="Job Image"
@@ -298,7 +298,7 @@ const JobForm = ({
             />
           ) : (
             <p className="mb-5 text-gray-500">No image available</p>
-          )}
+          )} */}
         </div>
       </div>
       <hr />
