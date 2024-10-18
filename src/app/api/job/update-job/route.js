@@ -21,7 +21,7 @@ export const POST = async (req) => {
     const jobItemsData = JSON.parse(form.get("jobItemsData"));
     //console.log("jobData:", jobData);
     //console.log("jobItemsData:", jobItemsData);
-    
+
     //return NextResponse.json({ status: 200, message: "Job updated successfully." });
     // ตรวจสอบข้อมูลที่จำเป็น
     if (!jobData || !jobItemsData) {
@@ -78,16 +78,16 @@ export const POST = async (req) => {
     job.JOB_STATUS_ID = waitingStatus._id;
     job.SUBMITTED_BY = submittedUser;
     job.SUBMITTED_DATE = new Date();
-
-    // บันทึกพาธของไฟล์รูปภาพในรูปแบบ "/job-image/pic.png"
     job.IMAGE_FILENAME = filePath;
 
     await job.save();
     console.log("Job updated successfully");
+    console.log("Updated job data:", job);
 
     return NextResponse.json({
       status: 200,
       message: "Job updated successfully.",
+      jobData,
     });
   } catch (err) {
     console.error("Error occurred:", err);
@@ -102,7 +102,7 @@ export const POST = async (req) => {
 // ฟังก์ชันสำหรับการอัปโหลดไฟล์
 const handleFileUpload = async (file) => {
   // กำหนดพาธโฟลเดอร์ที่ต้องการบันทึกไฟล์
-  const uploadDir = path.join(process.cwd(), "public", "job-image");
+  const uploadDir = "C:\\img-jobs"; // เปลี่ยนพาธที่นี่
 
   // สร้างโฟลเดอร์ถ้ายังไม่มี
   if (!fs.existsSync(uploadDir)) {
@@ -117,8 +117,8 @@ const handleFileUpload = async (file) => {
   const fileData = Buffer.from(await file.arrayBuffer());
   fs.writeFileSync(filePath, fileData);
 
-  // ส่งคืนพาธของไฟล์ในรูปแบบ "/job-image/pic.png"
-  return `/job-image/${fileName}`;
+  // ส่งคืนพาธของไฟล์ในรูปแบบ "C:\img-jobs\pic.png"
+  return filePath; // เปลี่ยนที่นี่
 };
 
 // ฟังก์ชันอัปเดต Job Items
