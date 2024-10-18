@@ -10,6 +10,8 @@ import JobReview from "./JobReview";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import { useRouter } from "next/navigation";
 import CommentReview from "@/components/CommentReview";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Link from "next/link";
 
 const Page = ({ searchParams }) => {
   const router = useRouter();
@@ -166,7 +168,7 @@ const Page = ({ searchParams }) => {
 
   //console.log("jobData", jobData);
   return (
-    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
+    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-8 p-4 bg-white rounded-xl">
       <JobReview
         jobData={jobData}
         jobItems={jobItems}

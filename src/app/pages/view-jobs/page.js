@@ -16,6 +16,8 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import InfoIcon from "@mui/icons-material/Info";
 import Select from "react-select";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Link from "next/link";
 
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
@@ -264,9 +266,6 @@ const Page = ({ searchParams }) => {
       return;
     }
 
-
-
-
     // ตรวจสอบว่า wd_tag ไม่ว่างเปล่า
     if (!wdTag) {
       Swal.fire({
@@ -286,9 +285,8 @@ const Page = ({ searchParams }) => {
       });
       return;
     }
-    
+
     //console.log("inputValues", inputValues);
-      
 
     //return ;
     //inputValues[0].ActualValue = 99;
@@ -383,6 +381,9 @@ const Page = ({ searchParams }) => {
         onSubmit={handleSubmit}
       >
         <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
           Checklist Information
           {isShowJobInfo ? (
             <ArrowDropUpIcon

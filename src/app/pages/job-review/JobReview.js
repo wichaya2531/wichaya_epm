@@ -4,6 +4,8 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import InfoIcon from "@mui/icons-material/Info";
 import ImageIcon from "@mui/icons-material/Image";
 import { useState } from "react";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Link from "next/link";
 
 const JobForm = ({
   jobData,
@@ -26,6 +28,9 @@ const JobForm = ({
         className="text-3xl font-bold text-primary flex items-center cursor-pointer"
         onClick={toggleJobInfo}
       >
+        <Link href="/pages/job-approve">
+          <ArrowBackIosNewIcon />
+        </Link>
         Checklist Information
         {isShowJobInfo ? (
           <ArrowDropUpIcon className="size-14" />
@@ -290,7 +295,7 @@ const JobForm = ({
           </label>
           {/* {jobData.IMAGE_FILENAME ? (
             <Image
-              src={job.IMAGE_FILENAME}
+              src={jobData.IMAGE_FILENAME}
               alt="Job Image"
               className="mb-5 bg-gray-100 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               width={200} // ปรับขนาดตามที่ต้องการ
