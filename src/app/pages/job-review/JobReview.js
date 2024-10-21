@@ -6,6 +6,8 @@ import ImageIcon from "@mui/icons-material/Image";
 import { useState } from "react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
+import Image from "next/image";
+import { Img } from "@chakra-ui/react";
 
 const JobForm = ({
   jobData,
@@ -22,6 +24,7 @@ const JobForm = ({
 }) => {
   console.log("jobData=>", jobData);
   console.log("jobItems.=>", jobItems);
+  console.log(jobData.IMAGE_FILENAME);
   return (
     <form className="flex flex-col gap-8" onSubmit={handleApprove}>
       <h1
@@ -293,17 +296,16 @@ const JobForm = ({
           >
             Image
           </label>
-          {/* {jobData.IMAGE_FILENAME ? (
-            <Image
-              src={jobData.IMAGE_FILENAME}
+          {jobData.IMAGE_FILENAME && (
+            <img
+              src={`http://localhost:3000/api/images/${jobData.IMAGE_FILENAME.split(
+                "\\"
+              ).pop()}`} // ใช้เพียงชื่อไฟล์
               alt="Job Image"
-              className="mb-5 bg-gray-100 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              width={200} // ปรับขนาดตามที่ต้องการ
-              height={200} // ปรับขนาดตามที่ต้องการ
+              width={200}
+              height={200}
             />
-          ) : (
-            <p className="mb-5 text-gray-500">No image available</p>
-          )} */}
+          )}
         </div>
       </div>
       <hr />
