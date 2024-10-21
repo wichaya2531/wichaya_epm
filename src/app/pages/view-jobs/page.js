@@ -18,8 +18,6 @@ import useFetchUser from "@/lib/hooks/useFetchUser.js";
 // import Select from "react-select";
 // import CameraAltIcon from "@mui/icons-material/CameraAlt";
 
-
-
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
@@ -53,6 +51,7 @@ const Page = ({ searchParams }) => {
   const [showDetail, setShowDetail] = useState(null);
   const mqttClient = mqtt.connect(connectUrl, options);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const [message, setMessage] = useState("");
 
@@ -395,8 +394,9 @@ const Page = ({ searchParams }) => {
         view={view}
         toggleAddComment={toggleAddComment}
         handleFileChange={handleFileChange}
+        preview={preview}
       />
-      
+
       {testMethodDescription && (
         <TestMethodDescriptionModal
           showDetail={showDetail}
