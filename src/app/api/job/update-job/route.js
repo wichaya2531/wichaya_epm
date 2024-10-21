@@ -123,22 +123,23 @@ const handleFileUpload = async (file) => {
 
 // ฟังก์ชันอัปเดต Job Items
 const updateJobItems = async (jobItemsData) => {
-  for (const item of jobItemsData) {
-    const jobItem = await JobItem.findById(item.JobItemID);
-    if (jobItem) {
-      // อัปเดตข้อมูลของ jobItem ตามข้อมูลที่ส่งมา
-      jobItem.JobItemTitle = item.JobItemTitle;
-      jobItem.UpperSpec = item.UpperSpec;
-      jobItem.LowerSpec = item.LowerSpec;
-      jobItem.TestMethod = item.TestMethod;
-      jobItem.BeforeValue = item.BeforeValue;
-      jobItem.ActualValue = item.ActualValue;
-      jobItem.Comment = item.Comment;
-      jobItem.RealTimeValue = item.RealTimeValue;
-      jobItem.TestLocationName = item.TestLocationName;
-      jobItem.LastestUpdate = new Date();
+  const updatePromises = jobItemsData.map(async (jobItemData) => {
+    const jobItem = await JobItem.findOne({ _id: jobItemData.JobItemID });
 
-      await jobItem.save();
+    if (jobItem) {
+      // อัปเดตค่า ACTUAL_VALUE, COMMENT และ BEFORE_VALUE
+      jobItem.ACTUAL_VALUE = jobItemData.value || jobItem.ACTUAL_VALUE; // อัปเดต ActualValue
+      jobItem.COMMENT = jobItemData.Comment || jobItem.COMMENT; // อัปเดต Comment
+      jobItem.BEFORE_VALUE = jobItemData.BeforeValue || jobItem.BEFORE_VALUE; // อัปเดต BeforeValue
+
+      jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
+      await jobItem.save(); // บันทึกการเปลี่ยนแปลง
+
+      console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
+    } else {
+      console.error(`JobItem with ID ${jobItemData.JobItemID} not found.`);
     }
-  }
+  });
+
+  await Promise.all(updatePromises); // รอให้การอัปเดตทั้งหมดเสร็จสิ้น
 };
