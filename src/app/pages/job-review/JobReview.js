@@ -296,7 +296,7 @@ const JobForm = ({
           >
             Image
           </label>
-          {jobData.IMAGE_FILENAME && (
+          {jobData.IMAGE_FILENAME ? (
             <img
               src={`http://localhost:3000/api/images/${jobData.IMAGE_FILENAME.split(
                 "\\"
@@ -305,6 +305,8 @@ const JobForm = ({
               width={200}
               height={200}
             />
+          ) : (
+            <p className="text-gray-500">ไม่พบข้อมูลภาพ</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
           )}
         </div>
       </div>
