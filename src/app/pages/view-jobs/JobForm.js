@@ -351,24 +351,35 @@ const JobForm = ({
             />
           )}
         </div>
-        <div className="flex flex-col items-center">
-          {/* ซ่อนปุ่มอัปโหลดไฟล์ */}
-          <input
-            type="file"
-            id="fileInput"
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-            accept="image/*"
-          />
-
-          {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+        <div className="flex flex-col">
           <label
-            htmlFor="fileInput"
-            className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+            htmlFor="text"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
           >
-            <CameraAltIcon className="mr-2" />
-            อัปโหลดไฟล์
+            Image
           </label>
+          {/* ซ่อนปุ่มอัปโหลดไฟล์ถ้า view === "true" */}
+          {view !== "true" && (
+            <>
+              {/* ซ่อน input อัปโหลดไฟล์ */}
+              <input
+                type="file"
+                id="fileInput"
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+                accept="image/*"
+              />
+
+              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+              <label
+                htmlFor="fileInput"
+                className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+              >
+                <CameraAltIcon className="mr-2" />
+                อัปโหลดไฟล์
+              </label>
+            </>
+          )}
 
           {/* แสดงตัวอย่างรูปภาพถ้ามี */}
           {preview && (
