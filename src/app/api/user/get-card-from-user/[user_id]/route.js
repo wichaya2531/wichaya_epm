@@ -10,7 +10,10 @@ export const GET = async (req, { params }) => {
     await connectToDb();
     const { user_id } = params;
     try {
-        console.log(user_id)
+
+
+        //return NextResponse.json({ status: 200, cards: null });
+        //console.log(user_id)
         // Fetch user's actions
         const user = await User.findById(user_id);
         const user_roleID = new mongoose.Types.ObjectId(user.ROLE);
@@ -46,6 +49,7 @@ export const GET = async (req, { params }) => {
                 return userActions.some(userAction => userAction._id.toString() === actionId.toString());
             });
         });
+
 
         return NextResponse.json({ status: 200, cards: matchedCards });
     } catch (err) {

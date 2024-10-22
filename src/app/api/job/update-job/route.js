@@ -81,7 +81,7 @@ export const POST = async (req) => {
     job.IMAGE_FILENAME = jobData.wdtagImage;
 
     await job.save();
-    console.log("Job updated successfully");
+   // console.log("Job updated successfully");
     //console.log("Updated job data:", job);
 
     return NextResponse.json({

@@ -13,7 +13,7 @@ import { Workgroup } from "@/lib/models/Workgroup";
 import { User } from "@/lib/models/User";
 
 export const POST = async (req) => {
-  console.log("Activate Job Template Manual with new line name");
+  //console.log("Activate Job Template Manual with new line name");
   await connectToDb();
   const body = await req.json();
   const { JobTemplateID, LINE_NAME, ACTIVATER_ID, JobTemplateCreateID } = body;

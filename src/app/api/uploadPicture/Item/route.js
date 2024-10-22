@@ -3,7 +3,7 @@ import path from 'path';
 import { NextResponse } from 'next/server';
 
 export const POST = async (req, res) => {
-    console.log("use  POST");
+    //console.log("use  POST");
     try {
         const form = await req.formData();
         const FILE = form.get("file");

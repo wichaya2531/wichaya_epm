@@ -8,12 +8,22 @@ import { JobTemplate } from "@/lib/models/JobTemplate";
 export const dynamic = 'force-dynamic';
 export const GET = async (req, { params }) => {
     await connectToDb();
+
+    
     const { workgroup_id } = params;
+    //console.log("workgroup_id=>",workgroup_id);    
+    if (workgroup_id === 'undefined') {
+        return NextResponse.json({ status: 400, error: 'Workgroup ID is required' });
+    }      
+
+
     try {
         const jobs = await Job.find({ WORKGROUP_ID: workgroup_id });
- 
+        //console.log("jobs=>",jobs);
+        //return NextResponse.json({ status: 200, jobs: [] });   
         const schedules = await Schedule.find({ WORKGROUP_ID: workgroup_id });
        
+         
 
         const activaterPromises = jobs.map(async (job) => {
             const user = await User.findOne({ _id: job.ACTIVATE_USER });

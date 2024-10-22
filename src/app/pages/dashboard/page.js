@@ -42,7 +42,7 @@ const Page = () => {
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
 
   const handleClcik = () => {
-    sendData();
+   // sendData();
   };
 
   return (
