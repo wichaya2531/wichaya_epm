@@ -21,10 +21,11 @@ const JobForm = ({
   isShowJobInfo,
   toggleAddComment,
   view,
+  onclicktoShow,
 }) => {
-  console.log("jobData=>", jobData);
-  console.log("jobItems.=>", jobItems);
-  console.log(jobData.IMAGE_FILENAME);
+  //console.log("jobData.=>", jobData);
+  //console.log("jobItems.=>", jobItems);
+  //console.log(jobData.IMAGE_FILENAME);
   return (
     <form className="flex flex-col gap-8" onSubmit={handleApprove}>
       <h1
@@ -294,16 +295,15 @@ const JobForm = ({
             htmlFor="image-file"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
           >
-            Image
+            
           </label>
           {jobData.IMAGE_FILENAME ? (
-            <img
-              src={`http://localhost:3000/api/images/${jobData.IMAGE_FILENAME.split(
-                "\\"
-              ).pop()}`} // ใช้เพียงชื่อไฟล์
+            <img 
+              src={`/api/viewPicture?imgName=`+jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
               alt="Job Image"
               width={200}
               height={200}
+              onClick={() => onclicktoShow(`/api/viewPicture?imgName=`+jobData.IMAGE_FILENAME)}
             />
           ) : (
             <p className="text-gray-500">ไม่พบข้อมูลภาพ</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
@@ -335,10 +335,10 @@ const JobForm = ({
                 {/* <th className="w-[50px] px-4 py-2">
                                     Test Method
                                 </th> */}
-                <th className="w-[50px] px-4 py-2">Upper Spec</th>
-                <th className="w-[50px] px-4 py-2">Lower Spec</th>
-                <th className="w-[150px] py-2">Before Value</th>
-                <th className="w-[150px] px-4 py-2">Actual Value</th>
+                <th className="w-[50px] px-4 py-2">Lower/Upper</th>
+                <th className="w-[50px] px-4 py-2">Before Value</th>
+                <th className="w-[150px] py-2">Actual Value</th>
+                <th className="w-[150px] px-4 py-2">Attach</th>
                 {/* <th className="w-[5px] px-2 py-2">See images</th> */}
               </tr>
             </thead>
@@ -365,9 +365,14 @@ const JobForm = ({
 
                                         />
                                     </td> */}
-                  <td className="border px-4 py-2">{item.UpperSpec}</td>
-                  <td className="border px-4 py-2">{item.LowerSpec}</td>
-                  <td className="border  py-2 relative">
+                  <td className="border px-4 py-2"> <div>
+                      Upper <b color="red">↑</b> : {item.UpperSpec}
+                    </div>
+                    <div>
+                      Lower <b color="blue">↓</b> : {item.LowerSpec}
+                    </div>
+                  </td>
+                  <td className="border px-4 py-2"> 
                     <input
                       type="text"
                       id={`before_value_${item.JobItemID}`}
@@ -376,14 +381,37 @@ const JobForm = ({
                       disabled
                     />
                   </td>
-                  <td className="border px-4 py-2 relative">
-                    <input
+                  <td className="border  py-2 relative">
+                   <input
                       type="text"
                       id={`actual_value_${item.JobItemID}`}
                       value={item.ActualValue}
                       className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
                       disabled
                     />
+                  </td>
+                  <td className="border px-4 py-2 relative" >
+                    <center>
+                        <label
+                                htmlFor="image-file"
+                                className="text-sm ipadmini:text-md font-bold text-gray-600"
+                              >
+                                
+                              </label>
+                              {jobData.IMAGE_FILENAME ? (
+                                <img
+                                  src={`/api/viewPictureItem/?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
+                                  alt="Job Image"
+                                  width={200}
+                                  height={200}
+                                  onClick={() => onclicktoShow(`/api/viewPictureItem/?imgName=`+item.IMG_ATTACH)}
+                  
+                                />
+                              ) : (
+                                <p className="text-gray-500">ไม่พบข้อมูลภาพ</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
+                              )}
+                    </center>
+                        
                   </td>
                   {/* <td className="border py-2 relative">
                                         <div className="cursor-pointer" >

@@ -4,17 +4,17 @@ import { Status } from "@/lib/models/Status";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { User } from "@/lib/models/User";
-import fs from "fs";
-import path from "path";
+//import fs from "fs";
+//import path from "path";
 
 export const POST = async (req) => {
   try {
     // เชื่อมต่อฐานข้อมูล
     await connectToDb();
-    console.log("Database connected");
+    //console.log("Database connected");
 
     const form = await req.formData();
-    console.log("Form data received");
+    //console.log("Form data received");
 
     // รับ jobData และ jobItemsData จาก FormData
     const jobData = JSON.parse(form.get("jobData"));
@@ -31,14 +31,14 @@ export const POST = async (req) => {
       });
     }
 
-    // รับไฟล์ที่อัปโหลด
-    const file = form.get("file");
-    const filePath = file ? await handleFileUpload(file) : null;
-    console.log("File path:", filePath);
+    //return NextResponse.json({ status: 404, message: "Job not found." }); // รับไฟล์ที่อัปโหลด
+    // const file = form.get("file");
+    // const filePath = file ? await handleFileUpload(file) : null;
+    // console.log("File path:", filePath);
 
-    if (!filePath) {
-      return NextResponse.json({ status: 400, message: "No file received." });
-    }
+    // if (!filePath) {
+    //   return NextResponse.json({ status: 400, message: "No file received." });
+    // }
 
     // ค้นหา job ในฐานข้อมูล
     const job = await Job.findOne({ _id: jobData.JobID });
@@ -78,11 +78,11 @@ export const POST = async (req) => {
     job.JOB_STATUS_ID = waitingStatus._id;
     job.SUBMITTED_BY = submittedUser;
     job.SUBMITTED_DATE = new Date();
-    job.IMAGE_FILENAME = filePath;
+    job.IMAGE_FILENAME = jobData.wdtagImage;
 
     await job.save();
     console.log("Job updated successfully");
-    console.log("Updated job data:", job);
+    //console.log("Updated job data:", job);
 
     return NextResponse.json({
       status: 200,
@@ -99,27 +99,27 @@ export const POST = async (req) => {
   }
 };
 
-// ฟังก์ชันสำหรับการอัปโหลดไฟล์
-const handleFileUpload = async (file) => {
-  // กำหนดพาธโฟลเดอร์ที่ต้องการบันทึกไฟล์
-  const uploadDir = "C:\\img-jobs"; // เปลี่ยนพาธที่นี่
+// // ฟังก์ชันสำหรับการอัปโหลดไฟล์
+// const handleFileUpload = async (file) => {
+//   // กำหนดพาธโฟลเดอร์ที่ต้องการบันทึกไฟล์
+//   const uploadDir = "C:\\img-jobs"; // เปลี่ยนพาธที่นี่
 
-  // สร้างโฟลเดอร์ถ้ายังไม่มี
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
+//   // สร้างโฟลเดอร์ถ้ายังไม่มี
+//   if (!fs.existsSync(uploadDir)) {
+//     fs.mkdirSync(uploadDir, { recursive: true });
+//   }
 
-  // ตั้งชื่อไฟล์ตามเวลาเพื่อไม่ให้ชื่อไฟล์ซ้ำกัน
-  const fileName = `${Date.now()}-${file.name}`;
-  const filePath = path.join(uploadDir, fileName);
+//   // ตั้งชื่อไฟล์ตามเวลาเพื่อไม่ให้ชื่อไฟล์ซ้ำกัน
+//   const fileName = `${Date.now()}-${file.name}`;
+//   const filePath = path.join(uploadDir, fileName);
 
-  // อ่านเนื้อหาไฟล์แล้วบันทึกลงโฟลเดอร์ที่กำหนด
-  const fileData = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(filePath, fileData);
+//   // อ่านเนื้อหาไฟล์แล้วบันทึกลงโฟลเดอร์ที่กำหนด
+//   const fileData = Buffer.from(await file.arrayBuffer());
+//   fs.writeFileSync(filePath, fileData);
 
-  // ส่งคืนพาธของไฟล์ในรูปแบบ "C:\img-jobs\pic.png"
-  return filePath; // เปลี่ยนที่นี่
-};
+//   // ส่งคืนพาธของไฟล์ในรูปแบบ "C:\img-jobs\pic.png"
+//   return filePath; // เปลี่ยนที่นี่
+// };
 
 // ฟังก์ชันอัปเดต Job Items
 const updateJobItems = async (jobItemsData) => {
@@ -131,7 +131,7 @@ const updateJobItems = async (jobItemsData) => {
       jobItem.ACTUAL_VALUE = jobItemData.value || jobItem.ACTUAL_VALUE; // อัปเดต ActualValue
       jobItem.COMMENT = jobItemData.Comment || jobItem.COMMENT; // อัปเดต Comment
       jobItem.BEFORE_VALUE = jobItemData.BeforeValue || jobItem.BEFORE_VALUE; // อัปเดต BeforeValue
-
+      jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // อัปเดต ImageFileName  
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
 

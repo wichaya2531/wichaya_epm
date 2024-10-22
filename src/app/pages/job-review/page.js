@@ -107,6 +107,18 @@ const Page = ({ searchParams }) => {
     }
   };
 
+  const handleToShowOnClick = (item) => {
+            Swal.fire({
+              title: item.title,
+              html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
+              confirmButtonText: "OK",
+              width: "80%",
+              height: "80%",
+            });
+  };
+
+
+
   const handleShowTestMethodDescription = (item) => {
     setShowDetail(item);
     setTestMethodDescription(true);
@@ -181,6 +193,9 @@ const Page = ({ searchParams }) => {
         isShowJobInfo={isShowJobInfo}
         toggleAddComment={toggleAddComment}
         view={view}
+        
+        onclicktoShow={handleToShowOnClick}
+
       />
       {jobItemDetail && (
         <ItemInformationModal

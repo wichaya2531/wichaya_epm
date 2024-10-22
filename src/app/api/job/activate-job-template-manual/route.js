@@ -66,7 +66,7 @@ export const POST = async (req, res) => {
       JOB_APPROVERS: approvers.map((approver) => approver.USER_ID),
       TIMEOUT: jobTemplate.TIMEOUT,
     });
-    console.log("Job->", job);
+    //console.log("Job->", job);
     await job.save();
 
     //2 update to jobtemplateactivate

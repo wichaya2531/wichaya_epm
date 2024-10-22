@@ -25,6 +25,7 @@ const options = {
 };
 
 const Page = ({ searchParams }) => {
+  //console.log("use Page view-jobs/page.js");
   const router = useRouter();
   const job_id = searchParams.job_id;
   const [view, setView] = useState(searchParams.view);
@@ -45,15 +46,27 @@ const Page = ({ searchParams }) => {
   const [testMethodDescription, setTestMethodDescription] = useState(null);
   const [AddCommentForm, setAddCommentForm] = useState(false);
   const [commentDetail, setCommentDetail] = useState(null);
-  const [inputValues, setInputValues] = useState([]);
-  const { status } = useFetchStatus(refresh);
+  var [inputValues, setInputValues] = useState([]);
+ // const { status } = useFetchStatus(refresh);
   const [machineName, setMachineName] = useState(null);
   const [showDetail, setShowDetail] = useState(null);
   const mqttClient = mqtt.connect(connectUrl, options);
-  const [selectedFile, setSelectedFile] = useState(null);
+  //const [selectedFile, setSelectedFile] = useState(null);
+  const [wdtagImg, setWdtagImg] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  const [message, setMessage] = useState("");
+  //const [message, setMessage] = useState("");
+
+  const handleToShowOnClick = (item) => {
+      Swal.fire({
+        title: item.title,
+        html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
+        confirmButtonText: "OK",
+        width: "80%",
+        height: "80%",
+      });
+  };
+
 
   const updateJobStatusToOngoing = async () => {
     const body = {
@@ -79,6 +92,9 @@ const Page = ({ searchParams }) => {
 
   useEffect(() => {
     const asyncEffect = async () => {
+
+     // console.log("jobData", jobData);    
+
       if (user && jobData) {
         // Ensure both user.workgroup_id and jobData.WorkGroupID are defined
         if (user.workgroup_id && jobData.WorkGroupID) {
@@ -160,7 +176,18 @@ const Page = ({ searchParams }) => {
     });
   };
 
+  const handleIMGItemChange = ( filePath,item) => {
+            const value = filePath;
+            for(var t in inputValues){
+                  console.log(inputValues[t]);
+                  if (inputValues[t].jobItemID==item.JobItemID) {
+                        inputValues[t].IMG_ATTACH=value;
+                  }
+            }   
+  }
+
   const handleInputChange = (e, item) => {
+    //console.log('item ',item);
     const value = e.target.value;
     setInputValues((prev) => {
       const existingIndex = prev.findIndex(
@@ -187,10 +214,10 @@ const Page = ({ searchParams }) => {
 
   var imgItemFileSelected = null;
 
-  const handleAddImages = (b) => {
-    imgItemFileSelected = b;
-    document.getElementById("fileInput-1").click();
-  };
+  // const handleAddImages = (b) => {
+  //   imgItemFileSelected = b;
+  //   document.getElementById("fileInput-1").click();
+  // };
   const handleFileChangeOnItem = (event) => {
     const file = event.target.files[0];
     try {
@@ -235,24 +262,52 @@ const Page = ({ searchParams }) => {
     setAddCommentForm((prev) => !prev);
   };
 
-  const handleFileChange = (event) => {
+  // const handleUploadFileToJobItem = (jobItemID) => {
+  //       alert('on page handleUploadFileToJobItem');
+  // };
+
+  const handleUploadFileToJob = (event) => {
     const file = event.target.files[0];
-    setSelectedFile(file);
+    //setSelectedFile(file);
     setPreview(URL.createObjectURL(file)); // แสดง preview ของไฟล์
+
+    setTimeout(() => {
+      uploadJobPictureToServer(file);
+    }, 500);
   };
+
+  const uploadJobPictureToServer = async (inputFile) => {
+   if (!inputFile) {
+     alert('Please select a file first.');
+     return;
+   }
+    const formData = new FormData();
+    formData.append('file', inputFile);
+    formData.append('job_id', jobData.JobID);
+
+      try {
+        const res = await fetch('/api/uploadPicture', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json(); // อ่าน response จาก API
+
+      if (data.result) {
+        setWdtagImg(data.filePath);
+      } else {
+        alert('Failed to upload file. Error '+data.error);
+      }
+    } catch (error) {
+      //console.error(error);
+      alert('An error occurred while uploading the file.');
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ตรวจสอบว่าไฟล์ถูกเลือกหรือไม่
-    // if (!selectedFile) {
-    //   Swal.fire({
-    //     title: "Error!",
-    //     text: "Please select a file first.",
-    //     icon: "error",
-    //   });
-    //   return;
-    // }
 
     const wdTag = e.target.wd_tag.value.trim(); // ตัดช่องว่าง
 
@@ -286,19 +341,17 @@ const Page = ({ searchParams }) => {
       return;
     }
 
-    //console.log("inputValues", inputValues);
-
-    //return ;
-    //inputValues[0].ActualValue = 99;
-
     const jobInfo = {
       JobID: jobData.JobID,
       wd_tag: wdTag,
       submittedBy: user._id,
+      wdtagImage: wdtagImg,
     };
 
+   //  console.log("inputValues", inputValues);
+   // return;
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    //formData.append("wdtagPictuer", selectedFile);
     formData.append("jobData", JSON.stringify(jobInfo)); // ใช้ JSON.stringify
     formData.append("jobItemsData", JSON.stringify(inputValues)); // ใช้ inputValues
 
@@ -370,12 +423,12 @@ const Page = ({ searchParams }) => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
-      <input
+      {/* <input
         type="file"
         style={{ display: "none" }}
         id="fileInput-1"
-        onChange={handleFileChangeOnItem}
-      />
+        //onChange={handleFileChangeOnItem}
+      /> */}
       <JobForm
         jobData={jobData}
         jobItems={jobItems}
@@ -393,8 +446,11 @@ const Page = ({ searchParams }) => {
         isShowJobInfo={isShowJobInfo}
         view={view}
         toggleAddComment={toggleAddComment}
-        handleFileChange={handleFileChange}
+        handleUploadFileToJob={handleUploadFileToJob}
+        //handleUploadFileToJobItem={handleUploadFileToJobItem}
+        onItemImgChange={handleIMGItemChange}
         preview={preview}
+        onclicktoShow={handleToShowOnClick}
       />
 
       {testMethodDescription && (

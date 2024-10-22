@@ -40,6 +40,7 @@ const JobItemSchema = new mongoose.Schema(
     },
     REAL_TIME_VALUE: { type: String, default: "None" },
     FILE: { type: String, default: null },
+    IMG_ATTACH: { type: String, default: null },
   },
   { timestamps: true }
 );

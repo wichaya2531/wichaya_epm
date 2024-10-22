@@ -15,7 +15,7 @@ export const GET = async (req, res) => {
     const searchParams = req.nextUrl.searchParams;
     const JobID = searchParams.get("job_id");
 
-     console.log('JobID=>', JobID);
+     //console.log('JobID=>', JobID);
 
     try {
         let machineName;
@@ -37,7 +37,7 @@ export const GET = async (req, res) => {
             machineName = null;
         }
 
-        console.log('job=>', job);
+       // console.log('job=>', job);
 
         const jobData = {
             "JobID": JobID,
@@ -62,6 +62,9 @@ export const GET = async (req, res) => {
         };
         
         const jobItemData = await Promise.all(jobItems.map(async (jobItem) => {
+            
+            //console.log('jobItem=>', jobItem);
+           
             const location = await TestLocation.findById(jobItem.TEST_LOCATION_ID);
             return {
                 "JobItemID": jobItem._id,
@@ -77,6 +80,7 @@ export const GET = async (req, res) => {
                 "TestLocationName": location ? location.LocationName : "",
                 "ExecuteDate": jobItem.EXECUTE_DATE,
                 "LastestUpdate": jobItem.updatedAt.toLocaleString(),
+                "IMG_ATTACH": jobItem.IMG_ATTACH,
                 "File": jobItem.FILE ? jobItem.FILE.replace(/\\/g, '/') : null, 
                 "createAt": jobItem.createdAt.toLocaleString()
             };
