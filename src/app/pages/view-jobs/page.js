@@ -62,7 +62,7 @@ const Page = ({ searchParams }) => {
         title: item.title,
         html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
         confirmButtonText: "OK",
-        width: "80%",
+        width: "auto",
         height: "80%",
       });
   };

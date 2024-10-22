@@ -11,6 +11,25 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 import { sendEmails } from "@/lib/utils/utils";
 import { Workgroup } from "@/lib/models/Workgroup";
 import { User } from "@/lib/models/User";
+import { ObjectId } from 'mongodb';
+
+
+async function getApproversUserEmail(job) {
+  const approvers = [];
+
+  for (const element of job.JOB_APPROVERS) {
+    try {
+      const approver = await User.findOne({ _id: new ObjectId(element) });
+      if (approver) {
+        approvers.push(approver.EMAIL);  // เก็บข้อมูลใน array
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  return approvers;  // return ข้อมูลทั้งหมดหลังจากประมวลผลเสร็จ
+}
 
 export const POST = async (req, res) => {
  // console.log("Activate Job Template Manual");
@@ -145,8 +164,16 @@ export const POST = async (req, res) => {
     const workgroup = await Workgroup.findOne({
       _id: jobTemplate.WORKGROUP_ID,
     });
-    const userlist = workgroup ? workgroup.USER_LIST : [];
+    
 
+    //console.log("job=>", job.JOB_APPROVERS);  
+
+    const userEmailsApprover = await getApproversUserEmail(job);
+    console.log("userEmailsApprover=>", userEmailsApprover);
+   
+
+    
+    const userlist = workgroup ? workgroup.USER_LIST : [];
     const userEmails = await Promise.all(
       userlist.map(async (user) => {
         const use = await User.findOne({ _id: user });
@@ -160,6 +187,8 @@ export const POST = async (req, res) => {
       activatedBy: activater ? activater.EMP_NAME : null,
       timeout: job.TIMEOUT,
     };
+
+    //console.log( "send emailList to=>", userEmails);  
 
     //await sendEmails(userEmails, jobData);
 

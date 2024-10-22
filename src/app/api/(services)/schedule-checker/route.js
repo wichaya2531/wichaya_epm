@@ -200,7 +200,10 @@ export const POST = async (req, res) => {
                     timeout: job.TIMEOUT,
                 };
                 
-                await sendEmails(userEmails, jobData);  
+
+                console.        
+
+                //await sendEmails(userEmails, jobData);  
 
                 await Schedule.deleteOne({ _id: jobTemplateSchedule._id });
             }
