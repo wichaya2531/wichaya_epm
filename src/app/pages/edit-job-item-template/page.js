@@ -20,6 +20,19 @@ const Page = ({ searchParams }) => {
   const { locations, isLoading: locationsLoading } =
     useFetchTestLocations(refresh);
 
+  const handleToShowOnClick = (item) => {
+    Swal.fire({
+      title: item.title,
+      html: `
+          <div style="display: flex; justify-content: center; align-items: center;">
+            <img src="${item}" alt="${item}" style="max-width: 70%; max-height: 70%; object-fit: contain;" />
+          </div>`,
+      confirmButtonText: "OK",
+      width: "auto",
+      height: "auto",
+    });
+  };
+
   const HandleSubmit = async (e) => {
     //if test location is not selected
     e.preventDefault();
@@ -76,6 +89,7 @@ const Page = ({ searchParams }) => {
       });
     }
   };
+  console.log("jobItemTemplate: ", jobItemTemplate);
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-7">
@@ -221,6 +235,17 @@ const Page = ({ searchParams }) => {
                 isSearchable={true}
               />
             </div>
+            <img
+              src={`/api/viewItem-template?imgName=` + jobItemTemplate.FILE} // ใช้เพียงชื่อไฟล์
+              alt="Item-template"
+              width={200}
+              className="mt-4"
+              onClick={() =>
+                handleToShowOnClick(
+                  `/api/viewItem-template?imgName=` + jobItemTemplate.FILE
+                )
+              }
+            />
           </div>
           <button
             type="submit"

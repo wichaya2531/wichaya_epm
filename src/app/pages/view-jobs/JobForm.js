@@ -37,62 +37,60 @@ const JobForm = ({
   var jobItemSelected = null;
 
   const handleUploadFileToJobItem = (item) => {
-       //alert("use handleUploadFileToJobItem");
-       jobItemSelected=item;
-       try {
-         const fileInput = document.getElementById("item-fileInput");
-         fileInput.click(); 
-       } catch (error) {
-       
-      }
-        //setShowWebcam(true);
-        //handleUploadFileToJobItem();
+    //alert("use handleUploadFileToJobItem");
+    jobItemSelected = item;
+    try {
+      const fileInput = document.getElementById("item-fileInput");
+      fileInput.click();
+    } catch (error) {}
+    //setShowWebcam(true);
+    //handleUploadFileToJobItem();
   };
-  
 
   const handleUploadFileToJobItemOnChange = async (event) => {
-     const file = event.target.files[0];
-     //setPreviewItemPicture(URL.createObjectURL(file)); // แสดง preview ของไฟล์
-     //console.log("jobItemSelected",jobItemSelected);
-     try {
-          var valuePath= await uploadJobItemPictureToServer(file);
-          document.getElementById("item-img-" + jobItemSelected.JobItemID).src = URL.createObjectURL(file);
-          //console.log("valuePath",valuePath);
-          onItemImgChange(valuePath,jobItemSelected);
-     } catch (error) {
-            alert(error.message);
-     }       
-     //alert(itemIdSelected);
+    const file = event.target.files[0];
+    //setPreviewItemPicture(URL.createObjectURL(file)); // แสดง preview ของไฟล์
+    //console.log("jobItemSelected",jobItemSelected);
+    try {
+      var valuePath = await uploadJobItemPictureToServer(file);
+      document.getElementById("item-img-" + jobItemSelected.JobItemID).src =
+        URL.createObjectURL(file);
+      //console.log("valuePath",valuePath);
+      onItemImgChange(valuePath, jobItemSelected);
+    } catch (error) {
+      alert(error.message);
+    }
+    //alert(itemIdSelected);
   };
 
   const uploadJobItemPictureToServer = async (inputFile) => {
     if (!inputFile) {
-      alert('Please select a file first.');
+      alert("Please select a file first.");
       return;
     }
-     const formData = new FormData();
-     formData.append('file', inputFile);
-     formData.append('job_item_id', jobItemSelected.JobItemID);
- 
-       try {
-         const res = await fetch('/api/uploadPicture/Item', {
-           method: 'POST',
-           body: formData,
-         });
- 
-         const data = await res.json(); // อ่าน response จาก API
-       
-       if (data.result) {
-         //setWdtagImg(data.filePath);
-         return data.filePath;
-       } else {
-         alert('Failed to upload file. Error '+data.error);
-       }
-     } catch (error) {
-       //console.error(error);
-       alert('An error occurred while uploading the file.'+error.message);
-     }
-   };
+    const formData = new FormData();
+    formData.append("file", inputFile);
+    formData.append("job_item_id", jobItemSelected.JobItemID);
+
+    try {
+      const res = await fetch("/api/uploadPicture/Item", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json(); // อ่าน response จาก API
+
+      if (data.result) {
+        //setWdtagImg(data.filePath);
+        return data.filePath;
+      } else {
+        alert("Failed to upload file. Error " + data.error);
+      }
+    } catch (error) {
+      //console.error(error);
+      alert("An error occurred while uploading the file." + error.message);
+    }
+  };
 
   // const handleCloseWebcam = () => {
   //   //setShowWebcam(false);
@@ -423,14 +421,12 @@ const JobForm = ({
           <label
             htmlFor="text"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            
-          </label>
+          ></label>
           {/* ซ่อนปุ่มอัปโหลดไฟล์ถ้า view === "true" */}
           {view !== "true" && (
             <p>
               {/* ซ่อน input อัปโหลดไฟล์ */}
-              
+
               <input
                 type="file"
                 id="fileInput"
@@ -444,14 +440,10 @@ const JobForm = ({
                 htmlFor="fileInput"
                 className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
               >
-                {
-                      
-                }
+                {}
                 <CameraAltIcon className="mr-2" />
-                    Upload Image
-                {
-                      
-                }
+                Upload Image
+                {}
               </label>
             </p>
           )}
@@ -462,14 +454,18 @@ const JobForm = ({
           )}
           {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
           {jobData.IMAGE_FILENAME && (
-             <img 
-                  src={`/api/viewPicture?imgName=`+jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
-                  alt="Preview" 
-                  width={200} className="mt-4" 
-                  onClick={() => onclicktoShow(`/api/viewPicture?imgName=`+jobData.IMAGE_FILENAME)}
-
-              />
-          )}          
+            <img
+              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
+              alt="Preview"
+              width={200}
+              className="mt-4"
+              onClick={() =>
+                onclicktoShow(
+                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
+                )
+              }
+            />
+          )}
         </div>
       </div>
       <hr />
@@ -589,41 +585,40 @@ const JobForm = ({
                     />
                   </td>
                   <td className="border py-2 relative">
-                      
-                      {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                      {item.IMG_ATTACH && (
-                          <img 
-                                src={`/api/viewPictureItem?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                                alt="Preview" 
-                                width={200} className="mt-4" 
-                                onClick={() => onclicktoShow(`/api/viewPictureItem/?imgName=`+item.IMG_ATTACH)}
-                            />
-                        )} 
+                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                    {item.IMG_ATTACH && (
+                      <img
+                        src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
+                        alt="Preview"
+                        width={200}
+                        className="mt-4"
+                        onClick={() =>
+                          onclicktoShow(
+                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                          )
+                        }
+                      />
+                    )}
 
+                    <center>
+                      <img
+                        id={"item-img-" + item.JobItemID}
+                        // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
+                        width={200}
+                        className="mt-4"
+                      />
+                    </center>
 
-                      <center>
-                        <img
-                          id={"item-img-" + item.JobItemID}
-                          // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                          width={200}
-                          className="mt-4"
+                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                    {view === "false" && (
+                      <div>
+                        <CameraAltIcon
+                          className="text-blue-600 size-10 cursor-pointer"
+                          style={{ transform: "scale(1.5)" }}
+                          onClick={() => handleUploadFileToJobItem(item)}
                         />
-                      </center>
-                      
-                      {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                      {view==="false" && (
-                          <div>
-                            <CameraAltIcon
-                              className="text-blue-600 size-10 cursor-pointer"
-                              style={{ transform: "scale(1.5)" }}
-                              onClick={() => handleUploadFileToJobItem(item)}
-                            />
-                          </div>
-                        )} 
-                      
-                      
-
-
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -3,19 +3,19 @@ import path from "path";
 import { NextResponse } from "next/server";
 
 export const POST = async (req, res) => {
-  // console.log("use  POST");
+  //console.log("use  POST");
   try {
     const form = await req.formData();
     const FILE = form.get("file");
-    const JOB_ID = form.get("job_id");
+    const JOB_Item_ID = form.get("JOB_Template_ID");
 
     var responsePath = "";
     if (FILE && FILE.size > 0) {
       // Check if FILE exists and is not empty
       const buffer = Buffer.from(await FILE.arrayBuffer());
       const fileExtension = FILE.name.split(".").pop();
-      const filename = JOB_ID + "_" + `${Date.now()}.${fileExtension}`;
-      const filePath = "C:\\ePM_PictureUpload\\" + filename; //path.join(process.cwd(), "public/uploads/", filename);
+      const filename = JOB_Item_ID + "_" + `${Date.now()}.${fileExtension}`;
+      const filePath = "C:\\ePM_Template\\Item\\" + filename;
       responsePath = filename;
       fs.writeFileSync(filePath, buffer);
     }
