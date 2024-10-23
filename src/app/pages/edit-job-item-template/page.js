@@ -319,7 +319,7 @@ const Page = ({ searchParams }) => {
               </div>
               <div className="flex justify-between">
                 <label htmlFor="file" className="cursor-pointer">
-                  <span className="text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center bg-blue-500 hover:bg-blue-700">
+                  <span className="text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center bg-blue-500 hover:bg-blue-700 flex justify-center items-center gap-2">
                     Upload
                     <UploadFileIcon />
                   </span>
@@ -342,10 +342,10 @@ const Page = ({ searchParams }) => {
                   type="button"
                   onClick={handleClearImage}
                 >
-                  <div className="flex justify-center items-center gap-2">
+                  <span className="flex justify-center items-center gap-2">
                     Clear
                     <ClearIcon />
-                  </div>
+                  </span>
                 </button>
               </div>
             </div>
