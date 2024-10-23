@@ -470,6 +470,7 @@ const Page = ({ searchParams }) => {
                 options={[
                   { value: "12 hrs", label: "12 hrs" },
                   { value: "1 days", label: "1 days" },
+                  { value: "3 days", label: "3 days" },
                   { value: "7 days", label: "7 days" },
                   { value: "15 days", label: "15 days" },
                   { value: "30 days", label: "30 days" },

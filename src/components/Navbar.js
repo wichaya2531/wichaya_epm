@@ -129,6 +129,7 @@ const Navbar = ({ menu }) => {
               src={user.image || "/user-profile/default-user.png"}
               alt="user"
               className="w-10 h-10 rounded-full border-2 border-black"
+
             />
           </div>
         </Link>

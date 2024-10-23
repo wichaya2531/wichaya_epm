@@ -10,6 +10,7 @@ const TableComponent = ({
   TableName,
   PageSize,
   searchHidden = null,
+  linenameOnSelect = null,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");

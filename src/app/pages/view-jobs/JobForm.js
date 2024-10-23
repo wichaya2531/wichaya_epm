@@ -604,9 +604,11 @@ const JobForm = ({
                       <center>
                         <img
                           id={"item-img-" + item.JobItemID}
+                          alt="Preview"
                           // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
                           width={200}
                           className="mt-4"
+                          
                         />
                       </center>
                       

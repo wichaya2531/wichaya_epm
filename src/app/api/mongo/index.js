@@ -4,6 +4,7 @@ const connection = {};
 const db_url = process.env.MONGODB_URL;
 
 export const connectToDb = async () => {
+  //console.log("db_url:", db_url);
   //console.log(db_url);
   //console.log("Connecting to DB B");
   try {
@@ -15,6 +16,6 @@ export const connectToDb = async () => {
     connection.isConnected = db.connections[0].readyState;
     //console.log("New connection");
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };

@@ -1,7 +1,7 @@
 "use client";
 import Layout from "@/components/Layout.js";
 import ReactDOM from "react-dom";
-import Select from "react-select";
+import Select1 from "react-select";
 import TableComponent from "@/components/TableComponent.js";
 import { getSession } from "@/lib/utils/utils";
 import { useEffect, useState } from "react";
@@ -65,6 +65,11 @@ const Page = () => {
 
   const [filterStatus, setFilterStatus] = useState("All");
 
+  const [allLineName, setAllLineName] = useState(false);
+  
+
+
+
   const filteredJobs =
     jobs &&
     jobs.filter((job) => {
@@ -83,6 +88,17 @@ const Page = () => {
   }, [refresh]);
 
   const retrieveSession = async () => {
+    try {
+          const lineNamesResponse = await fetch(
+            "/api/select-line-name/get-line-name"
+          );
+          const lineNamesData = await lineNamesResponse.json();
+          console.log("lineNamesData.selectLineNames=>", lineNamesData.selectLineNames);
+          setAllLineName(lineNamesData.selectLineNames);  
+    } catch (error) {
+      
+    }
+
     const session = await getSession();
     setSession(session);
     await fetchUser(session.user_id);
@@ -123,11 +139,12 @@ const Page = () => {
   };
 
   const handleActivate = async (requestData) => {
+    
     const lineNamesResponse = await fetch(
       "/api/select-line-name/get-line-name"
     );
     const lineNamesData = await lineNamesResponse.json();
-
+   // return;
     if (!lineNamesResponse.ok) {
       console.error("Failed to fetch line names:", lineNamesData.error);
       Swal.fire({
@@ -143,6 +160,9 @@ const Page = () => {
       value: line.name,
       label: line.name,
     }));
+
+   
+
 
     if (
       validLineNames.some((option) => option.value === requestData.LINE_NAME) ||
@@ -429,6 +449,8 @@ const Page = () => {
       });
   };
 
+  //console.log("1234=>", jobTemplate);  
+ 
   const jobTemplatesBody = jobTemplates.map((jobTemplate, index) => {
     const data = {
       jobTemplateID: jobTemplate._id,
@@ -436,10 +458,29 @@ const Page = () => {
       ACTIVATER_ID: user._id,
       LINE_NAME: jobTemplate.LINE_NAME,
     };
-    return {
+    allLineName.map((lineName) => {
+            console.log("lineName=>", lineName);
+    });
+    //console.log("allLineNamev=>", allLineName);
+   // console.log("jobTemplate.LINE_NAME=>", jobTemplate.LINE_NAME);
+    
+
+    return { 
       ID: index + 1,
       "Checklist Template Name": jobTemplate.JOB_TEMPLATE_NAME,
-      "Line Name": jobTemplate.LINE_NAME,
+       "Line Name": jobTemplate.LINE_NAME,
+    //  "Line Name": (
+    //       <select 
+    //           // onChange={(e) => handleLineNameChange(e.target.value)}
+    //       >
+    //         <option value="">Select Line Name</option> {/* Option เริ่มต้น */}
+    //         {allLineName.map((lineName) => (
+    //           <option key={lineName} value={lineName}>
+    //             {lineName}
+    //           </option>
+    //         ))}
+    //       </select>
+    //     ),
       "Create At": jobTemplate.createdAt,
       Action: (
         <div className="flex gap-2 items-center justify-center">

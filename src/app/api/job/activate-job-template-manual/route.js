@@ -12,7 +12,17 @@ import { sendEmails } from "@/lib/utils/utils";
 import { Workgroup } from "@/lib/models/Workgroup";
 import { User } from "@/lib/models/User";
 import { ObjectId } from 'mongodb';
+import { Notified, Notifies } from "@/lib/models/Notifies.js";
 
+async function getEmailfromUserID(userID) {
+  try {
+    const user = await User.findOne({ _id: new ObjectId(userID) });
+    return user ? user.EMAIL : null;
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
+  }
+}
 
 async function getApproversUserEmail(job) {
   const approvers = [];
@@ -166,20 +176,37 @@ export const POST = async (req, res) => {
     });
     
 
-    //console.log("job=>", job.JOB_APPROVERS);  
+  var userEmailNotified = [];
+  try {
+      // ใช้ await เพื่อรอให้คำสั่ง find สำเร็จ
+      const notified = await Notifies.find({ JOB_TEMPLATE_ID: JobTemplateID });
+      // ใช้ for...of loop เพื่อรองรับการใช้ await ในลูป
+      for (const element of notified) {
+          //console.log("element->USER_ID", element.USER_ID); // แสดง USER_ID ที่ได้รับ
+          const email = await getEmailfromUserID(element.USER_ID); // รอให้ getEmailfromUserID คืนค่า
+          //console.log("element->USER_ID->Email", email); // แสดง email ที่ได้รับ
+          userEmailNotified.push(email); // เก็บข้อมูลใน array
+      }
+  } catch (error) {
+      console.error("Error:", error);
+  }
 
-    const userEmailsApprover = await getApproversUserEmail(job);
-    console.log("userEmailsApprover=>", userEmailsApprover);
-   
+  const userEmailsApprover = await getApproversUserEmail(job);
+  //console.log("userEmailsApprover=>", userEmailsApprover);
+  //console.log("userEmailNotified=>", userEmailNotified);
+  const allEmails = [...userEmailsApprover, ...userEmailNotified];
+  const uniqueEmails = [...new Set(allEmails)];
+  //console.log("uniqueEmails=>", uniqueEmails);
+
 
     
-    const userlist = workgroup ? workgroup.USER_LIST : [];
-    const userEmails = await Promise.all(
-      userlist.map(async (user) => {
-        const use = await User.findOne({ _id: user });
-        return use.EMAIL;
-      })
-    );
+    // const userlist = workgroup ? workgroup.USER_LIST : [];
+    // const userEmails = await Promise.all(
+    //   userlist.map(async (user) => {
+    //     const use = await User.findOne({ _id: user });
+    //     return use.EMAIL;
+    //   })
+    // );
 
     const activater = await User.findOne({ _id: ACTIVATER_ID });
     const jobData = {
@@ -187,10 +214,8 @@ export const POST = async (req, res) => {
       activatedBy: activater ? activater.EMP_NAME : null,
       timeout: job.TIMEOUT,
     };
-
     //console.log( "send emailList to=>", userEmails);  
-
-    //await sendEmails(userEmails, jobData);
+    await sendEmails(uniqueEmails, jobData);
 
     return NextResponse.json({ status: 200, data: job });
   } catch (err) {

@@ -273,7 +273,7 @@ const Page = ({ searchParams }) => {
 
     setTimeout(() => {
       uploadJobPictureToServer(file);
-    }, 500);
+    },10);
   };
 
   const uploadJobPictureToServer = async (inputFile) => {

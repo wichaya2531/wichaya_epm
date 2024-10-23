@@ -25,8 +25,9 @@ export async function login(prevState, formData) {
   const username = formData.get("username");
   const password = formData.get("password");
 
-  console.log("Login credentials:", username);
-  console.log("config.host:", config.host);
+  //console.log("Login credentials:", username);
+  //console.log("config.host:", config.host);
+  //console.log("config:", config);
   const res = await fetch(`${config.host}/api/auth/login`, {
     method: "POST",
     headers: {
@@ -146,8 +147,8 @@ export const getRevisionNo = async (documentNo) => {
 
 export async function sendEmails(emailList, job) {
 
-  //  console.log("send emailList to=>", emailList);
-  //return;
+    console.log("send emailList to=>", emailList);
+  return;
   
   const usrsparams = new URLSearchParams({
     subject: "New CheckList Checklist activated",

@@ -7,10 +7,10 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 const SECRET_KEY = process.env.SECRET_KEY;
 
 export const POST = async (req, res) => {
-  await connectToDb();
+   await connectToDb();
   const body = await req.json();
   const { username, password } = body;
-
+ // console.log("body:", body);
   try {
     // Check for super admin login
     if (username === "SA" && password === "admin") {
@@ -25,10 +25,18 @@ export const POST = async (req, res) => {
     }
 
     // Find the user with a case-insensitive match
+    //console.log("User:", User.USERNAME);
+    // console.log("login with username:", username);
+    // const allUsers = await User.find({});
+    // allUsers.forEach(user => {
+    //   console.log("user.USERNAME=>",user.USERNAME);
+    // });
 
     const user = await User.findOne({
       USERNAME: new RegExp(`^${username}$`, "i"),
     });
+
+    //console.log("user:", user);
     // Check if the user exists
     if (!user) {
       return NextResponse.json({ message: "User not found", file: __filename });
