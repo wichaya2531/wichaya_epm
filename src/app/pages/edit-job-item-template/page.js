@@ -9,6 +9,8 @@ import Link from "next/link";
 import useFetchJobItemTemplate from "@/lib/hooks/useFetchJobItemTemplate";
 import Swal from "sweetalert2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import ClearIcon from "@mui/icons-material/Clear";
 
 const Page = ({ searchParams }) => {
   const jobTemplate_id = searchParams.jobTemplate_id;
@@ -19,6 +21,8 @@ const Page = ({ searchParams }) => {
   const { user, isLoading: userLoading } = useFetchUser(refresh);
   const { locations, isLoading: locationsLoading } =
     useFetchTestLocations(refresh);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const handleToShowOnClick = (item) => {
     Swal.fire({
@@ -33,8 +37,51 @@ const Page = ({ searchParams }) => {
     });
   };
 
+  const handleClearImage = () => {
+    setSelectedFile(null);
+  };
+
+  const handleUploadFileToJob = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const filePath = await uploadJobPictureToServer(file);
+      if (filePath) {
+        setSelectedFile(filePath); // เก็บพาธไฟล์ที่อัปโหลดสำเร็จ
+        setPreview(URL.createObjectURL(file));
+      }
+    }
+  };
+
+  const uploadJobPictureToServer = async (inputFile) => {
+    if (!inputFile) {
+      alert("Please select a file first.");
+      return null; // คืนค่า null หากไม่มีไฟล์
+    }
+    const formData = new FormData();
+    formData.append("file", inputFile);
+    formData.append("JOB_Template_ID", jobTemplate_id);
+
+    try {
+      const res = await fetch("/api/uploadPicture/Item-template", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.result) {
+        return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
+      } else {
+        alert("An error occurred while uploading the file.");
+        return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while uploading the file.");
+      return null; // คืนค่า null หากเกิดข้อผิดพลาด
+    }
+  };
+
   const HandleSubmit = async (e) => {
-    //if test location is not selected
     e.preventDefault();
     if (!e.target.test_location.value) {
       Swal.fire({
@@ -57,6 +104,13 @@ const Page = ({ searchParams }) => {
       test_method: form.get("test_method"),
       test_location: form.get("test_location"),
     };
+    // เพิ่มการจัดเก็บ filePath ที่ได้จากการอัปโหลด
+    if (selectedFile) {
+      const filePath = await uploadJobPictureToServer(selectedFile);
+      if (filePath) {
+        data.filePath = filePath; // เก็บค่าพาธไฟล์ที่อัปโหลดสำเร็จ
+      }
+    }
 
     try {
       const res = await fetch(`/api/job-item-template/edit-job-item-template`, {
@@ -89,7 +143,8 @@ const Page = ({ searchParams }) => {
       });
     }
   };
-  console.log("jobItemTemplate: ", jobItemTemplate);
+
+  // console.log("jobItemTemplate: ", jobItemTemplate);
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-7">
@@ -235,17 +290,65 @@ const Page = ({ searchParams }) => {
                 isSearchable={true}
               />
             </div>
-            <img
-              src={`/api/viewItem-template?imgName=` + jobItemTemplate.FILE} // ใช้เพียงชื่อไฟล์
-              alt="Item-template"
-              width={200}
-              className="mt-4"
-              onClick={() =>
-                handleToShowOnClick(
-                  `/api/viewItem-template?imgName=` + jobItemTemplate.FILE
-                )
-              }
-            />
+            <div>
+              <label
+                htmlFor="Image"
+                className="block mb-2 text-sm font-medium text-gray-900 text-black"
+              >
+                Image
+              </label>
+              <div className="flex justify-center mb-4">
+                <img
+                  src={
+                    selectedFile && selectedFile instanceof File
+                      ? URL.createObjectURL(selectedFile) // ใช้ไฟล์ที่เลือก
+                      : `/api/viewItem-template?imgName=` + jobItemTemplate.FILE // ใช้ไฟล์เก่า
+                  }
+                  alt="Item-template"
+                  width={200}
+                  className="rounded-md cursor-pointer"
+                  onClick={() =>
+                    handleToShowOnClick(
+                      selectedFile && selectedFile instanceof File
+                        ? URL.createObjectURL(selectedFile)
+                        : `/api/viewItem-template?imgName=` +
+                            jobItemTemplate.FILE
+                    )
+                  }
+                />
+              </div>
+              <div className="flex justify-between">
+                <label htmlFor="file" className="cursor-pointer">
+                  <span className="text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center bg-blue-500 hover:bg-blue-700">
+                    Upload
+                    <UploadFileIcon />
+                  </span>
+                </label>
+                <input
+                  type="file"
+                  id="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                      // ตรวจสอบว่าไฟล์ถูกเลือก
+                      setSelectedFile(file); // อัปเดต selectedFile
+                    }
+                  }}
+                />
+                <button
+                  className="bg-red-500 text-sm font-bold text-white px-4 py-2 rounded-lg drop-shadow-lg hover:bg-red-700 hover:text-white"
+                  type="button"
+                  onClick={handleClearImage}
+                >
+                  <div className="flex justify-center items-center gap-2">
+                    Clear
+                    <ClearIcon />
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
           <button
             type="submit"
