@@ -332,8 +332,7 @@ const Page = ({ searchParams }) => {
                   onChange={(event) => {
                     const file = event.target.files[0];
                     if (file) {
-                      // ตรวจสอบว่าไฟล์ถูกเลือก
-                      setSelectedFile(file); // อัปเดต selectedFile
+                      setSelectedFile(file);
                     }
                   }}
                 />
