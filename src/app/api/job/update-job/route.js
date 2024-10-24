@@ -81,7 +81,7 @@ export const POST = async (req) => {
     job.IMAGE_FILENAME = jobData.wdtagImage;
 
     await job.save();
-   // console.log("Job updated successfully");
+    // console.log("Job updated successfully");
     //console.log("Updated job data:", job);
 
     return NextResponse.json({
@@ -131,7 +131,7 @@ const updateJobItems = async (jobItemsData) => {
       jobItem.ACTUAL_VALUE = jobItemData.value || jobItem.ACTUAL_VALUE; // อัปเดต ActualValue
       jobItem.COMMENT = jobItemData.Comment || jobItem.COMMENT; // อัปเดต Comment
       jobItem.BEFORE_VALUE = jobItemData.BeforeValue || jobItem.BEFORE_VALUE; // อัปเดต BeforeValue
-      jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // อัปเดต ImageFileName  
+      jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // อัปเดต ImageFileName
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
 

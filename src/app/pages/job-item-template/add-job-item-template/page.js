@@ -10,7 +10,6 @@ import Select from "react-select";
 import { useState } from "react";
 import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
@@ -46,7 +45,8 @@ const Page = ({ searchParams }) => {
 
   const onDrop = (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
-      setSelectedFile(acceptedFiles[0]);
+      const file = acceptedFiles[0];
+      setSelectedFile(file);
     }
   };
 
@@ -54,6 +54,126 @@ const Page = ({ searchParams }) => {
     onDrop,
     accept: "image/*",
   });
+
+  const handleUploadFileToJob = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // อัปโหลดไฟล์และรอผลลัพธ์
+      const filePath = await uploadJobPictureToServer(file);
+      if (filePath) {
+        setSelectedFile(filePath); // เก็บพาธไฟล์ที่อัปโหลดสำเร็จ
+      }
+    }
+  };
+
+  const uploadJobPictureToServer = async (inputFile) => {
+    if (!inputFile) {
+      alert("Please select a file first.");
+      return null; // คืนค่า null หากไม่มีไฟล์
+    }
+    const formData = new FormData();
+    formData.append("file", inputFile);
+    formData.append("JOB_Template_ID", jobTemplate_id);
+
+    try {
+      const res = await fetch("/api/uploadPicture/Item-template", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.result) {
+        return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
+      } else {
+        alert("An error occurred while uploading the file.");
+        return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while uploading the file.");
+      return null; // คืนค่า null หากเกิดข้อผิดพลาด
+    }
+  };
+
+  const HandleSubmit = async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const data = {
+      AUTHOR_ID: user._id,
+      JOB_ITEM_TEMPLATE_TITLE: form.get("job_item_template_title"),
+      JOB_ITEM_TEMPLATE_NAME: form.get("job_item_template_name"),
+      UPPER_SPEC: form.get("upper_spec"),
+      LOWER_SPEC: form.get("lower_spec"),
+      TEST_METHOD: form.get("test_method"),
+      JOB_TEMPLATE_ID: jobTemplate_id,
+      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+      TEST_LOCATION_ID: form.get("test_location"),
+    };
+
+    const formData = new FormData();
+    formData.append("AUTHOR_ID", data.AUTHOR_ID);
+    formData.append("JOB_ITEM_TEMPLATE_TITLE", data.JOB_ITEM_TEMPLATE_TITLE);
+    formData.append("JOB_ITEM_TEMPLATE_NAME", data.JOB_ITEM_TEMPLATE_NAME);
+    formData.append("UPPER_SPEC", data.UPPER_SPEC);
+    formData.append("LOWER_SPEC", data.LOWER_SPEC);
+    formData.append("TEST_METHOD", data.TEST_METHOD);
+    formData.append("JOB_TEMPLATE_ID", data.JOB_TEMPLATE_ID);
+    formData.append("JobTemplateCreateID", data.JobTemplateCreateID);
+    formData.append("TEST_LOCATION_ID", data.TEST_LOCATION_ID);
+
+    // ใช้พาธไฟล์ที่ได้จากการอัปโหลด
+    if (selectedFile) {
+      formData.append("FILE", selectedFile);
+    }
+
+    try {
+      const response = await fetch(
+        `/api/job-item-template/create-job-item-template`,
+        {
+          method: "POST",
+          body: formData,
+          next: { revalidate: 10 },
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Swal.fire("Success", "Product added successfully", "success");
+        setRefresh((prev) => !prev);
+      } else {
+        Swal.fire("Error", result.message || "Failed to add product", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Failed to add product", "error");
+    }
+  };
+
+  const handleRemove = async (jobItemTemplate_id) => {
+    try {
+      const response = await fetch(
+        `/api/job-item-template/remove-job-item-template`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ jobItemTemplate_id }),
+          next: { revalidate: 10 },
+        }
+      );
+      const data = await response.json();
+
+      setRefresh((prev) => !prev);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleClearImage = () => {
+    setSelectedFile(null);
+  };
 
   const jobItemTemplateBody = jobItemTemplates.map((jobItemTemplate, index) => {
     return {
@@ -108,84 +228,6 @@ const Page = ({ searchParams }) => {
     };
   });
 
-  const HandleSubmit = async (e) => {
-    e.preventDefault();
-    const form = new FormData(e.target);
-    const data = {
-      AUTHOR_ID: user._id,
-      JOB_ITEM_TEMPLATE_TITLE: form.get("job_item_template_title"),
-      JOB_ITEM_TEMPLATE_NAME: form.get("job_item_template_name"),
-      UPPER_SPEC: form.get("upper_spec"),
-      LOWER_SPEC: form.get("lower_spec"),
-      TEST_METHOD: form.get("test_method"),
-      JOB_TEMPLATE_ID: jobTemplate_id,
-      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
-      TEST_LOCATION_ID: form.get("test_location"),
-    };
-
-    const formData = new FormData();
-    formData.append("AUTHOR_ID", data.AUTHOR_ID);
-    formData.append("JOB_ITEM_TEMPLATE_TITLE", data.JOB_ITEM_TEMPLATE_TITLE);
-    formData.append("JOB_ITEM_TEMPLATE_NAME", data.JOB_ITEM_TEMPLATE_NAME);
-    formData.append("UPPER_SPEC", data.UPPER_SPEC);
-    formData.append("LOWER_SPEC", data.LOWER_SPEC);
-    formData.append("TEST_METHOD", data.TEST_METHOD);
-    formData.append("JOB_TEMPLATE_ID", data.JOB_TEMPLATE_ID);
-    formData.append("JobTemplateCreateID", data.JobTemplateCreateID);
-    formData.append("TEST_LOCATION_ID", data.TEST_LOCATION_ID);
-    if (selectedFile) {
-      formData.append("FILE", selectedFile);
-    }
-
-    try {
-      const response = await fetch(
-        `/api/job-item-template/create-job-item-template`,
-        {
-          method: "POST",
-          body: formData,
-          next: { revalidate: 10 },
-        }
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        Swal.fire("Success", "Product added successfully", "success");
-        setRefresh((prev) => !prev);
-      } else {
-        Swal.fire("Error", result.message || "Failed to add product", "error");
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Failed to add product", "error");
-    }
-  };
-
-  const handleRemove = async (jobItemTemplate_id) => {
-    try {
-      const response = await fetch(
-        `/api/job-item-template/remove-job-item-template`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ jobItemTemplate_id }),
-          next: { revalidate: 10 },
-        }
-      );
-      const data = await response.json();
-
-      setRefresh((prev) => !prev);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleClearImage = () => {
-    setSelectedFile(null);
-  };
-
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-7">
       <div className="flex flex-col gap-3 mb-4 p-4 bg-white rounded-xl">
@@ -205,21 +247,27 @@ const Page = ({ searchParams }) => {
           className="flex flex-col justify-center gap-8"
         >
           <div className="grid gap-6 mb-6 md:grid-cols-3 row-span-4">
-            <div className=" flex flex-col gap-4 justify-center items-center w-full row-span-4">
+            <div className="flex flex-col gap-4 justify-center items-center w-full row-span-4">
               <div
                 {...getRootProps()}
                 id="fileInputDropzone"
-                className="px-5 w-full bg-white rounded-2xl h-full border-2 border-[#4398E7] flex justify-center items-center"
+                className="px-5 w-full bg-white rounded-2xl h-full border-2 border-[#4398E7] flex justify-center items-center overflow-hidden"
               >
-                <input {...getInputProps()} id="fileInput" />
+                <input
+                  {...getInputProps()}
+                  id="fileInput"
+                  style={{ display: "none" }} // ซ่อน input file
+                  onChange={handleUploadFileToJob} // ลบ onChange นี้
+                  accept="image/*" // กำหนดประเภทไฟล์
+                />
 
                 <div className="flex flex-col justify-center items-center">
                   {selectedFile ? (
                     <Image
-                      src={URL.createObjectURL(selectedFile)}
+                      src={URL.createObjectURL(selectedFile)} // แสดงภาพที่เลือก
                       alt="selected"
-                      width={100}
-                      height={100}
+                      width={200}
+                      height={200}
                     />
                   ) : (
                     <>
@@ -237,15 +285,12 @@ const Page = ({ searchParams }) => {
                 </div>
               </div>
               <div className="flex gap-4">
-                <button
-                  className="bg-[#347EC2] text-white text-sm px-4 py-2 rounded-lg drop-shadow-lg hover:bg-[#4398E7] hover:text-white"
-                  type="button"
-                  onClick={() => document.getElementById("fileInput").click()}
+                {/* <label
+                  htmlFor="fileInput"
+                  className="cursor-pointer bg-[#347EC2] text-white text-sm px-4 py-2 rounded-lg drop-shadow-lg hover:bg-[#4398E7] hover:text-white flex justify-center items-center gap-2 font-bold"
                 >
-                  <div className="flex justify-center items-center gap-2 font-bold">
-                    <p> Add the image</p>
-                  </div>
-                </button>
+                  Add the image
+                </label> */}
                 <button
                   className="bg-red-500 text-sm font-bold text-white px-4 py-2 rounded-lg drop-shadow-lg hover:bg-red-700 hover:text-white"
                   type="button"
@@ -257,6 +302,7 @@ const Page = ({ searchParams }) => {
                 </button>
               </div>
             </div>
+
             <div>
               <label
                 htmlFor="author"
