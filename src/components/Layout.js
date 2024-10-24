@@ -79,6 +79,7 @@ const Layout = ({ children, className = "" }) => {
                   width={24}
                   height={24}
                   style={{ filter: "invert(100%)" }}
+                  alt="path-logo"
                 />
                 <p className="text-xl">{card.TITLE}</p>
               </div>

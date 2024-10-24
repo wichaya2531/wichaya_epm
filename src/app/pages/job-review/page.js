@@ -120,8 +120,19 @@ const Page = ({ searchParams }) => {
 
 
   const handleShowTestMethodDescription = (item) => {
-    setShowDetail(item);
-    setTestMethodDescription(true);
+            Swal.fire({
+              title: item.JobItemName,
+              html: `<div style="text-align:left;">
+                <p><strong>Description&nbsp;:&nbsp;</strong> ${item.description || ''}</p>
+                <p><strong>Test Location&nbsp;:&nbsp;</strong> ${item.TestLocationName}</p>
+                <p><strong>Test Method&nbsp;:&nbsp;</strong> ${item.TestMethod}</p>
+                <div style='padding:10px;'>
+                  ${item.File ? `<img src="/api/viewItem-template?imgName=${item.File}" alt="${item.File}" style="max-width: 100%; height: auto;" />` : ''}
+                </div>
+              </div>`,
+              icon: "info",
+              confirmButtonText: "OK",
+            });
   };
 
   const handleShowJobItemDescription = (item) => {

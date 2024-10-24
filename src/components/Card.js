@@ -12,6 +12,7 @@ const Card = ({ title = "", detail = "", link = "#", logo_path }) => {
         src={logo_path || "/assets/card-logo/NotFound.png"}
         width={50}
         height={50}
+        alt="card-logo"
       />
       <div className="flex flex-col gap-3">
         <h1 className="text-2xl font-bold">{title}</h1>

@@ -11,6 +11,7 @@ const TableComponent = ({
   PageSize,
   searchHidden = null,
   linenameOnSelect = null,
+  onPageChange,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,13 +59,26 @@ const TableComponent = ({
     currentPage * pageSize
   );
 
-  const goToPage = (page) => {
+  const goToPage = (page) => {    
     setCurrentPage(page);
+    
+    try {
+      onPageChange(page); 
+    } catch (error) {
+      
+    }
+      
+  
   };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
     setCurrentPage(1);
+    try {
+      onPageChange(page); 
+    } catch (error) {
+      
+    }
   };
 
   const handlePageSizeChange = (event) => {

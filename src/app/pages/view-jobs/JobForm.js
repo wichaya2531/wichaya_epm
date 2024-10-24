@@ -52,9 +52,13 @@ const JobForm = ({
     //setPreviewItemPicture(URL.createObjectURL(file)); // แสดง preview ของไฟล์
     //console.log("jobItemSelected",jobItemSelected);
     try {
+      document.getElementById("item-img-" + jobItemSelected.JobItemID).style.display = "block";
+    } catch (error) {
+            console.error(error);
+    }
+    try {
       var valuePath = await uploadJobItemPictureToServer(file);
-      document.getElementById("item-img-" + jobItemSelected.JobItemID).src =
-        URL.createObjectURL(file);
+      document.getElementById("item-img-" + jobItemSelected.JobItemID).src = URL.createObjectURL(file);
       //console.log("valuePath",valuePath);
       onItemImgChange(valuePath, jobItemSelected);
     } catch (error) {
@@ -601,12 +605,16 @@ const JobForm = ({
                     )}
 
                       <center>
-                        <img
-                          id={"item-img-" + item.JobItemID}
-                          // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                          width={200}
-                          className="mt-4"
-                        />
+                            {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
+                            <img
+                              id={"item-img-" + item.JobItemID}
+                              style={{display : "none"}}
+                              // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
+                              width={200}
+                              className="mt-4"
+                              alt="Preview"
+                            />
+                       
                       </center>
                       
                       {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}

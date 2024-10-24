@@ -45,7 +45,7 @@ export const POST = async (req, res) => {
  // console.log("Activate Job Template Manual");
   await connectToDb();
   const body = await req.json();
-  const { JobTemplateID, ACTIVATER_ID, JobTemplateCreateID } = body;
+  const { JobTemplateID, ACTIVATER_ID, JobTemplateCreateID,LINE_NAME } = body;
 
   try {
     //1 create job
@@ -88,7 +88,7 @@ export const POST = async (req, res) => {
       JOB_NAME: jobTemplate.JOB_TEMPLATE_NAME,
       JOB_STATUS_ID: newID._id,
       DOC_NUMBER: jobTemplate.DOC_NUMBER,
-      LINE_NAME: jobTemplate.LINE_NAME,
+      LINE_NAME: LINE_NAME,
       CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       ACTIVATE_USER: ACTIVATER_ID,
@@ -192,21 +192,9 @@ export const POST = async (req, res) => {
   }
 
   const userEmailsApprover = await getApproversUserEmail(job);
-  //console.log("userEmailsApprover=>", userEmailsApprover);
-  //console.log("userEmailNotified=>", userEmailNotified);
   const allEmails = [...userEmailsApprover, ...userEmailNotified];
   const uniqueEmails = [...new Set(allEmails)];
-  //console.log("uniqueEmails=>", uniqueEmails);
 
-
-    
-    // const userlist = workgroup ? workgroup.USER_LIST : [];
-    // const userEmails = await Promise.all(
-    //   userlist.map(async (user) => {
-    //     const use = await User.findOne({ _id: user });
-    //     return use.EMAIL;
-    //   })
-    // );
 
     const activater = await User.findOne({ _id: ACTIVATER_ID });
     const jobData = {
@@ -214,7 +202,6 @@ export const POST = async (req, res) => {
       activatedBy: activater ? activater.EMP_NAME : null,
       timeout: job.TIMEOUT,
     };
-    //console.log( "send emailList to=>", userEmails);  
     await sendEmails(uniqueEmails, jobData);
 
     return NextResponse.json({ status: 200, data: job });
