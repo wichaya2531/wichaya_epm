@@ -36,7 +36,7 @@ const Page = ({ searchParams }) => {
   const [inputValues, setInputValues] = useState([]);
   const [showDetail, setShowDetail] = useState(null);
 
-  const mqttClient = mqtt.connect(connectUrl, options);
+  // const mqttClient = mqtt.connect(connectUrl, options);
 
   useEffect(() => {
     if (user && jobData) {
@@ -51,33 +51,33 @@ const Page = ({ searchParams }) => {
       }
     }
 
-    mqttClient.on("connect", () => {});
+    // mqttClient.on("connect", () => {});
 
-    mqttClient.on("error", (err) => {
-      mqttClient.end();
-    });
+    // mqttClient.on("error", (err) => {
+    //   mqttClient.end();
+    // });
 
-    jobItems.forEach((item) => {
-      console.log("item.JobItemID: ", item.JobItemID);
-      mqttClient.subscribe(item.JobItemID, (err) => {
-        if (!err) {
-          console.log("Subscribed to " + item.JobItemID);
-        } else {
-          console.error("Subscription error: ", err);
-        }
-      });
-    });
+    // jobItems.forEach((item) => {
+    //   console.log("item.JobItemID: ", item.JobItemID);
+    //   mqttClient.subscribe(item.JobItemID, (err) => {
+    //     if (!err) {
+    //       console.log("Subscribed to " + item.JobItemID);
+    //     } else {
+    //       console.error("Subscription error: ", err);
+    //     }
+    //   });
+    // });
 
     return () => {
-      if (mqttClient) {
-        mqttClient.end();
-      }
+      // if (mqttClient) {
+      //   mqttClient.end();
+      // }
     };
   }, [jobItems, user, jobData]);
 
-  mqttClient.on("message", (topic, message) => {
-    document.getElementById(topic.toString()).placeholder = message.toString();
-  });
+  // mqttClient.on("message", (topic, message) => {
+  //   document.getElementById(topic.toString()).placeholder = message.toString();
+  // });
 
   const toggleJobInfo = () => {
     setIsShowJobInfo(!isShowJobInfo);

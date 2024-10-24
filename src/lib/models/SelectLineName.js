@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const selectLineNameSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    WORKGROUP_ID: { type: String, required: true },
   },
   { timestamps: true }
 );

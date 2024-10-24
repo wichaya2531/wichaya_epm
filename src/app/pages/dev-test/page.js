@@ -7,32 +7,32 @@ const MqttTestComponent = () => {
   const [displayName, setDisplayName] = useState('');
   const [client, setClient] = useState(null);
 
-  const topic_adrrees = '666285b06a66ee86fa3331ce';
-  const connectUrl = 'ws://172.17.70.201:9001'; 
-  const options = {
-    username: 'user1',
-    password: 'password'
-  };
-  const mqttClient = mqtt.connect(connectUrl, options);
+  // const topic_adrrees = '666285b06a66ee86fa3331ce';
+  // const connectUrl = 'ws://172.17.70.201:9001'; 
+  // const options = {
+  //   username: 'user1',
+  //   password: 'password'
+  // };
+  // const mqttClient = mqtt.connect(connectUrl, options);
 
-  useEffect(() => {
-    mqttClient.on('connect', () => {
+  // useEffect(() => {
+  //   mqttClient.on('connect', () => {
       
-    });
+  //   });
 
-    mqttClient.on('error', (err) => {
+  //   mqttClient.on('error', (err) => {
       
-      mqttClient.end();
-    });
+  //     mqttClient.end();
+  //   });
 
-    setClient(mqttClient);
+  //   setClient(mqttClient);
 
-    return () => {
-      if (mqttClient) {
-        mqttClient.end();
-      }
-    };
-  }, []);
+  //   return () => {
+  //     if (mqttClient) {
+  //       mqttClient.end();
+  //     }
+  //   };
+  // }, []);
 
   const handleSendMessage = () => {
     if (client) {
@@ -43,24 +43,21 @@ const MqttTestComponent = () => {
 
 
   const handleClickSubscribe = () => {
-
-
-
-    mqttClient.subscribe(topic_adrrees, (err) => {
-      if (!err) {
-        document.getElementById('btn-connect').style.border = "1px solid green";
-        document.getElementById('btn-connect').disabled = true;
+    // mqttClient.subscribe(topic_adrrees, (err) => {
+    //   if (!err) {
+    //     document.getElementById('btn-connect').style.border = "1px solid green";
+    //     document.getElementById('btn-connect').disabled = true;
 
         
-      } else {
-        console.error('Subscription error: ', err);
-      }
-    });
+    //   } else {
+    //     console.error('Subscription error: ', err);
+    //   }
+    // });
   };
   
-  mqttClient.on('message', (topic, message) => {
-    const receivedMessage = message.toString();
-  });
+  // mqttClient.on('message', (topic, message) => {
+  //   const receivedMessage = message.toString();
+  // });
 
   return (
     <div style={{ padding: '20px' }}>

@@ -14,7 +14,7 @@ export const POST = async (req) => {
     //console.log("Database connected");
 
     const form = await req.formData();
-    //console.log("Form data received");
+    //console.log("form=>",form);
 
     // รับ jobData และ jobItemsData จาก FormData
     const jobData = JSON.parse(form.get("jobData"));
