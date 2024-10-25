@@ -363,7 +363,7 @@ const Page = () => {
           </p>
         </div>
       </div>
-      <div className="max-w-md mx-auto my-4 p-4 border border-gray-300 rounded">
+      <div className="max-w-xl mx-auto my-4 p-4 border border-gray-300 rounded">
         <h2 className="text-xl font-bold mb-4">สร้าง Select Line Name</h2>
         <div className="mb-4">
           <label htmlFor="lineName" className="block text-sm font-medium mb-1">
