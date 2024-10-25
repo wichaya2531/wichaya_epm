@@ -10,6 +10,7 @@ import { config } from "../../../config/config.js";
 import { getSession } from "@/lib/utils/utils.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const enabledFunction = {
   "create-job-template": "6632f9e4eccb576a719dfa7a",
@@ -344,24 +345,24 @@ const Page = () => {
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-20">
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white ">
-          <div className="flex items-center ">
-            <Image
-              src="/assets/card-logo/template.png"
-              alt="wd logo"
-              width={50}
-              height={50}
-              className="rounded-full"
-            />
-            <h1 className="text-3xl font-bold text-slate-900">
-              Create Line Nane
-            </h1>
-          </div>
-          <p className="text-sm font-bold text-secondary flex  items-center">
-            Manage Line names and their lists
-          </p>
+      <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
+        <div className="flex items-center gap-4">
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
+          <Image
+            src="/assets/card-logo/manageLineName.png"
+            alt="wd logo"
+            width={50}
+            height={50}
+          />
+          <h1 className="text-3xl font-bold text-slate-900">
+            Create Line Name
+          </h1>
         </div>
+        <h1 className="text-sm font-bold text-secondary flex  items-center">
+          Manage Line names and their lists
+        </h1>
       </div>
       <div className="max-w-xl mx-auto my-4 p-4 border border-gray-300 rounded">
         <h2 className="text-xl font-bold mb-4">สร้าง Select Line Name</h2>
