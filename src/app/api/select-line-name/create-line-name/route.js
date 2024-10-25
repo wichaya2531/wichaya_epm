@@ -11,7 +11,7 @@ export const POST = async (req) => {
   const form = await req.formData();
   const user_id= form.get("user_id");
   const selectLineName = form.get("linename");
-  //console.log("req user_id=> ", user_id);
+  //console.log("req user_id=>. ", user_id);
   
   const workgroups = await Workgroup.findOne({
     USER_LIST: new ObjectId(user_id) // ใช้ new ObjectId เพื่อค้นหาด้วย ObjectId

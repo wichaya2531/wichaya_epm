@@ -23,7 +23,7 @@ export const POST = async (req) => {
     //console.log("selectLineNames =>", selectLineNames);
     return NextResponse.json({ status: 200, selectLineNames });
   } catch (err) {
-    console.error("Error fetching line names:", err);
+    console.error("Error fetching line names.:", err);
     return NextResponse.json({
       status: 500,
       error: err.message,

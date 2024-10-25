@@ -134,7 +134,7 @@ const Page = () => {
       }
       
     } catch (error) {
-      console.error("Error fetching line names:", error);
+      console.error("Error fetching line names.:", error);
     }
     return [];
   };

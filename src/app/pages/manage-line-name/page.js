@@ -46,7 +46,7 @@ const Page = () => {
       setcurrentUser(session);
       fetchLineNames(session);
     } else {
-      console.error("Failed to get session");
+      console.error("Failed to get session.");
     }
 
   };
