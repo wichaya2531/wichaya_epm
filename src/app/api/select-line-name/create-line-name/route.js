@@ -17,7 +17,7 @@ export const POST = async (req) => {
     USER_LIST: new ObjectId(user_id) // ใช้ new ObjectId เพื่อค้นหาด้วย ObjectId
   });
   const workgroup_id = workgroups._id;
-  console.log("create line name.");
+  console.log("create line name");
   try {
     const newLineName = await SelectLineName.create({ 
       name: selectLineName,
