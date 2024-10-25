@@ -66,7 +66,7 @@ const Page = () => {
 
   const [filterStatus, setFilterStatus] = useState("All");
 
-  const [allLineName, setAllLineName] = useState(false);
+  var [allLineName, setAllLineName] = useState(false);
   
 
 
@@ -85,24 +85,58 @@ const Page = () => {
     });
 
   useEffect(() => {
+    setAllLineName([]);
     retrieveSession();
   }, [refresh]);
 
   const retrieveSession = async () => {
-    try {
-          const lineNamesResponse = await fetch(
-            "/api/select-line-name/get-line-name"
-          );
-          const lineNamesData = await lineNamesResponse.json();
-          //console.log("lineNamesData.selectLineNames=>", lineNamesData.selectLineNames);
-          setAllLineName(lineNamesData.selectLineNames.map((line) => line.name));  
-    } catch (error) {
-      
-    }
+   
 
     const session = await getSession();
     setSession(session);
     await fetchUser(session.user_id);
+    var bufLineName= await fetchLineNames(session);
+    //console.log("tt=>",tt);
+    setAllLineName(bufLineName);
+    // try {
+    //       const lineNamesResponse = await fetch(
+    //         "/api/select-line-name/get-line-name"
+    //       );
+    //       const lineNamesData = await lineNamesResponse.json();
+    //       //console.log("lineNamesData.selectLineNames=>", lineNamesData.selectLineNames);
+    //       setAllLineName(lineNamesData.selectLineNames.map((line) => line.name));  
+    // } catch (error) {
+      
+    // }
+
+
+  };
+
+
+  const fetchLineNames = async (userSession) => {
+    try {
+        const formData = new FormData();
+        formData.append('user_id', userSession.user_id);  
+  
+        const response = await fetch(`/api/select-line-name/get-line-name`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await response.json();
+      if (data.status === 200){
+        //setSelectLineNames(data.selectLineNames);
+        //console.log("data.selectLineNames=>", data.selectLineNames);  
+        //await setAllLineName(data.selectLineNames.map((line) => line.name));
+        //console.log("allLineName=>", allLineName);  
+        return data.selectLineNames.map((line) => line.name);  
+      } else{
+          console.error("Failed to fetch data:", data.error);
+      }
+      
+    } catch (error) {
+      console.error("Error fetching line names.:", error);
+    }
+    return [];
   };
 
   const fetchUser = async (user_id) => {
@@ -602,11 +636,11 @@ const activateJobProcess = async (checkListTemplate) => {
                           onChange={(event) => onLineNameSelected(event.target.value,data)} 
                           style={{padding:'10px'}}>
                           <option value="">Select Line Name</option> {/* Option เริ่มต้น */}
-                          {allLineName.map((lineName) => (
+                           {allLineName.map((lineName) => (
                             <option key={lineName} value={lineName}>
                               {lineName}
                             </option>
-                          ))}
+                          ))} 
                        </select>
                     </center>
                        
