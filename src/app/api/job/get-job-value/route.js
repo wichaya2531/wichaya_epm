@@ -9,6 +9,20 @@ import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { JobApproves } from '@/lib/models/JobApprove';
 
+const getGuideInputByJobItem = async (jobItemID) => {
+            
+        const jobItem =await JobItem.find({ JOB_ITEM_TEMPLATE_ID: jobItemID });
+
+        var guideInput=[];
+        jobItem.map((item)=>{
+                guideInput.push(item.ACTUAL_VALUE);  
+        });
+        guideInput = [...new Set(guideInput)];
+
+        return guideInput;
+};
+
+
 export const dynamic = 'force-dynamic';
 export const GET = async (req, res) => {
     await connectToDb();
@@ -82,7 +96,8 @@ export const GET = async (req, res) => {
                 "LastestUpdate": jobItem.updatedAt.toLocaleString(),
                 "IMG_ATTACH": jobItem.IMG_ATTACH,
                 "File": jobItem.FILE ? jobItem.FILE.replace(/\\/g, '/') : null, 
-                "createAt": jobItem.createdAt.toLocaleString()
+                "createAt": jobItem.createdAt.toLocaleString(),
+                "guide_input":await getGuideInputByJobItem(jobItem.JOB_ITEM_TEMPLATE_ID)
             };
         }));
         

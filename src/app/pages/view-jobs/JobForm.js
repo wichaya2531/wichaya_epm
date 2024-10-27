@@ -7,6 +7,7 @@ import { useState } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import { blue } from "@mui/material/colors";
 
 const JobForm = ({
   jobData,
@@ -47,6 +48,49 @@ const JobForm = ({
     //handleUploadFileToJobItem();
   };
 
+  const handleGuideItemSelected = (valueItem,item) => {
+          try {
+                  document.getElementById(item.JobItemID).value = valueItem;
+          } catch (error) {
+            
+          }
+          try {
+                document.getElementById("guide-input-panel-"+item.JobItemID).style.display='none';
+          } catch (error) {
+            
+          }
+  }
+
+  const handleHiddenSelectGuideInput = (item) => {
+    try {
+      document.getElementById("guide-input-panel-"+item.JobItemID).style.display='none';
+    } catch (error) {
+
+    }
+  };
+
+
+  const handleOnFocusItemInput = (item) => {
+        //console.log("handleOnFocus ->",item);
+        jobItems.forEach(element => {
+                if (element.JobItemID===item.JobItemID) {
+                    return;
+                }
+                try {
+                  document.getElementById("guide-input-panel-"+element.JobItemID).style.display='none';
+                } catch (error) {
+                
+                }                 
+        });
+
+        var toggleInput= document.getElementById("guide-input-panel-"+item.JobItemID).style.display;
+        if (toggleInput === "block") {
+              document.getElementById("guide-input-panel-"+item.JobItemID).style.display = "none";
+          
+        }else{  
+              document.getElementById("guide-input-panel-"+item.JobItemID).style.display = "block";
+        }       
+  }
   
 
   const handleUploadFileToJobItemOnChange = async (event) => {
@@ -568,6 +612,7 @@ const JobForm = ({
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
                         title="This is a tooltip"
+                        
                       />
                     ) : item.ActualValue ? (
                       <input
@@ -577,16 +622,38 @@ const JobForm = ({
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
                          title="This is a tooltip"
+                         
                       />
                     ) : (
-                      <input
-                        type="text"
-                        id={item.JobItemID}
-                        onChange={(e) => handleInputChange(e, item)}
-                        className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                        placeholder="fill in value"
-                        
-                      />
+                      <div>
+                         <div> 
+                          <input
+                            type="text"
+                            id={item.JobItemID}
+                            onChange={(e) => handleInputChange(e, item)}
+                            className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                            placeholder="fill in value"
+                            onFocus={() => handleOnFocusItemInput(item)}
+                          />
+                          </div>
+                          <div id={'guide-input-panel-'+item.JobItemID}
+                               style={{padding:'10px',display:'none'}}>
+                               <select 
+                                    className="mb-5" 
+                                    name="item-guide-select" 
+                                    style={{padding:'5px',border:'1px solid green',borderRadius:'5px'}} 
+                                    onChange={(e) => handleGuideItemSelected(e.target.value,item)}
+                                    >
+                                  {item.guide_input.map((item) => (
+                                    <option key={item} value={item}>
+                                      {item}
+                                    </option>
+                                  ))}
+                                  {/* เพิ่มตัวเลือกเพิ่มเติม */}                                 
+                                </select>
+                                <span onClick={() => handleHiddenSelectGuideInput(item)} style={{paddingLeft:'10px',cursor:'default',color:'blue'}}>[ซ่อน]</span>
+                          </div>
+                      </div>                      
                     )}
                     <InfoIcon
                       className="absolute right-[2px] top-1 text-blue-600 size-4 cursor-pointer"
