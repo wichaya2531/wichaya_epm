@@ -56,7 +56,7 @@ const Page = ({ searchParams }) => {
   const [wdtagImg, setWdtagImg] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  //const [message, setMessage] = useState("");
+  //const [message, setMessage] = useState("");....
 
   const handleToShowOnClick = (item) => {
       Swal.fire({
