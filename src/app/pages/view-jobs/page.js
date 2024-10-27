@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import JobForm from "./JobForm";
 import mqtt from "mqtt";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
+import { setTime } from "@syncfusion/ej2-react-schedule";
 // import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 // import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 // import InfoIcon from "@mui/icons-material/Info";
@@ -349,12 +350,12 @@ const Page = ({ searchParams }) => {
     };
 
    //  console.log("inputValues", inputValues);
-   // return;
+   
     const formData = new FormData();
     //formData.append("wdtagPictuer", selectedFile);
     formData.append("jobData", JSON.stringify(jobInfo)); // ใช้ JSON.stringify
     formData.append("jobItemsData", JSON.stringify(inputValues)); // ใช้ inputValues
-
+   
     try {
       const response = await fetch("/api/job/update-job", {
         method: "POST",
@@ -391,7 +392,13 @@ const Page = ({ searchParams }) => {
           }
         });
         e.target.reset();
-        setRefresh((prev) => !prev);
+         //setRefresh((prev) => !prev);
+         setTimeout(() => {
+             router.push("/pages/dashboard");
+        }, 2000); 
+            
+
+
       }
     } catch (err) {
       console.error("Error:", err);

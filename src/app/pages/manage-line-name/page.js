@@ -1,22 +1,24 @@
 "use client";
+
 import Layout from "@/components/Layout.js";
+import Select from "react-select";
 import TableComponent from "@/components/TableComponent.js";
+import NextPlanIcon from "@mui/icons-material/NextPlan";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { config } from "../../../config/config.js";
+import { getSession } from "@/lib/utils/utils.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
-
-const enabledFunction = {
-  "create-job-template": "6632f9e4eccb576a719dfa7a",
-  "view-all-job-templates": "663845e3d81a314967236de6",
-  "manage-line-name": "66fb9799dc63c132e138e292",
-};
 
 const lineNameHeader = ["ID", "Line Name", "Created At", "Action"];
 
 const Page = () => {
-  const [selectLineNames, setSelectLineNames] = useState([]);
-  const [selectLineName, setSelectLineName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setcurrentUser] = useState(false);
+
+  const [selectLineNames, setSelectLineNames] = useState([]);
+  const [selectLineName, setSelectLineName] = useState(""); // เก็บค่าที่ผู้ใช้กรอก
+  const [isLoading, setIsLoading] = useState(false);
 
   // แปลงข้อมูล selectLineNames ให้เข้ากับโครงสร้างของตาราง
   const selectLineNameBody = selectLineNames.map((lineName, index) => ({
@@ -178,7 +180,6 @@ const Page = () => {
     try {
         const formData = new FormData();
         formData.append('user_id', userSession.user_id);  
-  
         const response = await fetch(`/api/select-line-name/get-line-name`, {
           method: "POST",
           body: formData
@@ -203,7 +204,7 @@ const Page = () => {
   }, []);
 
   return (
-    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-20">
+    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-20" >
       <div className="flex justify-between items-center">
         <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white ">
           <div className="flex items-center ">
@@ -222,11 +223,9 @@ const Page = () => {
             Manage Line names and their lists
           </p>
         </div>
-        <h1 className="text-sm font-bold text-secondary flex  items-center">
-          Manage Line names and their lists
-        </h1>
+        
       </div>
-      <div className="max-w-md mx-auto my-4 p-4 border border-gray-300 rounded">
+      <div className="max-w-xl mx-auto my-4 p-4 border border-gray-300 rounded" style={{width:'100%'}}>
         <h2 className="text-xl font-bold mb-4">สร้าง Select Line Name</h2>
         <div className="mb-4">
           <label htmlFor="lineName" className="block text-sm font-medium mb-1">Line name:</label>

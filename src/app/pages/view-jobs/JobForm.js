@@ -47,6 +47,8 @@ const JobForm = ({
     //handleUploadFileToJobItem();
   };
 
+  
+
   const handleUploadFileToJobItemOnChange = async (event) => {
     const file = event.target.files[0];
     //setPreviewItemPicture(URL.createObjectURL(file)); // แสดง preview ของไฟล์
@@ -565,6 +567,7 @@ const JobForm = ({
                         value={item.ActualValue}
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
+                        title="This is a tooltip"
                       />
                     ) : item.ActualValue ? (
                       <input
@@ -573,6 +576,7 @@ const JobForm = ({
                         value={item.ActualValue}
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
+                         title="This is a tooltip"
                       />
                     ) : (
                       <input
@@ -581,6 +585,7 @@ const JobForm = ({
                         onChange={(e) => handleInputChange(e, item)}
                         className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                         placeholder="fill in value"
+                        
                       />
                     )}
                     <InfoIcon

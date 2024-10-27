@@ -277,7 +277,7 @@ const activateJobProcess = async (checkListTemplate) => {
         );
         const responseData = await response.json();
 
-        console.log(  "responseData after active jobs=>",responseData);    
+        //console.log(  "responseData after active jobs=>",responseData);    
         if (responseData.status === 200) {
           Swal.fire({
             icon: "success",
