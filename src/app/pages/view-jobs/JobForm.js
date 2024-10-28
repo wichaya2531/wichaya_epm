@@ -8,6 +8,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { blue } from "@mui/material/colors";
+import Swal from 'sweetalert2';
 
 const JobForm = ({
   jobData,
@@ -47,6 +48,18 @@ const JobForm = ({
     //setShowWebcam(true);
     //handleUploadFileToJobItem();
   };
+
+
+  const handleShowComment = (item) => {
+     console.log("jobForm item=>",item);
+
+    Swal.fire({
+      title: 'Comment',
+      text: item.Comment || 'No comment available',
+      icon: 'info',
+      confirmButtonText: 'Close'
+    });
+  };  
 
   const handleGuideItemSelected = (valueItem,item) => {
           try {
@@ -563,21 +576,22 @@ const JobForm = ({
                   <td className="border px-4 py-2 relative">
                     <div>{item.JobItemTitle} </div>
                     <InfoIcon
-                      className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer"
+                      className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
+                      style={{display:'none'}}
                       onClick={() => handleShowJobItemDescription(item)}
                     />
 
                     <InfoIcon
-                      className="absolute right-1 bottom-0 text-orange-600 size-4 cursor-pointer"
+                      className="absolute right-1 bottom-0 text-blue-600 size-4 cursor-pointer "
                       onClick={() => handleShowTestMethodDescription(item)}
                     />
                   </td>
                   <td className="border px-4 py-2">
                     <div>
-                      Upper <b color="red">↑</b> : {item.UpperSpec}
+                      Upper <b style={{color:'red',fontWeight:'1200'}}>↑</b> : {item.UpperSpec}
                     </div>
                     <div>
-                      Lower <b color="blue">↓</b> : {item.LowerSpec}
+                      Lower <b style={{color:'blue',fontWeight:'1200'}}>↓</b> : {item.LowerSpec}
                     </div>
                   </td>
                   <td className="border py-2 relative">
@@ -611,67 +625,82 @@ const JobForm = ({
                     )}
                   </td>
                   <td className="border px-4 py-2 relative">
-                    {view === "true" ? (
-                      <input
-                        type="text"
-                        id={item.JobItemID}
-                        value={item.ActualValue}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                        disabled
-                        title="This is a tooltip"
-                        
-                      />
-                    ) : item.ActualValue ? (
-                      <input
-                        type="text"
-                        id={item.JobItemID}
-                        value={item.ActualValue}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                        disabled
-                         title="This is a tooltip"
-                         
-                      />
-                    ) : (
-                      <div>
-                         <div> 
+                    {
+                        view === "true" ? (
                           <input
                             type="text"
                             id={item.JobItemID}
-                            onChange={(e) => handleInputChange(e, item)}
-                            className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                            placeholder="fill in value"
-                            onFocus={() => handleOnFocusItemInput(item)}
-                            autocomplete="off"
+                            value={item.ActualValue}
+                            className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                            disabled
+                            title="This is a tooltip"
                           />
-                          </div>
-                          <div id={'guide-input-panel-'+item.JobItemID}
-                               style={{padding:'10px',display:'none'}}>
-                               <select 
-                                    className="mb-5" 
-                                    name="item-guide-select" 
-                                    style={{padding:'5px',border:'1px solid green',borderRadius:'5px'}} 
-                                    onChange={(e) => handleGuideItemSelected(e.target.value,item)}
-                                    >
-                                   <option value="เพิ่มเติม">--Select--</option>
-                                   <option value="Pass">Pass</option>
-                                   <option value="Fail">Fail</option>                                                           
-                                  {item.guide_input.map((item) => (
-                                    <option key={item} value={item}>
-                                      {item}
-                                    </option>
-                                  ))}
-                                  {/* เพิ่มตัวเลือกเพิ่มเติม */}       
-                                      
-                                </select>
-                                <span onClick={() => handleHiddenSelectGuideInput(item)} style={{paddingLeft:'10px',cursor:'default',color:'blue'}}>[ซ่อน]</span>
-                          </div>
-                      </div>                      
-                    )}
-                    <InfoIcon
-                      className="absolute right-[2px] top-1 text-blue-600 size-4 cursor-pointer"
-                      onClick={() => toggleAddComment(item)}
-                    />
+                        ) : item.ActualValue ? (
+                          <input
+                            type="text"
+                            id={item.JobItemID}
+                            value={item.ActualValue}
+                            className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                            disabled
+                            title="This is a tooltip"
+                          />
+                        ) : (
+                          <div>
+                            <div> 
+                              <input
+                                type="text"
+                                id={item.JobItemID}
+                                onChange={(e) => handleInputChange(e, item)}
+                                className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                                placeholder="fill in value"
+                                onFocus={() => handleOnFocusItemInput(item)}
+                                autocomplete="off"
+                              />
+                              </div>
+                              <div id={'guide-input-panel-'+item.JobItemID}
+                                  style={{padding:'10px',display:'none'}}>
+                                  <select 
+                                        className="mb-5" 
+                                        name="item-guide-select" 
+                                        style={{padding:'5px',border:'1px solid green',borderRadius:'5px'}} 
+                                        onChange={(e) => handleGuideItemSelected(e.target.value,item)}
+                                        >
+                                      <option value="เพิ่มเติม">--Select--</option>
+                                      <option value="Pass">Pass</option>
+                                      <option value="Fail">Fail</option>                                                           
+                                      {item.guide_input.map((item) => (
+                                        <option key={item} value={item}>
+                                          {item}
+                                        </option>
+                                      ))}
+                                      {/* เพิ่มตัวเลือกเพิ่มเติม */}       
+                                          
+                                    </select>
+                                    <span onClick={() => handleHiddenSelectGuideInput(item)} style={{paddingLeft:'10px',cursor:'default',color:'blue'}}>[ซ่อน]</span>
+                              </div>
+                          </div>                      
+                        )
+                    }
+
+                    {
+                      view === "true" ? ( 
+                        <InfoIcon
+                          className="absolute right-[2px] top-1 text-blue-600 size-4 cursor-pointer"
+                          onClick={() => handleShowComment(item)}
+                        />          
+                       ):(                       
+                        <InfoIcon
+                          className="absolute right-[2px] top-1 text-blue-600 size-4 cursor-pointer"
+                          onClick={() => toggleAddComment(item)}
+                        />    
+                      )
+                    } 
+                     
+                    
+
+
                   </td>
+
                   <td className="border py-2 relative">
                     {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
                     {item.IMG_ATTACH && (

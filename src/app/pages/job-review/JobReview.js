@@ -8,6 +8,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import Image from "next/image";
 import { Img } from "@chakra-ui/react";
+import Swal from 'sweetalert2';
 
 const JobForm = ({
   jobData,
@@ -26,6 +27,19 @@ const JobForm = ({
   //console.log("jobData.=>", jobData);
   //console.log("jobItems.=>", jobItems);
   //console.log(jobData.IMAGE_FILENAME);
+      const handleShowComment = (item) => {
+        Swal.fire({
+          title: 'Comment',
+          text: item.Comment || 'No comment available',
+          icon: 'info',
+          confirmButtonText: 'Close'
+        });
+      };
+  
+
+
+
+
   return (
     <form className="flex flex-col gap-8" onSubmit={handleApprove}>
       <h1
@@ -306,7 +320,7 @@ const JobForm = ({
               onClick={() => onclicktoShow(`/api/viewPicture?imgName=`+jobData.IMAGE_FILENAME)}
             />
           ) : (
-            <p className="text-gray-500">ไม่พบข้อมูลภาพ</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
+            <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
           )}
         </div>
       </div>
@@ -349,11 +363,12 @@ const JobForm = ({
                     <div>{item.JobItemTitle} </div>
                     <InfoIcon
                       className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
+                      style={{ display: "none" }}
                       onClick={() => handleShowJobItemDescription(item)}
                     />
 
                     <InfoIcon
-                      className="absolute right-1 bottom-0 text-blue-600 size-4 cursor-pointer text-orange-600"
+                      className="absolute right-1 bottom-0 text-blue-600 size-4 cursor-pointer "
                       onClick={() => handleShowTestMethodDescription(item)}
                     />
                   </td>
@@ -366,10 +381,10 @@ const JobForm = ({
                                         />
                                     </td> */}
                   <td className="border px-4 py-2"> <div>
-                      Upper <b color="red">↑</b> : {item.UpperSpec}
+                      Upper <b style={{color:'red',fontWeight:'1200'}} >↑</b> : {item.UpperSpec}
                     </div>
                     <div>
-                      Lower <b color="blue">↓</b> : {item.LowerSpec}
+                      Lower <b style={{color:'blue',fontWeight:'1200'}} >↓</b> : {item.LowerSpec}
                     </div>
                   </td>
                   <td className="border px-4 py-2"> 
@@ -388,6 +403,10 @@ const JobForm = ({
                       value={item.ActualValue}
                       className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
                       disabled
+                    />
+                     <InfoIcon
+                      className="absolute right-1 top-0 text-blue-600 size-4 cursor-pointer "
+                      onClick={() => handleShowComment(item)}
                     />
                   </td>
                   <td className="border px-4 py-2 relative" >
@@ -408,7 +427,7 @@ const JobForm = ({
                   
                                 />
                               ) : (
-                                <p className="text-gray-500">ไม่พบข้อมูลภาพ</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
+                                <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
                               )}
                     </center>
                         
@@ -444,7 +463,7 @@ const JobForm = ({
               variant="contained"
               color="secondary"
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() => toggleAddComment(jobData)}
+              onClick={() => alert('implement..') /* toggleAddComment(jobData)*/ }
             >
               Disapprove
             </button>

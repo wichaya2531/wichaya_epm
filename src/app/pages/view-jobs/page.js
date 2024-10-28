@@ -31,10 +31,7 @@ const Page = ({ searchParams }) => {
   const job_id = searchParams.job_id;
   const [view, setView] = useState(searchParams.view);
   const [refresh, setRefresh] = useState(false);
-  const { jobData, jobItems, isLoading, error } = useFetchJobValue(
-    job_id,
-    refresh
-  );
+  var { jobData, jobItems, isLoading, error } = useFetchJobValue(job_id, refresh );
   const {
     machines,
     isLoading: machinesLoading,
@@ -46,7 +43,7 @@ const Page = ({ searchParams }) => {
   const [jobItemDetail, setJobItemDetail] = useState(null);
   const [testMethodDescription, setTestMethodDescription] = useState(null);
   const [AddCommentForm, setAddCommentForm] = useState(false);
-  const [commentDetail, setCommentDetail] = useState(null);
+  var [commentDetail, setCommentDetail] = useState(null);
   var [inputValues, setInputValues] = useState([]);
  // const { status } = useFetchStatus(refresh);
   const [machineName, setMachineName] = useState(null);
@@ -227,8 +224,27 @@ const Page = ({ searchParams }) => {
     } catch (error) {}
   };
 
-  const handleSubmitComment = async (e) => {
-    e.preventDefault();
+  const handleSubmitComment = async (dataJobItem,dataComment) => {
+
+    
+    for(var t in inputValues){
+
+      if (inputValues[t].JobItemID===dataJobItem.JobItemID) {
+         inputValues[t].Comment=dataComment;
+        // commentDetail=inputValues[t];
+         setCommentDetail(inputValues[t]);
+      }
+    }
+
+    //console.log("inputValues", inputValues);
+    
+    //jobItems=inputValues;    
+    //console.log("inputValues", inputValues);
+    console.log("commentDetail", commentDetail);
+    
+
+    return;
+   /* e.preventDefault();
     const comment = e.target.comment.value;
     setInputValues((prev) => {
       const existingIndex = prev.findIndex(
@@ -250,7 +266,7 @@ const Page = ({ searchParams }) => {
           Comment: comment,
         },
       ];
-    });
+    });   */
     setAddCommentForm(false);
   };
 
