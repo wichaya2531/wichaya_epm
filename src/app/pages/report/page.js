@@ -4,7 +4,6 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import BarChart from "./BarChart";
 import BarChart2 from "./BarChart2";
-import SearchName from "./searchName";
 
 const Page = () => {
   return (
@@ -30,8 +29,8 @@ const Page = () => {
       </div>
       <div className="mb-4 p-4 bg-white rounded-xl">
         <BarChart />
-        <SearchName />
-        {/* <BarChart2 /> */}
+        <hr className="mt-5" />
+        <BarChart2 />
       </div>
     </Layout>
   );

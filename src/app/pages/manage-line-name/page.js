@@ -10,6 +10,7 @@ import { config } from "../../../config/config.js";
 import { getSession } from "@/lib/utils/utils.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
 const lineNameHeader = ["ID", "Line Name", "Created At", "Action"];
 
@@ -54,7 +55,6 @@ const Page = () => {
     } else {
       console.error("Failed to get session.");
     }
-
   };
 
   // ฟังก์ชันอัปเดต Line Name
@@ -92,7 +92,11 @@ const Page = () => {
           );
           Swal.fire("Updated!", "The line name has been updated.", "success");
         } else {
-          Swal.fire("Update Failed", "There was a problem updating the name.", "error");
+          Swal.fire(
+            "Update Failed",
+            "There was a problem updating the name.",
+            "error"
+          );
         }
       } catch (error) {
         console.error("Error updating line name:", error);
@@ -115,15 +119,24 @@ const Page = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`/api/select-line-name/delete-line-name/${id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `/api/select-line-name/delete-line-name/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
 
         if (response.ok) {
-          setSelectLineNames((prevData) => prevData.filter((lineName) => lineName._id !== id));
+          setSelectLineNames((prevData) =>
+            prevData.filter((lineName) => lineName._id !== id)
+          );
           Swal.fire("Deleted!", "The line name has been deleted.", "success");
         } else {
-          Swal.fire("Delete Failed", "There was a problem deleting the name.", "error");
+          Swal.fire(
+            "Delete Failed",
+            "There was a problem deleting the name.",
+            "error"
+          );
         }
       } catch (error) {
         console.error("Error removing line name:", error);
@@ -146,8 +159,8 @@ const Page = () => {
     setIsLoading(true);
     try {
       const formData = new FormData();
-      formData.append('linename', selectLineName);  
-      formData.append('user_id', currentUser.user_id);  
+      formData.append("linename", selectLineName);
+      formData.append("user_id", currentUser.user_id);
 
       const response = await fetch(`/api/select-line-name/create-line-name`, {
         method: "POST",
@@ -158,7 +171,11 @@ const Page = () => {
 
       const data = await response.json();
       if (response.ok && data.success) {
-        Swal.fire({ icon: "success", title: "สำเร็จ", text: "สร้างข้อมูลสำเร็จ" });
+        Swal.fire({
+          icon: "success",
+          title: "สำเร็จ",
+          text: "สร้างข้อมูลสำเร็จ",
+        });
         setSelectLineNames((prevData) => [...prevData, data.lineName]);
         setSelectLineName("");
       } else {
@@ -169,29 +186,31 @@ const Page = () => {
         });
       }
     } catch (error) {
-      Swal.fire({ icon: "error", title: "เกิดข้อผิดพลาด", text: error.message });
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: error.message,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-
   const fetchLineNames = async (userSession) => {
     try {
-        const formData = new FormData();
-        formData.append('user_id', userSession.user_id);  
-        const response = await fetch(`/api/select-line-name/get-line-name`, {
-          method: "POST",
-          body: formData
-        });
-  
-        const data = await response.json();
-      if (data.status === 200){
+      const formData = new FormData();
+      formData.append("user_id", userSession.user_id);
+      const response = await fetch(`/api/select-line-name/get-line-name`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.status === 200) {
         setSelectLineNames(data.selectLineNames);
-      } else{
-          console.error("Failed to fetch data:", data.error);
+      } else {
+        console.error("Failed to fetch data:", data.error);
       }
-      
     } catch (error) {
       console.error("Error fetching line names:", error);
     }
@@ -200,30 +219,28 @@ const Page = () => {
   useEffect(() => {
     getCurrentUser();
     //console.log("c =>", c);
-
   }, []);
 
   return (
-    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-20" >
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white ">
-          <div className="flex items-center ">
-            <Image
-              src="/assets/card-logo/template.png"
-              alt="wd logo"
-              width={50}
-              height={50}
-              className="rounded-full"
-            />
-            <h1 className="text-3xl font-bold text-slate-900">
-              Create Line Nane
-            </h1>
-          </div>
-          <p className="text-sm font-bold text-secondary flex  items-center">
-            Manage Line names and their lists
-          </p>
+    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-10">
+      <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
+        <div className="flex items-center gap-4">
+          <Link href="/pages/dashboard">
+            <ArrowBackIosNewIcon />
+          </Link>
+          <Image
+            src="/assets/card-logo/manageLineName.png"
+            alt="wd logo"
+            width={50}
+            height={50}
+          />
+          <h1 className="text-3xl font-bold text-slate-900">
+            Create Line Name
+          </h1>
         </div>
-        
+        <h1 className="text-sm font-bold text-secondary flex  items-center">
+          Manage Line names and their lists
+        </h1>
       </div>
       <div className="max-w-[98vw] mx-auto my-4 p-4 border border-gray-300 rounded" style={{width:'100%'}}>
         <h2 className="text-xl font-bold mb-4">สร้าง Select Line Name</h2>
