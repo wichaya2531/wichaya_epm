@@ -93,49 +93,60 @@ const TableComponent = ({
 
   return (
     <div className="flex flex-col justify-center gap-5 items-center relative">
-      <div className="flex flex-col md:flex-row flex-wrap justify-start items-center w-full my-4 gap-2">
-        <div className="flex md:flex-row flex-col gap-2 w-full">
-          <select
-            value={pageSize}
-            onChange={handlePageSizeChange}
-            className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-full"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={20}>20</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
+    <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left" >
+  <div className="flex flex-row gap-2 text-left max-w-full">
+    
+   
+    <div className="max-w-[20vw] inline-block" >
+      <span>Rows:</span>
+      <select
+        value={pageSize}
+        onChange={handlePageSizeChange}
+        className="mx-2 p-2  border rounded-md flex-shrink-0 max-w-[100%] inline-block"
+      >
+        <option value={5}>5</option>
+        <option value={10}>10</option>
+        <option value={15}>15</option>
+        <option value={20}>20</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </select>
+    </div>
 
-          {filterColumn && (
-            <select
-              value={selectedFilter}
-              onChange={handleFilterChange}
-              className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-full"
-            >
-              <option value="">All</option>
-              {uniqueFilterOptions.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        <div style={{display:'none'}} className="relative mx-2 w-full md:w-auto flex-shrink-0 max-w-full">
-          <input
-            className="border border-gray-300 rounded-md p-2 pl-9 pr-4 w-full max-w-full"
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-          <SearchIcon className="absolute left-2 top-2 text-gray-500" />
-        </div>
+   
+    {filterColumn && (
+      <div className="max-w-[150px] inline-block" >
+        <select
+          value={selectedFilter}
+          onChange={handleFilterChange}
+          className="border border-gray-300 rounded-md p-2 flex-shrink-0"
+        >
+          <option value="">All</option>
+          {uniqueFilterOptions.map((option, index) => (
+            <option key={index} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </div>
+    )}
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   
+    <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto" >
+      <input
+        className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={handleSearch}
+      />
+      <SearchIcon className="absolute left-2 top-2 text-gray-500" />
+    </div>
+
+  </div>
+</div>
 
       <div className="w-full bg-white rounded-lg font-sans flex flex-col justify-center items-start overflow-x-auto shadow-md">
         <h1 className="p-2 text-sm text-secondary font-bold">

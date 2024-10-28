@@ -225,26 +225,28 @@ const Page = () => {
         </div>
         
       </div>
-      <div className="max-w-xl mx-auto my-4 p-4 border border-gray-300 rounded" style={{width:'100%'}}>
+      <div className="max-w-[98vw] mx-auto my-4 p-4 border border-gray-300 rounded" style={{width:'100%'}}>
         <h2 className="text-xl font-bold mb-4">สร้าง Select Line Name</h2>
-        <div className="mb-4">
+        <div className="mb-4 max-w-[250px] inline-block" >
           <label htmlFor="lineName" className="block text-sm font-medium mb-1">Line name:</label>
           <input
             type="text"
             id="lineName"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full border border-gray-300 rounded p-2 max-w-[200px]"
             value={selectLineName}
             onChange={(e) => setSelectLineName(e.target.value)}
             placeholder="กรอกชื่อ Line Name"
           />
+        </div> &nbsp;
+        <div className="mb-4 max-w-[100px] inline-block">
+          <button
+            className="bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50"
+            onClick={handleCreate}
+            disabled={isLoading}
+          >
+            {isLoading ? "กำลังสร้าง..." : "สร้าง"}
+          </button>
         </div>
-        <button
-          className="bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50"
-          onClick={handleCreate}
-          disabled={isLoading}
-        >
-          {isLoading ? "กำลังสร้าง..." : "สร้าง"}
-        </button>
         <TableComponent
           headers={lineNameHeader}
           datas={selectLineNameBody}

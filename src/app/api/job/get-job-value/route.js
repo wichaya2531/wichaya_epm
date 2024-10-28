@@ -15,10 +15,13 @@ const getGuideInputByJobItem = async (jobItemID) => {
 
         var guideInput=[];
         jobItem.map((item)=>{
-                guideInput.push(item.ACTUAL_VALUE);  
+                //console.log('item=>', ":"+item.ACTUAL_VALUE+":");
+                if(item.ACTUAL_VALUE!==null){
+                    guideInput.push(item.ACTUAL_VALUE);  
+                }  
+               
         });
         guideInput = [...new Set(guideInput)];
-
         return guideInput;
 };
 

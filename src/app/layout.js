@@ -11,7 +11,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
+    //src="/assets/images/login-logo.png"
     <html lang="en">
+       <link rel="icon" href="/assets/images/e_pm-Icon.ico" />
       <AuthContextProvider>
         <body className={inter.className}>{children}</body>
       </AuthContextProvider>

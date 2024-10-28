@@ -36,7 +36,7 @@ const MqttTestComponent = () => {
 
   const handleSendMessage = () => {
     if (client) {
-      client.publish(topic_adrrees, document.getElementById('display-name').value + " Say " + message);
+      // client.publish(topic_adrrees, document.getElementById('display-name').value + " Say " + message);
      
     }
   };
@@ -65,7 +65,7 @@ const MqttTestComponent = () => {
       <hr></hr>
       <div style={{ padding: "5px" }}>
         <label for="display-name">Topic &nbsp;: &nbsp;</label>
-        <input type="text" value={topic_adrrees}
+        <input type="text" 
           placeholder="Enter topic"
           style={{ border: "1px solid gray;", padding: "10px" }} /> &nbsp;&nbsp;&nbsp;&nbsp;
         <button id='btn-connect' onClick={handleClickSubscribe} style={{ padding: '10px', border: "1px solid red" }}  >Subscrib</button>
@@ -95,7 +95,7 @@ const MqttTestComponent = () => {
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Enter message"
         />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <button onClick={handleSendMessage} style={{ padding: '10px', border: "1px solid red" }}>Send Message</button>
+        <button style={{ padding: '10px', border: "1px solid red" }}>Send Message</button>
       </div>
 
 

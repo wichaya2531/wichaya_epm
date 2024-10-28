@@ -127,11 +127,13 @@ export const convertKeyToDate = async (uniqueKey) => {
 export const getRevisionNo = async (documentNo) => {
   try {
     const res = await fetch(
-      `https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&xmlFlag=searchCriteria&docNum=${documentNo}`,
+      //`https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&xmlFlag=searchCriteria&docNum=${documentNo}`
+      `https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docNum=${documentNo}&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&revReleaseDate=&xmlFlag=searchCriteria`
+      ,
       { next: { revalidate: 10 } }
     );
     const data = await res.json();
-
+    //console.log("html tag from agile:=>", data);  
     if (data.length > 1) {
       return { message: "Multiple records found" };
     } else if (data.NoRecords) {

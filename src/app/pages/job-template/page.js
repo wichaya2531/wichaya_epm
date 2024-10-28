@@ -607,7 +607,7 @@ const Page = () => {
               <input
                 type="text"
                 id="author"
-                className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 value={user.name}
                 name="author"
                 required
@@ -624,7 +624,7 @@ const Page = () => {
               <input
                 type="text"
                 id="workgroup"
-                className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 value={user.workgroup}
                 name="workgroup"
                 required
@@ -644,7 +644,7 @@ const Page = () => {
                 id="due_date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="due_date"
                 required
               />
@@ -659,7 +659,7 @@ const Page = () => {
               <input
                 type="text"
                 id="job_template_name"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Template Name"
                 name="job_template_name"
                 required
@@ -675,7 +675,7 @@ const Page = () => {
               <input
                 type="text"
                 id="doc_num"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="2092-810000-000"
                 name="doc_num"
                 required
@@ -691,7 +691,7 @@ const Page = () => {
               <input
                 type="text"
                 id="checklist_ver"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="AE,AF,07,08"
                 name="checklist_ver"
                 required
@@ -708,7 +708,7 @@ const Page = () => {
               <input
                 type="text"
                 id="line_name"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="@line_name"
                 name="line_name"
                 required
@@ -735,6 +735,7 @@ const Page = () => {
                 ]}
                 isSearchable={true}
                 name="timeout"
+                className="max-w-[300px]"
               />
             </div>
 
@@ -751,7 +752,7 @@ const Page = () => {
                   value={selectedApprover}
                   onChange={setSelectedApprover}
                   isSearchable={true}
-                  className="z-50"
+                  className="z-50 max-w-[300px]"
                 />
               </div>
               <button
@@ -775,7 +776,7 @@ const Page = () => {
                   value={selectedNotify}
                   onChange={setSelectedNotify}
                   isSearchable={true}
-                  className="z-50"
+                  className="z-50 max-w-[300px]"
                 />
               </div>
               <button
@@ -796,7 +797,7 @@ const Page = () => {
                 type="submit"
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               >
-                Create Checklist Template
+                Create Checklist Template.
               </button>
             ) : (
               <button
@@ -804,7 +805,7 @@ const Page = () => {
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-not-allowed"
                 disabled
               >
-                Create Checklist Template
+                Create Checklist Template.
               </button>
             )
           }

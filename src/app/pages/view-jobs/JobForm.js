@@ -54,6 +54,13 @@ const JobForm = ({
           } catch (error) {
             
           }
+          
+          try {
+                handleInputChange({target:{value:valueItem}},item);
+          } catch (error) {
+            
+          }
+
           try {
                 document.getElementById("guide-input-panel-"+item.JobItemID).style.display='none';
           } catch (error) {
@@ -634,6 +641,7 @@ const JobForm = ({
                             className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                             placeholder="fill in value"
                             onFocus={() => handleOnFocusItemInput(item)}
+                            autocomplete="off"
                           />
                           </div>
                           <div id={'guide-input-panel-'+item.JobItemID}
@@ -644,12 +652,16 @@ const JobForm = ({
                                     style={{padding:'5px',border:'1px solid green',borderRadius:'5px'}} 
                                     onChange={(e) => handleGuideItemSelected(e.target.value,item)}
                                     >
+                                   <option value="เพิ่มเติม">--Select--</option>
+                                   <option value="Pass">Pass</option>
+                                   <option value="Fail">Fail</option>                                                           
                                   {item.guide_input.map((item) => (
                                     <option key={item} value={item}>
                                       {item}
                                     </option>
                                   ))}
-                                  {/* เพิ่มตัวเลือกเพิ่มเติม */}                                 
+                                  {/* เพิ่มตัวเลือกเพิ่มเติม */}       
+                                      
                                 </select>
                                 <span onClick={() => handleHiddenSelectGuideInput(item)} style={{paddingLeft:'10px',cursor:'default',color:'blue'}}>[ซ่อน]</span>
                           </div>

@@ -67,7 +67,7 @@ export const POST = async (req, res) => {
 
         // Activate jobs until the end date based on the recurrence type
         let currentDate = new Date(activationDate);
-        console.log("currentDate", currentDate)
+        //console.log("currentDate", currentDate)
         while (!endDateObj || currentDate <= endDateObj) {
             // Create a new job
             const AdvanceActivationDate = new Date(currentDate);

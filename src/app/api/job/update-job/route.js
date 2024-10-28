@@ -4,6 +4,7 @@ import { Status } from "@/lib/models/Status";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { User } from "@/lib/models/User";
+import { ActivateJobTemplate, getRevisionNo, sendEmails } from "@/lib/utils/utils";
 //import fs from "fs";
 //import path from "path";
 
@@ -50,19 +51,19 @@ export const POST = async (req) => {
 
     // ค้นหาผู้ส่งข้อมูล
     const submittedUser = await User.findById(jobData.submittedBy);
-    // const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
+    const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
     // ปิดไว้เมื่อต้องการทดสอบ local fee
 
-    // // ตรวจสอบหมายเลขเอกสาร
-    // if (latestDocNo.message) {
-    //   console.log("Doc number error");
-    //   return NextResponse.json({ status: 455, message: latestDocNo.message });
-    // } else if (job.CHECKLIST_VERSION !== latestDocNo) {
-    //   return NextResponse.json({
-    //     status: 455,
-    //     message: "This Checklist does not have the latest revision",
-    //   });
-    // }
+    // ตรวจสอบหมายเลขเอกสาร
+    if (latestDocNo.message) {
+      console.log("Doc number error");
+      return NextResponse.json({ status: 455, message: latestDocNo.message });
+    } else if (job.CHECKLIST_VERSION !== latestDocNo) {
+      return NextResponse.json({
+        status: 455,
+        message: "This Checklist does not have the latest revision",
+      });
+    }
 
     // อัปเดต job items
     await updateJobItems(jobItemsData); // ตรวจสอบที่นี่
@@ -135,9 +136,9 @@ const updateJobItems = async (jobItemsData) => {
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
 
-      console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
+         //console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
     } else {
-      console.error(`JobItem with ID ${jobItemData.JobItemID} not found.`);
+         console.error(`JobItem with ID ${jobItemData.JobItemID} not found.`);
     }
   });
 

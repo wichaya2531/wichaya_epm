@@ -101,7 +101,7 @@ export default function LoginForm() {
                 Show Password
               </label>
             </div>
-            <button className="bg-blue-600 text-white py-3 w-full rounded-md hover:bg-blue-500 font-bold mt-3 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+            <button className="bg-blue-600 text-white py-3 w-full max-w-xs rounded-md hover:bg-blue-500 font-bold mt-3 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
               Login
             </button>
             {state?.message && <p className="text-red-500">{state.message}</p>}

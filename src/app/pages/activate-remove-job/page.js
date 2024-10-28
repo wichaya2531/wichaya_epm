@@ -562,11 +562,11 @@ const activateJobProcess = async (checkListTemplate) => {
     //     ),
       "Create At": jobTemplate.createdAt,
       Action: (
-        <div className="flex gap-2 items-center justify-center">
+        <div className="flex gap-1 items-center justify-center" style={{border:'1px solid none'}}>
           <div style={{border:'1px solid none'}}>
-             
-                  <button
-                    className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-3 rounded"
+                <div className="py-3 inline-block">
+                    <button
+                    className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-3 rounded "
                     onClick={() => handlePlan(data)}
                     disabled={
                       !userEnableFunctions.some(
@@ -585,6 +585,9 @@ const activateJobProcess = async (checkListTemplate) => {
                   >
                     plan
                   </button>
+                </div>
+                  
+
                   &nbsp;&nbsp;
                   <button
                     className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-1 px-2 rounded"
@@ -623,6 +626,7 @@ const activateJobProcess = async (checkListTemplate) => {
                       )
                         ? "not-allowed"
                         : "pointer",
+                        display:'none'
                     }}
                   >
                     details
