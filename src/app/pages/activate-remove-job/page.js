@@ -96,7 +96,7 @@ const Page = () => {
     setSession(session);
     await fetchUser(session.user_id);
     var bufLineName= await fetchLineNames(session);
-    //console.log("tt=>",tt);
+    //console.log("tt..=>",tt);
     setAllLineName(bufLineName);
     // try {
     //       const lineNamesResponse = await fetch(
