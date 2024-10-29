@@ -149,8 +149,8 @@ export const getRevisionNo = async (documentNo) => {
 
 export async function sendEmails(emailList, job) {
 
-    console.log("send emailList to=>", emailList);
-  return;
+  //  console.log("send emailList to=>", emailList);
+  //return;
   
   const usrsparams = new URLSearchParams({
     subject: "New CheckList Checklist activated",
@@ -161,6 +161,7 @@ export async function sendEmails(emailList, job) {
       name: ${job.name}
       activated by: ${job.activatedBy}
       timeout: ${job.timeout}
+      direct link : <a href="http://10.171.134.51:3000/pages/login"> Click </a>
       `,
     mailsender: "epm-system@wdc.com",
     cc: "",

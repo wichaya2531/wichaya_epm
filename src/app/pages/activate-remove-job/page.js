@@ -590,7 +590,7 @@ const activateJobProcess = async (checkListTemplate) => {
 
                   &nbsp;&nbsp;
                   <button
-                    className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-1 px-2 rounded"
+                    className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-2 px-2 rounded"
                     onClick={() => handleActivate(data)}
                     disabled={
                       !userEnableFunctions.some(

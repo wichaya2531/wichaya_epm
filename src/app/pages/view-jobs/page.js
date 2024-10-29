@@ -55,6 +55,19 @@ const Page = ({ searchParams }) => {
 
   //const [message, setMessage] = useState("");....
 
+
+  const handleShowComment = (item) => {
+    console.log("jobForm item=>",item);
+
+   Swal.fire({
+     title: 'Comment',
+     text: item.Comment || 'No comment available',
+     icon: 'info',
+     confirmButtonText: 'Close'
+   });
+ };  
+
+
   const handleToShowOnClick = (item) => {
       Swal.fire({
         title: item.title,
@@ -226,13 +239,14 @@ const Page = ({ searchParams }) => {
 
   const handleSubmitComment = async (dataJobItem,dataComment) => {
 
-    
+    //console.log("dataJobItem", dataJobItem);
     for(var t in inputValues){
-
+      console.log(inputValues[t].JobItemID+":"+dataJobItem.JobItemID);
       if (inputValues[t].JobItemID===dataJobItem.JobItemID) {
-         inputValues[t].Comment=dataComment;
+         inputValues[t].Comment="Jack";
         // commentDetail=inputValues[t];
          setCommentDetail(inputValues[t]);
+         console.log("Config OK");
       }
     }
 
@@ -240,9 +254,8 @@ const Page = ({ searchParams }) => {
     
     //jobItems=inputValues;    
     //console.log("inputValues", inputValues);
-    console.log("commentDetail", commentDetail);
-    
-
+    //commentDetail.Comment="Hello World";
+    console.log("commentDetail", commentDetail);    
     return;
    /* e.preventDefault();
     const comment = e.target.comment.value;

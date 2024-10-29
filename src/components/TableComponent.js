@@ -13,6 +13,19 @@ const TableComponent = ({
   linenameOnSelect = null,
   onPageChange,
 }) => {
+
+  setTimeout(() => {
+      var rowsVisible= getRowsVisible();
+      //console.log("rowsVisible=>",rowsVisible);
+      try {
+        setPageSize(Number(rowsVisible));
+      }catch (error) {
+        
+      }
+
+  }, 1000);
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(PageSize || 5);
@@ -84,12 +97,29 @@ const TableComponent = ({
   const handlePageSizeChange = (event) => {
     setPageSize(Number(event.target.value));
     setCurrentPage(1);
+    setRowsVisible(event.target.value);
   };
 
   const handleFilterChange = (event) => {
     setSelectedFilter(event.target.value);
     setCurrentPage(1); // รีเซ็ตหน้าเป็น 1 เมื่อมีการเปลี่ยนตัวกรอง
   };
+
+  const setRowsVisible = (rows) => {
+        document.cookie = `rows=${rows}; path=/; max-age=31536000`; // 1 year
+  }
+  
+  const getRowsVisible = () => {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith('rows=')) {
+        return cookie.substring(5, cookie.length);
+      }
+    }
+    return 5;
+  }
+
 
   return (
     <div className="flex flex-col justify-center gap-5 items-center relative">
@@ -103,6 +133,7 @@ const TableComponent = ({
         value={pageSize}
         onChange={handlePageSizeChange}
         className="mx-2 p-2  border rounded-md flex-shrink-0 max-w-[100%] inline-block"
+        id="table-rows-num"
       >
         <option value={5}>5</option>
         <option value={10}>10</option>
@@ -116,13 +147,13 @@ const TableComponent = ({
 
    
     {filterColumn && (
-      <div className="max-w-[150px] inline-block" >
+      <div className="max-w-[250px] inline-block" >
         <select
           value={selectedFilter}
           onChange={handleFilterChange}
-          className="border border-gray-300 rounded-md p-2 flex-shrink-0"
+          className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-[200px] "
         >
-          <option value="">All</option>
+          <option value="" >All</option>
           {uniqueFilterOptions.map((option, index) => (
             <option key={index} value={option}>
               {option}

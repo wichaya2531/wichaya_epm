@@ -8,7 +8,7 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 export const POST = async (req) => {
   await connectToDb();
   const JobItemTemplateCreateID = await generateUniqueKey();
-
+  console.log("use create job item template");
   try {
     const form = await req.formData();
 
@@ -55,9 +55,13 @@ export const POST = async (req) => {
 
     // Save the JobItemTemplate instance to the database
     await jobItemTemplate.save();
+    
+    console.log("jobItemTemplate save Success");
 
     return NextResponse.json({ status: 200, jobItemTemplate });
   } catch (err) {
+    console.error("jobItemTemplate save Error : "+err.message);
+
     return NextResponse.json({
       status: 500,
       file: __filename,

@@ -562,7 +562,8 @@ const JobForm = ({
           <table className="table-auto border-collapse w-full text-sm">
             <thead className="text-center">
               <tr className="bg-gray-200">
-                <th className="w-[50px]">Item Title </th>
+              <th className="w-[50px]">Item Title </th>
+              <th className="w-[50px]">Item Name </th>
                 <th className="w-[50px] px-4 py-2">Lower/Upper</th>
                 {/* <th className="w-[50px] px-4 py-2"></th> */}
                 <th className="w-[150px] py-2">Before Value</th>
@@ -574,7 +575,10 @@ const JobForm = ({
               {jobItems.map((item, index) => (
                 <tr key={index}>
                   <td className="border px-4 py-2 relative">
-                    <div>{item.JobItemTitle} </div>
+                    <div>{item.JobItemTitle}</div>
+                  </td>
+                  <td className="border px-4 py-2 relative">
+                    <div>{item.JobItemName} </div>
                     <InfoIcon
                       className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
                       style={{display:'none'}}

@@ -15,10 +15,10 @@ import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
 
 const jobItemTemplateHeader = [
-  "ID",
-  "Title",
-  "Upper Spec",
-  "Lower Spec",
+  "No.",
+  "Job Title",
+  "Job Name",
+  "Upper/Lower ",
   "Test Method",
   "Create At",
   "Action",
@@ -107,7 +107,7 @@ const Page = ({ searchParams }) => {
       TEST_METHOD: form.get("test_method"),
       JOB_TEMPLATE_ID: jobTemplate_id,
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
-      TEST_LOCATION_ID: form.get("test_location"),
+      TEST_LOCATION_ID: '667b915a596b4d721ec60c40'//form.get("test_location"),
     };
 
     const formData = new FormData();
@@ -179,8 +179,8 @@ const Page = ({ searchParams }) => {
     return {
       ID: index + 1,
       Title: jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE,
-      Upper_Spec: jobItemTemplate.UPPER_SPEC,
-      Lower_Spec: jobItemTemplate.LOWER_SPEC,
+      Name:jobItemTemplate.JOB_ITEM_TEMPLATE_NAME ,
+      Upper_Lower: jobItemTemplate.UPPER_SPEC+"/"+jobItemTemplate.LOWER_SPEC,
       Test_Method: jobItemTemplate.TEST_METHOD,
       "Create At": jobItemTemplate.createdAt,
       Action: (
@@ -237,7 +237,7 @@ const Page = ({ searchParams }) => {
           </Link>
           {jobTemplate.JOB_TEMPLATE_NAME}{" "}
         </h1>
-        <h1 className="text-1xl font-semibold">
+        <h1 className="text-1 font-semibold">
           Add Checklist Item to Checklist Template
         </h1>
       </div>
@@ -400,31 +400,34 @@ const Page = ({ searchParams }) => {
                 required
               />
             </div>
-            <div>
+            <div style={{display:'none'}}>
               <label
                 htmlFor="test_location"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
               >
                 Test Location
               </label>
-              <Select
+              {/* <Select
                 name="test_location"
                 id="test_location"
-                className="text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full"
+                
+                className="display-none text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full"
+                
                 options={locations.map((location) => {
                   return {
                     value: location._id,
                     label: location.LocationName,
                   };
-                })}
+                })
+              }
                 isSearchable={true}
-              />
+              /> */}
             </div>
           </div>
 
           <button
             type="submit"
-            className={`text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center w-1/3 hover:bg-blue-800 focus:ring-4 focus:outline-none
+            className={`text-white font-bold rounded-lg text-sm px-1 py-2.5 text-center w-1/3 hover:bg-blue-800 focus:ring-4 focus:outline-none
                     ${
                       user &&
                       user.actions &&

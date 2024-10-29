@@ -258,7 +258,7 @@ const JobRetakeForm = ({
               {jobItems.map((item, index) => (
                 <tr key={index}>
                   <td className="border px-4 py-2 relative">
-                    <div>{item.JobItemTitle} </div>
+                    <div>{item.JobItemName} </div>
 
                     <InfoIcon
                       className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "

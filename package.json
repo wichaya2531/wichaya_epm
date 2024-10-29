@@ -58,7 +58,7 @@
     "sharp": "^0.33.4",
     "styled-components": "^6.1.11",
     "swagger-ui-react": "^5.17.2",
-    "sweetalert2": "^11.11.0",
+    "sweetalert2": "^11.6.13",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
