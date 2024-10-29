@@ -34,7 +34,7 @@ ChartJS.register(
   ChartDataLabels
 );
 
-const BarChart = () => {
+const BarChart4 = () => {
   const [refresh, setRefresh] = useState(false);
   const [chartType, setChartType] = useState("bar");
   const [topN, setTopN] = useState("top10");
@@ -560,4 +560,4 @@ const BarChart = () => {
   );
 };
 
-export default BarChart;
+export default BarChart4;
