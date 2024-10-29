@@ -1,16 +1,10 @@
-// pages/api/countJobsByUser.js
 import { connectToDb } from "@/app/api/mongo/index";
 import { Job } from "@/lib/models/Job";
 import { User } from "@/lib/models/User";
+import { Role } from "@/lib/models/Role"; // นำเข้าคอลเลกชัน Role
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-
-/**
- * @method GET
- * @returns NextResponse
- * @description Find All Prompts and return
- */
 
 export const GET = async (req, res) => {
   try {
@@ -27,10 +21,24 @@ export const GET = async (req, res) => {
       },
       {
         $lookup: {
-          from: "workgroups", // เชื่อมต่อกับกลุ่มงาน
+          from: "workgroups",
           localField: "_id",
-          foreignField: "USER_LIST", // เชื่อมต่อกับ USER_LIST ใน workgroup
+          foreignField: "USER_LIST",
           as: "workgroup",
+        },
+      },
+      {
+        $lookup: {
+          from: "roles", // เชื่อมต่อกับคอลเลกชัน role
+          localField: "ROLE", // ใช้ฟิลด์ ROLE จาก User
+          foreignField: "_id", // เชื่อมต่อกับ _id ใน role
+          as: "roleData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$roleData",
+          preserveNullAndEmptyArrays: true, // ให้ทำงานแม้ไม่มีข้อมูลใน role
         },
       },
       {
@@ -42,6 +50,7 @@ export const GET = async (req, res) => {
       {
         $project: {
           userName: "$EMP_NAME",
+          role: "$roleData.ROLE_NAME", // ดึง ROLE_NAME จาก roleData
           jobCount: { $size: "$jobs" },
           team: "$TEAM",
           JOB_NAME: "$jobs.JOB_NAME",
@@ -49,7 +58,7 @@ export const GET = async (req, res) => {
           createdAt: "$jobs.createdAt",
           workgroupName: {
             $ifNull: ["$workgroup.WORKGROUP_NAME", "ไม่มีกลุ่มงาน"],
-          }, // แสดงกลุ่มงาน
+          },
         },
       },
       {

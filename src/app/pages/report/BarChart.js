@@ -215,8 +215,8 @@ const BarChart = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false }, // ไม่แสดง legend
-      title: { display: false }, // ไม่แสดง title
+      legend: { display: false }, // ซ่อน legend
+      title: { display: false }, // ซ่อน title
       datalabels: {
         display: true,
         color: "#000",
@@ -240,16 +240,24 @@ const BarChart = () => {
     scales: {
       x: {
         grid: {
-          display: false,
+          display: false, // ซ่อนเส้นกริดแกน x
+        },
+        border: {
+          display: false, // ซ่อนเส้นขอบแกน x
+        },
+        ticks: {
+          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
         },
       },
       y: {
         grid: {
-          display: false,
+          display: false, // ซ่อนเส้นกริดแกน y
+        },
+        border: {
+          display: false, // ซ่อนเส้นขอบแกน y
         },
         ticks: {
-          display: true,
-          callback: (value) => Number(value.toString()),
+          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
         },
       },
     },
@@ -300,8 +308,8 @@ const BarChart = () => {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-4 p-6 bg-white rounded-lg">
-        <div className="relative flex-grow md:flex-grow-0 md:w-1/6">
+      <div className="flex flex-wrap gap-4 bg-white rounded-lg">
+        <div className="relative flex-grow md:flex-grow-0">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Years
           </label>
@@ -320,7 +328,7 @@ const BarChart = () => {
             })}
           </select>
         </div>
-        <div className="relative flex-grow md:flex-grow-0 md:w-1/6">
+        <div className="relative flex-grow md:flex-grow-0">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Months
           </label>
@@ -366,7 +374,7 @@ const BarChart = () => {
             </div>
           )}
         </div>
-        <div className="md:w-1/6">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Start Date
           </label>
@@ -377,7 +385,7 @@ const BarChart = () => {
             className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
           />
         </div>
-        <div className="md:w-1/6">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             End Date
           </label>
@@ -388,7 +396,7 @@ const BarChart = () => {
             className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
           />
         </div>
-        <div className="relative md:w-1/6">
+        <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Workgroup
           </label>
@@ -426,7 +434,7 @@ const BarChart = () => {
             </div>
           )}
         </div>
-        <div className="md:w-1/6">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Chart Type
           </label>
@@ -439,7 +447,7 @@ const BarChart = () => {
             <option value="pie">Pie</option>
           </select>
         </div>
-        <div className="md:w-1/6">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Top Checklists
           </label>
@@ -453,7 +461,7 @@ const BarChart = () => {
             <option value="top10">Top 10</option>
           </select>
         </div>
-        <div className="md:w-1/6 mt-6 space-x-3">
+        <div className="mt-6 space-x-3">
           <button
             onClick={() => handleExport("csv")}
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
@@ -463,7 +471,7 @@ const BarChart = () => {
             {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
           </button>
         </div>
-        <div className="md:w-1/6 mt-6 space-x-3">
+        <div className="mt-6 space-x-3">
           <button
             onClick={() => handleExport("png")}
             className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"

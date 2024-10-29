@@ -29,7 +29,7 @@ ChartJS.register(
   ChartDataLabels
 );
 
-const BarChart = () => {
+const BarChart2 = () => {
   const [refresh, setRefresh] = useState(false);
   const [chartType, setChartType] = useState("bar");
   const [topN, setTopN] = useState("all");
@@ -202,8 +202,8 @@ const BarChart = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false }, // ไม่แสดง legend
-      title: { display: false }, // ไม่แสดง title
+      legend: { display: false }, // ซ่อน legend
+      title: { display: false }, // ซ่อน title
       datalabels: {
         display: true,
         color: "#000",
@@ -218,7 +218,7 @@ const BarChart = () => {
     },
     layout: {
       padding: {
-        top: 24,
+        top: 20,
         bottom: 0,
         left: 0,
         right: 0,
@@ -227,16 +227,24 @@ const BarChart = () => {
     scales: {
       x: {
         grid: {
-          display: false,
+          display: false, // ซ่อนเส้นกริดแกน x
+        },
+        border: {
+          display: false, // ซ่อนเส้นขอบแกน x
+        },
+        ticks: {
+          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
         },
       },
       y: {
         grid: {
-          display: false,
+          display: false, // ซ่อนเส้นกริดแกน y
+        },
+        border: {
+          display: false, // ซ่อนเส้นขอบแกน y
         },
         ticks: {
-          display: true,
-          callback: (value) => Number(value.toString()),
+          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
         },
       },
     },
@@ -273,8 +281,8 @@ const BarChart = () => {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-4 p-6 bg-white rounded-lg">
-        <div className="relative flex-grow md:flex-grow-0 md:w-1/6">
+      <div className="flex flex-wrap gap-4 bg-white rounded-lg">
+        <div className="relative flex-grow md:flex-grow-0">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Years
           </label>
@@ -339,7 +347,7 @@ const BarChart = () => {
             </div>
           )}
         </div>
-        <div className="md:w-1/6">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Start Date
           </label>
@@ -350,7 +358,7 @@ const BarChart = () => {
             className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
           />
         </div>
-        <div className="md:w-1/6">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             End Date
           </label>
@@ -437,4 +445,4 @@ const BarChart = () => {
   );
 };
 
-export default BarChart;
+export default BarChart2;
