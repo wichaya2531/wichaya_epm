@@ -17,7 +17,9 @@ import useFetchReport from "@/lib/hooks/useFetchReport";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
-import { FaFileCsv, FaImage } from "react-icons/fa";
+import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // Registering necessary components
 ChartJS.register(
@@ -35,7 +37,7 @@ ChartJS.register(
 const BarChart = () => {
   const [refresh, setRefresh] = useState(false);
   const [chartType, setChartType] = useState("bar");
-  const [topN, setTopN] = useState("all");
+  const [topN, setTopN] = useState("top10");
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -139,6 +141,45 @@ const BarChart = () => {
     ],
   };
 
+  // ฟังก์ชันการส่งออก PDF
+  const exportToPDF = async () => {
+    if (!chartRef.current) {
+      console.error("Chart element is not ready yet");
+      return;
+    }
+
+    const element = chartRef.current.canvas; // เข้าถึง canvas ของกราฟ
+    const pdf = new jsPDF();
+
+    requestAnimationFrame(async () => {
+      const canvas = await html2canvas(element);
+      const imgData = canvas.toDataURL("image/png");
+      const imgWidth = 190; // กำหนดความกว้างของภาพใน PDF
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // เพิ่มภาพใน PDF
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+
+      // เพิ่มข้อมูลจาก finalReport หรือข้อมูลที่ต้องการ
+      const textYPosition = imgHeight + 20; // ตำแหน่ง y สำหรับข้อความ
+      finalReport.forEach((item, index) => {
+        pdf.text(
+          `${item.userName}: ${item.jobCount} checklists activated`,
+          10,
+          textYPosition + index * 10
+        );
+      });
+
+      const workgroupName =
+        selectedWorkgroups.length > 0
+          ? selectedWorkgroups.join(", ")
+          : "All_Workgroups";
+      const fileName = `${workgroupName}_top_${topN}.pdf`; // สร้างชื่อไฟล์
+
+      pdf.save(fileName); // บันทึกไฟล์ PDF
+    });
+  };
+
   const exportToCSV = () => {
     const formattedData = finalReport.map((item) => ({
       userName: item.userName,
@@ -208,6 +249,8 @@ const BarChart = () => {
       exportToCSV();
     } else if (option === "png") {
       saveAsPNG();
+    } else if (option === "pdf") {
+      exportToPDF();
     }
   };
 
@@ -481,6 +524,15 @@ const BarChart = () => {
             {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
           </button>
         </div>
+        <div className="mt-6 space-x-3">
+          <button
+            onClick={() => handleExport("pdf")}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
+          >
+            <FaFilePdf />
+            <span className="hidden md:inline">Export PDF</span>
+          </button>
+        </div>
         <div className="flex flex-wrap gap-2 mt-4">
           {Object.entries(workgroupColors).map(([workgroup, color]) => (
             <div key={workgroup} className="flex items-center space-x-2">
@@ -501,6 +553,9 @@ const BarChart = () => {
           <Pie data={data} options={options} ref={chartRef} />
         )}
       </div>
+      <button onClick={exportToPDF} className="export-button">
+        Export to PDF
+      </button>
     </div>
   );
 };

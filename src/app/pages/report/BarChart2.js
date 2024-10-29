@@ -382,6 +382,17 @@ const BarChart2 = () => {
             <option value="pie">Pie</option>
           </select>
         </div>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {Object.entries(workgroupColors).map(([workgroup, color]) => (
+            <div key={workgroup} className="flex items-center space-x-2">
+              <span
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: color }}
+              ></span>
+              <span className="text-sm text-gray-700">{workgroup}</span>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         {/* กราฟแยกตามกลุ่มงาน */}
