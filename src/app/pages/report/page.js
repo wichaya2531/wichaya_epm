@@ -7,6 +7,7 @@ import Link from "next/link";
 import BarChart from "./BarChart";
 import BarChart2 from "./BarChart2";
 import BarChart3 from "./BarChart3";
+import BarChart4 from "./BarChart4";
 import { useState } from "react";
 
 const Page = () => {
@@ -16,6 +17,7 @@ const Page = () => {
     { label: "จำนวนงาน", value: "BarChart" },
     { label: "กลุ่มงานต่างๆ", value: "BarChart2" },
     { label: "สมาชิกแต่ละกลุ่มงาน", value: "BarChart3" },
+    { label: "วันที่ของแต่ละงาน", value: "BarChart4" },
   ];
 
   return (
@@ -62,6 +64,7 @@ const Page = () => {
         {selectedChart === "BarChart" && <BarChart />}
         {selectedChart === "BarChart2" && <BarChart2 />}
         {selectedChart === "BarChart3" && <BarChart3 />}
+        {selectedChart === "BarChart4" && <BarChart4 />}
       </div>
     </Layout>
   );
