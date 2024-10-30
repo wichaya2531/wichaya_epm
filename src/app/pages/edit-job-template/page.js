@@ -3,16 +3,19 @@
 import Layout from "@/components/Layout.js";
 import Select from "react-select";
 import TableComponent from "@/components/TableComponent.js";
-import NextPlanIcon from "@mui/icons-material/NextPlan";
+//import NextPlanIcon from "@mui/icons-material/NextPlan";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
 import useFetchJobTemplate from "@/lib/hooks/useFetchJobTemplate.js";
 import useFetchUsers from "@/lib/hooks/useFetchUsers.js";
 import Swal from "sweetalert2";
-import { config } from "@/config/config.js";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+//import { config } from "@/config/config.js";
+//import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import { getSession } from "@/lib/utils/utils.js";
+import { set } from "mongoose";
+
 
 const approverHeader = ["ID", "Name", "Action"];
 const notifyHeader = ["ID", "Name", "Action"];
@@ -20,7 +23,7 @@ const notifyHeader = ["ID", "Name", "Action"];
 const Page = ({ searchParams }) => {
   const jobTemplate_id = searchParams.jobTemplate_id;
   //const [timeout, setTimeout] = useState("");
-
+  const [selectLineNames, setSelectLineNames] = useState([]);
   const [approvers, setApprovers] = useState([]);
   const [notifies, setNotifies] = useState([]);
   const [selectedApprover, setSelectedApprover] = useState(null);
@@ -48,6 +51,53 @@ const Page = ({ searchParams }) => {
     value: jobTemplate.TIMEOUT, // เริ่มต้นค่าจาก jobTemplate
     label: jobTemplate.TIMEOUT, // เริ่มต้นค่าจาก jobTemplate
   });
+
+  useEffect(() => {
+    //console.log(" use effect............ ");
+    getCurrentUser();
+  }, []);
+
+//   setTimeout(() => {
+//     // console.log(jobTemplate.LINE_NAME);
+//     // if (!selectLineNames.some(lineName => lineName.name === jobTemplate.LINE_NAME)) {
+//     //  console.log("selectLineNames=>",selectLineNames); 
+//     //  //setSelectLineNames(prev => [...prev, { _id: 'custom', name: jobTemplate.LINE_NAME }]);
+//     //   //console.log("jobTemplate.LINE_NAME=>",jobTemplate.LINE_NAME);
+//     // }
+// }, 4000);  
+
+  const getCurrentUser = async () => {
+    const session = await getSession();
+    if (session) {
+      //console.log("session=>",session);
+      fetchLineNames(session);
+      //setcurrentUser(session);
+      //fetchLineNames(session);
+    } else {
+      console.error("Failed to get session.");
+    }
+  };
+
+  const fetchLineNames = async (userSession) => {
+    try {
+      const formData = new FormData();
+      formData.append("user_id", userSession.user_id);
+      const response = await fetch(`/api/select-line-name/get-line-name`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.status === 200) {
+            setSelectLineNames(data.selectLineNames);
+      } else {
+        console.error("Failed to fetch data:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching line names:", error);
+    }
+  };
+
 
   useEffect(() => {
     calculateDueDate();
@@ -91,15 +141,12 @@ const Page = ({ searchParams }) => {
       Swal.fire("Oops.....", "Please select an Approver!", "error");
       return;
     }
-
     const newApprover = {
       _id: selectedApprover.value,
       EMP_NAME: selectedApprover.label,
     };
-
     setApprovers((prevApprovers) => [...prevApprovers, newApprover]);
     setSelectedApprover(null);
-
     const newOptions = options.filter(
       (option) => option.value !== selectedApprover.value
     );
@@ -449,14 +496,30 @@ const Page = ({ searchParams }) => {
               >
                 Line Name
               </label>
-              <input
+              {/* <input
                 type="text"
                 id="line_name"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="line_name"
                 defaultValue={jobTemplate.LINE_NAME}
                 required
-              />
+              /> */}
+              <select
+                   id="line_name"              
+                   className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   defaultValue={jobTemplate.LINE_NAME}
+               >
+                  <option value={jobTemplate.LINE_NAME}>{jobTemplate.LINE_NAME}{" (Current) "}</option>                  
+                  <option value="N/A">&nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;</option>                  
+                  {selectLineNames.map((lineName) => (
+                    <option key={lineName._id} 
+                      value={lineName.name}>
+                      {lineName.name}
+                    </option>
+                  ))}
+              </select>
+
+
             </div>
             <div className="z-50">
               <label

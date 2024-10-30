@@ -194,26 +194,32 @@ const TableComponent = ({
             </tr>
           </thead>
           <tbody className="text-center">
-            {currentPageData.map((item) => (
-              <tr
-                key={item.id}
-                className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
-              >
-                {Object.keys(item).map((key) =>
-                  key === "action" ? (
-                    <td key={key} className="px-4 py-3">
-                      <b>
-                        {Object.keys(item[key]).map((key1) => item[key][key1])}
-                      </b>
-                    </td>
-                  ) : (
-                    <td key={key} className="px-4 py-3">
-                      {item[key]}{" "}
-                    </td>
-                  )
-                )}
-              </tr>
-            ))}
+                  {currentPageData.map((item) => (
+                    <tr
+                      key={item.ID} // ใช้ id ที่ไม่ซ้ำกันของ item แทนการใช้ index
+                      className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
+                    >
+                      {Object.keys(item).map((key) => {
+                        if (key === "action") {
+                          return (
+                            <td key={`${item.id}-${key}`} className="px-4 py-3">
+                              <b>
+                                {item[key] && Object.keys(item[key]).map((key1) => (
+                                  <span key={`${item.id}-${key1}`}>{item[key][key1]}</span>
+                                ))}
+                              </b>
+                            </td>
+                          );
+                        } else {
+                          return (
+                            <td key={`${item.id}-${key}`} className="px-4 py-3">
+                              {item[key] ? item[key] : "N/A"}
+                            </td>
+                          );
+                        }
+                      })}
+                    </tr>
+                  ))}
           </tbody>
         </table>
       </div>

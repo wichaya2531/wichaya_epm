@@ -161,7 +161,7 @@ export async function sendEmails(emailList, job) {
       name: ${job.name}
       activated by: ${job.activatedBy}
       timeout: ${job.timeout}
-      direct link : <a href="http://10.171.134.51:3000/pages/login"> Click </a>
+      direct link : http://10.171.134.51:3000/pages/login
       `,
     mailsender: "epm-system@wdc.com",
     cc: "",

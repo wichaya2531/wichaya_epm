@@ -1,6 +1,6 @@
 "use client";
 import Layout from "@/components/Layout.js";
-import { config } from "@/config/config.js";
+//import { config } from "@/config/config.js";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import useFetchTestLocations from "@/lib/hooks/useFetchTestLocations";
 import Select from "react-select";
@@ -17,12 +17,15 @@ const Page = ({ searchParams }) => {
   const jobItemTemplate_id = searchParams.jobItemTemplate_id;
   const [refresh, setRefresh] = useState(false);
   const { jobItemTemplate, isLoading: jobItemTemplateLoading } =
-    useFetchJobItemTemplate(jobItemTemplate_id, refresh);
+  useFetchJobItemTemplate(jobItemTemplate_id, refresh);
   const { user, isLoading: userLoading } = useFetchUser(refresh);
   const { locations, isLoading: locationsLoading } =
-    useFetchTestLocations(refresh);
+  useFetchTestLocations(refresh);
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
+
+
+ 
 
   const handleToShowOnClick = (item) => {
     Swal.fire({
@@ -41,16 +44,16 @@ const Page = ({ searchParams }) => {
     setSelectedFile(null);
   };
 
-  const handleUploadFileToJob = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const filePath = await uploadJobPictureToServer(file);
-      if (filePath) {
-        setSelectedFile(filePath); // เก็บพาธไฟล์ที่อัปโหลดสำเร็จ
-        setPreview(URL.createObjectURL(file));
-      }
-    }
-  };
+  // const handleUploadFileToJob = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     const filePath = await uploadJobPictureToServer(file);
+  //     if (filePath) {
+  //       setSelectedFile(filePath); // เก็บพาธไฟล์ที่อัปโหลดสำเร็จ
+  //       setPreview(URL.createObjectURL(file));
+  //     }
+  //   }
+  // };
 
   const uploadJobPictureToServer = async (inputFile) => {
     if (!inputFile) {
