@@ -13,6 +13,7 @@ import JobForm from "./JobForm";
 import mqtt from "mqtt";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
 import { setTime } from "@syncfusion/ej2-react-schedule";
+import { set } from "mongoose";
 // import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 // import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 // import InfoIcon from "@mui/icons-material/Info";
@@ -25,7 +26,10 @@ const options = {
   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
 };
 
+
+
 const Page = ({ searchParams }) => {
+  //var n=0;
   //console.log("use Page view-jobs/page.js");
   const router = useRouter();
   const job_id = searchParams.job_id;
@@ -44,7 +48,7 @@ const Page = ({ searchParams }) => {
   const [testMethodDescription, setTestMethodDescription] = useState(null);
   const [AddCommentForm, setAddCommentForm] = useState(false);
   var [commentDetail, setCommentDetail] = useState(null);
-  var [inputValues, setInputValues] = useState([]);
+ // let [inputValues, setInputValues] = useState([]);
  // const { status } = useFetchStatus(refresh);
   const [machineName, setMachineName] = useState(null);
   const [showDetail, setShowDetail] = useState(null);
@@ -65,7 +69,7 @@ const Page = ({ searchParams }) => {
      icon: 'info',
      confirmButtonText: 'Close'
    });
- };  
+ };
 
 
   const handleToShowOnClick = (item) => {
@@ -104,7 +108,7 @@ const Page = ({ searchParams }) => {
   useEffect(() => {
     const asyncEffect = async () => {
 
-     // console.log("jobData", jobData);    
+     // console.log("jobData", jobData);
 
       if (user && jobData) {
         // Ensure both user.workgroup_id and jobData.WorkGroupID are defined
@@ -163,138 +167,66 @@ const Page = ({ searchParams }) => {
   };
 
   const handleBeforeValue = (e, item) => {
-    const value = e.target.value;
-    setInputValues((prev) => {
-      const existingIndex = prev.findIndex(
-        (entry) => entry.jobItemID === item.JobItemID
-      );
-      if (existingIndex !== -1) {
-        const updatedValues = [...prev];
-        updatedValues[existingIndex] = {
-          ...updatedValues[existingIndex],
-          BeforeValue: value,
-        };
-        return updatedValues;
-      }
-      return [
-        ...prev,
-        {
-          ...item,
-          jobItemID: item.JobItemID,
-          BeforeValue: value,
-        },
-      ];
-    });
+
+     for(var t in jobItems){
+           if (jobItems[t].JobItemID==item.JobItemID) {
+                jobItems[t].BeforeValue=e.target.value;            
+           }
+     }   
   };
 
   const handleIMGItemChange = ( filePath,item) => {
             const value = filePath;
-            for(var t in inputValues){
-                  //console.log(inputValues[t]);
-                  if (inputValues[t].jobItemID==item.JobItemID) {
-                        inputValues[t].IMG_ATTACH=value;
+            
+            for(var t in jobItems){
+                  if (jobItems[t].JobItemID==item.JobItemID) {
+                        jobItems[t].IMG_ATTACH=value;
                   }
-            }   
+            }
+            
+            
   }
 
   const handleInputChange = (e, item) => {
     //console.log('item ',item);
-    const value = e.target.value;
-    setInputValues((prev) => {
-      const existingIndex = prev.findIndex(
-        (entry) => entry.jobItemID === item.JobItemID
-      );
-      if (existingIndex !== -1) {
-        const updatedValues = [...prev];
-        updatedValues[existingIndex] = {
-          ...updatedValues[existingIndex],
-          value: value,
-        };
-        return updatedValues;
-      }
-      return [
-        ...prev,
-        {
-          ...item,
-          jobItemID: item.JobItemID,
-          value: value,
-        },
-      ];
-    });
-  };
-
-  var imgItemFileSelected = null;
-
-  // const handleAddImages = (b) => {
-  //   imgItemFileSelected = b;
-  //   document.getElementById("fileInput-1").click();
-  // };
-  const handleFileChangeOnItem = (event) => {
-    const file = event.target.files[0];
-    try {
-      document.getElementById("item-img-" + imgItemFileSelected).src =
-        URL.createObjectURL(file);
-    } catch (error) {}
-  };
-
-  const handleSubmitComment = async (dataJobItem,dataComment) => {
-
-    //console.log("dataJobItem", dataJobItem);
-    for(var t in inputValues){
-      console.log(inputValues[t].JobItemID+":"+dataJobItem.JobItemID);
-      if (inputValues[t].JobItemID===dataJobItem.JobItemID) {
-         inputValues[t].Comment="Jack";
-        // commentDetail=inputValues[t];
-         setCommentDetail(inputValues[t]);
-         console.log("Config OK");
+    
+    for(var t in jobItems){
+      if (jobItems[t].JobItemID==item.JobItemID) {
+        jobItems[t].value=e.target.value;
       }
     }
-
-    //console.log("inputValues", inputValues);
-    
-    //jobItems=inputValues;    
-    //console.log("inputValues", inputValues);
-    //commentDetail.Comment="Hello World";
-    console.log("commentDetail", commentDetail);    
-    return;
-   /* e.preventDefault();
-    const comment = e.target.comment.value;
-    setInputValues((prev) => {
-      const existingIndex = prev.findIndex(
-        (entry) => entry.jobItemID === commentDetail.JobItemID
-      );
-      if (existingIndex !== -1) {
-        const updatedValues = [...prev];
-        updatedValues[existingIndex] = {
-          ...updatedValues[existingIndex],
-          Comment: comment,
-        };
-        return updatedValues;
-      }
-      return [
-        ...prev,
-        {
-          ...commentDetail,
-          jobItemID: commentDetail.JobItemID,
-          Comment: comment,
-        },
-      ];
-    });   */
-    setAddCommentForm(false);
   };
 
   const toggleJobItem = () => {
     setIsShowJobItem(!isShowJobItem);
   };
 
-  const toggleAddComment = (item) => {
-    setCommentDetail(item);
-    setAddCommentForm((prev) => !prev);
+  const toggleAddComment = (item) => {    
+    Swal.fire({
+      title: 'Add Comment to '+item.JobItemName,
+      html: `<textarea id="comment" class="swal2-textarea" placeholder="Enter your comment">`+item.Comment+`</textarea>`,
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      cancelButtonText: 'Cancel',
+      preConfirm: () => {
+        const comment = Swal.getPopup().querySelector('#comment').value;
+        if (!comment) {
+          Swal.showValidationMessage('Please enter a comment');
+        }
+        return comment;
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+     
+              for(var t in jobItems){
+                if (jobItems[t].JobItemID===item.JobItemID) {
+                  jobItems[t].Comment=result.value;
+                }
+              }
+      }
+    });
   };
 
-  // const handleUploadFileToJobItem = (jobItemID) => {
-  //       alert('on page handleUploadFileToJobItem');
-  // };
 
   const handleUploadFileToJob = (event) => {
     const file = event.target.files[0];
@@ -362,14 +294,14 @@ const Page = ({ searchParams }) => {
     }
 
     // ตรวจสอบว่า inputValues มีข้อมูลหรือไม่
-    if (!Array.isArray(inputValues) || inputValues.length === 0) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please add at least one job item.",
-        icon: "error",
-      });
-      return;
-    }
+    // if (!Array.isArray(inputValues) || inputValues.length === 0) {
+    //   Swal.fire({
+    //     title: "Error!",
+    //     text: "Please add at least one job item.",
+    //     icon: "error",
+    //   });
+    //   return;
+    // }
 
     const jobInfo = {
       JobID: jobData.JobID,
@@ -379,12 +311,12 @@ const Page = ({ searchParams }) => {
     };
 
    //  console.log("inputValues", inputValues);
-   
+
     const formData = new FormData();
     //formData.append("wdtagPictuer", selectedFile);
     formData.append("jobData", JSON.stringify(jobInfo)); // ใช้ JSON.stringify
-    formData.append("jobItemsData", JSON.stringify(inputValues)); // ใช้ inputValues
-   
+    formData.append("jobItemsData", JSON.stringify(jobItems)); // ใช้ inputValues
+
     try {
       const response = await fetch("/api/job/update-job", {
         method: "POST",
@@ -424,8 +356,8 @@ const Page = ({ searchParams }) => {
          //setRefresh((prev) => !prev);
          setTimeout(() => {
              router.push("/pages/dashboard");
-        }, 2000); 
-            
+        }, 2000);
+
 
 
       }
@@ -513,12 +445,8 @@ const Page = ({ searchParams }) => {
           jobItemDetail={jobItemDetail}
         />
       )}
-      {AddCommentForm && (
-        <AddCommentModal
-          toggleAddComment={toggleAddComment}
-          handleSubmitComment={handleSubmitComment}
-          commentDetail={commentDetail}
-        />
+      {AddCommentForm && (        
+        <div>&nbsp;</div>
       )}
     </Layout>
   );

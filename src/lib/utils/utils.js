@@ -149,8 +149,8 @@ export const getRevisionNo = async (documentNo) => {
 
 export async function sendEmails(emailList, job) {
 
-  //  console.log("send emailList to=>", emailList);
-  //return;
+    console.log("send emailList to=>", emailList);
+  return;
   
   const usrsparams = new URLSearchParams({
     subject: "New CheckList Checklist activated",

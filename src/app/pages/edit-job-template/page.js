@@ -295,12 +295,12 @@ const Page = ({ searchParams }) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
+
     const jobTemplateID = jobTemplate_id;
     const author = user._id;
     const workgroup = user.workgroup_id;
     const due_date = formData.get("due_date");
     const line_name = formData.get("line_name");
-
     const job_template_name = formData.get("job_template_name");
     const doc_num = formData.get("doc_num");
     const checklist_ver = formData.get("checklist_ver");
@@ -334,6 +334,9 @@ const Page = ({ searchParams }) => {
     };
 
     try {
+
+      console.log("data=>", data);
+
       const res = await fetch(`/api/job-template/edit-job-template`, {
         method: "PUT",
         headers: {
@@ -343,8 +346,9 @@ const Page = ({ searchParams }) => {
         next: { revalidate: 10 },
       });
       const response = await res.json();
+      console.log("response=>", response);
       if (response.status === 500) {
-        console.error(response.error);
+            console.error(response.error);
       } else {
         Swal.fire({
           title: "Done!",
@@ -505,7 +509,8 @@ const Page = ({ searchParams }) => {
                 required
               /> */}
               <select
-                   id="line_name"              
+                   id="line_name" 
+                   name="line_name"             
                    className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                    defaultValue={jobTemplate.LINE_NAME}
                >

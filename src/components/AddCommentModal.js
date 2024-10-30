@@ -1,13 +1,8 @@
 import { set } from "mongoose";
 
+const AddCommentModal = ({toggleAddComment, handleSubmitComment, JobItem }) => {
 
-const AddCommentModal = ({
-    toggleAddComment,
-    handleSubmitComment,
-    commentDetail
- }) => {
-
-    console.log("In Component commentDetail=>",commentDetail.Comment);
+    console.log("JobItem=>",JobItem);
 
     const handlePreSubmitComment = (e) => {
                 //console.log("e=>",e);
@@ -30,7 +25,7 @@ const AddCommentModal = ({
                         <div className="sm:flex sm:items-start">
                             <form className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex flex-col gap-3 justify-start items-center w-full" >
                                 <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
-                                    Add Comment to {commentDetail.JobItemName}
+                                    Add Comment to {JobItem.JobItemName}
                                 </h3>
                                 <textarea className="w-full h-40 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Add Comment" name="comment" id="comment" />
                             </form>
