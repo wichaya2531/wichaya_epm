@@ -20,6 +20,11 @@ import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO } from "date-fns";
 import "chartjs-adapter-date-fns";
+import * as FileSaver from "file-saver";
+import * as XLSX from "xlsx";
+import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -37,28 +42,43 @@ ChartJS.register(
 
 const BarChart5 = () => {
   const [refresh, setRefresh] = useState(false);
-  const [SelectedLineNames, setSelectedLineNames] = useState([]);
-  const [startDate, setStartDate] = useState(new Date("2024-01-01"));
-  const [endDate, setEndDate] = useState(new Date("2024-12-31"));
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const { report } = useFetchReport1(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const chartRef = useRef(null);
-
-  const handleDateFilter = () => {
-    // กำหนดฟังก์ชันในการรีเฟรชข้อมูลตามวันที่ที่เลือก
-    setRefresh(!refresh);
+  const [selectedLineNames, setSelectedLineNames] = useState([]);
+  const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const pastelColors = {
+    "9309A": "#FFB6C1",
+    "9303A": "#ADD8E6",
+    "9311A": "#FF7F50",
+    M4421: "#FFB3A0",
+    Unknown: "#D3D3D3",
+    "9303V": "#FF69B4",
+    "23U05B": "#FF1493",
+    "9303ZD": "#FFD700",
+    "9303ZZZ": "#FF4500",
+    "9919B": "#FFDEAD",
+    "9303C": "#E6E9A2",
+    "9920A": "#87CEEB",
+    "9919A": "#FFA07A",
   };
 
-  const groupedData = report
+  const groupedDataByLineNameAndWorkgroup = report
+    .filter(
+      (item) =>
+        item.LINE_NAME &&
+        item.LINE_NAME !== "unknown" &&
+        item.LINE_NAME.trim() !== "" &&
+        item.WORKGROUP_NAME // ตรวจสอบ WORKGROUP_NAME
+    )
+    .filter(
+      (item) => item.jobItemsCreatedAt && item.ACTUAL_VALUE && item.LINE_NAME
+    )
     .map((item) => {
-      if (!item.jobItemsCreatedAt || !item.ACTUAL_VALUE) {
-        console.warn(
-          `jobItemsCreatedAt or ACTUAL_VALUE is undefined for item:`,
-          item
-        );
-        return null;
-      }
-      const createdAt = parseISO(item.jobItemsCreatedAt); // แปลงเป็นวันที่
+      const createdAt = parseISO(item.jobItemsCreatedAt);
       if (isNaN(createdAt.getTime())) {
         console.warn(
           `Invalid date for jobItemsCreatedAt: ${item.jobItemsCreatedAt}`
@@ -67,40 +87,69 @@ const BarChart5 = () => {
       }
 
       return {
-        x: createdAt.toISOString(), // ใช้ createdAt เป็นแกน X
-        y: parseFloat(item.ACTUAL_VALUE), // ใช้ ACTUAL_VALUE เป็นแกน Y
+        lineName: item.LINE_NAME,
+        workgroupName: item.WORKGROUP_NAME,
+        x: createdAt.toISOString(),
+        y: parseFloat(item.ACTUAL_VALUE),
       };
     })
-    .filter((item) => item !== null) // กรองค่า null ออกจาก array
+    .filter((item) => item !== null)
     .filter((item) => {
       const date = new Date(item.x);
       return date >= startDate && date <= endDate; // ฟิลเตอร์วันที่
     })
     .reduce((acc, curr) => {
-      const existing = acc.find((item) => item.x === curr.x);
+      const groupKey = `${curr.lineName}-${curr.workgroupName}`;
+      const lineGroup = acc[groupKey] || [];
+      const existing = lineGroup.find((item) => item.x === curr.x);
       if (existing) {
-        existing.y += curr.y; // ถ้ามีวันเดียวกันให้รวมค่า y
+        existing.y += curr.y;
       } else {
-        acc.push(curr); // ถ้าไม่มีให้เพิ่มเข้าไป
+        lineGroup.push({ x: curr.x, y: curr.y });
       }
+      acc[groupKey] = lineGroup;
       return acc;
-    }, []); // เริ่มต้นด้วย array ว่าง
+    }, {});
 
-  const datasets = [
-    {
-      label: "Actual Values",
-      type: "line",
-      borderColor: "rgba(79, 129, 189, 1)",
-      backgroundColor: "rgba(79, 129, 189, 0.1)",
-      data: groupedData.map((item) => ({ x: item.x, y: item.y })),
-      tension: 0.4,
-      fill: true,
-    },
-  ];
+  const sortedDataByLineNameAndWorkgroup = Object.entries(
+    groupedDataByLineNameAndWorkgroup
+  ).reduce((acc, [groupKey, data]) => {
+    acc[groupKey] = data.sort((a, b) => new Date(a.x) - new Date(b.x));
+    return acc;
+  }, {});
+
+  const datasets = Object.keys(sortedDataByLineNameAndWorkgroup)
+    .filter((groupKey) => {
+      const [lineName, workgroupName] = groupKey.split("-");
+      return (
+        (selectedLineNames.length === 0 ||
+          selectedLineNames.includes(lineName)) &&
+        (selectedWorkgroups.length === 0 ||
+          selectedWorkgroups.includes(workgroupName))
+      ); // กรองตาม line name และ workgroup ที่เลือก
+    })
+    .map((groupKey) => {
+      const [lineName, workgroupName] = groupKey.split("-");
+      const color = pastelColors[lineName] || getRandomPastelColor();
+      return {
+        label: `${lineName} - ${workgroupName}`,
+        type: "line",
+        borderColor: color,
+        backgroundColor: color.replace(", 1)", ", 0.1)"),
+        data: sortedDataByLineNameAndWorkgroup[groupKey].map((item) => ({
+          x: item.x,
+          y: item.y,
+        })),
+        tension: 0.4,
+        fill: true,
+      };
+    });
+
   const data = {
-    labels: [],
+    labels: [], // ใช้แกน x ใน dataset โดยตรงแทน labels นี้
     datasets: datasets,
   };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -155,6 +204,7 @@ const BarChart5 = () => {
         },
       },
       y: {
+        type: "logarithmic", // เปลี่ยนแกน Y เป็นลอการิธึม
         grid: {
           display: true,
           color: "rgba(0, 0, 0, 0.1)",
@@ -171,51 +221,230 @@ const BarChart5 = () => {
       },
     },
   };
-
+  const handleWorkgroupChange = (workgroupName) => {
+    setSelectedWorkgroups((prevSelected) =>
+      prevSelected.includes(workgroupName)
+        ? prevSelected.filter((name) => name !== workgroupName)
+        : [...prevSelected, workgroupName]
+    );
+  };
+  const availableWorkgroups = [
+    ...new Set(report.map((item) => item.WORKGROUP_NAME)),
+  ];
+  const availableLineNames = Object.keys(groupedDataByLineNameAndWorkgroup);
+  const formatDate = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    };
+    const date = new Date(dateString);
+    return date.toLocaleString("th-TH", options).replace(",", ""); // ใช้ locale เป็นไทย
+  };
+  const exportToPDF = async () => {
+    const element = chartRef.current;
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF();
+    const imgWidth = 190;
+    const pageHeight = pdf.internal.pageSize.height;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    const exportedData = datasets.map((dataset) => ({
+      lineName: dataset.label,
+      dataPoints: dataset.data
+        .filter((point) => point.y !== "" && !isNaN(point.y)) // กรองข้อมูลที่ ACTUAL_VALUE ไม่มีค่า
+        .map((point) => ({
+          x: formatDate(point.x), // แปลงวันที่ที่นี่
+          y: point.y,
+        })),
+    }));
+    let textYPosition = 20;
+    exportedData.forEach(({ lineName, dataPoints }) => {
+      pdf.text(`Line Name: ${lineName}`, 10, textYPosition);
+      dataPoints.forEach((point) => {
+        pdf.text(
+          `วันที่: ${point.x}, ACTUAL VALUE: ${point.y}`,
+          10,
+          (textYPosition += 10)
+        );
+      });
+      textYPosition += 10;
+    });
+    const imageYPosition = textYPosition + 10;
+    pdf.addImage(imgData, "PNG", 10, imageYPosition, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    const fileName = `LineNames_${
+      selectedLineNames.join(",") || "All_Line_Names"
+    }.pdf`;
+    pdf.save(fileName);
+  };
+  const exportToCSV = () => {
+    const exportedData = datasets
+      .flatMap((dataset) =>
+        dataset.data
+          .filter((point) => point.y !== "" && !isNaN(point.y)) // กรองข้อมูลที่ ACTUAL_VALUE ไม่มีค่า
+          .map((point) => ({
+            lineName: dataset.label,
+            CreatedAt: formatDate(point.x), // แปลงวันที่ที่นี่
+            "ACTUAL VALUE": point.y,
+          }))
+      )
+      .filter(
+        (data) => data["ACTUAL VALUE"] !== "" && !isNaN(data["ACTUAL VALUE"])
+      );
+    const ws = XLSX.utils.json_to_sheet(exportedData);
+    const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    const fileName = `LineNames_${
+      selectedLineNames.join(",") || "All_Line_Names"
+    }.xlsx`;
+    FileSaver.saveAs(data, fileName);
+  };
+  const saveAsPNG = async () => {
+    const chart = chartRef.current;
+    if (chart) {
+      const canvas = await html2canvas(chart);
+      const imgData = canvas.toDataURL("image/png");
+      const fileName = `LineNames_${
+        selectedLineNames.join(",") || "All_Line_Names"
+      }.png`;
+      const link = document.createElement("a");
+      link.href = imgData;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+  const handleExport = (option) => {
+    if (option === "csv") {
+      exportToCSV();
+    } else if (option === "png") {
+      saveAsPNG();
+    } else if (option === "pdf") {
+      exportToPDF();
+    }
+  };
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
-        {/* ปุ่มสำหรับฟิลเตอร์วันที่ */}
         <div>
-          <label htmlFor="start-date">Start Date:</label>
-          <input
-            type="date"
-            id="start-date"
-            value={format(startDate, "yyyy-MM-dd")}
-            onChange={(e) => setStartDate(new Date(e.target.value))}
-          />
+          <div>
+            <label htmlFor="start-date">Start Date:</label>
+            <input
+              type="date"
+              id="start-date"
+              value={startDate ? format(startDate, "yyyy-MM-dd") : ""}
+              onChange={(e) => setStartDate(new Date(e.target.value))}
+            />
+          </div>
+          <div>
+            <label htmlFor="end-date">End Date:</label>
+            <input
+              type="date"
+              id="end-date"
+              value={endDate ? format(endDate, "yyyy-MM-dd") : ""}
+              onChange={(e) => setEndDate(new Date(e.target.value))}
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor="end-date">End Date:</label>
-          <input
-            type="date"
-            id="end-date"
-            value={format(endDate, "yyyy-MM-dd")}
-            onChange={(e) => setEndDate(new Date(e.target.value))}
-          />
-        </div>
-        <button onClick={handleDateFilter}>Filter</button>
-        <div>
-          <label htmlFor="line-name">Select Line Name:</label>
-          <select
-            id="line-name"
-            onChange={(e) => setSelectedLineNames(e.target.value)}
+        <div style={{ position: "relative", width: "200px" }}>
+          <button
+            onClick={() => setIsOpen((prevOpen) => !prevOpen)}
+            style={{ width: "100%", padding: "8px", textAlign: "left" }}
           >
-            <option value="">All Line Names</option>
-            {Array.isArray(user) ? (
-              user.map((u) => (
-                <option key={u.id} value={u.LINE_NAME}>
-                  {u.LINE_NAME}
-                </option>
-              ))
-            ) : (
-              <option value="">Loading...</option>
-            )}
-          </select>
+            เลือกกลุ่มงาน
+          </button>
+          {isOpen && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                backgroundColor: "white",
+                border: "1px solid #ccc",
+                maxHeight: "200px",
+                overflowY: "auto",
+                zIndex: 1000,
+              }}
+            >
+              <label style={{ display: "block", padding: "5px" }}>
+                <input
+                  type="checkbox"
+                  onChange={() => {
+                    setSelectedWorkgroups([]); // รีเซ็ตการเลือก
+                  }}
+                  checked={selectedWorkgroups.length === 0}
+                />
+                กลุ่มงานทั้งหมด
+              </label>
+              {availableWorkgroups.map((workgroupName) => (
+                <label
+                  key={workgroupName}
+                  style={{ display: "block", padding: "5px" }}
+                >
+                  <input
+                    type="checkbox"
+                    value={workgroupName}
+                    checked={selectedWorkgroups.includes(workgroupName)}
+                    onChange={() => handleWorkgroupChange(workgroupName)}
+                  />
+                  {workgroupName}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {Object.entries(pastelColors).map(([lineName, color]) => (
+            <div key={lineName} className="flex items-center space-x-2">
+              <span
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: color }}
+              ></span>
+              <span className="text-sm text-gray-700">{lineName}</span>
+            </div>
+          ))}
         </div>
       </div>
-      <div style={{ height: "300px", width: "100%" }}>
+      <div style={{ height: "450px", width: "100%" }}>
         <Line data={data} options={options} />
+      </div>
+      <div className="flex justify-end mt-6 space-x-3">
+        <button
+          onClick={() => handleExport("csv")}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
+        >
+          <FaFileCsv />
+          <span className="hidden md:inline">Export CSV</span>{" "}
+        </button>
+        <button
+          onClick={() => handleExport("png")}
+          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
+        >
+          <FaImage />
+          <span className="hidden md:inline">Save as PNG</span>{" "}
+        </button>
+        <button
+          onClick={() => handleExport("pdf")}
+          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
+        >
+          <FaFilePdf />
+          <span className="hidden md:inline">Export PDF</span>
+        </button>
       </div>
     </div>
   );
