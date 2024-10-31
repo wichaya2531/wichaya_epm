@@ -192,11 +192,13 @@ const BarChart4 = () => {
           ))}
         </div>
       </div>
-      <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        events={calendarEvents}
-        eventClick={handleEventClick}
-      />
+      <div className="mt-10">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          events={calendarEvents}
+          eventClick={handleEventClick}
+        />
+      </div>
     </div>
   );
 };
