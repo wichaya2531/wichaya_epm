@@ -2,6 +2,8 @@
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import InfoIcon from "@mui/icons-material/Info";
+import HelpIcon from "@mui/icons-material/Help";
+import ChatIcon from "@mui/icons-material/Chat";
 import ImageIcon from "@mui/icons-material/Image";
 import { useState } from "react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -408,10 +410,16 @@ const JobForm = ({
                       className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
                       disabled
                     />
-                     <InfoIcon
-                      className="absolute right-1 top-0 text-blue-600 size-4 cursor-pointer "
-                      onClick={() => handleShowComment(item)}
-                    />
+                      {
+                        item.Comment!==null ? 
+                          <ChatIcon    
+                                className="absolute right-1 top-0 text-blue-600 size-6 cursor-pointer "
+                                // style={{ display: "none" }}
+                                onClick={() => handleShowComment(item)}
+                              />
+                          :<div></div>
+                      }
+                     
                   </td>
                   <td className="border px-4 py-2 relative" >
                     <center>

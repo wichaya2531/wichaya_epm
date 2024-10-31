@@ -61,7 +61,7 @@ const Page = ({ searchParams }) => {
 
 
   const handleShowComment = (item) => {
-    console.log("jobForm item=>",item);
+    //console.log("jobForm item=>",item);
 
    Swal.fire({
      title: 'Comment',
