@@ -20,6 +20,7 @@ import * as XLSX from "xlsx";
 import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -36,18 +37,10 @@ const BarChart1 = () => {
   const [chartType, setChartType] = useState("bar");
   const [topN, setTopN] = useState("top10");
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
-  const [selectedWorkgroup, setSelectedWorkgroup] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
   const { report } = useFetchReport2(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const chartRef = useRef(null);
-  const today = new Date();
-  const [selectedMonths, setSelectedMonths] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [workgroupDropdownOpen, setWorkgroupDropdownOpen] = useState(false);
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const toggleWorkgroupDropdown = () =>
     setWorkgroupDropdownOpen(!workgroupDropdownOpen);
   // กำหนดสีมินิมอลแบบพาสเทลสำหรับแต่ละ Workgroup
@@ -59,7 +52,7 @@ const BarChart1 = () => {
     "Tooling Cleaning": "#FFE0B3", // สีส้มพาสเทล
     "Tooling GTL": "#D1B3FF", // สีม่วงพาสเทล
     "HSA Tooling Automation": "#B3FFF0", // สีฟ้าอ่อนพาสเทล
-    ไม่มีกลุ่มงาน: "#E0E0E0", // สีเทาอ่อน
+    "No Workgroup": "#E0E0E0", // สีเทาอ่อน
     Others: "#F0F0F0", // สีเทาพาสเทลอ่อน
   };
   const filterReportByWorkgroup = (data, selectedWorkgroups) => {
@@ -79,14 +72,13 @@ const BarChart1 = () => {
     } else if (topN === "top10") {
       mainData = sortedData.slice(0, 10);
     } else {
-      return sortedData; // ถ้าไม่เลือก top5 หรือ top10 ให้คืนค่า sortedData ทั้งหมด
+      return sortedData;
     }
     otherData = sortedData.slice(mainData.length);
-    // เพิ่มข้อมูล "Others" สำหรับค่าที่เหลือ
     return [
       ...mainData,
       {
-        workgroupName: "Others", // ใช้ workgroupName แทน userName
+        workgroupName: "Others",
         jobTemplateCount: otherData.reduce(
           (acc, cur) => acc + cur.jobTemplateCount,
           0
@@ -101,7 +93,7 @@ const BarChart1 = () => {
   // สร้างข้อมูลสำหรับกราฟ
   const data = {
     labels: finalReport.map(
-      (item) => (item.workgroupName ? item.workgroupName : "ไม่มีกลุ่มงาน") // ถ้า workgroupName ว่างให้แสดงเป็น "ไม่มีกลุ่มงาน"
+      (item) => item.workgroupName // ถ้า workgroupName ว่างให้แสดงเป็น "ไม่มีกลุ่มงาน"
     ),
     datasets: [
       {
@@ -147,7 +139,7 @@ const BarChart1 = () => {
           display: false,
         },
         ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
+          display: chartType === "bar",
         },
       },
       y: {
@@ -158,8 +150,8 @@ const BarChart1 = () => {
           display: false,
         },
         ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
-          beginAtZero: true, // เริ่มที่ 0 สำหรับแกน Y
+          display: chartType === "bar",
+          beginAtZero: true,
         },
       },
     },
@@ -172,42 +164,56 @@ const BarChart1 = () => {
     }
     const element = chartRef.current.canvas; // เข้าถึง canvas ของกราฟ
     const pdf = new jsPDF();
+
     requestAnimationFrame(async () => {
       const canvas = await html2canvas(element);
       const imgData = canvas.toDataURL("image/png");
       const imgWidth = 190; // กำหนดความกว้างของภาพใน PDF
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
       // เพิ่มภาพใน PDF
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      // เพิ่มข้อมูลจาก finalReport หรือข้อมูลที่ต้องการ
-      const textYPosition = imgHeight + 20; // ตำแหน่ง y สำหรับข้อความ
-      finalReport.forEach((item, index) => {
-        pdf.text(
-          `${item.userName}: ${item.jobCount} checklists activated`,
-          10,
-          textYPosition + index * 10
-        );
-      });
+
+      // เพิ่มหัวข้อ
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("รายงานจำนวน Job Templates", 10, imgHeight + 10);
+
+      // เพิ่มข้อมูลจาก finalReport
+      const textYPosition = imgHeight + 20 + 10; // เพิ่มระยะห่างจากหัวข้อ
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "normal");
+
+      if (finalReport.length === 0) {
+        pdf.text("ไม่มีข้อมูลรายงาน", 10, textYPosition);
+      } else {
+        finalReport.forEach((item, index) => {
+          const workgroupDisplayName = item.workgroupName || "ไม่มีกลุ่มงาน";
+          pdf.text(
+            `${workgroupDisplayName}: ${item.jobTemplateCount} job templates`,
+            10,
+            textYPosition + index * 10
+          );
+        });
+      }
+
+      // ตั้งชื่อไฟล์ให้สอดคล้องกับกลุ่มงานที่เลือก หรือแสดงเป็น "ไม่มีกลุ่มงาน"
       const workgroupName =
         selectedWorkgroups.length > 0
-          ? selectedWorkgroups.join(", ")
-          : "All_Workgroups";
+          ? selectedWorkgroups.map((name) => name || "ไม่มีกลุ่มงาน").join(", ")
+          : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
+
       const fileName = `${workgroupName}_top_${topN}.pdf`; // สร้างชื่อไฟล์
 
       pdf.save(fileName); // บันทึกไฟล์ PDF
     });
   };
+
+  // ฟังก์ชันการส่งออก CSV
   const exportToCSV = () => {
     const formattedData = finalReport.map((item) => ({
-      userName: item.userName,
-      jobCount: item.jobCount,
-      JOB_NAME: Array.isArray(item.JOB_NAME) ? item.JOB_NAME.join(", ") : "",
-      LINE_NAME: Array.isArray(item.LINE_NAME) ? item.LINE_NAME.join(", ") : "",
-      createdAt: Array.isArray(item.createdAt)
-        ? item.createdAt
-            .map((date) => new Date(date).toLocaleDateString())
-            .join(", ")
-        : "",
+      workgroupName: item.workgroupName || "ไม่มีกลุ่มงาน",
+      jobTemplateCount: item.jobTemplateCount,
     }));
     const ws = XLSX.utils.json_to_sheet(formattedData);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
@@ -219,8 +225,9 @@ const BarChart1 = () => {
         ? selectedWorkgroups.join(", ")
         : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
     const fileName = `${workgroupName}_top_${topN}.xlsx`; // สร้างชื่อไฟล์
-    FileSaver.saveAs(data, fileName); // ใช้ชื่อไฟล์ที่สร้างขึ้น
+    FileSaver.saveAs(data, fileName); // บันทึกไฟล์ CSV
   };
+  // ฟังก์ชันการบันทึกภาพเป็น PNG
   const saveAsPNG = () => {
     const chart = chartRef.current;
     if (chart) {
@@ -246,7 +253,7 @@ const BarChart1 = () => {
         const fileName = `${workgroupName}_top_${topN}.png`; // สร้างชื่อไฟล์
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png");
-        link.download = fileName; // ใช้ชื่อไฟล์ที่สร้างขึ้น
+        link.download = fileName; // บันทึกไฟล์ PNG
         link.click();
       };
     }
@@ -268,8 +275,13 @@ const BarChart1 = () => {
     setSelectedWorkgroups(newSelectedWorkgroups);
   };
   const workgroupOptions = [
-    ...new Set(report.map((item) => item.workgroupName)),
+    ...new Set(
+      report.map(
+        (item) => (item.workgroupName ? item.workgroupName : "ไม่มีกลุ่มงาน") // แทนที่ค่าว่างด้วย "ไม่มีกลุ่มงาน"
+      )
+    ),
   ];
+
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
@@ -326,7 +338,7 @@ const BarChart1 = () => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Top Checklists
+            Top Number
           </label>
           <select
             value={topN}

@@ -48,7 +48,7 @@ export const GET = async (req, res) => {
       },
       {
         $project: {
-          workgroupName: "$_id.workgroupName",
+          workgroupName: { $ifNull: ["$_id.workgroupName", "No Workgroup"] }, // เปลี่ยนค่าว่างเป็น "ไม่มีกลุ่มงาน"
           jobTemplateCount: 1,
         },
       },

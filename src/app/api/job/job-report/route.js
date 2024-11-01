@@ -60,7 +60,7 @@ export const GET = async (req, res) => {
           LINE_NAME: "$jobs.LINE_NAME",
           createdAt: "$jobs.createdAt",
           workgroupName: {
-            $ifNull: ["$workgroup.WORKGROUP_NAME", "ไม่มีกลุ่มงาน"],
+            $ifNull: ["$workgroup.WORKGROUP_NAME", "No Workgroup"],
           },
           jobItemsCreatedAt: "$jobItems.createdAt",
         },

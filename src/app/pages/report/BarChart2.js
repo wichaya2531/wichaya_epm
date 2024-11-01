@@ -108,7 +108,7 @@ const BarChart2 = () => {
     "Tooling Cleaning": "#FFE0B3", // สีส้มพาสเทล
     "Tooling GTL": "#D1B3FF", // สีม่วงพาสเทล
     "HSA Tooling Automation": "#B3FFF0", // สีฟ้าอ่อนพาสเทล
-    ไม่มีกลุ่มงาน: "#E0E0E0", // สีเทาอ่อน
+    "No Workgroup": "#E0E0E0", // สีเทาอ่อน
     Others: "#F0F0F0", // สีเทาพาสเทลอ่อน
   };
 
