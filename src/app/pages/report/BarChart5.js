@@ -358,9 +358,15 @@ const BarChart5 = () => {
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
-        <div>
-          <label htmlFor="start-date">Start Date:</label>
+        <div className="relative">
+          <label
+            htmlFor="start-date"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Start Date
+          </label>
           <input
+            className="bg-white border border-gray-300 rounded-md py-2 text-gray-700 focus:outline-none focus:ring focus:ring-blue-500"
             type="date"
             id="start-date"
             value={
@@ -371,9 +377,15 @@ const BarChart5 = () => {
             onChange={(e) => setStartDate(new Date(e.target.value))}
           />
         </div>
-        <div>
-          <label htmlFor="end-date">End Date:</label>
+        <div className="relative">
+          <label
+            htmlFor="end-date"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            End Date
+          </label>
           <input
+            className="bg-white border border-gray-300 rounded-md py-2 text-gray-700 focus:outline-none focus:ring focus:ring-blue-500"
             type="date"
             id="end-date"
             value={
@@ -382,42 +394,28 @@ const BarChart5 = () => {
             onChange={(e) => setEndDate(new Date(e.target.value))}
           />
         </div>
-        <div style={{ position: "relative", width: "200px" }}>
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Workgroups
+          </label>
           <button
             onClick={() => setIsOpen((prevOpen) => !prevOpen)}
-            style={{ width: "100%", padding: "8px", textAlign: "left" }}
+            className="  rouw-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
           >
-            Workgroups
+            Select Workgroups
           </button>
           {isOpen && (
-            <div
-              style={{
-                position: "absolute",
-                top: "100%",
-                left: 0,
-                right: 0,
-                backgroundColor: "white",
-                border: "1px solid #ccc",
-                maxHeight: "200px",
-                overflowY: "auto",
-                zIndex: 1000,
-              }}
-            >
-              <label style={{ display: "block", padding: "5px" }}>
+            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
+              <label className="block p-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  onChange={() => {
-                    setSelectedWorkgroups([]);
-                  }}
+                  onChange={() => setSelectedWorkgroups([])}
                   checked={selectedWorkgroups.length === 0}
                 />
                 All Workgroups
               </label>
               {availableWorkgroups.map((workgroupName) => (
-                <label
-                  key={workgroupName}
-                  style={{ display: "block", padding: "5px" }}
-                >
+                <label key={workgroupName} className="block p-2 cursor-pointer">
                   <input
                     type="checkbox"
                     value={workgroupName}
@@ -430,42 +428,28 @@ const BarChart5 = () => {
             </div>
           )}
         </div>
-        <div style={{ position: "relative", width: "200px" }}>
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            LineNames
+          </label>
           <button
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
-            style={{ width: "100%", padding: "8px", textAlign: "left" }}
+            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
           >
-            LineNames
+            Select LineNames
           </button>
           {isOpen1 && (
-            <div
-              style={{
-                position: "absolute",
-                top: "100%",
-                left: 0,
-                right: 0,
-                backgroundColor: "white",
-                border: "1px solid #ccc",
-                maxHeight: "200px",
-                overflowY: "auto",
-                zIndex: 1000,
-              }}
-            >
-              <label style={{ display: "block", padding: "5px" }}>
+            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
+              <label className="block p-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  onChange={() => {
-                    setSelectedLineNames([]); // รีเซ็ตการเลือก
-                  }}
+                  onChange={() => setSelectedLineNames([])} // รีเซ็ตการเลือก
                   checked={selectedLineNames.length === 0}
                 />
                 All LineNames
               </label>
               {availableLineNames.map((lineName) => (
-                <label
-                  key={lineName}
-                  style={{ display: "block", padding: "5px" }}
-                >
+                <label key={lineName} className="block p-2 cursor-pointer">
                   <input
                     type="checkbox"
                     value={lineName}
@@ -478,6 +462,7 @@ const BarChart5 = () => {
             </div>
           )}
         </div>
+
         <div className="flex flex-wrap gap-2 mt-4">
           {Object.entries(pastelColors).map(([lineName, color]) => (
             <div key={lineName} className="flex items-center space-x-2">
