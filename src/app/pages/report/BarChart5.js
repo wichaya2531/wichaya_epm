@@ -18,7 +18,7 @@ import {
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isValid, startOfToday } from "date-fns";
 import "chartjs-adapter-date-fns";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
@@ -50,12 +50,12 @@ const BarChart5 = () => {
   const [selectedLineNames, setSelectedLineNames] = useState([]);
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpen1, setIsOpen1] = useState(false);
   const pastelColors = {
     "9309A": "#FFB6C1",
     "9303A": "#ADD8E6",
     "9311A": "#FF7F50",
     M4421: "#FFB3A0",
-    Unknown: "#D3D3D3",
     "9303V": "#FF69B4",
     "23U05B": "#FF1493",
     "9303ZD": "#FFD700",
@@ -65,17 +65,16 @@ const BarChart5 = () => {
     "9920A": "#87CEEB",
     "9919A": "#FFA07A",
   };
-
   const groupedDataByLineNameAndWorkgroup = report
     .filter(
       (item) =>
         item.LINE_NAME &&
         item.LINE_NAME !== "unknown" &&
         item.LINE_NAME.trim() !== "" &&
-        item.WORKGROUP_NAME // ตรวจสอบ WORKGROUP_NAME
-    )
-    .filter(
-      (item) => item.jobItemsCreatedAt && item.ACTUAL_VALUE && item.LINE_NAME
+        item.WORKGROUP_NAME &&
+        item.WORKGROUP_NAME !== "unknown" &&
+        item.jobItemsCreatedAt &&
+        item.ACTUAL_VALUE
     )
     .map((item) => {
       const createdAt = parseISO(item.jobItemsCreatedAt);
@@ -85,7 +84,6 @@ const BarChart5 = () => {
         );
         return null;
       }
-
       return {
         lineName: item.LINE_NAME,
         workgroupName: item.WORKGROUP_NAME,
@@ -117,16 +115,17 @@ const BarChart5 = () => {
     acc[groupKey] = data.sort((a, b) => new Date(a.x) - new Date(b.x));
     return acc;
   }, {});
-
   const datasets = Object.keys(sortedDataByLineNameAndWorkgroup)
     .filter((groupKey) => {
       const [lineName, workgroupName] = groupKey.split("-");
       return (
+        lineName !== "Unknown" && // ไม่แสดง LINE_NAME เป็น "Unknown"
+        workgroupName !== "Unknown" && // ไม่แสดง WORKGROUP_NAME เป็น "Unknown"
         (selectedLineNames.length === 0 ||
           selectedLineNames.includes(lineName)) &&
         (selectedWorkgroups.length === 0 ||
           selectedWorkgroups.includes(workgroupName))
-      ); // กรองตาม line name และ workgroup ที่เลือก
+      );
     })
     .map((groupKey) => {
       const [lineName, workgroupName] = groupKey.split("-");
@@ -228,10 +227,29 @@ const BarChart5 = () => {
         : [...prevSelected, workgroupName]
     );
   };
+  // สร้างตัวเลือกกลุ่มงานทั้งหมด
   const availableWorkgroups = [
-    ...new Set(report.map((item) => item.WORKGROUP_NAME)),
+    ...new Set(
+      report
+        .map((item) => item.WORKGROUP_NAME)
+        .filter((name) => name && name.trim() !== "" && name !== "Unknown") // กรองค่าว่างและ "unknown"
+    ),
   ];
-  const availableLineNames = Object.keys(groupedDataByLineNameAndWorkgroup);
+  const handleLineNameChange = (lineName) => {
+    setSelectedLineNames((prevSelected) =>
+      prevSelected.includes(lineName)
+        ? prevSelected.filter((name) => name !== lineName)
+        : [...prevSelected, lineName]
+    );
+  };
+  // สร้างตัวเลือกสายงานทั้งหมด
+  const availableLineNames = [
+    ...new Set(
+      report
+        .map((item) => item.LINE_NAME)
+        .filter((name) => name && name.trim() !== "" && name !== "Unknown") // กรองค่าว่างและ "unknown"
+    ),
+  ];
   const formatDate = (dateString) => {
     const options = {
       year: "numeric",
@@ -341,31 +359,35 @@ const BarChart5 = () => {
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
         <div>
-          <div>
-            <label htmlFor="start-date">Start Date:</label>
-            <input
-              type="date"
-              id="start-date"
-              value={startDate ? format(startDate, "yyyy-MM-dd") : ""}
-              onChange={(e) => setStartDate(new Date(e.target.value))}
-            />
-          </div>
-          <div>
-            <label htmlFor="end-date">End Date:</label>
-            <input
-              type="date"
-              id="end-date"
-              value={endDate ? format(endDate, "yyyy-MM-dd") : ""}
-              onChange={(e) => setEndDate(new Date(e.target.value))}
-            />
-          </div>
+          <label htmlFor="start-date">Start Date:</label>
+          <input
+            type="date"
+            id="start-date"
+            value={
+              startDate && isValid(startDate)
+                ? format(startDate, "yyyy-MM-dd")
+                : ""
+            }
+            onChange={(e) => setStartDate(new Date(e.target.value))}
+          />
+        </div>
+        <div>
+          <label htmlFor="end-date">End Date:</label>
+          <input
+            type="date"
+            id="end-date"
+            value={
+              endDate && isValid(endDate) ? format(endDate, "yyyy-MM-dd") : ""
+            }
+            onChange={(e) => setEndDate(new Date(e.target.value))}
+          />
         </div>
         <div style={{ position: "relative", width: "200px" }}>
           <button
             onClick={() => setIsOpen((prevOpen) => !prevOpen)}
             style={{ width: "100%", padding: "8px", textAlign: "left" }}
           >
-            เลือกกลุ่มงาน
+            Workgroups
           </button>
           {isOpen && (
             <div
@@ -385,11 +407,11 @@ const BarChart5 = () => {
                 <input
                   type="checkbox"
                   onChange={() => {
-                    setSelectedWorkgroups([]); // รีเซ็ตการเลือก
+                    setSelectedWorkgroups([]);
                   }}
                   checked={selectedWorkgroups.length === 0}
                 />
-                กลุ่มงานทั้งหมด
+                All Workgroups
               </label>
               {availableWorkgroups.map((workgroupName) => (
                 <label
@@ -403,6 +425,54 @@ const BarChart5 = () => {
                     onChange={() => handleWorkgroupChange(workgroupName)}
                   />
                   {workgroupName}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ position: "relative", width: "200px" }}>
+          <button
+            onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
+            style={{ width: "100%", padding: "8px", textAlign: "left" }}
+          >
+            LineNames
+          </button>
+          {isOpen1 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                backgroundColor: "white",
+                border: "1px solid #ccc",
+                maxHeight: "200px",
+                overflowY: "auto",
+                zIndex: 1000,
+              }}
+            >
+              <label style={{ display: "block", padding: "5px" }}>
+                <input
+                  type="checkbox"
+                  onChange={() => {
+                    setSelectedLineNames([]); // รีเซ็ตการเลือก
+                  }}
+                  checked={selectedLineNames.length === 0}
+                />
+                All LineNames
+              </label>
+              {availableLineNames.map((lineName) => (
+                <label
+                  key={lineName}
+                  style={{ display: "block", padding: "5px" }}
+                >
+                  <input
+                    type="checkbox"
+                    value={lineName}
+                    checked={selectedLineNames.includes(lineName)}
+                    onChange={() => handleLineNameChange(lineName)}
+                  />
+                  {lineName}
                 </label>
               ))}
             </div>
