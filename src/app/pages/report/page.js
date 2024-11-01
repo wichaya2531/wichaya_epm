@@ -9,6 +9,7 @@ import BarChart2 from "./BarChart2";
 import BarChart3 from "./BarChart3";
 import BarChart4 from "./BarChart4";
 import BarChart5 from "./BarChart5";
+import BarChart1 from "./BarChart1";
 import { useState } from "react";
 
 const Page = () => {
@@ -16,6 +17,7 @@ const Page = () => {
   const [selectedChart, setSelectedChart] = useState("BarChart");
   const chartButtons = [
     { label: "จำนวนงาน", value: "BarChart" },
+    { label: "จำนวนแม่แบบ", value: "BarChart1" },
     { label: "กลุ่มงานต่างๆ", value: "BarChart2" },
     { label: "สมาชิกแต่ละกลุ่มงาน", value: "BarChart3" },
     { label: "วันที่ของแต่ละงาน", value: "BarChart4" },
@@ -62,8 +64,8 @@ const Page = () => {
       </div>
 
       <div className="mb-4 p-4 bg-white rounded-xl">
-        {/* แสดงผลกราฟตามค่าของ state */}
         {selectedChart === "BarChart" && <BarChart />}
+        {selectedChart === "BarChart1" && <BarChart1 />}
         {selectedChart === "BarChart2" && <BarChart2 />}
         {selectedChart === "BarChart3" && <BarChart3 />}
         {selectedChart === "BarChart4" && <BarChart4 />}

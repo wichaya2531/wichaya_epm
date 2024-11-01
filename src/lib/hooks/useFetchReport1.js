@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { config } from "@/config/config.js";
-
 const useFetchReport1 = (refresh) => {
   const [report, setReport] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const fetchReport = async () => {
-      setIsLoading(true); // Ensure loading state is set to true when fetching
+      setIsLoading(true);
       try {
         const response = await fetch(`/api/job/job-report1`, {
           method: "GET",
@@ -26,8 +24,6 @@ const useFetchReport1 = (refresh) => {
     };
     fetchReport();
   }, [refresh]);
-
   return { report, isLoading };
 };
-
 export default useFetchReport1;

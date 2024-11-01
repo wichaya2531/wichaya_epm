@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { config } from "@/config/config.js";
-const useFetchReport = (refresh) => {
+const useFetchReport2 = (refresh) => {
   const [report, setReport] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchReport = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/job/job-report`, {
+        const response = await fetch(`/api/job/job-report2`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -26,4 +26,4 @@ const useFetchReport = (refresh) => {
   }, [refresh]);
   return { report, isLoading };
 };
-export default useFetchReport;
+export default useFetchReport2;
