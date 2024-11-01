@@ -66,6 +66,9 @@ export const GET = async (req, res) => {
       {
         $match: {
           "jobItems.ACTUAL_VALUE": { $ne: null },
+          "jobs.LINE_NAME": { $ne: null }, // ตรวจสอบว่า LINE_NAME ไม่เป็นค่าว่าง
+          "jobItems.createdAt": { $ne: null }, // ตรวจสอบว่า jobItemsCreatedAt ไม่เป็นค่าว่าง
+          "workgroupInfo.WORKGROUP_NAME": { $ne: null }, // ตรวจสอบว่า WORKGROUP_NAME ไม่เป็นค่าว่าง
         },
       },
       {

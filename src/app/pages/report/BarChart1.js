@@ -20,7 +20,6 @@ import * as XLSX from "xlsx";
 import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -35,7 +34,7 @@ ChartJS.register(
 const BarChart1 = () => {
   const [refresh, setRefresh] = useState(false);
   const [chartType, setChartType] = useState("bar");
-  const [topN, setTopN] = useState("top10");
+  const [topN, setTopN] = useState("All");
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const { report } = useFetchReport2(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
@@ -164,26 +163,21 @@ const BarChart1 = () => {
     }
     const element = chartRef.current.canvas; // เข้าถึง canvas ของกราฟ
     const pdf = new jsPDF();
-
     requestAnimationFrame(async () => {
       const canvas = await html2canvas(element);
       const imgData = canvas.toDataURL("image/png");
       const imgWidth = 190; // กำหนดความกว้างของภาพใน PDF
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
       // เพิ่มภาพใน PDF
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-
       // เพิ่มหัวข้อ
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
       pdf.text("รายงานจำนวน Job Templates", 10, imgHeight + 10);
-
       // เพิ่มข้อมูลจาก finalReport
       const textYPosition = imgHeight + 20 + 10; // เพิ่มระยะห่างจากหัวข้อ
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "normal");
-
       if (finalReport.length === 0) {
         pdf.text("ไม่มีข้อมูลรายงาน", 10, textYPosition);
       } else {
@@ -196,19 +190,15 @@ const BarChart1 = () => {
           );
         });
       }
-
       // ตั้งชื่อไฟล์ให้สอดคล้องกับกลุ่มงานที่เลือก หรือแสดงเป็น "ไม่มีกลุ่มงาน"
       const workgroupName =
         selectedWorkgroups.length > 0
           ? selectedWorkgroups.map((name) => name || "ไม่มีกลุ่มงาน").join(", ")
           : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
-
       const fileName = `${workgroupName}_top_${topN}.pdf`; // สร้างชื่อไฟล์
-
       pdf.save(fileName); // บันทึกไฟล์ PDF
     });
   };
-
   // ฟังก์ชันการส่งออก CSV
   const exportToCSV = () => {
     const formattedData = finalReport.map((item) => ({
@@ -281,7 +271,6 @@ const BarChart1 = () => {
       )
     ),
   ];
-
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
@@ -350,7 +339,6 @@ const BarChart1 = () => {
             <option value="top10">Top 10</option>
           </select>
         </div>
-
         <div className="flex flex-wrap gap-2 mt-4">
           {Object.entries(workgroupColors).map(([workgroup, color]) => (
             <div key={workgroup} className="flex items-center space-x-2">
@@ -380,7 +368,6 @@ const BarChart1 = () => {
           <span className="hidden md:inline">Export CSV</span>{" "}
           {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
         </button>
-
         <button
           onClick={() => handleExport("png")}
           className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
@@ -389,7 +376,6 @@ const BarChart1 = () => {
           <span className="hidden md:inline">Save as PNG</span>{" "}
           {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
         </button>
-
         <button
           onClick={() => handleExport("pdf")}
           className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
@@ -401,5 +387,4 @@ const BarChart1 = () => {
     </div>
   );
 };
-
 export default BarChart1;

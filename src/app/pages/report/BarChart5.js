@@ -66,16 +66,18 @@ const BarChart5 = () => {
     "9919A": "#FFA07A",
   };
   const groupedDataByLineNameAndWorkgroup = report
-    .filter(
-      (item) =>
+    .filter((item) => {
+      // กรองเฉพาะรายการที่มี LINE_NAME และ WORKGROUP_NAME ที่ไม่เป็นค่า unknown หรือว่าง
+      return (
         item.LINE_NAME &&
         item.LINE_NAME !== "unknown" &&
         item.LINE_NAME.trim() !== "" &&
         item.WORKGROUP_NAME &&
         item.WORKGROUP_NAME !== "unknown" &&
-        item.jobItemsCreatedAt &&
-        item.ACTUAL_VALUE
-    )
+        item.WORKGROUP_NAME.trim() !== "" &&
+        item.jobItemsCreatedAt
+      );
+    })
     .map((item) => {
       const createdAt = parseISO(item.jobItemsCreatedAt);
       if (isNaN(createdAt.getTime())) {
@@ -88,7 +90,8 @@ const BarChart5 = () => {
         lineName: item.LINE_NAME,
         workgroupName: item.WORKGROUP_NAME,
         x: createdAt.toISOString(),
-        y: parseFloat(item.ACTUAL_VALUE),
+        y: parseFloat(item.ACTUAL_VALUE) || 0, // หาก ACTUAL_VALUE เป็นตัวอักษรจะเก็บค่าเป็น 0
+        actualValue: item.ACTUAL_VALUE, // เก็บค่า ACTUAL_VALUE ที่เป็นตัวอักษร
       };
     })
     .filter((item) => item !== null)
@@ -100,15 +103,35 @@ const BarChart5 = () => {
       const groupKey = `${curr.lineName}-${curr.workgroupName}`;
       const lineGroup = acc[groupKey] || [];
       const existing = lineGroup.find((item) => item.x === curr.x);
+
       if (existing) {
-        existing.y += curr.y;
+        existing.y += curr.y; // เพิ่มค่า y
       } else {
-        lineGroup.push({ x: curr.x, y: curr.y });
+        lineGroup.push({ x: curr.x, y: curr.y, actualValue: curr.actualValue }); // เก็บ actualValue
       }
       acc[groupKey] = lineGroup;
       return acc;
     }, {});
 
+  // แปลง ACTUAL_VALUE ที่เป็นตัวอักษรโดยอ้างอิงค่าก่อนหน้าหรือค่าถัดไป
+  Object.entries(groupedDataByLineNameAndWorkgroup).forEach(
+    ([groupKey, data]) => {
+      data.forEach((item, index) => {
+        // แปลงค่าจากตัวอักษรโดยใช้ค่าก่อนหน้าและค่าถัดไป
+        if (isNaN(item.y) && item.actualValue) {
+          const previousValue = index > 0 ? data[index - 1].y : null;
+          const nextValue = index < data.length - 1 ? data[index + 1].y : null;
+          if (previousValue !== null) {
+            item.y = previousValue; // ใช้ค่าก่อนหน้าเป็นค่าปัจจุบัน
+          } else if (nextValue !== null) {
+            item.y = nextValue; // ใช้ค่าถัดไปเป็นค่าปัจจุบัน
+          }
+        }
+      });
+    }
+  );
+
+  // จัดเรียงข้อมูลที่ได้
   const sortedDataByLineNameAndWorkgroup = Object.entries(
     groupedDataByLineNameAndWorkgroup
   ).reduce((acc, [groupKey, data]) => {
@@ -119,8 +142,8 @@ const BarChart5 = () => {
     .filter((groupKey) => {
       const [lineName, workgroupName] = groupKey.split("-");
       return (
-        lineName !== "Unknown" && // ไม่แสดง LINE_NAME เป็น "Unknown"
-        workgroupName !== "Unknown" && // ไม่แสดง WORKGROUP_NAME เป็น "Unknown"
+        lineName !== "unknown" &&
+        workgroupName !== "unknown" &&
         (selectedLineNames.length === 0 ||
           selectedLineNames.includes(lineName)) &&
         (selectedWorkgroups.length === 0 ||
@@ -138,17 +161,30 @@ const BarChart5 = () => {
         data: sortedDataByLineNameAndWorkgroup[groupKey].map((item) => ({
           x: item.x,
           y: item.y,
+          actualValue: item.actualValue, // เก็บ actualValue ที่เป็นตัวอักษร
         })),
         tension: 0.4,
         fill: true,
+        datalabels: {
+          display: true,
+          color: "#000",
+          anchor: "end",
+          align: "top",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+          formatter: (value) => {
+            return value.actualValue; // แสดง actualValue ที่เป็นตัวอักษร
+          },
+        },
       };
     });
-
   const data = {
-    labels: [], // ใช้แกน x ใน dataset โดยตรงแทน labels นี้
+    labels: [],
     datasets: datasets,
   };
-
+  // อัปเดต options เพื่อให้ใช้ datalabels
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -168,7 +204,7 @@ const BarChart5 = () => {
           size: 12,
           weight: "bold",
         },
-        formatter: (value) => value.y.toLocaleString(),
+        formatter: (value) => value.actualValue, // แสดง actualValue ที่เป็นตัวอักษร
       },
     },
     layout: {
@@ -176,16 +212,16 @@ const BarChart5 = () => {
         top: 30,
         bottom: 0,
         left: 0,
-        right: 0,
+        right: 20,
       },
     },
     scales: {
       x: {
-        type: "time", // กำหนดให้แกน x เป็นประเภท time
+        type: "time",
         time: {
-          unit: "month", // แสดงหน่วยเป็นเดือน
+          unit: "month",
           displayFormats: {
-            month: "MMM yyyy", // เปลี่ยนเป็น 'MMM yyyy'
+            month: "MMM yyyy",
           },
         },
         grid: {
@@ -203,7 +239,7 @@ const BarChart5 = () => {
         },
       },
       y: {
-        type: "logarithmic", // เปลี่ยนแกน Y เป็นลอการิธึม
+        type: "logarithmic",
         grid: {
           display: true,
           color: "rgba(0, 0, 0, 0.1)",
@@ -227,7 +263,6 @@ const BarChart5 = () => {
         : [...prevSelected, workgroupName]
     );
   };
-  // สร้างตัวเลือกกลุ่มงานทั้งหมด
   const availableWorkgroups = [
     ...new Set(
       report
