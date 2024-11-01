@@ -86,14 +86,14 @@ const Page = ({ searchParams }) => {
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
-    if (!e.target.test_location.value) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Please select a test location!",
-      });
-      return;
-    }
+    // if (!e.target.test_location.value) {
+    //   Swal.fire({
+    //     icon: "error",
+    //     title: "Oops...",
+    //     text: "Please select a test location!",
+    //   });
+    //   return;
+    // }
 
     const form = new FormData(e.target);
     const data = {
@@ -105,7 +105,9 @@ const Page = ({ searchParams }) => {
       upper_spec: form.get("upper_spec"),
       lower_spec: form.get("lower_spec"),
       test_method: form.get("test_method"),
-      test_location: form.get("test_location"),
+      
+      test_location: '667b915a596b4d721ec60c40',  //TEST_LOCATION_ID: '667b915a596b4d721ec60c40'
+      
     };
     // เพิ่มการจัดเก็บ filePath ที่ได้จากการอัปโหลด
     if (selectedFile) {
@@ -274,7 +276,7 @@ const Page = ({ searchParams }) => {
               />
             </div>
             <div>
-              <label
+              {/* <label
                 for="test_method"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
               >
@@ -291,7 +293,7 @@ const Page = ({ searchParams }) => {
                   };
                 })}
                 isSearchable={true}
-              />
+              /> */}
             </div>
             <div>
               <label

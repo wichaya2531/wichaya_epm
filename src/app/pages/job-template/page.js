@@ -236,6 +236,7 @@ const Page = () => {
   });
 
   const handleSubmit = async (e) => {
+    console.log("submit to create ");  
     e.preventDefault();
 
     const formData = new FormData(e.target);
@@ -285,7 +286,7 @@ const Page = () => {
         setApprovers([]);
         setNotifies([]);
         setDueDate("");
-        setSelectedMachine(null);
+        //setSelectedMachine(null);
         setSelectedApprover(null);
         setOptions([]);
         setRefresh((prev) => !prev);
@@ -459,6 +460,7 @@ const Page = () => {
               <select
                    id="line_name"              
                    className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    name="line_name"
                >
                   <option value="">&nbsp;&nbsp;&nbsp;Select&nbsp;&nbsp;&nbsp;</option>
                   <option value="N/A">&nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;</option>

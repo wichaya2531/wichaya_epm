@@ -5,6 +5,9 @@ import { config } from "@/config/config.js";
 
 
 const useFetchCards = (refresh = null) => {
+
+    
+
     const { session, isLoading: sessionLoading, error: sessionError } = useSession();
     const [cards, setCards] = useState([]);
     const [isLoading, setIsLoading] = useState(false);

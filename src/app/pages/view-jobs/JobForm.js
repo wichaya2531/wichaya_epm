@@ -694,7 +694,7 @@ const JobForm = ({
                           onClick={() => handleShowComment(item)}
                         /> :<div></div>          
                        :(                       
-                        <InfoIcon
+                        <ChatIcon
                           className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
                           onClick={() => toggleAddComment(item)}
                         />    

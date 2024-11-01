@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 export const dynamic = 'force-dynamic';
 export const GET = async (req, { params }) => {
     await connectToDb();
+    console.log("WD_INTRANET_MODE :", process.env.WD_INTRANET_MODE);  
     const { user_id } = params;
     try {
 

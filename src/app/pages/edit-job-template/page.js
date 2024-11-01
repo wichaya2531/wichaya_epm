@@ -335,7 +335,7 @@ const Page = ({ searchParams }) => {
 
     try {
 
-      console.log("data=>", data);
+      //console.log("data=>", data);
 
       const res = await fetch(`/api/job-template/edit-job-template`, {
         method: "PUT",
@@ -346,7 +346,7 @@ const Page = ({ searchParams }) => {
         next: { revalidate: 10 },
       });
       const response = await res.json();
-      console.log("response=>", response);
+      //console.log("response=>", response);
       if (response.status === 500) {
             console.error(response.error);
       } else {

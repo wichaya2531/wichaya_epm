@@ -52,18 +52,22 @@ export const POST = async (req) => {
     // ค้นหาผู้ส่งข้อมูล
     const submittedUser = await User.findById(jobData.submittedBy);
 
-    // const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
-    // // ปิดไว้เมื่อต้องการทดสอบ local fee
-    // // ตรวจสอบหมายเลขเอกสาร
-    // if (latestDocNo.message) {
-    //   console.log("Doc number error");
-    //   return NextResponse.json({ status: 455, message: latestDocNo.message });
-    // } else if (job.CHECKLIST_VERSION !== latestDocNo) {
-    //   return NextResponse.json({
-    //     status: 455,
-    //     message: "This Checklist does not have the latest revision",
-    //   });
-    // }
+
+    if(process.env.WD_INTRANET_MODE === false){
+            const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
+            // ปิดไว้เมื่อต้องการทดสอบ local fee
+            console.log(" ตรวจสอบหมายเลขเอกสาร");
+            if (latestDocNo.message) {
+              console.log("Doc number error");
+              return NextResponse.json({ status: 455, message: latestDocNo.message });
+            } else if (job.CHECKLIST_VERSION !== latestDocNo) {
+              return NextResponse.json({
+                status: 455,
+                message: "This Checklist does not have the latest revision",
+              });
+            }
+    }
+        
 
     // อัปเดต job items
     await updateJobItems(jobItemsData); // ตรวจสอบที่นี่

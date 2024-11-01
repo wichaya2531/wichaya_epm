@@ -36,6 +36,9 @@ const sendData = async () => {
 };
 
 const Page = () => {
+
+  
+
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);

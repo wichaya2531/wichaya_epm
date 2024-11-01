@@ -149,8 +149,10 @@ export const getRevisionNo = async (documentNo) => {
 
 export async function sendEmails(emailList, job) {
 
+  if(process.env.WD_INTRANET_MODE === false){
     console.log("send emailList to=>", emailList);
-  return;
+    return;
+  }
   
   const usrsparams = new URLSearchParams({
     subject: "New CheckList Checklist activated",
