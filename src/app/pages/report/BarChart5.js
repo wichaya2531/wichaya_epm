@@ -39,7 +39,6 @@ ChartJS.register(
   LineElement,
   TimeScale
 );
-
 const BarChart5 = () => {
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
@@ -65,79 +64,98 @@ const BarChart5 = () => {
     "9920A": "#87CEEB",
     "9919A": "#FFA07A",
   };
+  const colorValues = [
+    "Pass",
+    "Good",
+    "Not Change",
+    "Fail",
+    "Done",
+    "Check",
+    "Unknown", // เพิ่มค่าอื่น ๆ ที่ต้องการแสดง
+  ];
+  const getPastelColorForValue = (value) => {
+    switch (value) {
+      case "Pass":
+        return "rgba(198, 255, 198, 0.6)"; // สีพาสเทลเขียวที่นุ่มนวล
+      case "Good":
+        return "rgba(204, 229, 255, 0.6)"; // สีพาสเทลฟ้าที่นุ่มนวล
+      case "Change":
+        return "rgba(255, 227, 153, 0.6)"; // สีพาสเทลเหลืองนุ่มนวล
+      case "Not Change":
+        return "rgba(255, 239, 204, 0.6)"; // สีพาสเทลครีมที่นุ่มนวล
+      case "Fail":
+        return "rgba(255, 182, 193, 0.6)"; // สีพาสเทลชมพูที่นุ่มนวล
+      case "Done":
+        return "rgba(221, 160, 221, 0.6)"; // สีพาสเทลม่วงที่นุ่มนวล
+      case "Check":
+        return "rgba(255, 255, 204, 0.6)"; // สีพาสเทลเหลืองอ่อนที่นุ่มนวล
+      default:
+        return "rgba(0, 0, 0, 0)"; // ไม่มีสี สำหรับค่าอื่น ๆ (โปร่งใส)
+    }
+  };
   const groupedDataByLineNameAndWorkgroup = report
-    .filter((item) => {
-      // กรองเฉพาะรายการที่มี LINE_NAME และ WORKGROUP_NAME ที่ไม่เป็นค่า unknown หรือว่าง
-      return (
+    .filter(
+      (item) =>
         item.LINE_NAME &&
-        item.LINE_NAME !== "unknown" &&
         item.LINE_NAME.trim() !== "" &&
+        item.LINE_NAME !== "unknown" &&
         item.WORKGROUP_NAME &&
-        item.WORKGROUP_NAME !== "unknown" &&
         item.WORKGROUP_NAME.trim() !== "" &&
+        item.WORKGROUP_NAME !== "unknown" &&
         item.jobItemsCreatedAt
-      );
-    })
+    )
     .map((item) => {
-      const createdAt = parseISO(item.jobItemsCreatedAt);
+      const createdAt = new Date(item.jobItemsCreatedAt);
       if (isNaN(createdAt.getTime())) {
         console.warn(
           `Invalid date for jobItemsCreatedAt: ${item.jobItemsCreatedAt}`
         );
         return null;
       }
+      const yValue = isNaN(parseFloat(item.ACTUAL_VALUE))
+        ? 0
+        : parseFloat(item.ACTUAL_VALUE);
       return {
         lineName: item.LINE_NAME,
         workgroupName: item.WORKGROUP_NAME,
         x: createdAt.toISOString(),
-        y: parseFloat(item.ACTUAL_VALUE) || 0, // หาก ACTUAL_VALUE เป็นตัวอักษรจะเก็บค่าเป็น 0
-        actualValue: item.ACTUAL_VALUE, // เก็บค่า ACTUAL_VALUE ที่เป็นตัวอักษร
+        y: yValue,
+        actualValue: item.ACTUAL_VALUE,
       };
     })
-    .filter((item) => item !== null)
+    .filter(Boolean)
     .filter((item) => {
       const date = new Date(item.x);
-      return date >= startDate && date <= endDate; // ฟิลเตอร์วันที่
+      return date >= startDate && date <= endDate;
     })
     .reduce((acc, curr) => {
       const groupKey = `${curr.lineName}-${curr.workgroupName}`;
       const lineGroup = acc[groupKey] || [];
       const existing = lineGroup.find((item) => item.x === curr.x);
-
       if (existing) {
-        existing.y += curr.y; // เพิ่มค่า y
+        existing.y += curr.y;
       } else {
-        lineGroup.push({ x: curr.x, y: curr.y, actualValue: curr.actualValue }); // เก็บ actualValue
+        lineGroup.push({ x: curr.x, y: curr.y, actualValue: curr.actualValue });
       }
       acc[groupKey] = lineGroup;
       return acc;
     }, {});
-
-  // แปลง ACTUAL_VALUE ที่เป็นตัวอักษรโดยอ้างอิงค่าก่อนหน้าหรือค่าถัดไป
-  Object.entries(groupedDataByLineNameAndWorkgroup).forEach(
-    ([groupKey, data]) => {
-      data.forEach((item, index) => {
-        // แปลงค่าจากตัวอักษรโดยใช้ค่าก่อนหน้าและค่าถัดไป
-        if (isNaN(item.y) && item.actualValue) {
-          const previousValue = index > 0 ? data[index - 1].y : null;
-          const nextValue = index < data.length - 1 ? data[index + 1].y : null;
-          if (previousValue !== null) {
-            item.y = previousValue; // ใช้ค่าก่อนหน้าเป็นค่าปัจจุบัน
-          } else if (nextValue !== null) {
-            item.y = nextValue; // ใช้ค่าถัดไปเป็นค่าปัจจุบัน
-          }
-        }
-      });
-    }
-  );
-
-  // จัดเรียงข้อมูลที่ได้
+  Object.entries(groupedDataByLineNameAndWorkgroup).forEach(([_, data]) => {
+    data.forEach((item, index) => {
+      if (item.y === 0 && isNaN(parseFloat(item.actualValue))) {
+        const previousValue = index > 0 ? data[index - 1].y : null;
+        const nextValue = index < data.length - 1 ? data[index + 1].y : null;
+        item.y = previousValue ?? nextValue ?? 0;
+      }
+    });
+  });
   const sortedDataByLineNameAndWorkgroup = Object.entries(
     groupedDataByLineNameAndWorkgroup
   ).reduce((acc, [groupKey, data]) => {
     acc[groupKey] = data.sort((a, b) => new Date(a.x) - new Date(b.x));
     return acc;
   }, {});
+
   const datasets = Object.keys(sortedDataByLineNameAndWorkgroup)
     .filter((groupKey) => {
       const [lineName, workgroupName] = groupKey.split("-");
@@ -161,96 +179,68 @@ const BarChart5 = () => {
         data: sortedDataByLineNameAndWorkgroup[groupKey].map((item) => ({
           x: item.x,
           y: item.y,
-          actualValue: item.actualValue, // เก็บ actualValue ที่เป็นตัวอักษร
+          actualValue: item.actualValue,
         })),
         tension: 0.4,
         fill: true,
         datalabels: {
           display: true,
-          color: "#000",
           anchor: "end",
           align: "top",
-          font: {
-            size: 12,
-            weight: "bold",
+          font: { size: 12, weight: "bold" },
+          color: "#000",
+          backgroundColor: (context) => {
+            const actualValue =
+              context.dataset.data[context.dataIndex].actualValue;
+            return getPastelColorForValue(actualValue);
           },
-          formatter: (value) => {
-            return value.actualValue; // แสดง actualValue ที่เป็นตัวอักษร
-          },
+          formatter: (value) => value.actualValue || "N/A",
         },
       };
     });
-  const data = {
-    labels: [],
-    datasets: datasets,
-  };
-  // อัปเดต options เพื่อให้ใช้ datalabels
+  const data = { labels: [], datasets };
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
-      title: {
-        display: false,
-      },
+      legend: { display: true },
+      title: { display: false },
       datalabels: {
         display: true,
-        color: "#000",
+        color: (context) => {
+          return context.raw && context.raw.actualValue
+            ? getPastelColorForValue(context.raw.actualValue) // ใช้สีที่กำหนดจาก actualValue
+            : "#000";
+        },
         anchor: "end",
         align: "top",
-        font: {
-          size: 12,
-          weight: "bold",
+        font: { size: 12, weight: "normal" },
+        formatter: (value) => {
+          return isNaN(value.y) ? value.actualValue : value.y.toLocaleString();
         },
-        formatter: (value) => value.actualValue, // แสดง actualValue ที่เป็นตัวอักษร
       },
     },
     layout: {
-      padding: {
-        top: 30,
-        bottom: 0,
-        left: 0,
-        right: 20,
-      },
+      padding: { top: 30, right: 20 },
     },
     scales: {
       x: {
         type: "time",
-        time: {
-          unit: "month",
-          displayFormats: {
-            month: "MMM yyyy",
-          },
-        },
-        grid: {
-          display: false,
-        },
-        border: {
-          display: false,
-        },
+        time: { unit: "month", displayFormats: { month: "MMM yyyy" } },
+        grid: { display: false },
+        border: { display: false },
         ticks: {
-          font: {
-            size: 12,
-          },
+          font: { size: 12 },
           autoSkip: true,
           maxTicksLimit: 12,
         },
       },
       y: {
         type: "logarithmic",
-        grid: {
-          display: true,
-          color: "rgba(0, 0, 0, 0.1)",
-        },
-        border: {
-          display: false,
-        },
+        grid: { display: true, color: "rgba(0, 0, 0, 0.1)" },
+        border: { display: false },
         ticks: {
-          font: {
-            size: 12,
-          },
+          font: { size: 12 },
           callback: (value) => value.toLocaleString(),
         },
       },
@@ -277,7 +267,6 @@ const BarChart5 = () => {
         : [...prevSelected, lineName]
     );
   };
-  // สร้างตัวเลือกสายงานทั้งหมด
   const availableLineNames = [
     ...new Set(
       report
@@ -298,58 +287,64 @@ const BarChart5 = () => {
     return date.toLocaleString("th-TH", options).replace(",", ""); // ใช้ locale เป็นไทย
   };
   const exportToPDF = async () => {
-    const element = chartRef.current;
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF();
-    const imgWidth = 190;
-    const pageHeight = pdf.internal.pageSize.height;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
-    const exportedData = datasets.map((dataset) => ({
-      lineName: dataset.label,
-      dataPoints: dataset.data
-        .filter((point) => point.y !== "" && !isNaN(point.y)) // กรองข้อมูลที่ ACTUAL_VALUE ไม่มีค่า
-        .map((point) => ({
-          x: formatDate(point.x), // แปลงวันที่ที่นี่
-          y: point.y,
-        })),
-    }));
-    let textYPosition = 20;
-    exportedData.forEach(({ lineName, dataPoints }) => {
-      pdf.text(`Line Name: ${lineName}`, 10, textYPosition);
-      dataPoints.forEach((point) => {
-        pdf.text(
-          `วันที่: ${point.x}, ACTUAL VALUE: ${point.y}`,
-          10,
-          (textYPosition += 10)
-        );
+    try {
+      const element = chartRef.current;
+      if (!element) throw new Error("Chart reference is null");
+      const canvas = await html2canvas(element);
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF();
+      const imgWidth = 190;
+      const pageHeight = pdf.internal.pageSize.height;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      const exportedData = datasets.map((dataset) => ({
+        lineName: dataset.label,
+        dataPoints: dataset.data
+          .filter((point) => point.y !== "" && !isNaN(point.y))
+          .map((point) => ({
+            x: formatDate(point.x),
+            y: point.y,
+          })),
+      }));
+      let textYPosition = 20;
+      exportedData.forEach(({ lineName, dataPoints }) => {
+        pdf.text(`Line Name: ${lineName}`, 10, textYPosition);
+        dataPoints.forEach((point) => {
+          pdf.text(
+            `วันที่: ${point.x}, ACTUAL VALUE: ${point.y}`,
+            10,
+            (textYPosition += 10)
+          );
+        });
+        textYPosition += 10;
       });
-      textYPosition += 10;
-    });
-    const imageYPosition = textYPosition + 10;
-    pdf.addImage(imgData, "PNG", 10, imageYPosition, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+      const imageYPosition = textYPosition + 10;
+      pdf.addImage(imgData, "PNG", 10, imageYPosition, imgWidth, imgHeight);
       heightLeft -= pageHeight;
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      const fileName = `LineNames:${
+        selectedLineNames.join(",") || "All_Line_Names"
+      }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      alert("ไม่สามารถส่งออกไฟล์ PDF ได้: " + error.message);
     }
-    const fileName = `LineNames_${
-      selectedLineNames.join(",") || "All_Line_Names"
-    }.pdf`;
-    pdf.save(fileName);
   };
   const exportToCSV = () => {
     const exportedData = datasets
       .flatMap((dataset) =>
         dataset.data
-          .filter((point) => point.y !== "" && !isNaN(point.y)) // กรองข้อมูลที่ ACTUAL_VALUE ไม่มีค่า
+          .filter((point) => point.y !== "" && !isNaN(point.y))
           .map((point) => ({
             lineName: dataset.label,
-            CreatedAt: formatDate(point.x), // แปลงวันที่ที่นี่
+            CreatedAt: formatDate(point.x),
             "ACTUAL VALUE": point.y,
           }))
       )
@@ -360,25 +355,29 @@ const BarChart5 = () => {
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    const fileName = `LineNames_${
+    const fileName = `LineNames:${
       selectedLineNames.join(",") || "All_Line_Names"
-    }.xlsx`;
+    }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.xlsx`;
     FileSaver.saveAs(data, fileName);
   };
   const saveAsPNG = async () => {
-    const chart = chartRef.current;
-    if (chart) {
+    try {
+      const chart = chartRef.current;
+      if (!chart) throw new Error("Chart reference is null");
       const canvas = await html2canvas(chart);
       const imgData = canvas.toDataURL("image/png");
-      const fileName = `LineNames_${
+      const fileName = `LineNames:${
         selectedLineNames.join(",") || "All_Line_Names"
-      }.png`;
+      }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.png`;
       const link = document.createElement("a");
       link.href = imgData;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error saving as PNG:", error);
+      alert("ไม่สามารถบันทึกไฟล์ PNG ได้: " + error.message);
     }
   };
   const handleExport = (option) => {
@@ -497,7 +496,6 @@ const BarChart5 = () => {
             </div>
           )}
         </div>
-
         <div className="flex flex-wrap gap-2 mt-4">
           {Object.entries(pastelColors).map(([lineName, color]) => (
             <div key={lineName} className="flex items-center space-x-2">
@@ -509,8 +507,19 @@ const BarChart5 = () => {
             </div>
           ))}
         </div>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {colorValues.map((value) => (
+            <div key={value} className="flex items-center space-x-2">
+              <span
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: getPastelColorForValue(value) }}
+              ></span>
+              <span className="text-sm text-gray-700">{value}</span>
+            </div>
+          ))}
+        </div>
       </div>
-      <div style={{ height: "450px", width: "100%" }}>
+      <div style={{ height: "450px", width: "100%" }} ref={chartRef}>
         <Line data={data} options={options} />
       </div>
       <div className="flex justify-end mt-6 space-x-3">

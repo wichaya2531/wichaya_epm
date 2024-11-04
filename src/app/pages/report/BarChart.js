@@ -147,19 +147,15 @@ const BarChart = () => {
       console.error("Chart element is not ready yet");
       return;
     }
-
     const element = chartRef.current.canvas; // เข้าถึง canvas ของกราฟ
     const pdf = new jsPDF();
-
     requestAnimationFrame(async () => {
       const canvas = await html2canvas(element);
       const imgData = canvas.toDataURL("image/png");
       const imgWidth = 190; // กำหนดความกว้างของภาพใน PDF
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
       // เพิ่มภาพใน PDF
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-
       // เพิ่มข้อมูลจาก finalReport หรือข้อมูลที่ต้องการ
       const textYPosition = imgHeight + 20; // ตำแหน่ง y สำหรับข้อความ
       finalReport.forEach((item, index) => {
@@ -169,7 +165,6 @@ const BarChart = () => {
           textYPosition + index * 10
         );
       });
-
       const workgroupName =
         selectedWorkgroups.length > 0
           ? selectedWorkgroups.join(", ")
@@ -179,7 +174,6 @@ const BarChart = () => {
       pdf.save(fileName); // บันทึกไฟล์ PDF
     });
   };
-
   const exportToCSV = () => {
     const formattedData = finalReport.map((item) => ({
       userName: item.userName,
@@ -192,50 +186,41 @@ const BarChart = () => {
             .join(", ")
         : "",
     }));
-
     const ws = XLSX.utils.json_to_sheet(formattedData);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-
     // สร้างชื่อไฟล์ตามกลุ่มงานและ topN ที่เลือก
     const workgroupName =
       selectedWorkgroups.length > 0
         ? selectedWorkgroups.join(", ")
         : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
     const fileName = `${workgroupName}_top_${topN}.xlsx`; // สร้างชื่อไฟล์
-
     FileSaver.saveAs(data, fileName); // ใช้ชื่อไฟล์ที่สร้างขึ้น
   };
-
   const saveAsPNG = () => {
     const chart = chartRef.current;
     if (chart) {
       // สร้าง canvas ใหม่
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-
       // กำหนดขนาด canvas ให้เท่ากับขนาดกราฟ
       canvas.width = chart.width;
       canvas.height = chart.height;
-
       // ตั้งสีพื้นหลังเป็นสีขาว
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       // คัดลอกกราฟไปยัง canvas
       const img = new Image();
       img.src = chart.toBase64Image();
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
-
         // สร้างลิงก์ดาวน์โหลด
         const workgroupName =
           selectedWorkgroups.length > 0
             ? selectedWorkgroups.join(", ")
             : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
         const fileName = `${workgroupName}_top_${topN}.png`; // สร้างชื่อไฟล์
-
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png");
         link.download = fileName; // ใช้ชื่อไฟล์ที่สร้างขึ้น

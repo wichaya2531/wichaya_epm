@@ -13,7 +13,6 @@ import BarChart1 from "./BarChart1";
 import { useState } from "react";
 
 const Page = () => {
-  // สร้าง state สำหรับเก็บข้อมูลว่าจะแสดงกราฟไหน
   const [selectedChart, setSelectedChart] = useState("BarChart");
   const chartButtons = [
     { label: "จำนวนงาน", value: "BarChart" },
@@ -23,7 +22,6 @@ const Page = () => {
     { label: "วันที่ของแต่ละงาน", value: "BarChart4" },
     { label: "ข้อมูลไอเทมต่างๆ", value: "BarChart5" },
   ];
-
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
@@ -45,7 +43,6 @@ const Page = () => {
           Summarize the data.
         </h1>
       </div>
-
       {/* ปุ่มสำหรับแสดงกราฟต่าง ๆ */}
       <div className="flex justify-start mb-4 space-x-4">
         {chartButtons.map((button) => (
@@ -62,7 +59,6 @@ const Page = () => {
           </button>
         ))}
       </div>
-
       <div className="mb-4 p-4 bg-white rounded-xl">
         {selectedChart === "BarChart" && <BarChart />}
         {selectedChart === "BarChart1" && <BarChart1 />}

@@ -13,13 +13,6 @@ const BarChart4 = () => {
   const { report } = useFetchReport(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const [workgroupDropdownOpen, setWorkgroupDropdownOpen] = useState(false);
-  const filterReportByWorkgroup = (data, selectedWorkgroup) => {
-    if (selectedWorkgroup.length === 0) return data;
-    return data.filter((item) =>
-      selectedWorkgroup.includes(item.workgroupName)
-    );
-  };
-  const filteredReport = filterReportByWorkgroup(report, selectedWorkgroup);
   const workgroupColors = {
     "Tooling NEO": "#FFB3B3", // สีชมพูอ่อน
     "Tooling ESD Realtime": "#B3FFC9", // สีเขียวพาสเทล
@@ -31,6 +24,13 @@ const BarChart4 = () => {
     "No Workgroup": "#E0E0E0", // สีเทาอ่อน
     Others: "#F0F0F0", // สีเทาพาสเทลอ่อน
   };
+  const filterReportByWorkgroup = (data, selectedWorkgroup) => {
+    if (selectedWorkgroup.length === 0) return data;
+    return data.filter((item) =>
+      selectedWorkgroup.includes(item.workgroupName)
+    );
+  };
+  const filteredReport = filterReportByWorkgroup(report, selectedWorkgroup);
   const convertToCalendarEvents = (data) => {
     const events = [];
     const dateMap = new Map();
@@ -39,18 +39,12 @@ const BarChart4 = () => {
         item.createdAt.forEach((date) => {
           const eventDate = new Date(date);
           const dateKey = eventDate.toISOString().split("T")[0];
-
-          // ตรวจสอบว่ามี dateKey อยู่ใน dateMap หรือไม่
           if (!dateMap.has(dateKey)) {
             dateMap.set(dateKey, new Map());
           }
-
-          // ตรวจสอบว่ามีชื่อผู้ใช้ใน dateKey หรือไม่
           if (!dateMap.get(dateKey).has(item.userName)) {
             dateMap.get(dateKey).set(item.userName, []);
           }
-
-          // เพิ่มข้อมูลเหตุการณ์ใน dateMap
           dateMap
             .get(dateKey)
             .get(item.userName)
@@ -64,12 +58,10 @@ const BarChart4 = () => {
         });
       }
     });
-
     dateMap.forEach((userMap, dateKey) => {
       const allEventsForDate = [];
       userMap.forEach((eventsForUser) => {
         allEventsForDate.push(...eventsForUser);
-        // แสดง 5 ข้อมูลแรกสำหรับแต่ละผู้ใช้
         const displayedEvents = eventsForUser.slice(0, 5);
         events.push(
           ...displayedEvents.map((event) => ({
@@ -82,7 +74,6 @@ const BarChart4 = () => {
           }))
         );
       });
-      // เพิ่มปุ่ม "ดูข้อมูลเพิ่มเติม" สำหรับวันนั้น
       if (allEventsForDate.length > 5) {
         events.push({
           title: "ดูข้อมูลเพิ่มเติม",
@@ -92,20 +83,19 @@ const BarChart4 = () => {
           textColor: "#4B5563",
           extendedProps: {
             date: dateKey,
-            userNames: allEventsForDate, // เก็บข้อมูลทั้งหมด
+            userNames: allEventsForDate,
           },
-          classNames: ["more-info"], // เพิ่ม class สำหรับปุ่ม "ดูข้อมูลเพิ่มเติม"
+          classNames: ["more-info"],
           borderColor: "#FFA500",
         });
       }
     });
     return events;
   };
-
   const handleEventClick = (info) => {
     if (info.event.title === "ดูข้อมูลเพิ่มเติม") {
       const selectedDate = info.event.extendedProps.date;
-      const userEvents = info.event.extendedProps.userNames || []; // ใช้ค่าเริ่มต้นเป็นอาร์เรย์ว่าง
+      const userEvents = info.event.extendedProps.userNames || [];
       const userListHTML = userEvents
         .map((event) => {
           return `
@@ -125,9 +115,7 @@ const BarChart4 = () => {
       });
     }
   };
-
   const calendarEvents = convertToCalendarEvents(filteredReport);
-
   const workgroupOptions = [
     ...new Set(report.map((item) => item.workgroupName)),
   ];

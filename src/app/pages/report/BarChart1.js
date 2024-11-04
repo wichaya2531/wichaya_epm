@@ -170,19 +170,17 @@ const BarChart1 = () => {
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       // เพิ่มภาพใน PDF
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      // เพิ่มหัวข้อ
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
-      pdf.text("รายงานจำนวน Job Templates", 10, imgHeight + 10);
-      // เพิ่มข้อมูลจาก finalReport
-      const textYPosition = imgHeight + 20 + 10; // เพิ่มระยะห่างจากหัวข้อ
+      pdf.text("Report quantity Job Templates", 10, imgHeight + 10);
+      const textYPosition = imgHeight + 20 + 10;
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "normal");
       if (finalReport.length === 0) {
-        pdf.text("ไม่มีข้อมูลรายงาน", 10, textYPosition);
+        pdf.text("There is no data to report.", 10, textYPosition);
       } else {
         finalReport.forEach((item, index) => {
-          const workgroupDisplayName = item.workgroupName || "ไม่มีกลุ่มงาน";
+          const workgroupDisplayName = item.workgroupName || "No workgroup";
           pdf.text(
             `${workgroupDisplayName}: ${item.jobTemplateCount} job templates`,
             10,
@@ -194,8 +192,8 @@ const BarChart1 = () => {
       const workgroupName =
         selectedWorkgroups.length > 0
           ? selectedWorkgroups.map((name) => name || "ไม่มีกลุ่มงาน").join(", ")
-          : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
-      const fileName = `${workgroupName}_top_${topN}.pdf`; // สร้างชื่อไฟล์
+          : "All_Workgroups";
+      const fileName = `${workgroupName}.pdf`; // สร้างชื่อไฟล์
       pdf.save(fileName); // บันทึกไฟล์ PDF
     });
   };

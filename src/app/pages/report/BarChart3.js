@@ -84,13 +84,10 @@ const BarChart3 = () => {
       ),
     };
   });
-
   const data = {
     labels: workgroupNames,
     datasets: datasets,
   };
-
-  // ฟังก์ชันช่วยเลือกสี
   function getColorForRole(role) {
     const colors = {
       SA: "#FFB3BA", // โทนพาสเทลสีชมพูอ่อน
@@ -100,7 +97,6 @@ const BarChart3 = () => {
     };
     return colors[role] || "#F0F0F0"; // ค่าเริ่มต้นสีขาว
   }
-
   // ประกาศ roleCounts ก่อนหน้า
   const roleCounts = finalReport.reduce((acc, item) => {
     const workgroupName = item.workgroupName || "Other"; // ถ้า workgroupName เป็น undefined ให้ใช้ค่า "Other"
@@ -109,7 +105,6 @@ const BarChart3 = () => {
     acc[roleKey] = (acc[roleKey] || 0) + 1;
     return acc;
   }, {});
-
   const exportToPDF = async () => {
     const element = chartRef.current; // ดึงการอ้างอิงของ chart
     const canvas = await html2canvas(element); // แปลงเป็น canvas
@@ -119,9 +114,7 @@ const BarChart3 = () => {
     const pageHeight = pdf.internal.pageSize.height; // ความสูงของหน้า PDF
     const imgHeight = (canvas.height * imgWidth) / canvas.width; // คำนวณความสูงของภาพ
     let heightLeft = imgHeight;
-
     let position = 0;
-
     // สร้าง roleCounts จาก finalReport
     const roleCounts = finalReport.reduce((acc, item) => {
       const workgroupName = item.workgroupName || "Other"; // ถ้า workgroupName เป็น undefined ให้ใช้ค่า "Other"
@@ -130,7 +123,6 @@ const BarChart3 = () => {
       acc[roleKey] = (acc[roleKey] || 0) + 1; // นับจำนวนบทบาทในแต่ละกลุ่มงาน
       return acc;
     }, {});
-
     // จัดเรียงข้อมูลตามกลุ่มงานและบทบาท
     const sortedRoleCounts = Object.entries(roleCounts).sort((a, b) => {
       const [workgroupA, roleA] = a[0].split(" - ");
@@ -141,7 +133,6 @@ const BarChart3 = () => {
       }
       return workgroupA.localeCompare(workgroupB); // ถ้าไม่ใช่กลุ่มงานเดียวกัน ให้เปรียบเทียบชื่อกลุ่มงาน
     });
-
     // แสดงข้อมูลกลุ่มงานและบทบาท
     let textYPosition = 20; // ตำแหน่ง Y สำหรับข้อความเริ่มต้น
     sortedRoleCounts.forEach(([roleKey, count]) => {
@@ -149,13 +140,10 @@ const BarChart3 = () => {
       pdf.text(`${workgroupName} - ${role}: ${count}`, 10, textYPosition); // แสดงข้อมูลกลุ่มงาน
       textYPosition += 10; // เพิ่มตำแหน่ง Y สำหรับข้อความถัดไป
     });
-
     // เลื่อนตำแหน่งภาพลงจากข้อความ
     const imageYPosition = textYPosition + 10; // เพิ่มพื้นที่ว่างระหว่างข้อความและรูปภาพ
     pdf.addImage(imgData, "PNG", 10, imageYPosition, imgWidth, imgHeight); // เพิ่มภาพใน PDF
-
     heightLeft -= pageHeight;
-
     // เพิ่มหน้าใหม่ถ้าภาพยาวเกินไป
     while (heightLeft >= 0) {
       position = heightLeft - imgHeight;
@@ -163,7 +151,6 @@ const BarChart3 = () => {
       pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
     }
-
     const memberName = "members"; // ชื่อที่ใช้ในไฟล์ PDF
     const fileName = `${memberName}_${
       selectedWorkgroups.join(", ") || "All_Workgroups"
@@ -171,7 +158,6 @@ const BarChart3 = () => {
 
     pdf.save(fileName); // บันทึกไฟล์ PDF
   };
-
   // ฟังก์ชันสำหรับส่งออกข้อมูลเป็น CSV
   const exportToCSV = () => {
     const sortedRoleCounts = Object.entries(roleCounts)
@@ -186,20 +172,16 @@ const BarChart3 = () => {
         const [workgroupName, role] = roleKey.split(" - ");
         return { workgroupName, role, count };
       });
-
     const ws = XLSX.utils.json_to_sheet(sortedRoleCounts);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-
     const memberName = "members";
     const fileName = `${memberName}_${
       selectedWorkgroups.join(", ") || "All_Workgroups"
     }.xlsx`;
-
     FileSaver.saveAs(data, fileName);
   };
-
   // ฟังก์ชันสำหรับบันทึกกราฟเป็น PNG
   const saveAsPNG = async () => {
     const chart = chartRef.current; // ดึงการอ้างอิงของ chart
@@ -210,14 +192,12 @@ const BarChart3 = () => {
       const fileName = `${memberName}_${
         selectedWorkgroups.join(", ") || "All_Workgroups"
       }.png`;
-
       const link = document.createElement("a");
       link.href = imgData; // ใช้ imgData ที่ได้จาก canvas
       link.download = fileName; // ตั้งชื่อไฟล์
       link.click(); // ดาวน์โหลดไฟล์
     }
   };
-
   // ปรับปรุงฟังก์ชัน handleExport เพื่อรองรับ PDF
   const handleExport = (option) => {
     if (option === "csv") {
@@ -228,7 +208,6 @@ const BarChart3 = () => {
       exportToPDF();
     }
   };
-
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -280,7 +259,6 @@ const BarChart3 = () => {
       },
     },
   };
-
   const [workgroupDropdownOpen, setWorkgroupDropdownOpen] = useState(false);
   const toggleWorkgroupDropdown = () =>
     setWorkgroupDropdownOpen(!workgroupDropdownOpen);
@@ -290,7 +268,6 @@ const BarChart3 = () => {
       : [...selectedWorkgroups, workgroup];
     setSelectedWorkgroups(newSelectedWorkgroups);
   };
-
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
