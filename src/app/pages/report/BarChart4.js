@@ -6,6 +6,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Swal from "sweetalert2";
+import timeGridPlugin from "@fullcalendar/timegrid";
 const BarChart4 = () => {
   const [refresh, setRefresh] = useState(false);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
@@ -185,19 +186,17 @@ const BarChart4 = () => {
           ))}
         </div>
       </div>
-      <div className="my-4">
-        <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={calendarEvents}
-          eventClick={handleEventClick}
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,dayGridWeek,dayGridDay",
-          }}
-        />
-      </div>
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        events={calendarEvents}
+        eventClick={handleEventClick}
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,dayGridWeek,dayGridDay,timeGridWeek,timeGridDay",
+        }}
+      />
     </div>
   );
 };
