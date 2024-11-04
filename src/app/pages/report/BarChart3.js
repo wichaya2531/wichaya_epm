@@ -271,7 +271,7 @@ const BarChart3 = () => {
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
-        <div className="relative md:w-1/6">
+        <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Workgroup
           </label>

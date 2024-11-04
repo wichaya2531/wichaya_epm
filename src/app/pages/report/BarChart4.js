@@ -6,23 +6,23 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Swal from "sweetalert2";
-
 const BarChart4 = () => {
   const [refresh, setRefresh] = useState(false);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
+  const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
   const { report } = useFetchReport(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const [workgroupDropdownOpen, setWorkgroupDropdownOpen] = useState(false);
   const workgroupColors = {
-    "Tooling NEO": "#FFB3B3", // สีชมพูอ่อน
-    "Tooling ESD Realtime": "#B3FFC9", // สีเขียวพาสเทล
-    "HSA Tooling Solvent": "#B3D1FF", // สีน้ำเงินพาสเทล
-    "HSA Tooling": "#FFB3E6", // สีชมพูพาสเทล
-    "Tooling Cleaning": "#FFE0B3", // สีส้มพาสเทล
-    "Tooling GTL": "#D1B3FF", // สีม่วงพาสเทล
-    "HSA Tooling Automation": "#B3FFF0", // สีฟ้าอ่อนพาสเทล
-    "No Workgroup": "#E0E0E0", // สีเทาอ่อน
-    Others: "#F0F0F0", // สีเทาพาสเทลอ่อน
+    "Tooling NEO": "#FFB3B3",
+    "Tooling ESD Realtime": "#B3FFC9",
+    "HSA Tooling Solvent": "#B3D1FF",
+    "HSA Tooling": "#FFB3E6",
+    "Tooling Cleaning": "#FFE0B3",
+    "Tooling GTL": "#D1B3FF",
+    "HSA Tooling Automation": "#B3FFF0",
+    "No Workgroup": "#E0E0E0",
+    Others: "#F0F0F0",
   };
   const filterReportByWorkgroup = (data, selectedWorkgroup) => {
     if (selectedWorkgroup.length === 0) return data;
@@ -31,6 +31,7 @@ const BarChart4 = () => {
     );
   };
   const filteredReport = filterReportByWorkgroup(report, selectedWorkgroup);
+
   const convertToCalendarEvents = (data) => {
     const events = [];
     const dateMap = new Map();
@@ -53,7 +54,7 @@ const BarChart4 = () => {
               backgroundColor: workgroupColors[item.workgroupName] || "#F0F0F0",
               textColor: "#4B5563",
               createdAt: date,
-              workgroupName: item.workgroupName, // เก็บชื่อกลุ่มงาน
+              workgroupName: item.workgroupName,
             });
         });
       }
@@ -115,21 +116,25 @@ const BarChart4 = () => {
       });
     }
   };
+
   const calendarEvents = convertToCalendarEvents(filteredReport);
   const workgroupOptions = [
     ...new Set(report.map((item) => item.workgroupName)),
   ];
+
   const toggleWorkgroupDropdown = () =>
     setWorkgroupDropdownOpen(!workgroupDropdownOpen);
+
   const handleWorkgroupCheckboxChange = (workgroup) => {
     const newSelectedWorkgroup = selectedWorkgroup.includes(workgroup)
       ? selectedWorkgroup.filter((wg) => wg !== workgroup)
       : [...selectedWorkgroup, workgroup];
     setSelectedWorkgroup(newSelectedWorkgroup);
   };
+
   return (
     <div>
-      <div className="flex flex-wrap gap-4 bg-white rounded-lg">
+      <div className="flex flex-wrap gap-4 bg-white rounded-lg p-4">
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Workgroup
@@ -175,16 +180,22 @@ const BarChart4 = () => {
                 className="w-4 h-4 rounded-full"
                 style={{ backgroundColor: color }}
               ></span>
-              <span className="text-sm text-gray-700">{workgroup}</span>
+              <span className="text-sm">{workgroup}</span>
             </div>
           ))}
         </div>
       </div>
-      <div className="mt-10">
+      <div className="my-4">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
           events={calendarEvents}
           eventClick={handleEventClick}
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,dayGridWeek,dayGridDay",
+          }}
         />
       </div>
     </div>

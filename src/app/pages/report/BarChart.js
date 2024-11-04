@@ -343,7 +343,7 @@ const BarChart = () => {
           </label>
           <select
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-white border border-gray-300 rounded-md py-2 text-gray-700 focus:outline-none focus:ring focus:ring-blue-500"
+            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
           >
             <option value="">Select Year</option>
             {Array.from({ length: 10 }, (_, index) => {
