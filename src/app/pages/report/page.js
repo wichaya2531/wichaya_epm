@@ -15,12 +15,12 @@ import { useState } from "react";
 const Page = () => {
   const [selectedChart, setSelectedChart] = useState("BarChart");
   const chartButtons = [
-    { label: "จำนวนงาน", value: "BarChart" },
-    { label: "จำนวนแม่แบบ", value: "BarChart1" },
-    { label: "กลุ่มงานต่างๆ", value: "BarChart2" },
-    { label: "สมาชิกแต่ละกลุ่มงาน", value: "BarChart3" },
-    { label: "วันที่ของแต่ละงาน", value: "BarChart4" },
-    { label: "ข้อมูลไอเทมต่างๆ", value: "BarChart5" },
+    { label: "Value in Item", value: "BarChart5" },
+    { label: "Checklist Active By user", value: "BarChart" },
+    { label: "Template By Workgroups", value: "BarChart1" },
+    { label: "User Type workgroup", value: "BarChart2" },
+    { label: "Members in workgroup", value: "BarChart3" },
+    { label: "By activate name", value: "BarChart4" },
   ];
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
