@@ -70,5 +70,4 @@ const Page = () => {
     </Layout>
   );
 };
-
 export default Page;

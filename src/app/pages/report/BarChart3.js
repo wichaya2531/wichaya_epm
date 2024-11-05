@@ -17,10 +17,9 @@ import useFetchReport from "@/lib/hooks/useFetchReport";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
-import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
+import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
 // Registering necessary components
 ChartJS.register(
   BarElement,
@@ -33,7 +32,6 @@ ChartJS.register(
   ArcElement,
   ChartDataLabels
 );
-
 const BarChart3 = () => {
   const [refresh, setRefresh] = useState(false);
   const [chartType, setChartType] = useState("bar");
@@ -41,7 +39,6 @@ const BarChart3 = () => {
   const { report } = useFetchReport(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const chartRef = useRef(null);
-
   // ฟิลเตอร์ข้อมูลตาม Workgroup
   const filterReportByWorkgroup = (data, selectedWorkgroups) => {
     if (!selectedWorkgroups || selectedWorkgroups.length === 0) return data; // ถ้าไม่เลือก Workgroup ให้คืนค่าข้อมูลทั้งหมด
@@ -49,17 +46,13 @@ const BarChart3 = () => {
       selectedWorkgroups.includes(item.workgroupName)
     ); // เปรียบเทียบ Workgroup
   };
-
   // ฟิลเตอร์ข้อมูลตาม Workgroup
   const filteredReport = filterReportByWorkgroup(report, selectedWorkgroups);
-
   // finalReport จะเป็นข้อมูลที่ฟิลเตอร์แล้ว
   const finalReport = filteredReport; // คืนค่าข้อมูลที่ฟิลเตอร์ตาม Workgroup
-
   const workgroupOptions = [
     ...new Set(report.map((item) => item.workgroupName)),
   ];
-
   // สร้างข้อมูลสำหรับกราฟโดยนับจำนวนสมาชิกตามกลุ่มงานและบทบาท
   const roleCountsByWorkgroup = finalReport.reduce((acc, item) => {
     if (!acc[item.workgroupName]) acc[item.workgroupName] = {}; // ถ้าไม่มี group นี้ใน acc ให้สร้างใหม่
@@ -67,15 +60,12 @@ const BarChart3 = () => {
       (acc[item.workgroupName][item.role] || 0) + 1; // นับจำนวนสมาชิกในบทบาทนั้น ๆ
     return acc;
   }, {});
-
   // แปลงข้อมูลให้เป็น array ของกลุ่มงาน และรวมบทบาทในกลุ่มงาน
   const workgroupNames = Object.keys(roleCountsByWorkgroup);
   const roles = Array.from(new Set(finalReport.map((item) => item.role))); // สร้างรายการบทบาททั้งหมดโดยไม่ซ้ำกัน
-
   // สร้าง datasets สำหรับแต่ละบทบาท
   const datasets = roles.map((role) => {
     const roleName = role || "Other"; // เปลี่ยน undefined เป็น "Other"
-
     return {
       label: roleName,
       backgroundColor: getColorForRole(roleName), // ฟังก์ชัน getColorForRole ช่วยเลือกสีให้บทบาท
@@ -219,43 +209,21 @@ const BarChart3 = () => {
         color: "#000",
         anchor: "end",
         align: "top",
-        font: {
-          size: 12,
-          weight: "bold",
-        },
+        font: { size: 12, weight: "bold" },
         formatter: (value) => value.toLocaleString(),
       },
     },
-    layout: {
-      padding: {
-        top: 20,
-        bottom: 0,
-        left: 0,
-        right: 0,
-      },
-    },
+    layout: { padding: { top: 20 } }, // ลด padding ที่ไม่จำเป็น
     scales: {
       x: {
-        grid: {
-          display: false, // ซ่อนเส้นกริดแกน x
-        },
-        border: {
-          display: false, // ซ่อนเส้นขอบแกน x
-        },
-        ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
-        },
+        grid: { display: false },
+        border: { display: false },
+        ticks: { display: chartType === "bar" },
       },
       y: {
-        grid: {
-          display: false, // ซ่อนเส้นกริดแกน y
-        },
-        border: {
-          display: false, // ซ่อนเส้นขอบแกน y
-        },
-        ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
-        },
+        grid: { display: false },
+        border: { display: false },
+        ticks: { display: chartType === "bar" },
       },
     },
   };
@@ -313,33 +281,7 @@ const BarChart3 = () => {
       <div style={{ height: "300px", width: "100%" }} ref={chartRef}>
         {chartType === "bar" && <Bar data={data} options={options} />}
       </div>
-      <div className="flex justify-end mt-6 space-x-3">
-        <button
-          onClick={() => handleExport("csv")}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFileCsv />
-          <span className="hidden md:inline">Export CSV</span>{" "}
-          {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
-        </button>
-
-        <button
-          onClick={() => handleExport("png")}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaImage />
-          <span className="hidden md:inline">Save as PNG</span>{" "}
-          {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
-        </button>
-
-        <button
-          onClick={() => handleExport("pdf")}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFilePdf />
-          <span className="hidden md:inline">Export PDF</span>
-        </button>
-      </div>
+      <ExportButtons handleExport={handleExport} />
     </div>
   );
 };

@@ -22,7 +22,7 @@ import { format, parseISO, isValid, startOfToday } from "date-fns";
 import "chartjs-adapter-date-fns";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
-import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
+import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 ChartJS.register(
@@ -207,33 +207,25 @@ const BarChart5 = () => {
       title: { display: false },
       datalabels: {
         display: true,
-        color: (context) => {
-          return context.raw && context.raw.actualValue
-            ? getPastelColorForValue(context.raw.actualValue) // ใช้สีที่กำหนดจาก actualValue
-            : "#000";
-        },
+        color: (context) =>
+          context.raw && context.raw.actualValue
+            ? getPastelColorForValue(context.raw.actualValue)
+            : "#000",
         anchor: "end",
         align: "top",
         font: { size: 12, weight: "normal" },
-        formatter: (value) => {
-          return isNaN(value.y) ? value.actualValue : value.y.toLocaleString();
-        },
+        formatter: (value) =>
+          isNaN(value.y) ? value.actualValue : value.y.toLocaleString(),
       },
     },
-    layout: {
-      padding: { top: 30, right: 20 },
-    },
+    layout: { padding: { top: 30, right: 20 } },
     scales: {
       x: {
         type: "time",
         time: { unit: "month", displayFormats: { month: "MMM yyyy" } },
         grid: { display: false },
         border: { display: false },
-        ticks: {
-          font: { size: 12 },
-          autoSkip: true,
-          maxTicksLimit: 12,
-        },
+        ticks: { font: { size: 12 }, autoSkip: true, maxTicksLimit: 12 },
       },
       y: {
         type: "logarithmic",
@@ -522,29 +514,7 @@ const BarChart5 = () => {
       <div style={{ height: "450px", width: "100%" }} ref={chartRef}>
         <Line data={data} options={options} />
       </div>
-      <div className="flex justify-end mt-6 space-x-3">
-        <button
-          onClick={() => handleExport("csv")}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFileCsv />
-          <span className="hidden md:inline">Export CSV</span>{" "}
-        </button>
-        <button
-          onClick={() => handleExport("png")}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaImage />
-          <span className="hidden md:inline">Save as PNG</span>{" "}
-        </button>
-        <button
-          onClick={() => handleExport("pdf")}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFilePdf />
-          <span className="hidden md:inline">Export PDF</span>
-        </button>
-      </div>
+      <ExportButtons handleExport={handleExport} />
     </div>
   );
 };

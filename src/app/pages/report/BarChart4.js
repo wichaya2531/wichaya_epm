@@ -7,6 +7,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Swal from "sweetalert2";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import workgroupColors from "@/components/workgroupColors";
 const BarChart4 = () => {
   const [refresh, setRefresh] = useState(false);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
@@ -14,17 +15,6 @@ const BarChart4 = () => {
   const { report } = useFetchReport(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const [workgroupDropdownOpen, setWorkgroupDropdownOpen] = useState(false);
-  const workgroupColors = {
-    "Tooling NEO": "#FFB3B3",
-    "Tooling ESD Realtime": "#B3FFC9",
-    "HSA Tooling Solvent": "#B3D1FF",
-    "HSA Tooling": "#FFB3E6",
-    "Tooling Cleaning": "#FFE0B3",
-    "Tooling GTL": "#D1B3FF",
-    "HSA Tooling Automation": "#B3FFF0",
-    "No Workgroup": "#E0E0E0",
-    Others: "#F0F0F0",
-  };
   const filterReportByWorkgroup = (data, selectedWorkgroup) => {
     if (selectedWorkgroup.length === 0) return data;
     return data.filter((item) =>
@@ -32,7 +22,6 @@ const BarChart4 = () => {
     );
   };
   const filteredReport = filterReportByWorkgroup(report, selectedWorkgroup);
-
   const convertToCalendarEvents = (data) => {
     const events = [];
     const dateMap = new Map();
@@ -122,17 +111,14 @@ const BarChart4 = () => {
   const workgroupOptions = [
     ...new Set(report.map((item) => item.workgroupName)),
   ];
-
   const toggleWorkgroupDropdown = () =>
     setWorkgroupDropdownOpen(!workgroupDropdownOpen);
-
   const handleWorkgroupCheckboxChange = (workgroup) => {
     const newSelectedWorkgroup = selectedWorkgroup.includes(workgroup)
       ? selectedWorkgroup.filter((wg) => wg !== workgroup)
       : [...selectedWorkgroup, workgroup];
     setSelectedWorkgroup(newSelectedWorkgroup);
   };
-
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg p-4">

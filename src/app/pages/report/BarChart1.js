@@ -17,9 +17,10 @@ import useFetchReport2 from "@/lib/hooks/useFetchReport2";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
-import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
+import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import workgroupColors from "@/components/workgroupColors";
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -42,18 +43,6 @@ const BarChart1 = () => {
   const [workgroupDropdownOpen, setWorkgroupDropdownOpen] = useState(false);
   const toggleWorkgroupDropdown = () =>
     setWorkgroupDropdownOpen(!workgroupDropdownOpen);
-  // กำหนดสีมินิมอลแบบพาสเทลสำหรับแต่ละ Workgroup
-  const workgroupColors = {
-    "Tooling NEO": "#FFB3B3", // สีชมพูอ่อน
-    "Tooling ESD Realtime": "#B3FFC9", // สีเขียวพาสเทล
-    "HSA Tooling Solvent": "#B3D1FF", // สีน้ำเงินพาสเทล
-    "HSA Tooling": "#FFB3E6", // สีชมพูพาสเทล
-    "Tooling Cleaning": "#FFE0B3", // สีส้มพาสเทล
-    "Tooling GTL": "#D1B3FF", // สีม่วงพาสเทล
-    "HSA Tooling Automation": "#B3FFF0", // สีฟ้าอ่อนพาสเทล
-    "No Workgroup": "#E0E0E0", // สีเทาอ่อน
-    Others: "#F0F0F0", // สีเทาพาสเทลอ่อน
-  };
   const filterReportByWorkgroup = (data, selectedWorkgroups) => {
     if (selectedWorkgroups.length === 0) return data;
     return data.filter((item) =>
@@ -115,43 +104,20 @@ const BarChart1 = () => {
         color: "#000",
         anchor: "end",
         align: "top",
-        font: {
-          size: 12,
-          weight: "bold",
-        },
+        font: { size: 12, weight: "bold" },
       },
     },
-    layout: {
-      padding: {
-        top: 20,
-        bottom: 0,
-        left: 0,
-        right: 0,
-      },
-    },
+    layout: { padding: { top: 20 } },
     scales: {
       x: {
-        grid: {
-          display: false,
-        },
-        border: {
-          display: false,
-        },
-        ticks: {
-          display: chartType === "bar",
-        },
+        grid: { display: false },
+        border: { display: false },
+        ticks: { display: chartType === "bar" },
       },
       y: {
-        grid: {
-          display: false,
-        },
-        border: {
-          display: false,
-        },
-        ticks: {
-          display: chartType === "bar",
-          beginAtZero: true,
-        },
+        grid: { display: false },
+        border: { display: false },
+        ticks: { display: chartType === "bar", beginAtZero: true },
       },
     },
   };
@@ -357,31 +323,7 @@ const BarChart1 = () => {
           <Pie data={data} options={options} ref={chartRef} />
         )}
       </div>
-      <div className="flex justify-end mt-6 space-x-3">
-        <button
-          onClick={() => handleExport("csv")}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFileCsv />
-          <span className="hidden md:inline">Export CSV</span>{" "}
-          {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
-        </button>
-        <button
-          onClick={() => handleExport("png")}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaImage />
-          <span className="hidden md:inline">Save as PNG</span>{" "}
-          {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
-        </button>
-        <button
-          onClick={() => handleExport("pdf")}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFilePdf />
-          <span className="hidden md:inline">Export PDF</span>
-        </button>
-      </div>
+      <ExportButtons handleExport={handleExport} />
     </div>
   );
 };

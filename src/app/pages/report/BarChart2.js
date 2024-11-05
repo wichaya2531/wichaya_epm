@@ -15,7 +15,7 @@ import {
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import useFetchReport from "@/lib/hooks/useFetchReport";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
-
+import workgroupColors from "@/components/workgroupColors";
 // Registering necessary components
 ChartJS.register(
   BarElement,
@@ -28,7 +28,6 @@ ChartJS.register(
   ArcElement,
   ChartDataLabels
 );
-
 const BarChart2 = () => {
   const [refresh, setRefresh] = useState(false);
   const [chartType, setChartType] = useState("bar");
@@ -38,18 +37,15 @@ const BarChart2 = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
-
   const { report } = useFetchReport(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const chartRef = useRef(null);
-
   const filterReportByWorkgroup = (data, selectedWorkgroups) => {
     if (selectedWorkgroups.length === 0) return data;
     return data.filter((item) =>
       selectedWorkgroups.includes(item.workgroupName)
     );
   };
-
   const filterReportByYear = (data, selectedYear) => {
     if (!selectedYear) return data; // ถ้ายังไม่เลือกปีให้คืนค่าข้อมูลทั้งหมด
     return data.filter((item) => {
@@ -57,7 +53,6 @@ const BarChart2 = () => {
       return itemYear === parseInt(selectedYear); // เปรียบเทียบปี
     });
   };
-
   const filterReportByDateRange = (data, startDate, endDate) => {
     if (!startDate && !endDate) return data;
     return data.filter((item) => {
@@ -69,11 +64,9 @@ const BarChart2 = () => {
       return isAfterStartDate && isBeforeEndDate;
     });
   };
-
   const getTopNReport = (data, topN) => {
     const sortedData = data.sort((a, b) => b.jobCount - a.jobCount);
     let mainData = [];
-
     if (topN === "top5") {
       mainData = sortedData.slice(0, 5);
     } else if (topN === "top10") {
@@ -82,36 +75,19 @@ const BarChart2 = () => {
       return sortedData;
     }
   };
-
   // ฟิลเตอร์ข้อมูลตาม Workgroup, Date และ Year
   const filteredReport = filterReportByDateRange(
     filterReportByWorkgroup(report, selectedWorkgroups),
     startDate,
     endDate
   );
-
   const finalReport = getTopNReport(
     filterReportByYear(filteredReport, selectedYear),
     topN
   );
-
   const workgroupOptions = [
     ...new Set(report.map((item) => item.workgroupName)),
   ];
-
-  // กำหนดสีมินิมอลแบบพาสเทลสำหรับแต่ละ Workgroup
-  const workgroupColors = {
-    "Tooling NEO": "#FFB3B3", // สีชมพูอ่อน
-    "Tooling ESD Realtime": "#B3FFC9", // สีเขียวพาสเทล
-    "HSA Tooling Solvent": "#B3D1FF", // สีน้ำเงินพาสเทล
-    "HSA Tooling": "#FFB3E6", // สีชมพูพาสเทล
-    "Tooling Cleaning": "#FFE0B3", // สีส้มพาสเทล
-    "Tooling GTL": "#D1B3FF", // สีม่วงพาสเทล
-    "HSA Tooling Automation": "#B3FFF0", // สีฟ้าอ่อนพาสเทล
-    "No Workgroup": "#E0E0E0", // สีเทาอ่อน
-    Others: "#F0F0F0", // สีเทาพาสเทลอ่อน
-  };
-
   // สร้างข้อมูลสำหรับกราฟ
   const data = {
     labels: finalReport.map((item) => item.userName),
@@ -125,131 +101,35 @@ const BarChart2 = () => {
       },
     ],
   };
-
-  const exportToCSV = () => {
-    const formattedData = finalReport.map((item) => ({
-      userName: item.userName,
-      jobCount: item.jobCount,
-      JOB_NAME: Array.isArray(item.JOB_NAME) ? item.JOB_NAME.join(", ") : "",
-      LINE_NAME: Array.isArray(item.LINE_NAME) ? item.LINE_NAME.join(", ") : "",
-      createdAt: Array.isArray(item.createdAt)
-        ? item.createdAt
-            .map((date) => new Date(date).toLocaleDateString())
-            .join(", ")
-        : "",
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(formattedData);
-    const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-
-    // สร้างชื่อไฟล์ตามกลุ่มงานและ topN ที่เลือก
-    const workgroupName =
-      selectedWorkgroups.length > 0
-        ? selectedWorkgroups.join(", ")
-        : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
-    const fileName = `${workgroupName}_top_${topN}.xlsx`; // สร้างชื่อไฟล์
-
-    FileSaver.saveAs(data, fileName); // ใช้ชื่อไฟล์ที่สร้างขึ้น
-  };
-
-  const saveAsPNG = () => {
-    const chart = chartRef.current;
-    if (chart) {
-      // สร้าง canvas ใหม่
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      // กำหนดขนาด canvas ให้เท่ากับขนาดกราฟ
-      canvas.width = chart.width;
-      canvas.height = chart.height;
-
-      // ตั้งสีพื้นหลังเป็นสีขาว
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // คัดลอกกราฟไปยัง canvas
-      const img = new Image();
-      img.src = chart.toBase64Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-
-        // สร้างลิงก์ดาวน์โหลด
-        const workgroupName =
-          selectedWorkgroups.length > 0
-            ? selectedWorkgroups.join(", ")
-            : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
-        const fileName = `${workgroupName}_top_${topN}.png`; // สร้างชื่อไฟล์
-
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = fileName; // ใช้ชื่อไฟล์ที่สร้างขึ้น
-        link.click();
-      };
-    }
-  };
-
-  const handleExport = (option) => {
-    if (option === "csv") {
-      exportToCSV();
-    } else if (option === "png") {
-      saveAsPNG();
-    }
-  };
-
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false }, // ซ่อน legend
-      title: { display: false }, // ซ่อน title
+      legend: { display: false },
+      title: { display: false },
       datalabels: {
         display: true,
         color: "#000",
         anchor: "end",
         align: "top",
-        font: {
-          size: 12,
-          weight: "bold",
-        },
+        font: { size: 12, weight: "bold" },
         formatter: (value) => value.toLocaleString(),
       },
     },
-    layout: {
-      padding: {
-        top: 20,
-        bottom: 0,
-        left: 0,
-        right: 0,
-      },
-    },
+    layout: { padding: { top: 20 } },
     scales: {
       x: {
-        grid: {
-          display: false, // ซ่อนเส้นกริดแกน x
-        },
-        border: {
-          display: false, // ซ่อนเส้นขอบแกน x
-        },
-        ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
-        },
+        grid: { display: false },
+        border: { display: false },
+        ticks: { display: chartType === "bar" },
       },
       y: {
-        grid: {
-          display: false, // ซ่อนเส้นกริดแกน y
-        },
-        border: {
-          display: false, // ซ่อนเส้นขอบแกน y
-        },
-        ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
-        },
+        grid: { display: false },
+        border: { display: false },
+        ticks: { display: chartType === "bar" },
       },
     },
   };
-
   const today = new Date();
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);

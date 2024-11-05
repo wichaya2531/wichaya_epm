@@ -17,10 +17,10 @@ import useFetchReport from "@/lib/hooks/useFetchReport";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
-import { FaFileCsv, FaImage, FaFilePdf } from "react-icons/fa";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
+import workgroupColors from "@/components/workgroupColors";
+import ExportButtons from "@/components/ExportButtons";
 // Registering necessary components
 ChartJS.register(
   BarElement,
@@ -33,7 +33,6 @@ ChartJS.register(
   ArcElement,
   ChartDataLabels
 );
-
 const BarChart = () => {
   const [refresh, setRefresh] = useState(false);
   const [chartType, setChartType] = useState("bar");
@@ -43,18 +42,15 @@ const BarChart = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
-
   const { report } = useFetchReport(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const chartRef = useRef(null);
-
   const filterReportByWorkgroup = (data, selectedWorkgroups) => {
     if (selectedWorkgroups.length === 0) return data;
     return data.filter((item) =>
       selectedWorkgroups.includes(item.workgroupName)
     );
   };
-
   const filterReportByYear = (data, selectedYear) => {
     if (!selectedYear) return data; // ถ้ายังไม่เลือกปีให้คืนค่าข้อมูลทั้งหมด
     return data.filter((item) => {
@@ -62,7 +58,6 @@ const BarChart = () => {
       return itemYear === parseInt(selectedYear); // เปรียบเทียบปี
     });
   };
-
   const filterReportByDateRange = (data, startDate, endDate) => {
     if (!startDate && !endDate) return data;
     return data.filter((item) => {
@@ -74,7 +69,6 @@ const BarChart = () => {
       return isAfterStartDate && isBeforeEndDate;
     });
   };
-
   const getTopNReport = (data, topN) => {
     const sortedData = data.sort((a, b) => b.jobCount - a.jobCount);
     let mainData = [];
@@ -87,7 +81,6 @@ const BarChart = () => {
     } else {
       return sortedData;
     }
-
     otherData = sortedData.slice(mainData.length);
     return [
       ...mainData,
@@ -97,36 +90,19 @@ const BarChart = () => {
       },
     ];
   };
-
   // ฟิลเตอร์ข้อมูลตาม Workgroup, Date และ Year
   const filteredReport = filterReportByDateRange(
     filterReportByWorkgroup(report, selectedWorkgroups),
     startDate,
     endDate
   );
-
   const finalReport = getTopNReport(
     filterReportByYear(filteredReport, selectedYear),
     topN
   );
-
   const workgroupOptions = [
     ...new Set(report.map((item) => item.workgroupName)),
   ];
-
-  // กำหนดสีมินิมอลแบบพาสเทลสำหรับแต่ละ Workgroup
-  const workgroupColors = {
-    "Tooling NEO": "#FFB3B3", // สีชมพูอ่อน
-    "Tooling ESD Realtime": "#B3FFC9", // สีเขียวพาสเทล
-    "HSA Tooling Solvent": "#B3D1FF", // สีน้ำเงินพาสเทล
-    "HSA Tooling": "#FFB3E6", // สีชมพูพาสเทล
-    "Tooling Cleaning": "#FFE0B3", // สีส้มพาสเทล
-    "Tooling GTL": "#D1B3FF", // สีม่วงพาสเทล
-    "HSA Tooling Automation": "#B3FFF0", // สีฟ้าอ่อนพาสเทล
-    "No Workgroup": "#E0E0E0", // สีเทาอ่อน
-    Others: "#F0F0F0", // สีเทาพาสเทลอ่อน
-  };
-
   // สร้างข้อมูลสำหรับกราฟ
   const data = {
     labels: finalReport.map((item) => item.userName),
@@ -140,7 +116,6 @@ const BarChart = () => {
       },
     ],
   };
-
   // ฟังก์ชันการส่งออก PDF
   const exportToPDF = async () => {
     if (!chartRef.current) {
@@ -228,7 +203,6 @@ const BarChart = () => {
       };
     }
   };
-
   const handleExport = (option) => {
     if (option === "csv") {
       exportToCSV();
@@ -238,7 +212,6 @@ const BarChart = () => {
       exportToPDF();
     }
   };
-
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -257,40 +230,20 @@ const BarChart = () => {
         formatter: (value) => value.toLocaleString(),
       },
     },
-    layout: {
-      padding: {
-        top: 20,
-        bottom: 0,
-        left: 0,
-        right: 0,
-      },
-    },
+    layout: { padding: { top: 20 } }, // กำหนด padding ด้านบน
     scales: {
       x: {
-        grid: {
-          display: false, // ซ่อนเส้นกริดแกน x
-        },
-        border: {
-          display: false, // ซ่อนเส้นขอบแกน x
-        },
-        ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
-        },
+        grid: { display: false }, // ซ่อนเส้นกริดแกน x
+        border: { display: false }, // ซ่อนเส้นขอบแกน x
+        ticks: { display: chartType === "bar" }, // แสดง ticks เมื่อเป็น bar เท่านั้น
       },
       y: {
-        grid: {
-          display: false, // ซ่อนเส้นกริดแกน y
-        },
-        border: {
-          display: false, // ซ่อนเส้นขอบแกน y
-        },
-        ticks: {
-          display: chartType === "bar", // แสดง ticks เมื่อเป็น bar เท่านั้น
-        },
+        grid: { display: false }, // ซ่อนเส้นกริดแกน y
+        border: { display: false }, // ซ่อนเส้นขอบแกน y
+        ticks: { display: chartType === "bar" }, // แสดง ticks เมื่อเป็น bar เท่านั้น
       },
     },
   };
-
   const today = new Date();
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -489,7 +442,6 @@ const BarChart = () => {
             <option value="top10">Top 10</option>
           </select>
         </div>
-
         <div className="flex flex-wrap gap-2 mt-4">
           {Object.entries(workgroupColors).map(([workgroup, color]) => (
             <div key={workgroup} className="flex items-center space-x-2">
@@ -510,33 +462,7 @@ const BarChart = () => {
           <Pie data={data} options={options} ref={chartRef} />
         )}
       </div>
-      <div className="flex justify-end mt-6 space-x-3">
-        <button
-          onClick={() => handleExport("csv")}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFileCsv />
-          <span className="hidden md:inline">Export CSV</span>{" "}
-          {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
-        </button>
-
-        <button
-          onClick={() => handleExport("png")}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaImage />
-          <span className="hidden md:inline">Save as PNG</span>{" "}
-          {/* ซ่อนข้อความเมื่อหน้าจอเล็กกว่า md */}
-        </button>
-
-        <button
-          onClick={() => handleExport("pdf")}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2"
-        >
-          <FaFilePdf />
-          <span className="hidden md:inline">Export PDF</span>
-        </button>
-      </div>
+      <ExportButtons handleExport={handleExport} />
     </div>
   );
 };
