@@ -194,7 +194,7 @@ const BarChart4 = () => {
         headerToolbar={{
           left: "prev,next today",
           center: "title",
-          right: "dayGridMonth,dayGridWeek,dayGridDay,timeGridWeek,timeGridDay",
+          right: "dayGridYear,dayGridMonth,dayGridWeek,dayGridDay",
         }}
       />
     </div>
