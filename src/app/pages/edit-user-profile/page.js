@@ -10,6 +10,9 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 
+
+
+
 const Page = () => {
   const { user } = useFetchUser();
   const [formData, setFormData] = useState({
@@ -75,6 +78,7 @@ const Page = () => {
       });
       return;
     }
+
 
     formData.append("user_id", user._id);
     formData.append("emp_number", emp_number);
