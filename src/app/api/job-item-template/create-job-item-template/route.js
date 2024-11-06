@@ -48,6 +48,7 @@ export const POST = async (req) => {
       JobTemplateCreateID,
       JobItemTemplateCreateID,
       FILE: filePath, // Include the filePath in the data
+      pos:0
     };
 
     // Create a new instance of JobItemTemplate

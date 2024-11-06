@@ -115,6 +115,7 @@ const JobForm = ({
   
 
   const handleUploadFileToJobItemOnChange = async (event) => {
+    
     const file = event.target.files[0];
     //setPreviewItemPicture(URL.createObjectURL(file)); // แสดง preview ของไฟล์
     //console.log("jobItemSelected",jobItemSelected);

@@ -9,6 +9,12 @@ import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { JobApproves } from '@/lib/models/JobApprove';
 
+const getPositionTimeByJobItem = async (jobItemID) => {
+    const jobItem =await JobItem.findOne({ JOB_ITEM_TEMPLATE_ID: jobItemID });
+    //console.log(jobItem.createdAt);
+    return jobItem.createdAt;
+}
+
 const getGuideInputByJobItem = async (jobItemID) => {
             
         const jobItem =await JobItem.find({ JOB_ITEM_TEMPLATE_ID: jobItemID });
@@ -39,7 +45,7 @@ export const GET = async (req, res) => {
         const job = await Job.findOne({ _id: JobID });
         if (!job) return NextResponse.json({ status: 404, message: "Checklist has been deleted already, or wrong ChecklistID" });
         //sort lastest come last
-        const jobItems = await JobItem.find({ JOB_ID: JobID }).sort({ createdAt: 1 });
+        const jobItems = await JobItem.find({ JOB_ID: JobID }).sort({ createdAt: -1 });
         const workgroup = await Workgroup.findOne({ _id: job.WORKGROUP_ID });
         const workgroupName = workgroup ? workgroup.WORKGROUP_NAME : null;
         const user = await User.findOne({ _id: job ? job.ACTIVATE_USER : null });
@@ -80,9 +86,10 @@ export const GET = async (req, res) => {
         
         const jobItemData = await Promise.all(jobItems.map(async (jobItem) => {
             
-            //console.log('jobItem=>', jobItem);
+           
            
             const location = await TestLocation.findById(jobItem.TEST_LOCATION_ID);
+            
             return {
                 "JobItemID": jobItem._id,
                 "JobItemTitle": jobItem.JOB_ITEM_TITLE,
@@ -100,10 +107,14 @@ export const GET = async (req, res) => {
                 "IMG_ATTACH": jobItem.IMG_ATTACH,
                 "File": jobItem.FILE ? jobItem.FILE.replace(/\\/g, '/') : null, 
                 "createAt": jobItem.createdAt.toLocaleString(),
+                "createAtTemplate":await getPositionTimeByJobItem(jobItem.JOB_ITEM_TEMPLATE_ID),                
                 "guide_input":await getGuideInputByJobItem(jobItem.JOB_ITEM_TEMPLATE_ID)
             };
         }));
         
+        jobItemData.sort((a, b) => {
+            return new Date(a.createAtTemplate).getTime() - new Date(b.createAtTemplate).getTime();
+        });
         
         if (statusName === "renew") {
             const jobApprove = await JobApproves.find({ "JOB._id": JobID }).sort({ createdAt: -1 }).limit(1);
@@ -116,6 +127,7 @@ export const GET = async (req, res) => {
                 console.log('JobApproves document not found');
             }
         }
+
         
         return NextResponse.json({ status: 200, jobData: jobData, jobItemData: jobItemData });
     } catch (err) {
