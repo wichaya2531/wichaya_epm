@@ -38,6 +38,7 @@ export const PUT = async (req, res) => {
       TEST_LOCATION_ID: jobItemTemplate.TEST_LOCATION_ID,
       JobItemTemplateCreateID: jobItemTemplate.JobItemTemplateCreateID,
       JobTemplateCreateID: jobItemTemplate.JobTemplateCreateID,
+      pos:jobItemTemplate.pos || 0
     });
     await jobItemTemplateEdit.save();
 
@@ -56,8 +57,8 @@ export const PUT = async (req, res) => {
     jobItemTemplate.TEST_METHOD = test_method;
     jobItemTemplate.TEST_LOCATION_ID = test_location;
     jobItemTemplate.JobItemTemplateCreateID = newJobItemTemplateCreateID;
-    jobItemTemplate.JobTemplateCreateID =
-      currentJobTemplateCreateID.JobTemplateCreateID;
+    jobItemTemplate.JobTemplateCreateID =currentJobTemplateCreateID.JobTemplateCreateID;
+    // jobItemTemplate.pos=pos;
 
     // ตรวจสอบว่ามี filePath หรือไม่ และอัปเดตฟิลด์ FILE
     if (filePath) {

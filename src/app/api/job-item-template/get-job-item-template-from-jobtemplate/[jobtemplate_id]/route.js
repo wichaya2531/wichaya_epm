@@ -25,6 +25,7 @@ export const GET = async (req, { params }) => {
                 TEST_METHOD: jobItemTemplate.TEST_METHOD,
                 TEST_LOCATION_NAME: location? location.LocationName : "",
                 JOB_TEMPLATE_ID: jobItemTemplate.JOB_TEMPLATE_ID,
+                pos:jobItemTemplate.pos|| 0,
                 createdAt: createdAt
             };
         }

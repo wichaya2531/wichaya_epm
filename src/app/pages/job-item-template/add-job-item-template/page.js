@@ -15,7 +15,7 @@ import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
 
 const jobItemTemplateHeader = [
-  "No.",
+  "Pos.",
   "Job Title",
   "Job Name",
   "Upper/Lower ",
@@ -175,9 +175,61 @@ const Page = ({ searchParams }) => {
     setSelectedFile(null);
   };
 
+
+  const handlePosSelect = async (b,valueSelected) => {
+        console.log("valueSelected=>"+valueSelected+" => "+b._id);    
+        //alert('use handlePosSelect ');
+        const formData = new FormData();
+        formData.append("jobItemTemplateID", b._id);
+        formData.append("pos", valueSelected);
+        
+        try {
+          const res = await fetch("/api/job-item-template/edit-job-item-template/edit-job-item-template-pos", {
+            method: "POST",
+             body: formData,
+          });
+    
+          //const data = await res.json();
+          
+          //if (data.result) {
+          //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
+          //} else {
+            //alert("An error occurred while uploading the file.");
+          //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
+          //}
+        } catch (error) {
+          //console.error(error);
+          //alert("An error occurred while uploading the file.");
+          //return null; // คืนค่า null หากเกิดข้อผิดพลาด
+        }
+
+  }
+
   const jobItemTemplateBody = jobItemTemplates.map((jobItemTemplate, index) => {
+    //console.log("jobItemTemplates.length=>",jobItemTemplates.length);
+    var buffer_position_list=[];
+    var counter=1;
+    jobItemTemplates.map((jobItemTemplate, index) => {
+      buffer_position_list.push({
+          id:counter,
+          name:counter            
+    });
+      counter++;
+    });
     return {
-      ID: index + 1,
+      ID:/* index + 1 */ /*jobItemTemplate.pos+ */(
+            <div className="flex items-center justify-center gap-2">
+            <select className="p-2" onChange={(e)=>handlePosSelect(jobItemTemplate,e.target.value)}>
+                <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
+                {buffer_position_list.map((point, index) => (
+                    <option key={point.id || index} value={point.name}>
+                        {point.name}
+                    </option>
+                ))}
+            </select>
+        </div>
+      
+      ),
       Title: jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE,
       Name:jobItemTemplate.JOB_ITEM_TEMPLATE_NAME ,
       Upper_Lower: jobItemTemplate.UPPER_SPEC+"/"+jobItemTemplate.LOWER_SPEC,

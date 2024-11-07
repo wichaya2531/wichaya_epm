@@ -5,6 +5,25 @@ import { JobItemTemplate } from "@/lib/models/JobItemTemplate.js";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 
+
+
+async function checkLastIndexOfItem(JobTemplateCreateID) {
+  // try {
+  //   const user = await User.findOne({ _id: new ObjectId(userID) });
+  //   return user ? user.EMAIL : null;
+  // } catch (error) {
+  //   console.error("Error:", error);
+  //   return null;
+  // }
+
+    const countJobItemTemplate= await JobItemTemplate.find({JobTemplateCreateID:JobTemplateCreateID});
+    //console.log( "countJobItemTemplate=>",countJobItemTemplate.length );
+    if(countJobItemTemplate){
+            return  countJobItemTemplate.length+1; 
+    }
+    return 0;
+}
+
 export const POST = async (req) => {
   await connectToDb();
   const JobItemTemplateCreateID = await generateUniqueKey();
@@ -22,6 +41,7 @@ export const POST = async (req) => {
     const TEST_LOCATION_ID = form.get("TEST_LOCATION_ID");
     const JobTemplateCreateID = form.get("JobTemplateCreateID");
     const FILE = form.get("FILE");
+    const pos=await checkLastIndexOfItem(JobTemplateCreateID);
 
     let filePath = null; // Initialize filePath to null
 
@@ -48,7 +68,7 @@ export const POST = async (req) => {
       JobTemplateCreateID,
       JobItemTemplateCreateID,
       FILE: filePath, // Include the filePath in the data
-      pos:0
+      pos:pos
     };
 
     // Create a new instance of JobItemTemplate
