@@ -11,9 +11,8 @@ import { getSession } from "@/lib/utils/utils.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-
+import { FaPlus } from "react-icons/fa";
 const lineNameHeader = ["ID", "Line Name", "Created At", "Action"];
-
 const Page = () => {
   const [currentUser, setcurrentUser] = useState(false);
 
@@ -150,8 +149,8 @@ const Page = () => {
     if (!selectLineName) {
       Swal.fire({
         icon: "warning",
-        title: "คำเตือน",
-        text: "กรุณากรอกชื่อ Select Line Name",
+        title: "Warning",
+        text: "Please enter the Select Line Name",
       });
       return;
     }
@@ -173,22 +172,22 @@ const Page = () => {
       if (response.ok && data.success) {
         Swal.fire({
           icon: "success",
-          title: "สำเร็จ",
-          text: "สร้างข้อมูลสำเร็จ",
+          title: "Success",
+          text: "Data created successfully",
         });
         setSelectLineNames((prevData) => [...prevData, data.lineName]);
         setSelectLineName("");
       } else {
         Swal.fire({
           icon: "error",
-          title: "เกิดข้อผิดพลาด",
-          text: `ไม่สามารถสร้างข้อมูลได้: ${data.message || "Unknown error"}`,
+          title: "Error",
+          text: `Unable to create data: ${data.message || "Unknown error"}`,
         });
       }
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "เกิดข้อผิดพลาด",
+        title: "Error",
         text: error.message,
       });
     } finally {
@@ -242,26 +241,44 @@ const Page = () => {
           Manage Line names and their lists
         </h1>
       </div>
-      <div className="max-w-[98vw] mx-auto my-4 p-4 border border-gray-300 rounded" style={{width:'100%'}}>
-        <h2 className="text-xl font-bold mb-4">สร้าง Select Line Name</h2>
-        <div className="mb-4 max-w-[250px] inline-block" >
-          <label htmlFor="lineName" className="block text-sm font-medium mb-1">Line name:</label>
+      <div
+        className="max-w-[98vw] mx-auto my-4 p-4 bg-white border border-gray-300 rounded"
+        style={{ width: "100%" }}
+      >
+        <h2 className="text-xl font-bold mb-4">Create Select Line Name</h2>
+        <div className="mb-4 max-w-[250px] inline-block">
+          <label htmlFor="lineName" className="block text-sm font-medium mb-1">
+            Line name:
+          </label>
           <input
             type="text"
             id="lineName"
             className="w-full border border-gray-300 rounded p-2 max-w-[200px]"
             value={selectLineName}
             onChange={(e) => setSelectLineName(e.target.value)}
-            placeholder="กรอกชื่อ Line Name"
+            placeholder="Enter Line Name"
           />
-        </div> &nbsp;
+        </div>{" "}
+        &nbsp;
         <div className="mb-4 max-w-[100px] inline-block">
           <button
-            className="bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50"
+            className="bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50 flex items-center justify-center"
             onClick={handleCreate}
             disabled={isLoading}
           >
-            {isLoading ? "กำลังสร้าง..." : "สร้าง"}
+            {isLoading ? (
+              <>
+                <div className="mr-2 animate-spin">
+                  <FaPlus /> {/* เพิ่มไอคอนวงกลมหมุน */}
+                </div>
+                Creating...
+              </>
+            ) : (
+              <>
+                <FaPlus className="mr-2" /> {/* เพิ่มไอคอนบวก */}
+                Create
+              </>
+            )}
           </button>
         </div>
         <TableComponent

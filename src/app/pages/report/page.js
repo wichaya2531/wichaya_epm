@@ -13,7 +13,7 @@ import BarChart1 from "./BarChart1";
 import { useState } from "react";
 
 const Page = () => {
-  const [selectedChart, setSelectedChart] = useState("BarChart");
+  const [selectedChart, setSelectedChart] = useState("BarChart5");
   const chartButtons = [
     { label: "Value in Item", value: "BarChart5" },
     { label: "Checklist Active By user", value: "BarChart" },
