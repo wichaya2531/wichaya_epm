@@ -282,44 +282,36 @@ const BarChart5 = () => {
     try {
       const element = chartRef.current;
       if (!element) throw new Error("Chart reference is null");
+
       const canvas = await html2canvas(element);
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF();
-      const imgWidth = 190;
       const pageHeight = pdf.internal.pageSize.height;
+      const imgWidth = 190;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+
       const exportedData = datasets.map((dataset) => ({
         lineName: dataset.label,
         dataPoints: dataset.data
           .filter((point) => point.y !== "" && !isNaN(point.y))
-          .map((point) => ({
-            x: formatDate(point.x),
-            y: point.y,
-          })),
+          .map((point) => ({ x: formatDate(point.x), y: point.y })),
       }));
-      let textYPosition = 20;
+
+      let yPosition = 20;
       exportedData.forEach(({ lineName, dataPoints }) => {
-        pdf.text(`Line Name: ${lineName}`, 10, textYPosition);
-        dataPoints.forEach((point) => {
-          pdf.text(
-            `วันที่: ${point.x}, ACTUAL VALUE: ${point.y}`,
-            10,
-            (textYPosition += 10)
-          );
+        if (yPosition + 10 > pageHeight) pdf.addPage(), (yPosition = 20);
+        pdf.text(`Line Name: ${lineName}`, 10, yPosition);
+        dataPoints.forEach(({ x, y }) => {
+          if ((yPosition += 10) > pageHeight) pdf.addPage(), (yPosition = 20);
+          pdf.text(`Date: ${x}, ACTUAL VALUE: ${y}`, 10, yPosition);
         });
-        textYPosition += 10;
+        yPosition += 10;
       });
-      const imageYPosition = textYPosition + 10;
-      pdf.addImage(imgData, "PNG", 10, imageYPosition, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+
+      if (yPosition + imgHeight + 10 > pageHeight)
+        pdf.addPage(), (yPosition = 20);
+      pdf.addImage(imgData, "PNG", 10, yPosition + 10, imgWidth, imgHeight);
+
       const fileName = `LineNames:${
         selectedLineNames.join(",") || "All_Line_Names"
       }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.pdf`;

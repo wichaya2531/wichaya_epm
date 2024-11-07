@@ -127,40 +127,39 @@ const BarChart1 = () => {
       console.error("Chart element is not ready yet");
       return;
     }
-    const element = chartRef.current.canvas; // เข้าถึง canvas ของกราฟ
     const pdf = new jsPDF();
+    const element = chartRef.current.canvas;
+
     requestAnimationFrame(async () => {
       const canvas = await html2canvas(element);
       const imgData = canvas.toDataURL("image/png");
-      const imgWidth = 190; // กำหนดความกว้างของภาพใน PDF
+      const imgWidth = 190;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      // เพิ่มภาพใน PDF
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Report quantity Job Templates", 10, imgHeight + 10);
-      const textYPosition = imgHeight + 20 + 10;
+      let yPosition = imgHeight + 30;
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "normal");
-      if (finalReport.length === 0) {
-        pdf.text("There is no data to report.", 10, textYPosition);
-      } else {
-        finalReport.forEach((item, index) => {
-          const workgroupDisplayName = item.workgroupName || "No workgroup";
-          pdf.text(
-            `${workgroupDisplayName}: ${item.jobTemplateCount} job templates`,
-            10,
-            textYPosition + index * 10
-          );
-        });
-      }
-      // ตั้งชื่อไฟล์ให้สอดคล้องกับกลุ่มงานที่เลือก หรือแสดงเป็น "ไม่มีกลุ่มงาน"
+      finalReport.forEach((item, index) => {
+        const workgroupDisplayName = item.workgroupName || "ไม่มีกลุ่มงาน";
+        pdf.text(
+          `${workgroupDisplayName}: ${item.jobTemplateCount} job templates`,
+          10,
+          yPosition
+        );
+        yPosition += 10;
+        // เพิ่มหน้าเมื่อข้อมูลเกินความสูงของ PDF
+        if (yPosition > pdf.internal.pageSize.height - 20) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+      });
       const workgroupName =
         selectedWorkgroups.length > 0
           ? selectedWorkgroups.map((name) => name || "ไม่มีกลุ่มงาน").join(", ")
           : "All_Workgroups";
-      const fileName = `${workgroupName}.pdf`; // สร้างชื่อไฟล์
-      pdf.save(fileName); // บันทึกไฟล์ PDF
+      pdf.save(`${workgroupName}.pdf`);
     });
   };
   // ฟังก์ชันการส่งออก CSV
@@ -170,44 +169,42 @@ const BarChart1 = () => {
       jobTemplateCount: item.jobTemplateCount,
     }));
     const ws = XLSX.utils.json_to_sheet(formattedData);
-    const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    // สร้างชื่อไฟล์ตามกลุ่มงานและ topN ที่เลือก
-    const workgroupName =
+    const excelBuffer = XLSX.write(
+      { Sheets: { data: ws }, SheetNames: ["data"] },
+      { bookType: "xlsx", type: "array" }
+    );
+    const fileName = `${
       selectedWorkgroups.length > 0
         ? selectedWorkgroups.join(", ")
-        : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
-    const fileName = `${workgroupName}_top_${topN}.xlsx`; // สร้างชื่อไฟล์
-    FileSaver.saveAs(data, fileName); // บันทึกไฟล์ CSV
+        : "All_Workgroups"
+    }_top_${topN}.xlsx`;
+    FileSaver.saveAs(
+      new Blob([excelBuffer], { type: "application/octet-stream" }),
+      fileName
+    );
   };
   // ฟังก์ชันการบันทึกภาพเป็น PNG
   const saveAsPNG = () => {
     const chart = chartRef.current;
     if (chart) {
-      // สร้าง canvas ใหม่
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      // กำหนดขนาด canvas ให้เท่ากับขนาดกราฟ
       canvas.width = chart.width;
       canvas.height = chart.height;
-      // ตั้งสีพื้นหลังเป็นสีขาว
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      // คัดลอกกราฟไปยัง canvas
       const img = new Image();
       img.src = chart.toBase64Image();
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
-        // สร้างลิงก์ดาวน์โหลด
-        const workgroupName =
+        const fileName = `${
           selectedWorkgroups.length > 0
             ? selectedWorkgroups.join(", ")
-            : "All_Workgroups"; // ใช้ชื่อ All_Workgroups ถ้าไม่มีการเลือก
-        const fileName = `${workgroupName}_top_${topN}.png`; // สร้างชื่อไฟล์
+            : "All_Workgroups"
+        }_top_${topN}.png`;
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png");
-        link.download = fileName; // บันทึกไฟล์ PNG
+        link.download = fileName;
         link.click();
       };
     }
