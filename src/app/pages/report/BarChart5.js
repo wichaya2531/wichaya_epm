@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -25,6 +25,7 @@ import * as XLSX from "xlsx";
 import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { FaSpinner } from "react-icons/fa";
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -50,6 +51,8 @@ const BarChart5 = () => {
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const pastelColors = {
     "9309A": "#FFB6C1",
     "9303A": "#ADD8E6",
@@ -266,6 +269,22 @@ const BarChart5 = () => {
         .filter((name) => name && name.trim() !== "" && name !== "Unknown") // กรองค่าว่างและ "unknown"
     ),
   ];
+  // ฟังก์ชันเพื่อโหลดข้อมูลที่จำเป็น (หรือเมื่อข้อมูลพร้อมใช้งาน)
+  useEffect(() => {
+    const checkDataLoaded = () => {
+      // ตรวจสอบว่า availableWorkgroups และ availableLineNames มีข้อมูลครบถ้วน
+      if (availableWorkgroups.length > 0 && availableLineNames.length > 0) {
+        setIsLoading(false); // ตั้งค่าเป็น false เมื่อข้อมูลถูกโหลดครบ
+        setIsDataLoaded(true);
+      } else {
+        setIsLoading(true); // หากข้อมูลยังไม่ครบ ให้แสดง loading
+        setIsDataLoaded(false);
+      }
+    };
+
+    // เรียกใช้ฟังก์ชันตรวจสอบเมื่อข้อมูลใน availableWorkgroups หรือ availableLineNames เปลี่ยนแปลง
+    checkDataLoaded();
+  }, [availableWorkgroups, availableLineNames]);
   const formatDate = (dateString) => {
     const options = {
       year: "numeric",
@@ -418,10 +437,19 @@ const BarChart5 = () => {
           </label>
           <button
             onClick={() => setIsOpen((prevOpen) => !prevOpen)}
-            className="  rouw-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+            disabled={!isDataLoaded} // ปิดใช้งานปุ่มหากข้อมูลยังไม่ถูกโหลด
           >
-            Select Workgroups
+            {isLoading ? (
+              <div className="flex items-center">
+                <FaSpinner className="animate-spin mr-2" /> Loading
+                Workgroups...
+              </div>
+            ) : (
+              "Select Workgroups"
+            )}
           </button>
+
           {isOpen && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
@@ -446,6 +474,7 @@ const BarChart5 = () => {
             </div>
           )}
         </div>
+
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             LineNames
@@ -453,8 +482,16 @@ const BarChart5 = () => {
           <button
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+            disabled={!isDataLoaded} // ปิดใช้งานปุ่มหากข้อมูลยังไม่ถูกโหลด
           >
-            Select LineNames
+            {isLoading ? (
+              <div className="flex items-center">
+                <FaSpinner className="animate-spin mr-2" />
+                Loading LineNames...
+              </div>
+            ) : (
+              "Select LineNames"
+            )}
           </button>
           {isOpen1 && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
