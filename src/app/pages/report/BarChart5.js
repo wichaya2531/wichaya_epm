@@ -17,6 +17,7 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
+import useFetchReportWorkgroupLinename from "@/lib/hooks/useFetchReportWorkgroupLinename";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO, isValid, startOfToday } from "date-fns";
 import "chartjs-adapter-date-fns";
@@ -25,7 +26,6 @@ import * as XLSX from "xlsx";
 import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { FaSpinner } from "react-icons/fa";
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -45,14 +45,15 @@ const BarChart5 = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const { report } = useFetchReport1(refresh);
+  const { lineNames, workgroupNames, isLoading } =
+    useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const chartRef = useRef(null);
   const [selectedLineNames, setSelectedLineNames] = useState([]);
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDataFetched, setIsDataFetched] = useState(false);
   const pastelColors = {
     "9309A": "#FFB6C1",
     "9303A": "#ADD8E6",
@@ -68,33 +69,27 @@ const BarChart5 = () => {
     "9919A": "#FFA07A",
   };
   const colorValues = [
-    "Pass",
-    "Good",
+    "pass",
+    "good",
     "Not Change",
     "Fail",
-    "Done",
-    "Check",
+    "change",
+    "not change",
+    "done",
+    "check",
     "Unknown", // เพิ่มค่าอื่น ๆ ที่ต้องการแสดง
   ];
   const getPastelColorForValue = (value) => {
-    switch (value) {
-      case "Pass":
-        return "rgba(198, 255, 198, 0.6)"; // สีพาสเทลเขียวที่นุ่มนวล
-      case "Good":
-        return "rgba(204, 229, 255, 0.6)"; // สีพาสเทลฟ้าที่นุ่มนวล
-      case "Change":
-        return "rgba(255, 227, 153, 0.6)"; // สีพาสเทลเหลืองนุ่มนวล
-      case "Not Change":
-        return "rgba(255, 239, 204, 0.6)"; // สีพาสเทลครีมที่นุ่มนวล
-      case "Fail":
-        return "rgba(255, 182, 193, 0.6)"; // สีพาสเทลชมพูที่นุ่มนวล
-      case "Done":
-        return "rgba(221, 160, 221, 0.6)"; // สีพาสเทลม่วงที่นุ่มนวล
-      case "Check":
-        return "rgba(255, 255, 204, 0.6)"; // สีพาสเทลเหลืองอ่อนที่นุ่มนวล
-      default:
-        return "rgba(0, 0, 0, 0)"; // ไม่มีสี สำหรับค่าอื่น ๆ (โปร่งใส)
-    }
+    const colors = new Map([
+      ["pass", "rgba(198, 255, 198, 0.6)"], // สีพาสเทลเขียว
+      ["good", "rgba(204, 229, 255, 0.6)"], // สีพาสเทลฟ้า
+      ["change", "rgba(255, 227, 153, 0.6)"], // สีพาสเทลเหลือง
+      ["not change", "rgba(255, 239, 204, 0.6)"], // สีพาสเทลครีม
+      ["fail", "rgba(255, 182, 193, 0.6)"], // สีพาสเทลชมพู
+      ["done", "rgba(221, 160, 221, 0.6)"], // สีพาสเทลม่วง
+      ["check", "rgba(255, 255, 204, 0.6)"], // สีพาสเทลเหลืองอ่อน
+    ]);
+    return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
   };
   const groupedDataByLineNameAndWorkgroup = report
     .filter(
@@ -178,7 +173,7 @@ const BarChart5 = () => {
         label: `${lineName} - ${workgroupName}`,
         type: "line",
         borderColor: color,
-        backgroundColor: color.replace(", 1)", ", 0.1)"),
+        backgroundColor: color,
         data: sortedDataByLineNameAndWorkgroup[groupKey].map((item) => ({
           x: item.x,
           y: item.y,
@@ -241,50 +236,38 @@ const BarChart5 = () => {
       },
     },
   };
-  const handleWorkgroupChange = (workgroupName) => {
-    setSelectedWorkgroups((prevSelected) =>
-      prevSelected.includes(workgroupName)
-        ? prevSelected.filter((name) => name !== workgroupName)
-        : [...prevSelected, workgroupName]
-    );
+  // เรียกใช้เมื่อกดปุ่ม Done
+  const handleFetchData = () => {
+    setIsDataFetched(true);
   };
-  const availableWorkgroups = [
-    ...new Set(
-      report
-        .map((item) => item.WORKGROUP_NAME)
-        .filter((name) => name && name.trim() !== "" && name !== "Unknown") // กรองค่าว่างและ "unknown"
-    ),
-  ];
-  const handleLineNameChange = (lineName) => {
-    setSelectedLineNames((prevSelected) =>
-      prevSelected.includes(lineName)
-        ? prevSelected.filter((name) => name !== lineName)
-        : [...prevSelected, lineName]
-    );
-  };
-  const availableLineNames = [
-    ...new Set(
-      report
-        .map((item) => item.LINE_NAME)
-        .filter((name) => name && name.trim() !== "" && name !== "Unknown") // กรองค่าว่างและ "unknown"
-    ),
-  ];
-  // ฟังก์ชันเพื่อโหลดข้อมูลที่จำเป็น (หรือเมื่อข้อมูลพร้อมใช้งาน)
-  useEffect(() => {
-    const checkDataLoaded = () => {
-      // ตรวจสอบว่า availableWorkgroups และ availableLineNames มีข้อมูลครบถ้วน
-      if (availableWorkgroups.length > 0 && availableLineNames.length > 0) {
-        setIsLoading(false); // ตั้งค่าเป็น false เมื่อข้อมูลถูกโหลดครบ
-        setIsDataLoaded(true);
-      } else {
-        setIsLoading(true); // หากข้อมูลยังไม่ครบ ให้แสดง loading
-        setIsDataLoaded(false);
-      }
-    };
 
-    // เรียกใช้ฟังก์ชันตรวจสอบเมื่อข้อมูลใน availableWorkgroups หรือ availableLineNames เปลี่ยนแปลง
-    checkDataLoaded();
-  }, [availableWorkgroups, availableLineNames]);
+  // ฟังก์ชันจัดการการเลือก Workgroup
+  const handleWorkgroupChange = (workgroupName) => {
+    if (selectedWorkgroups.includes(workgroupName)) {
+      setSelectedWorkgroups((prev) =>
+        prev.filter((name) => name !== workgroupName)
+      );
+    } else {
+      setSelectedWorkgroups((prev) => [...prev, workgroupName]);
+    }
+  };
+
+  const availableWorkgroups = workgroupNames.filter(
+    (name) => name && name.trim() !== "" && name !== "Unknown"
+  );
+
+  // ฟังก์ชันจัดการการเลือก LineName
+  const handleLineNameChange = (lineName) => {
+    if (selectedLineNames.includes(lineName)) {
+      setSelectedLineNames((prev) => prev.filter((name) => name !== lineName));
+    } else {
+      setSelectedLineNames((prev) => [...prev, lineName]);
+    }
+  };
+
+  const availableLineNames = lineNames.filter(
+    (name) => name && name.trim() !== "" && name !== "Unknown"
+  );
   const formatDate = (dateString) => {
     const options = {
       year: "numeric",
@@ -295,7 +278,6 @@ const BarChart5 = () => {
       hour12: false,
     };
     const date = new Date(dateString);
-    return date.toLocaleString("th-TH", options).replace(",", ""); // ใช้ locale เป็นไทย
   };
   const exportToPDF = async () => {
     try {
@@ -337,7 +319,7 @@ const BarChart5 = () => {
       pdf.save(fileName);
     } catch (error) {
       console.error("Error exporting to PDF:", error);
-      alert("ไม่สามารถส่งออกไฟล์ PDF ได้: " + error.message);
+      alert("Unable to export PDF file: " + error.message);
     }
   };
   const exportToCSV = () => {
@@ -438,18 +420,11 @@ const BarChart5 = () => {
           <button
             onClick={() => setIsOpen((prevOpen) => !prevOpen)}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
-            disabled={!isDataLoaded} // ปิดใช้งานปุ่มหากข้อมูลยังไม่ถูกโหลด
           >
-            {isLoading ? (
-              <div className="flex items-center">
-                <FaSpinner className="animate-spin mr-2" /> Loading
-                Workgroups...
-              </div>
-            ) : (
-              "Select Workgroups"
-            )}
+            {selectedWorkgroups.length > 0
+              ? `Selected ${selectedWorkgroups.length} Workgroups`
+              : "Select Workgroups"}
           </button>
-
           {isOpen && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
@@ -474,7 +449,6 @@ const BarChart5 = () => {
             </div>
           )}
         </div>
-
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             LineNames
@@ -482,23 +456,17 @@ const BarChart5 = () => {
           <button
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
-            disabled={!isDataLoaded} // ปิดใช้งานปุ่มหากข้อมูลยังไม่ถูกโหลด
           >
-            {isLoading ? (
-              <div className="flex items-center">
-                <FaSpinner className="animate-spin mr-2" />
-                Loading LineNames...
-              </div>
-            ) : (
-              "Select LineNames"
-            )}
+            {selectedLineNames.length > 0
+              ? `Selected ${selectedLineNames.length} LineNames`
+              : "Select LineNames"}
           </button>
           {isOpen1 && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  onChange={() => setSelectedLineNames([])} // รีเซ็ตการเลือก
+                  onChange={() => setSelectedLineNames([])}
                   checked={selectedLineNames.length === 0}
                 />
                 All LineNames
