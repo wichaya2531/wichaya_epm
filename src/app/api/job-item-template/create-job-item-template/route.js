@@ -27,7 +27,7 @@ async function checkLastIndexOfItem(JobTemplateCreateID) {
 export const POST = async (req) => {
   await connectToDb();
   const JobItemTemplateCreateID = await generateUniqueKey();
-  console.log("use create job item template");
+  //console.log("use create job item template");
   try {
     const form = await req.formData();
 

@@ -177,7 +177,7 @@ const Page = ({ searchParams }) => {
 
 
   const handlePosSelect = async (b,valueSelected) => {
-        console.log("valueSelected=>"+valueSelected+" => "+b._id);    
+        //console.log("valueSelected=>"+valueSelected+" => "+b._id);    
         //alert('use handlePosSelect ');
         const formData = new FormData();
         formData.append("jobItemTemplateID", b._id);
@@ -189,8 +189,9 @@ const Page = ({ searchParams }) => {
              body: formData,
           });
     
-          //const data = await res.json();
-          
+          const data = await res.json();
+          console.log("data=>",data);
+
           //if (data.result) {
           //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
           //} else {

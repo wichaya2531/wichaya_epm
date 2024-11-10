@@ -173,7 +173,7 @@ const BarChart5 = () => {
     })
     .map((groupKey) => {
       const [lineName, workgroupName] = groupKey.split("-");
-      const color = pastelColors[lineName] || getRandomPastelColor();
+      const color = pastelColors[lineName] ;
       return {
         label: `${lineName} - ${workgroupName}`,
         type: "line",

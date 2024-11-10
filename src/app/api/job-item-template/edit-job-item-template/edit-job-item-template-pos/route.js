@@ -13,6 +13,9 @@ export const POST = async (req, res) => {
         //const body = await req.json();
         console.log("jobItemTemplateID=>",jobItemTemplateID);
         try{
+
+            const jobItemTemplate=await JobItemTemplate.findOne({}); 
+
             return NextResponse.json({ status: 200, result:"OK" });
         } catch (err) {
             return NextResponse.json({
