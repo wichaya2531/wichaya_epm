@@ -379,42 +379,6 @@ const BarChart5 = () => {
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
         <div className="relative">
-          <label
-            htmlFor="start-date"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Start Date
-          </label>
-          <input
-            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
-            type="date"
-            id="start-date"
-            value={
-              startDate && isValid(startDate)
-                ? format(startDate, "yyyy-MM-dd")
-                : ""
-            }
-            onChange={(e) => setStartDate(new Date(e.target.value))}
-          />
-        </div>
-        <div className="relative">
-          <label
-            htmlFor="end-date"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            End Date
-          </label>
-          <input
-            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
-            type="date"
-            id="end-date"
-            value={
-              endDate && isValid(endDate) ? format(endDate, "yyyy-MM-dd") : ""
-            }
-            onChange={(e) => setEndDate(new Date(e.target.value))}
-          />
-        </div>
-        <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Workgroups
           </label>
@@ -485,6 +449,42 @@ const BarChart5 = () => {
               ))}
             </div>
           )}
+        </div>
+        <div className="relative">
+          <label
+            htmlFor="start-date"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Start Date
+          </label>
+          <input
+            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+            type="date"
+            id="start-date"
+            value={
+              startDate && isValid(startDate)
+                ? format(startDate, "yyyy-MM-dd")
+                : ""
+            }
+            onChange={(e) => setStartDate(new Date(e.target.value))}
+          />
+        </div>
+        <div className="relative">
+          <label
+            htmlFor="end-date"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            End Date
+          </label>
+          <input
+            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+            type="date"
+            id="end-date"
+            value={
+              endDate && isValid(endDate) ? format(endDate, "yyyy-MM-dd") : ""
+            }
+            onChange={(e) => setEndDate(new Date(e.target.value))}
+          />
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
           {Object.entries(pastelColors).map(([lineName, color]) => (
