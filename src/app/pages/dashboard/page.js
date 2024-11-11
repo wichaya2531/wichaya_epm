@@ -6,7 +6,7 @@ import useFetchUsers from "@/lib/hooks/useFetchUser.js";
 import useFetchCards from "@/lib/hooks/useFetchCards.js";
 import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import JobsTable from "@/components/JobsTable";
-
+import { motion } from "framer-motion";
 const sendData = async () => {
   try {
     const response = await fetch(
@@ -36,16 +36,13 @@ const sendData = async () => {
 };
 
 const Page = () => {
-
-  
-
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
 
   const handleClcik = () => {
-   // sendData();
+    // sendData();
   };
 
   return (
@@ -75,13 +72,19 @@ const Page = () => {
           {cards &&
             cards.map((card, index) => {
               return (
-                <Card
+                <motion.div
                   key={index}
-                  title={card.TITLE}
-                  detail={card.DETAIL}
-                  link={card.LINK}
-                  logo_path={card.LOGO_PATH}
-                />
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }} // กำหนดให้แสดงทีละการ์ดโดยหน่วงเวลาตาม index
+                >
+                  <Card
+                    title={card.TITLE}
+                    detail={card.DETAIL}
+                    link={card.LINK}
+                    logo_path={card.LOGO_PATH}
+                  />
+                </motion.div>
               );
             })}
         </div>
