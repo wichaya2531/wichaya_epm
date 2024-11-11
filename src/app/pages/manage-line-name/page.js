@@ -242,7 +242,7 @@ const Page = () => {
         </h1>
       </div>
       <div
-        className="max-w-[98vw] mx-auto my-4 p-4 bg-white border border-gray-300 rounded"
+        className="max-w-[98vw] mx-auto my-4 p-4 bg-white rounded-xl"
         style={{ width: "100%" }}
       >
         <h2 className="text-xl font-bold mb-4">Create Select Line Name</h2>
