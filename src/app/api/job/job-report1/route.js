@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 export const GET = async (req, res) => {
   try {
     await connectToDb();
+
     const jobValues = await User.aggregate([
       {
         $lookup: {
@@ -14,6 +15,12 @@ export const GET = async (req, res) => {
           localField: "_id",
           foreignField: "ACTIVATE_USER",
           as: "jobs",
+        },
+      },
+      {
+        $unwind: {
+          path: "$jobs",
+          preserveNullAndEmptyArrays: false,
         },
       },
       {
@@ -26,31 +33,25 @@ export const GET = async (req, res) => {
       },
       {
         $unwind: {
-          path: "$jobs",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $unwind: {
           path: "$jobItems",
-          preserveNullAndEmptyArrays: true,
+          preserveNullAndEmptyArrays: false,
         },
       },
       {
         $lookup: {
           from: "workgroups",
-          let: { workgroupId: "$jobs.WORKGROUP_ID" }, // ใช้ let เพื่อเก็บ WORKGROUP_ID
+          let: { workgroupId: "$jobs.WORKGROUP_ID" },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ["$_id", { $toObjectId: "$$workgroupId" }], // แปลง WORKGROUP_ID เป็น ObjectId
+                  $eq: ["$_id", { $toObjectId: "$$workgroupId" }],
                 },
               },
             },
             {
               $project: {
-                WORKGROUP_NAME: 1, // ดึงเฉพาะ WORKGROUP_NAME
+                WORKGROUP_NAME: 1,
               },
             },
           ],
@@ -60,15 +61,15 @@ export const GET = async (req, res) => {
       {
         $unwind: {
           path: "$workgroupInfo",
-          preserveNullAndEmptyArrays: true,
+          preserveNullAndEmptyArrays: false,
         },
       },
       {
         $match: {
           "jobItems.ACTUAL_VALUE": { $ne: null },
-          "jobs.LINE_NAME": { $ne: null }, // ตรวจสอบว่า LINE_NAME ไม่เป็นค่าว่าง
-          "jobItems.createdAt": { $ne: null }, // ตรวจสอบว่า jobItemsCreatedAt ไม่เป็นค่าว่าง
-          "workgroupInfo.WORKGROUP_NAME": { $ne: null }, // ตรวจสอบว่า WORKGROUP_NAME ไม่เป็นค่าว่าง
+          "jobItems.createdAt": { $ne: null },
+          "jobs.LINE_NAME": { $ne: null },
+          "workgroupInfo.WORKGROUP_NAME": { $ne: null },
         },
       },
       {
@@ -87,8 +88,8 @@ export const GET = async (req, res) => {
       },
       {
         $sort: {
-          jobItemCreatedAt: 1, // เรียงตามวันที่จากเก่าไปใหม่
-          lineName: 1, // เรียงตาม LINE_NAME
+          jobItemCreatedAt: 1,
+          lineName: 1,
         },
       },
       {
@@ -97,12 +98,17 @@ export const GET = async (req, res) => {
           LINE_NAME: "$_id.lineName",
           jobItemsCreatedAt: "$_id.jobItemCreatedAt",
           ACTUAL_VALUE: "$actualValue",
-          WORKGROUP_NAME: "$workgroupName", // ใช้ workgroupName ที่สร้างขึ้น
+          WORKGROUP_NAME: "$workgroupName",
         },
       },
     ]);
 
-    console.log("Job values with actual values:", jobValues);
+    console.log("Job values after aggregation:", jobValues); // ดูค่าที่ดึงมาจาก aggregation
+
+    if (jobValues.length === 0) {
+      console.log("No data found for the given filters.");
+    }
+
     return NextResponse.json(jobValues);
   } catch (error) {
     console.error("Error fetching job values:", error);
