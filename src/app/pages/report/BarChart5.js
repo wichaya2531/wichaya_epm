@@ -168,7 +168,7 @@ const BarChart5 = () => {
     })
     .map((groupKey) => {
       const [lineName, workgroupName] = groupKey.split("-");
-      const color = pastelColors[lineName] ;
+      const color = pastelColors[lineName];
       return {
         label: `${lineName} - ${workgroupName}`,
         type: "line",
@@ -273,12 +273,11 @@ const BarChart5 = () => {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
     };
     const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", options); // ใช้ "en-GB" เพื่อให้แสดงในรูปแบบ "DD/MM/YYYY"
   };
+
   const exportToPDF = async () => {
     try {
       const element = chartRef.current;
@@ -322,6 +321,7 @@ const BarChart5 = () => {
       alert("Unable to export PDF file: " + error.message);
     }
   };
+
   const exportToCSV = () => {
     const exportedData = datasets
       .flatMap((dataset) =>
@@ -329,7 +329,7 @@ const BarChart5 = () => {
           .filter((point) => point.y !== "" && !isNaN(point.y))
           .map((point) => ({
             lineName: dataset.label,
-            CreatedAt: formatDate(point.x),
+            CreatedAt: formatDate(point.x), // เก็บแค่วันที่
             "ACTUAL VALUE": point.y,
           }))
       )
@@ -345,6 +345,7 @@ const BarChart5 = () => {
     }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.xlsx`;
     FileSaver.saveAs(data, fileName);
   };
+
   const saveAsPNG = async () => {
     try {
       const chart = chartRef.current;
