@@ -15,7 +15,7 @@ const Card = ({ title = "", detail = "", link = "#", logo_path }) => {
         alt="card-logo"
       />
       <div className="flex flex-col gap-3">
-        <h1 className="text-2xl font-bold ">{title}</h1>
+        <h1 className="text-2xl font-bold text-primary">{title}</h1>
         <p className="text-sm text-secondary max-h-48">{detail}</p>
       </div>
     </Link>
