@@ -31,7 +31,7 @@ import {
   VisibilityOff,
   CalendarViewMonth,
 } from "@mui/icons-material";
-import TableReport from "@/components/tableReport";
+import TableReport from "@/components/TableReport";
 ChartJS.register(
   BarElement,
   CategoryScale,
