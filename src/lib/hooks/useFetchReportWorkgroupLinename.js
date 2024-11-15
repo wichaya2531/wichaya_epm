@@ -17,8 +17,17 @@ const useFetchReportWorkgroupLinename = (refresh) => {
           next: { revalidate: 10 },
         });
         const data = await response.json();
-        setLineNames(data.LINE_NAMES || []); // ตั้งค่า lineNames
-        setWorkgroupNames(data.WORKGROUP_NAMES || []); // ตั้งค่า workgroupNames
+
+        // ตั้งค่า lineNames ให้รวม WORKGROUP_NAME ด้วย
+        setLineNames(
+          data.map((item) => ({
+            name: item.LINE_NAME,
+            workgroup: item.WORKGROUP_NAME,
+          }))
+        );
+        setWorkgroupNames([
+          ...new Set(data.map((item) => item.WORKGROUP_NAME)),
+        ]); // ดึงชื่อ workgroup ที่ไม่ซ้ำกัน
       } catch (error) {
         console.error("Error:", error);
       } finally {

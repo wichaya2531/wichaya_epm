@@ -17,7 +17,7 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
-import useFetchReportWorkgroupLinename from "@/lib/hooks/useFetchReportWorkgroupLinename";
+// import useFetchReportWorkgroupLinename from "@/lib/hooks/useFetchReportWorkgroupLinename";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO, isValid, startOfToday } from "date-fns";
 import "chartjs-adapter-date-fns";
@@ -26,6 +26,12 @@ import * as XLSX from "xlsx";
 import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import {
+  ShowChart,
+  VisibilityOff,
+  CalendarViewMonth,
+} from "@mui/icons-material";
+import TableReport from "@/components/tableReport";
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -45,15 +51,33 @@ const BarChart5 = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const { report } = useFetchReport1(refresh);
-  const { lineNames, workgroupNames, isLoading } =
-    useFetchReportWorkgroupLinename(refresh);
+  // const { lineNames, workgroupNames } =
+  //   useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const chartRef = useRef(null);
   const [selectedLineNames, setSelectedLineNames] = useState([]);
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
-  const [isDataFetched, setIsDataFetched] = useState(false);
+  const [selectedDocNumbers, setSelectedDocNumbers] = useState([]);
+  const [selectedJobItemNames, setSelectedJobItemNames] = useState([]);
+  const [isOpenDocNumber, setIsOpenDocNumber] = useState(false);
+  const [isOpenJobItemName, setIsOpenJobItemName] = useState(false);
+  const [docNumbers, setDocNumbers] = useState([]);
+  const [jobItemNames, setJobItemNames] = useState([]);
+  const [workgroupNames, setWorkgroupNames] = useState([]);
+  const [lineNames, setLineNames] = useState([]);
+  const [activeButton, setActiveButton] = useState("");
+  const [showGraph, setShowGraph] = useState(false);
+  const handleToggleGraph = () => {
+    // เมื่อกดปุ่มจะทำการสลับสถานะการแสดงกราฟ
+    setShowGraph(!showGraph);
+  };
+  const [showTable, setShowTable] = useState(false);
+  const handleToggleTable = () => {
+    // เมื่อกดปุ่มจะทำการสลับสถานะการแสดงกราฟ
+    setShowTable(!showTable);
+  };
   const pastelColors = {
     "9309A": "#FFB6C1",
     "9303A": "#ADD8E6",
@@ -91,7 +115,7 @@ const BarChart5 = () => {
     ]);
     return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
   };
-  const groupedDataByLineNameAndWorkgroup = report
+  const groupedDataByLineNameAndWorkgroupAndJobItem = report
     .filter(
       (item) =>
         item.LINE_NAME &&
@@ -111,14 +135,16 @@ const BarChart5 = () => {
         return null;
       }
       const yValue = isNaN(parseFloat(item.ACTUAL_VALUE))
-        ? 0
+        ? 1
         : parseFloat(item.ACTUAL_VALUE);
       return {
         lineName: item.LINE_NAME,
         workgroupName: item.WORKGROUP_NAME,
+        jobItemName: item.JOB_ITEM_NAME,
         x: createdAt.toISOString(),
         y: yValue,
         actualValue: item.ACTUAL_VALUE,
+        docNumber: item.DOC_NUMBER,
       };
     })
     .filter(Boolean)
@@ -127,58 +153,76 @@ const BarChart5 = () => {
       return date >= startDate && date <= endDate;
     })
     .reduce((acc, curr) => {
-      const groupKey = `${curr.lineName}-${curr.workgroupName}`;
+      const groupKey = `${curr.lineName}-${curr.workgroupName}-${curr.jobItemName}`;
       const lineGroup = acc[groupKey] || [];
       const existing = lineGroup.find((item) => item.x === curr.x);
       if (existing) {
         existing.y += curr.y;
       } else {
-        lineGroup.push({ x: curr.x, y: curr.y, actualValue: curr.actualValue });
+        lineGroup.push({
+          x: curr.x,
+          y: curr.y,
+          actualValue: curr.actualValue,
+          docNumber: curr.docNumber,
+          jobItemName: curr.jobItemName, // เก็บ jobItemName ในแต่ละรายการ
+        });
       }
       acc[groupKey] = lineGroup;
       return acc;
     }, {});
-  Object.entries(groupedDataByLineNameAndWorkgroup).forEach(([_, data]) => {
-    data.forEach((item, index) => {
-      if (item.y === 0 && isNaN(parseFloat(item.actualValue))) {
-        const previousValue = index > 0 ? data[index - 1].y : null;
-        const nextValue = index < data.length - 1 ? data[index + 1].y : null;
-        item.y = previousValue ?? nextValue ?? 0;
-      }
-    });
-  });
-  const sortedDataByLineNameAndWorkgroup = Object.entries(
-    groupedDataByLineNameAndWorkgroup
+  Object.entries(groupedDataByLineNameAndWorkgroupAndJobItem).forEach(
+    ([_, data]) => {
+      data.forEach((item, index) => {
+        if (item.y === 0 && isNaN(parseFloat(item.actualValue))) {
+          const previousValue = index > 0 ? data[index - 1].y : null;
+          const nextValue = index < data.length - 1 ? data[index + 1].y : null;
+          item.y = previousValue ?? nextValue ?? 0;
+        }
+      });
+    }
+  );
+  const sortedDataByLineNameAndWorkgroupAndJobItem = Object.entries(
+    groupedDataByLineNameAndWorkgroupAndJobItem
   ).reduce((acc, [groupKey, data]) => {
     acc[groupKey] = data.sort((a, b) => new Date(a.x) - new Date(b.x));
     return acc;
   }, {});
-
-  const datasets = Object.keys(sortedDataByLineNameAndWorkgroup)
+  const datasets = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
     .filter((groupKey) => {
-      const [lineName, workgroupName] = groupKey.split("-");
+      const [lineName, workgroupName, jobItemName] = groupKey.split("-");
       return (
         lineName !== "unknown" &&
         workgroupName !== "unknown" &&
+        jobItemName !== "unknown" &&
         (selectedLineNames.length === 0 ||
           selectedLineNames.includes(lineName)) &&
         (selectedWorkgroups.length === 0 ||
-          selectedWorkgroups.includes(workgroupName))
+          selectedWorkgroups.includes(workgroupName)) &&
+        (selectedJobItemNames.length === 0 ||
+          selectedJobItemNames.includes(jobItemName))
       );
     })
     .map((groupKey) => {
-      const [lineName, workgroupName] = groupKey.split("-");
+      const [lineName, workgroupName, jobItemName] = groupKey.split("-");
       const color = pastelColors[lineName];
       return {
-        label: `${lineName} - ${workgroupName}`,
+        label: `${lineName} - ${workgroupName} - ${jobItemName}`,
         type: "line",
         borderColor: color,
         backgroundColor: color,
-        data: sortedDataByLineNameAndWorkgroup[groupKey].map((item) => ({
-          x: item.x,
-          y: item.y,
-          actualValue: item.actualValue,
-        })),
+        data: sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]
+          .filter(
+            (item) =>
+              selectedDocNumbers.length === 0 ||
+              selectedDocNumbers.includes(item.docNumber)
+          )
+          .map((item) => ({
+            x: item.x,
+            y: item.y,
+            actualValue: item.actualValue,
+            docNumber: item.docNumber,
+            jobItemName: item.jobItemName,
+          })),
         tension: 0.4,
         fill: true,
         datalabels: {
@@ -220,54 +264,109 @@ const BarChart5 = () => {
     scales: {
       x: {
         type: "time",
-        time: { unit: "month", displayFormats: { month: "MMM yyyy" } },
+        time: {
+          unit: "month",
+          displayFormats: { month: "MMM yyyy" },
+        },
         grid: { display: false },
         border: { display: false },
-        ticks: { font: { size: 12 }, autoSkip: true, maxTicksLimit: 12 },
+        ticks: {
+          font: { size: 12 },
+          autoSkip: true,
+          maxTicksLimit: 12,
+        },
       },
       y: {
-        type: "logarithmic",
+        type: "linear",
         grid: { display: true, color: "rgba(0, 0, 0, 0.1)" },
         border: { display: false },
         ticks: {
           font: { size: 12 },
           callback: (value) => value.toLocaleString(),
+          beginAtZero: true,
+          suggestedMin: 0,
         },
       },
     },
   };
-  // เรียกใช้เมื่อกดปุ่ม Done
-  const handleFetchData = () => {
-    setIsDataFetched(true);
+  useEffect(() => {
+    // สร้างฟังก์ชันเพื่อดึงข้อมูลที่ไม่ซ้ำ
+    const uniqueValues = (key) => [
+      ...new Set(report.map((item) => item[key]).filter(Boolean)),
+    ];
+    setDocNumbers(uniqueValues("DOC_NUMBER"));
+    setJobItemNames(uniqueValues("JOB_ITEM_NAME"));
+    setWorkgroupNames(uniqueValues("WORKGROUP_NAME"));
+    setLineNames(uniqueValues("LINE_NAME"));
+  }, [report]);
+  const handleSelectionChange = (name, selectedItems, setSelectedItems) => {
+    setSelectedItems((prev) =>
+      prev.includes(name)
+        ? prev.filter((item) => item !== name)
+        : [...prev, name]
+    );
   };
-
-  // ฟังก์ชันจัดการการเลือก Workgroup
   const handleWorkgroupChange = (workgroupName) => {
-    if (selectedWorkgroups.includes(workgroupName)) {
-      setSelectedWorkgroups((prev) =>
-        prev.filter((name) => name !== workgroupName)
-      );
-    } else {
-      setSelectedWorkgroups((prev) => [...prev, workgroupName]);
-    }
+    handleSelectionChange(
+      workgroupName,
+      selectedWorkgroups,
+      setSelectedWorkgroups
+    );
+    const filteredLineNames = report
+      .filter((item) => selectedWorkgroups.includes(item.WORKGROUP_NAME))
+      .map((item) => item.LINE_NAME);
+    setSelectedLineNames(filteredLineNames);
+    setSelectedDocNumbers([]);
+    setSelectedJobItemNames([]);
   };
-
-  const availableWorkgroups = workgroupNames.filter(
-    (name) => name && name.trim() !== "" && name !== "Unknown"
-  );
-
-  // ฟังก์ชันจัดการการเลือก LineName
   const handleLineNameChange = (lineName) => {
-    if (selectedLineNames.includes(lineName)) {
-      setSelectedLineNames((prev) => prev.filter((name) => name !== lineName));
-    } else {
-      setSelectedLineNames((prev) => [...prev, lineName]);
-    }
+    handleSelectionChange(lineName, selectedLineNames, setSelectedLineNames);
+    setSelectedDocNumbers([]);
+    setSelectedJobItemNames([]);
   };
-
-  const availableLineNames = lineNames.filter(
-    (name) => name && name.trim() !== "" && name !== "Unknown"
+  const handleDocNumberChange = (docNumber) => {
+    handleSelectionChange(docNumber, selectedDocNumbers, setSelectedDocNumbers);
+    setSelectedJobItemNames([]);
+  };
+  const handleJobItemNameChange = (jobItemName) => {
+    handleSelectionChange(
+      jobItemName,
+      selectedJobItemNames,
+      setSelectedJobItemNames
+    );
+  };
+  // ฟิลเตอร์เฉพาะรายการที่ไม่เป็น 'Unknown' หรือค่าว่าง
+  const filteredValues = (items) =>
+    items.filter((item) => item && item.trim() !== "" && item !== "Unknown");
+  const availableLineNames = filteredValues(
+    lineNames.filter((lineName) =>
+      selectedWorkgroups.some((workgroup) =>
+        report.some(
+          (item) =>
+            item.LINE_NAME === lineName && item.WORKGROUP_NAME === workgroup
+        )
+      )
+    )
   );
+  const availableDocNumbers = filteredValues(
+    docNumbers.filter((docNumber) =>
+      report.some(
+        (item) =>
+          item.DOC_NUMBER === docNumber &&
+          selectedLineNames.includes(item.LINE_NAME)
+      )
+    )
+  );
+  const availableJobItemNames = filteredValues(
+    jobItemNames.filter((jobItemName) =>
+      report.some(
+        (item) =>
+          item.JOB_ITEM_NAME === jobItemName &&
+          selectedDocNumbers.includes(item.DOC_NUMBER)
+      )
+    )
+  );
+  const availableWorkgroups = filteredValues(workgroupNames);
   const formatDate = (dateString) => {
     const options = {
       year: "numeric",
@@ -277,41 +376,51 @@ const BarChart5 = () => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", options); // ใช้ "en-GB" เพื่อให้แสดงในรูปแบบ "DD/MM/YYYY"
   };
-
   const exportToPDF = async () => {
     try {
       const element = chartRef.current;
       if (!element) throw new Error("Chart reference is null");
-
       const canvas = await html2canvas(element);
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF();
       const pageHeight = pdf.internal.pageSize.height;
       const imgWidth = 190;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      const exportedData = datasets.map((dataset) => ({
-        lineName: dataset.label,
-        dataPoints: dataset.data
-          .filter((point) => point.y !== "" && !isNaN(point.y))
-          .map((point) => ({ x: formatDate(point.x), y: point.y })),
-      }));
-
+      const exportedData = datasets.map((dataset) => {
+        const [lineName, workgroupName] = dataset.label.split(" - ");
+        return {
+          lineName,
+          workgroupName,
+          dataPoints: dataset.data
+            .filter((point) => point.y !== "" && !isNaN(point.y))
+            .map((point) => ({
+              x: formatDate(point.x),
+              y: point.y,
+              docNumber: point.docNumber,
+              jobItemName: point.jobItemName,
+            })),
+        };
+      });
       let yPosition = 20;
-      exportedData.forEach(({ lineName, dataPoints }) => {
+      exportedData.forEach(({ lineName, workgroupName, dataPoints }) => {
         if (yPosition + 10 > pageHeight) pdf.addPage(), (yPosition = 20);
-        pdf.text(`Line Name: ${lineName}`, 10, yPosition);
-        dataPoints.forEach(({ x, y }) => {
-          if ((yPosition += 10) > pageHeight) pdf.addPage(), (yPosition = 20);
-          pdf.text(`Date: ${x}, ACTUAL VALUE: ${y}`, 10, yPosition);
+        // จัดข้อความให้แสดงบรรทัดถัดไปเมื่อยาวเกินไป
+        const headerText = `Line Name: ${lineName}, Workgroup Name: ${workgroupName}`;
+        const headerLines = pdf.splitTextToSize(headerText, 180); // กำหนดความกว้างข้อความ
+        pdf.text(headerLines, 10, yPosition);
+        yPosition += headerLines.length * 10;
+        dataPoints.forEach(({ x, y, docNumber, jobItemName }) => {
+          if (yPosition + 10 > pageHeight) pdf.addPage(), (yPosition = 20);
+          const dataText = `Date: ${x}, DOC_NUMBER: ${docNumber}, JOB_ITEM_NAME: ${jobItemName}, ACTUAL VALUE: ${y}`;
+          const dataLines = pdf.splitTextToSize(dataText, 180); // กำหนดความกว้างข้อความ
+          pdf.text(dataLines, 10, yPosition);
+          yPosition += dataLines.length * 10;
         });
         yPosition += 10;
       });
-
       if (yPosition + imgHeight + 10 > pageHeight)
         pdf.addPage(), (yPosition = 20);
       pdf.addImage(imgData, "PNG", 10, yPosition + 10, imgWidth, imgHeight);
-
       const fileName = `LineNames:${
         selectedLineNames.join(",") || "All_Line_Names"
       }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.pdf`;
@@ -321,21 +430,27 @@ const BarChart5 = () => {
       alert("Unable to export PDF file: " + error.message);
     }
   };
-
   const exportToCSV = () => {
     const exportedData = datasets
-      .flatMap((dataset) =>
-        dataset.data
+      .flatMap((dataset) => {
+        // แยก LINE_NAME และ WORKGROUP_NAME ออกจาก label
+        const [lineName, workgroupName] = dataset.label.split(" - ");
+
+        return dataset.data
           .filter((point) => point.y !== "" && !isNaN(point.y))
           .map((point) => ({
-            lineName: dataset.label,
+            LINE_NAME: lineName, // แสดง LINE_NAME
+            WORKGROUP_NAME: workgroupName, // แสดง WORKGROUP_NAME
             CreatedAt: formatDate(point.x), // เก็บแค่วันที่
             "ACTUAL VALUE": point.y,
-          }))
-      )
+            DOC_NUMBER: point.docNumber, // เพิ่ม DOC_NUMBER
+            JOB_ITEM_NAME: point.jobItemName, // เพิ่ม JOB_ITEM_NAME
+          }));
+      })
       .filter(
         (data) => data["ACTUAL VALUE"] !== "" && !isNaN(data["ACTUAL VALUE"])
       );
+
     const ws = XLSX.utils.json_to_sheet(exportedData);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
@@ -414,6 +529,7 @@ const BarChart5 = () => {
             </div>
           )}
         </div>
+        {/* // UI ของ LineNames */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             LineNames
@@ -445,6 +561,82 @@ const BarChart5 = () => {
                     onChange={() => handleLineNameChange(lineName)}
                   />
                   {lineName}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* DOC Numbers Dropdown */}
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            DOC Numbers
+          </label>
+          <button
+            onClick={() => setIsOpenDocNumber((prevOpen) => !prevOpen)}
+            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+          >
+            {selectedDocNumbers.length > 0
+              ? `Selected ${selectedDocNumbers.length} DOC Numbers`
+              : "Select DOC Numbers"}
+          </button>
+          {isOpenDocNumber && (
+            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
+              <label className="block p-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  onChange={() => setSelectedDocNumbers([])}
+                  checked={selectedDocNumbers.length === 0}
+                />
+                All DOC Numbers
+              </label>
+              {availableDocNumbers.map((docNumber) => (
+                <label key={docNumber} className="block p-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    value={docNumber}
+                    checked={selectedDocNumbers.includes(docNumber)}
+                    onChange={() => handleDocNumberChange(docNumber)}
+                  />
+                  {docNumber}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            JOB Item Names
+          </label>
+          <button
+            onClick={() => setIsOpenJobItemName((prevOpen) => !prevOpen)}
+            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+          >
+            {selectedJobItemNames.length > 0
+              ? `${selectedJobItemNames[0]}`
+              : "Select Job Item Name"}
+          </button>
+          {isOpenJobItemName && (
+            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
+              <label className="block p-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="jobItemName"
+                  value=""
+                  checked={selectedJobItemNames.length === 0}
+                  onChange={() => setSelectedJobItemNames([])}
+                />
+                All Job Item Names
+              </label>
+              {availableJobItemNames.map((jobItemName) => (
+                <label key={jobItemName} className="block p-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="jobItemName"
+                    value={jobItemName}
+                    checked={selectedJobItemNames[0] === jobItemName}
+                    onChange={() => setSelectedJobItemNames([jobItemName])}
+                  />
+                  {jobItemName}
                 </label>
               ))}
             </div>
@@ -486,16 +678,39 @@ const BarChart5 = () => {
             onChange={(e) => setEndDate(new Date(e.target.value))}
           />
         </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {Object.entries(pastelColors).map(([lineName, color]) => (
-            <div key={lineName} className="flex items-center space-x-2">
-              <span
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: color }}
-              ></span>
-              <span className="text-sm text-gray-700">{lineName}</span>
-            </div>
-          ))}
+        <div className="relative ">
+          <label
+            htmlFor="end-date"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Chart
+          </label>
+          <button
+            onClick={handleToggleGraph}
+            className="border border-gray-300 rounded-md py-2 px-4 w-full text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center"
+          >
+            <span className="mr-2">
+              {showGraph ? <VisibilityOff /> : <ShowChart />}
+            </span>
+            {showGraph ? "Hide Chart" : "Show Chart"}
+          </button>
+        </div>
+        <div className="relative ">
+          <label
+            htmlFor="end-date"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Table
+          </label>
+          <button
+            onClick={handleToggleTable}
+            className="border border-gray-300 rounded-md py-2 px-4 w-full text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center"
+          >
+            <span className="mr-2">
+              {showTable ? <VisibilityOff /> : <CalendarViewMonth />}
+            </span>
+            {showTable ? "Hide Table" : "Show Table"}
+          </button>
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
           {colorValues.map((value) => (
@@ -509,9 +724,16 @@ const BarChart5 = () => {
           ))}
         </div>
       </div>
-      <div style={{ height: "450px", width: "100%" }} ref={chartRef}>
-        <Line data={data} options={options} />
-      </div>
+      {showGraph && (
+        <div style={{ height: "450px", width: "100%" }} ref={chartRef}>
+          <Line data={data} options={options} />
+        </div>
+      )}
+      {showTable && (
+        <div className="overflow-x-auto w-full mt-5">
+          <TableReport datasets={datasets} />
+        </div>
+      )}
       <ExportButtons handleExport={handleExport} />
     </div>
   );

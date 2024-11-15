@@ -1,13 +1,10 @@
 import { connectToDb } from "@/app/api/mongo/index";
 import { User } from "@/lib/models/User";
 import { NextResponse } from "next/server";
-
 export const dynamic = "force-dynamic";
-
 export const GET = async (req, res) => {
   try {
     await connectToDb();
-
     const jobValues = await User.aggregate([
       {
         $lookup: {
@@ -70,6 +67,8 @@ export const GET = async (req, res) => {
           "jobItems.createdAt": { $ne: null },
           "jobs.LINE_NAME": { $ne: null },
           "workgroupInfo.WORKGROUP_NAME": { $ne: null },
+          "jobs.DOC_NUMBER": { $ne: null },
+          "jobItems.JOB_ITEM_NAME": { $ne: null },
         },
       },
       {
@@ -77,6 +76,8 @@ export const GET = async (req, res) => {
           _id: {
             lineName: "$jobs.LINE_NAME",
             jobItemCreatedAt: "$jobItems.createdAt",
+            jobItemName: "$jobItems.JOB_ITEM_NAME",
+            docNumber: "$jobs.DOC_NUMBER",
           },
           actualValue: { $first: "$jobItems.ACTUAL_VALUE" },
           workgroupName: {
@@ -97,18 +98,17 @@ export const GET = async (req, res) => {
           _id: 0,
           LINE_NAME: "$_id.lineName",
           jobItemsCreatedAt: "$_id.jobItemCreatedAt",
+          JOB_ITEM_NAME: "$_id.jobItemName",
+          DOC_NUMBER: "$_id.docNumber",
           ACTUAL_VALUE: "$actualValue",
           WORKGROUP_NAME: "$workgroupName",
         },
       },
     ]);
-
-    console.log("Job values after aggregation:", jobValues); // ดูค่าที่ดึงมาจาก aggregation
-
+    // console.log("Job values after aggregation:", jobValues);
     if (jobValues.length === 0) {
       console.log("No data found for the given filters.");
     }
-
     return NextResponse.json(jobValues);
   } catch (error) {
     console.error("Error fetching job values:", error);
