@@ -289,6 +289,18 @@ const BarChart5 = () => {
       },
     },
   };
+  const formatDate = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    };
+    const date = new Date(dateString);
+    return date.toLocaleString("en-GB", options); // แสดงในรูปแบบ "DD/MM/YYYY HH:mm:ss"
+  };
   useEffect(() => {
     // สร้างฟังก์ชันเพื่อดึงข้อมูลที่ไม่ซ้ำ
     const uniqueValues = (key) => [
@@ -367,15 +379,6 @@ const BarChart5 = () => {
     )
   );
   const availableWorkgroups = filteredValues(workgroupNames);
-  const formatDate = (dateString) => {
-    const options = {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    };
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", options); // ใช้ "en-GB" เพื่อให้แสดงในรูปแบบ "DD/MM/YYYY"
-  };
   const exportToPDF = async () => {
     try {
       const element = chartRef.current;

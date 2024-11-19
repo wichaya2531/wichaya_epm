@@ -7,11 +7,14 @@ const TableReport = ({ datasets }) => {
       lineName: dataset.label.split(" - ")[0], // Line Name
       workgroupName: dataset.label.split(" - ")[1], // Workgroup Name
       jobItemName: item.jobItemName, // JOB_ITEM_NAME
-      date: new Date(item.x).toLocaleDateString(), // แปลงเป็นวันที่
+      date: new Date(item.x), // แปลงเป็นวันที่และเวลา
       docNumber: item.docNumber, // DOC_NUMBER
       actualValue: item.actualValue, // ACTUAL_VALUE
     }))
   );
+
+  // เรียงข้อมูลจากวันที่ล่าสุดไปยังวันที่เก่า
+  tableData.sort((a, b) => b.date - a.date);
 
   const [rowsPerPage, setRowsPerPage] = useState(10); // จำนวนแถวต่อหน้า (ค่าเริ่มต้น: 10)
   const [currentPage, setCurrentPage] = useState(1); // หน้าปัจจุบัน
@@ -103,7 +106,8 @@ const TableReport = ({ datasets }) => {
                 {row.workgroupName}
               </td>
               <td className="border px-4 py-2 text-sm text-gray-700">
-                {row.date}
+                {/* แสดงวันที่และเวลา */}
+                {row.date.toLocaleString()}
               </td>
               <td className="border px-4 py-2 text-sm text-gray-700">
                 {row.docNumber}

@@ -105,7 +105,7 @@ export const GET = async (req, res) => {
         },
       },
     ]);
-    // console.log("Job values after aggregation:", jobValues);
+    console.log("Job values after aggregation:", jobValues);
     if (jobValues.length === 0) {
       console.log("No data found for the given filters.");
     }
