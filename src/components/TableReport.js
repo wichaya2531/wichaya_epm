@@ -1,3 +1,5 @@
+import React, { useState } from "react";
+
 const TableReport = ({ datasets }) => {
   // ดึงข้อมูลจาก datasets
   const tableData = Object.values(datasets).flatMap((dataset) =>
@@ -10,6 +12,12 @@ const TableReport = ({ datasets }) => {
       actualValue: item.actualValue, // ACTUAL_VALUE
     }))
   );
+
+  const [rowsPerPage, setRowsPerPage] = useState(10); // จำนวนแถวต่อหน้า (ค่าเริ่มต้น: 10)
+  const [currentPage, setCurrentPage] = useState(1); // หน้าปัจจุบัน
+  const totalPages = Math.ceil(tableData.length / rowsPerPage); // คำนวณจำนวนหน้าทั้งหมด
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const displayedData = tableData.slice(startIndex, startIndex + rowsPerPage); // แสดงข้อมูลที่กรองตามหน้า
 
   // ฟังก์ชันในการเลือกสีพื้นหลังตาม actualValue
   const getBackgroundColor = (actualValue) => {
@@ -37,6 +45,34 @@ const TableReport = ({ datasets }) => {
 
   return (
     <div className="overflow-x-auto rounded-lg">
+      {/* Dropdown เลือกจำนวนแถว */}
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <label
+            htmlFor="rowsPerPage"
+            className="mr-2 font-semibold text-gray-700"
+          >
+            Rows:
+          </label>
+          <select
+            id="rowsPerPage"
+            className="px-2 py-1 border rounded bg-white-200"
+            value={rowsPerPage}
+            onChange={(e) => {
+              setRowsPerPage(Number(e.target.value));
+              setCurrentPage(1); // กลับไปหน้าแรกเมื่อเปลี่ยนจำนวนแถว
+            }}
+          >
+            {[5, 10, 20, 40, 80].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* ตาราง */}
       <table className="min-w-full border-collapse table-auto rounded-lg">
         <thead>
           <tr>
@@ -58,7 +94,7 @@ const TableReport = ({ datasets }) => {
           </tr>
         </thead>
         <tbody>
-          {tableData.map((row, index) => (
+          {displayedData.map((row, index) => (
             <tr key={index} className="hover:bg-gray-50">
               <td className="border px-4 py-2 text-sm text-gray-700">
                 {row.lineName}
@@ -86,6 +122,27 @@ const TableReport = ({ datasets }) => {
           ))}
         </tbody>
       </table>
+
+      {/* ปุ่มเปลี่ยนหน้า */}
+      <div className="flex justify-evenly items-center m-4">
+        <button
+          className="px-4 py-2 border rounded bg-blue-600 text-white hover:bg-blue-500"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => prev - 1)}
+        >
+          Prev
+        </button>
+        <span className="text-sm font-semibold text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="px-4 py-2 border rounded bg-blue-600 text-white hover:bg-blue-500"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
