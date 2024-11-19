@@ -135,7 +135,7 @@ const Layout = ({ children, className = "" }) => {
   return (
     <div
       className="flex flex-col min-h-screen"
-      style={{ backgroundColor: "#FAFAFA" }}
+      style={{ backgroundColor: "#f5f5f7" }}
     >
       <Navbar menu={menus} />
       <div className={`flex-1 ${className} pt-24 pb-36`}>{children}</div>
