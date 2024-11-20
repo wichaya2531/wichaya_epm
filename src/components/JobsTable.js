@@ -37,7 +37,7 @@ const JobsTable = ({ refresh }) => {
   const [endDate, setEndDate] = useState(null); // Default end date as null
   const [searchQuery, setSearchQuery] = useState("");
 
- // console.log("jobs=>", jobs);
+  // console.log("jobs=>", jobs);
   const filteredJobs =
     jobs &&
     jobs.filter((job) => {
@@ -94,8 +94,11 @@ const JobsTable = ({ refresh }) => {
             {job.STATUS_NAME ? job.STATUS_NAME : "pending"}
           </div>
         ),
-        Active: job.createdAt
-          ? new Date(job.createdAt).toLocaleString()
+        // Active: job.createdAt
+        //   ? new Date(job.createdAt).toLocaleString()
+        //   : "Not Active",
+        Active: job.SUBMITTED_DATE
+          ? new Date(job.SUBMITTED_DATE).toLocaleString()
           : "Not Active",
         "Submitted By": job.SUBMITTED_BY ? job.SUBMITTED_BY.EMP_NAME : "-",
         Action: (
@@ -217,7 +220,6 @@ const JobsTable = ({ refresh }) => {
             />
           </div>
         </div>
-
         <div className="flex-2">
           <label
             htmlFor="statusFilter"

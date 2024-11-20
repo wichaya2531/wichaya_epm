@@ -2,6 +2,7 @@ import { connectToDb } from "@/app/api/mongo/index";
 import { User } from "@/lib/models/User";
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
+
 export const GET = async (req, res) => {
   try {
     await connectToDb();
@@ -64,7 +65,7 @@ export const GET = async (req, res) => {
       {
         $match: {
           "jobItems.ACTUAL_VALUE": { $ne: null },
-          "jobItems.createdAt": { $ne: null },
+          "jobItems.updatedAt": { $ne: null }, // เปลี่ยนจาก createdAt เป็น updatedAt
           "jobs.LINE_NAME": { $ne: null },
           "workgroupInfo.WORKGROUP_NAME": { $ne: null },
           "jobs.DOC_NUMBER": { $ne: null },
@@ -72,44 +73,40 @@ export const GET = async (req, res) => {
         },
       },
       {
-        $group: {
-          _id: {
-            lineName: "$jobs.LINE_NAME",
-            jobItemCreatedAt: "$jobItems.createdAt",
-            jobItemName: "$jobItems.JOB_ITEM_NAME",
-            docNumber: "$jobs.DOC_NUMBER",
-          },
-          actualValue: { $first: "$jobItems.ACTUAL_VALUE" },
-          workgroupName: {
-            $first: {
-              $ifNull: ["$workgroupInfo.WORKGROUP_NAME", "Unknown"],
-            },
-          },
+        $project: {
+          _id: 0,
+          WORKGROUP_NAME: "$workgroupInfo.WORKGROUP_NAME",
+          LINE_NAME: "$jobs.LINE_NAME",
+          DOC_NUMBER: "$jobs.DOC_NUMBER",
+          JOB_ITEM_NAME: "$jobItems.JOB_ITEM_NAME",
+          jobItemsUpdatedAt: "$jobItems.updatedAt", // เปลี่ยนเป็น updatedAt
+          ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
         },
       },
       {
         $sort: {
-          jobItemCreatedAt: 1,
-          lineName: 1,
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          WORKGROUP_NAME: "$workgroupName",
-          LINE_NAME: "$_id.lineName",
-          DOC_NUMBER: "$_id.docNumber",
-          JOB_ITEM_NAME: "$_id.jobItemName",
-          jobItemsCreatedAt: "$_id.jobItemCreatedAt",
-          ACTUAL_VALUE: "$actualValue",
+          jobItemsUpdatedAt: 1, // ใช้ updatedAt แทน jobItemsCreatedAt
         },
       },
     ]);
-    console.log("Job values after aggregation:", jobValues);
-    if (jobValues.length === 0) {
+
+    // ลบข้อมูลที่ไม่มีค่าหรือ null ออก
+    const cleanedJobValues = jobValues.filter(
+      (item) =>
+        item.LINE_NAME &&
+        item.WORKGROUP_NAME &&
+        item.JOB_ITEM_NAME &&
+        item.DOC_NUMBER &&
+        item.ACTUAL_VALUE &&
+        item.jobItemsUpdatedAt
+    );
+
+    // console.log("Job values after aggregation:", cleanedJobValues);
+    if (cleanedJobValues.length === 0) {
       console.log("No data found for the given filters.");
     }
-    return NextResponse.json(jobValues);
+
+    return NextResponse.json(cleanedJobValues);
   } catch (error) {
     console.error("Error fetching job values:", error);
     return NextResponse.error(error);

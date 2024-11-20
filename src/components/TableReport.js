@@ -66,7 +66,7 @@ const TableReport = ({ datasets }) => {
               setCurrentPage(1); // กลับไปหน้าแรกเมื่อเปลี่ยนจำนวนแถว
             }}
           >
-            {[5, 10, 20, 40, 80].map((num) => (
+            {[5, 10, 15, 20, 25, 50, 100].map((num) => (
               <option key={num} value={num}>
                 {num}
               </option>

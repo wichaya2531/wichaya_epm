@@ -8,7 +8,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { blue } from "@mui/material/colors";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import ChatIcon from "@mui/icons-material/Chat";
 
 const JobForm = ({
@@ -50,83 +50,83 @@ const JobForm = ({
     //handleUploadFileToJobItem();
   };
 
-
   const handleShowComment = (item) => {
-     //console.log("jobForm item=>",item);
+    //console.log("jobForm item=>",item);
 
     Swal.fire({
-      title: 'Comment',
-      text: item.Comment || 'No comment available',
-      icon: 'info',
-      confirmButtonText: 'Close'
+      title: "Comment",
+      text: item.Comment || "No comment available",
+      icon: "info",
+      confirmButtonText: "Close",
     });
-  };  
+  };
 
-  const handleGuideItemSelected = (valueItem,item) => {
-          try {
-                  document.getElementById(item.JobItemID).value = valueItem;
-          } catch (error) {
-            
-          }
-          
-          try {
-                handleInputChange({target:{value:valueItem}},item);
-          } catch (error) {
-            
-          }
+  const handleGuideItemSelected = (valueItem, item) => {
+    try {
+      document.getElementById(item.JobItemID).value = valueItem;
+    } catch (error) {}
 
-          try {
-                document.getElementById("guide-input-panel-"+item.JobItemID).style.display='none';
-          } catch (error) {
-            
-          }
-  }
+    try {
+      handleInputChange({ target: { value: valueItem } }, item);
+    } catch (error) {}
+
+    try {
+      document.getElementById(
+        "guide-input-panel-" + item.JobItemID
+      ).style.display = "none";
+    } catch (error) {}
+  };
 
   const handleHiddenSelectGuideInput = (item) => {
     try {
-      document.getElementById("guide-input-panel-"+item.JobItemID).style.display='none';
-    } catch (error) {
+      document.getElementById(
+        "guide-input-panel-" + item.JobItemID
+      ).style.display = "none";
+    } catch (error) {}
+  };
 
+  const handleOnFocusItemInput = (item) => {
+    //console.log("handleOnFocus ->",item);
+    jobItems.forEach((element) => {
+      if (element.JobItemID === item.JobItemID) {
+        return;
+      }
+      try {
+        document.getElementById(
+          "guide-input-panel-" + element.JobItemID
+        ).style.display = "none";
+      } catch (error) {}
+    });
+
+    var toggleInput = document.getElementById(
+      "guide-input-panel-" + item.JobItemID
+    ).style.display;
+    if (toggleInput === "block") {
+      document.getElementById(
+        "guide-input-panel-" + item.JobItemID
+      ).style.display = "none";
+    } else {
+      document.getElementById(
+        "guide-input-panel-" + item.JobItemID
+      ).style.display = "block";
     }
   };
 
-
-  const handleOnFocusItemInput = (item) => {
-        //console.log("handleOnFocus ->",item);
-        jobItems.forEach(element => {
-                if (element.JobItemID===item.JobItemID) {
-                    return;
-                }
-                try {
-                  document.getElementById("guide-input-panel-"+element.JobItemID).style.display='none';
-                } catch (error) {
-                
-                }                 
-        });
-
-        var toggleInput= document.getElementById("guide-input-panel-"+item.JobItemID).style.display;
-        if (toggleInput === "block") {
-              document.getElementById("guide-input-panel-"+item.JobItemID).style.display = "none";
-          
-        }else{  
-              document.getElementById("guide-input-panel-"+item.JobItemID).style.display = "block";
-        }       
-  }
-  
-
   const handleUploadFileToJobItemOnChange = async (event) => {
-    
     const file = event.target.files[0];
     //setPreviewItemPicture(URL.createObjectURL(file)); // แสดง preview ของไฟล์
     //console.log("jobItemSelected",jobItemSelected);
     try {
-      document.getElementById("item-img-" + jobItemSelected.JobItemID).style.display = "block";
+      document.getElementById(
+        "item-img-" + jobItemSelected.JobItemID
+      ).style.display = "block";
     } catch (error) {
-            console.error(error);
+      console.error(error);
     }
     try {
       var valuePath = await uploadJobItemPictureToServer(file);
-      document.getElementById("item-img-" + jobItemSelected.JobItemID).src = URL.createObjectURL(file);
+      document.getElementById("item-img-" + jobItemSelected.JobItemID).src =
+        URL.createObjectURL(file);
       //console.log("valuePath",valuePath);
       onItemImgChange(valuePath, jobItemSelected);
     } catch (error) {
@@ -564,8 +564,8 @@ const JobForm = ({
           <table className="table-auto border-collapse w-full text-sm">
             <thead className="text-center">
               <tr className="bg-gray-200">
-              <th className="w-[50px]">Item Title </th>
-              <th className="w-[50px]">Item Name </th>
+                <th className="w-[50px]">Item Title </th>
+                <th className="w-[50px]">Item Name </th>
                 <th className="w-[50px] px-4 py-2">Lower/Upper</th>
                 {/* <th className="w-[50px] px-4 py-2"></th> */}
                 <th className="w-[150px] py-2">Before Value</th>
@@ -583,7 +583,7 @@ const JobForm = ({
                     <div>{item.JobItemName} </div>
                     <InfoIcon
                       className="absolute right-1 top-1 text-blue-600 size-8 cursor-pointer "
-                      style={{display:'none'}}
+                      style={{ display: "none" }}
                       onClick={() => handleShowJobItemDescription(item)}
                     />
 
@@ -594,10 +594,14 @@ const JobForm = ({
                   </td>
                   <td className="border px-4 py-2">
                     <div>
-                      Upper <b style={{color:'red',fontWeight:'1200'}}>↑</b> : {item.UpperSpec}
+                      Upper{" "}
+                      <b style={{ color: "red", fontWeight: "1200" }}>↑</b> :{" "}
+                      {item.UpperSpec}
                     </div>
                     <div>
-                      Lower <b style={{color:'blue',fontWeight:'1200'}}>↓</b> : {item.LowerSpec}
+                      Lower{" "}
+                      <b style={{ color: "blue", fontWeight: "1200" }}>↓</b> :{" "}
+                      {item.LowerSpec}
                     </div>
                   </td>
                   <td className="border py-2 relative">
@@ -631,80 +635,92 @@ const JobForm = ({
                     )}
                   </td>
                   <td className="border px-4 py-2 relative">
-                    {
-                        view === "true" ? (
+                    {view === "true" ? (
+                      <input
+                        type="text"
+                        id={item.JobItemID}
+                        value={item.ActualValue}
+                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                        disabled
+                        title="This is a tooltip"
+                      />
+                    ) : item.ActualValue ? (
+                      <input
+                        type="text"
+                        id={item.JobItemID}
+                        value={item.ActualValue}
+                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                        disabled
+                        title="This is a tooltip"
+                      />
+                    ) : (
+                      <div>
+                        <div>
                           <input
                             type="text"
                             id={item.JobItemID}
-                            value={item.ActualValue}
-                            className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                            disabled
-                            title="This is a tooltip"
+                            onChange={(e) => handleInputChange(e, item)}
+                            className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                            placeholder="fill in value"
+                            onFocus={() => handleOnFocusItemInput(item)}
+                            autocomplete="off"
                           />
-                        ) : item.ActualValue ? (
-                          <input
-                            type="text"
-                            id={item.JobItemID}
-                            value={item.ActualValue}
-                            className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                            disabled
-                            title="This is a tooltip"
-                          />
-                        ) : (
-                          <div>
-                            <div> 
-                              <input
-                                type="text"
-                                id={item.JobItemID}
-                                onChange={(e) => handleInputChange(e, item)}
-                                className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                                placeholder="fill in value"
-                                onFocus={() => handleOnFocusItemInput(item)}
-                                autocomplete="off"
-                              />
-                              </div>
-                              <div id={'guide-input-panel-'+item.JobItemID}
-                                  style={{padding:'10px',display:'none'}}>
-                                  <select 
-                                        className="mb-5" 
-                                        name="item-guide-select" 
-                                        style={{padding:'5px',border:'1px solid green',borderRadius:'5px'}} 
-                                        onChange={(e) => handleGuideItemSelected(e.target.value,item)}
-                                        >
-                                      <option value="เพิ่มเติม">--Select--</option>
-                                      <option value="Pass">Pass</option>
-                                      <option value="Fail">Fail</option>                                                           
-                                      {item.guide_input.map((item) => (
-                                        <option key={item} value={item}>
-                                          {item}
-                                        </option>
-                                      ))}
-                                      {/* เพิ่มตัวเลือกเพิ่มเติม */}       
-                                          
-                                    </select>
-                                    <span onClick={() => handleHiddenSelectGuideInput(item)} style={{paddingLeft:'10px',cursor:'default',color:'blue'}}>[ซ่อน]</span>
-                              </div>
-                          </div>                      
-                        )
-                    }
+                        </div>
+                        <div
+                          id={"guide-input-panel-" + item.JobItemID}
+                          style={{ padding: "10px", display: "none" }}
+                        >
+                          <select
+                            className="mb-5"
+                            name="item-guide-select"
+                            style={{
+                              padding: "5px",
+                              border: "1px solid green",
+                              borderRadius: "5px",
+                            }}
+                            onChange={(e) =>
+                              handleGuideItemSelected(e.target.value, item)
+                            }
+                          >
+                            <option value="เพิ่มเติม">--Select--</option>
+                            <option value="Pass">Pass</option>
+                            <option value="Fail">Fail</option>
+                            {item.guide_input.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                            {/* เพิ่มตัวเลือกเพิ่มเติม */}
+                          </select>
+                          <span
+                            onClick={() => handleHiddenSelectGuideInput(item)}
+                            style={{
+                              paddingLeft: "10px",
+                              cursor: "default",
+                              color: "blue",
+                            }}
+                          >
+                            [ซ่อน]
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
-                    {
-                      view === "true" ? item.Comment!==null ? 
+                    {view === "true" ? (
+                      item.Comment !== null ? (
                         <ChatIcon
                           className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
                           onClick={() => handleShowComment(item)}
-                        /> :<div></div>          
-                       :(                       
-                        <ChatIcon
-                          className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
-                          onClick={() => toggleAddComment(item)}
-                        />    
+                        />
+                      ) : (
+                        <div></div>
                       )
-                    } 
-                     
-                    
-
-
+                    ) : (
+                      <ChatIcon
+                        className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
+                        onClick={() => toggleAddComment(item)}
+                      />
+                    )}
                   </td>
 
                   <td className="border py-2 relative">
@@ -723,33 +739,28 @@ const JobForm = ({
                       />
                     )}
 
-                      <center>
-                            {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
-                            <img
-                              id={"item-img-" + item.JobItemID}
-                              style={{display : "none"}}
-                              // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                              width={200}
-                              className="mt-4"
-                              alt="Preview"
-                            />
-                       
-                      </center>
-                      
-                      {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                      {view==="false" && (
-                          <div>
-                            <CameraAltIcon
-                              className="text-blue-600 size-10 cursor-pointer"
-                              style={{ transform: "scale(1.5)" }}
-                              onClick={() => handleUploadFileToJobItem(item)}
-                            />
-                          </div>
-                        )} 
-                      
-                      
+                    <center>
+                      {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
+                      <img
+                        id={"item-img-" + item.JobItemID}
+                        style={{ display: "none" }}
+                        // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
+                        width={200}
+                        className="mt-4"
+                        alt="Preview"
+                      />
+                    </center>
 
-
+                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                    {view === "false" && (
+                      <div>
+                        <CameraAltIcon
+                          className="text-blue-600 size-10 cursor-pointer"
+                          style={{ transform: "scale(1.5)" }}
+                          onClick={() => handleUploadFileToJobItem(item)}
+                        />
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

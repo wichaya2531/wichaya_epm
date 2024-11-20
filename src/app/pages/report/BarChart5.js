@@ -116,21 +116,11 @@ const BarChart5 = () => {
     return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
   };
   const groupedDataByLineNameAndWorkgroupAndJobItem = report
-    .filter(
-      (item) =>
-        item.LINE_NAME &&
-        item.LINE_NAME.trim() !== "" &&
-        item.LINE_NAME !== "unknown" &&
-        item.WORKGROUP_NAME &&
-        item.WORKGROUP_NAME.trim() !== "" &&
-        item.WORKGROUP_NAME !== "unknown" &&
-        item.jobItemsCreatedAt
-    )
     .map((item) => {
-      const createdAt = new Date(item.jobItemsCreatedAt);
-      if (isNaN(createdAt.getTime())) {
+      const updatedAt = new Date(item.jobItemsUpdatedAt); // เปลี่ยนจาก jobItemsCreatedAt เป็น jobItemsUpdatedAt
+      if (isNaN(updatedAt.getTime())) {
         console.warn(
-          `Invalid date for jobItemsCreatedAt: ${item.jobItemsCreatedAt}`
+          `Invalid date for jobItemsUpdatedAt: ${item.jobItemsUpdatedAt}` // เปลี่ยนจาก jobItemsCreatedAt เป็น jobItemsUpdatedAt
         );
         return null;
       }
@@ -138,16 +128,16 @@ const BarChart5 = () => {
         ? 1
         : parseFloat(item.ACTUAL_VALUE);
       return {
-        lineName: item.LINE_NAME,
-        workgroupName: item.WORKGROUP_NAME,
-        jobItemName: item.JOB_ITEM_NAME,
-        x: createdAt.toISOString(),
+        lineName: item.LINE_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
+        workgroupName: item.WORKGROUP_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
+        jobItemName: item.JOB_ITEM_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
+        x: updatedAt.toISOString(), // ใช้ updatedAt แทน createdAt
         y: yValue,
-        actualValue: item.ACTUAL_VALUE,
-        docNumber: item.DOC_NUMBER,
+        actualValue: item.ACTUAL_VALUE || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
+        docNumber: item.DOC_NUMBER || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
       };
     })
-    .filter(Boolean)
+    .filter(Boolean) // ลบ null หรือ undefined ออก
     .filter((item) => {
       const date = new Date(item.x);
       return date >= startDate && date <= endDate;
@@ -389,44 +379,46 @@ const BarChart5 = () => {
       const pageHeight = pdf.internal.pageSize.height;
       const imgWidth = 190;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const exportedData = datasets.map((dataset) => {
+      // ดึงข้อมูลในรูปแบบเดียวกับ CSV
+      const exportedData = datasets.flatMap((dataset) => {
         const [lineName, workgroupName] = dataset.label.split(" - ");
-        return {
-          lineName,
-          workgroupName,
-          dataPoints: dataset.data
-            .filter((point) => point.y !== "" && !isNaN(point.y))
-            .map((point) => ({
-              x: formatDate(point.x),
-              y: point.y,
-              docNumber: point.docNumber,
-              jobItemName: point.jobItemName,
-            })),
-        };
+        return dataset.data.map((item) => ({
+          LINE_NAME: lineName,
+          WORKGROUP_NAME: workgroupName,
+          Date: new Date(item.x).toISOString().split("T")[0], // แปลงวันที่ให้อยู่ในรูปแบบ YYYY-MM-DD
+          ACTUAL_VALUE: item.actualValue,
+          DOC_NUMBER: item.docNumber,
+          JOB_ITEM_NAME: item.jobItemName,
+        }));
       });
       let yPosition = 20;
-      exportedData.forEach(({ lineName, workgroupName, dataPoints }) => {
+      // วาดข้อมูลใน PDF
+      exportedData.forEach((data) => {
         if (yPosition + 10 > pageHeight) pdf.addPage(), (yPosition = 20);
-        // จัดข้อความให้แสดงบรรทัดถัดไปเมื่อยาวเกินไป
-        const headerText = `Line Name: ${lineName}, Workgroup Name: ${workgroupName}`;
-        const headerLines = pdf.splitTextToSize(headerText, 180); // กำหนดความกว้างข้อความ
-        pdf.text(headerLines, 10, yPosition);
-        yPosition += headerLines.length * 10;
-        dataPoints.forEach(({ x, y, docNumber, jobItemName }) => {
-          if (yPosition + 10 > pageHeight) pdf.addPage(), (yPosition = 20);
-          const dataText = `Date: ${x}, DOC_NUMBER: ${docNumber}, JOB_ITEM_NAME: ${jobItemName}, ACTUAL VALUE: ${y}`;
-          const dataLines = pdf.splitTextToSize(dataText, 180); // กำหนดความกว้างข้อความ
-          pdf.text(dataLines, 10, yPosition);
-          yPosition += dataLines.length * 10;
-        });
-        yPosition += 10;
+        const dataText = `
+          LINE_NAME: ${data.LINE_NAME}, WORKGROUP_NAME: ${data.WORKGROUP_NAME},
+          Date: ${data.Date}, ACTUAL_VALUE: ${data.ACTUAL_VALUE},
+          DOC_NUMBER: ${data.DOC_NUMBER}, JOB_ITEM_NAME: ${data.JOB_ITEM_NAME}
+        `.trim();
+        const dataLines = pdf.splitTextToSize(dataText, 180);
+        pdf.text(dataLines, 10, yPosition);
+        yPosition += dataLines.length * 10;
       });
       if (yPosition + imgHeight + 10 > pageHeight)
         pdf.addPage(), (yPosition = 20);
       pdf.addImage(imgData, "PNG", 10, yPosition + 10, imgWidth, imgHeight);
-      const fileName = `LineNames:${
-        selectedLineNames.join(",") || "All_Line_Names"
-      }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.pdf`;
+      // กำหนดชื่อไฟล์
+      const fileName =
+        selectedLineNames.length === 0 && selectedWorkgroups.length === 0
+          ? "All_LineNames_All_Workgroups.pdf"
+          : `LineNames_${
+              selectedLineNames.length > 0 ? selectedLineNames.join("_") : "All"
+            }_Workgroups_${
+              selectedWorkgroups.length > 0
+                ? selectedWorkgroups.join("_")
+                : "All"
+            }.pdf`;
+
       pdf.save(fileName);
     } catch (error) {
       console.error("Error exporting to PDF:", error);
@@ -434,36 +426,36 @@ const BarChart5 = () => {
     }
   };
   const exportToCSV = () => {
-    const exportedData = datasets
-      .flatMap((dataset) => {
-        // แยก LINE_NAME และ WORKGROUP_NAME ออกจาก label
-        const [lineName, workgroupName] = dataset.label.split(" - ");
-
-        return dataset.data
-          .filter((point) => point.y !== "" && !isNaN(point.y))
-          .map((point) => ({
-            LINE_NAME: lineName, // แสดง LINE_NAME
-            WORKGROUP_NAME: workgroupName, // แสดง WORKGROUP_NAME
-            CreatedAt: formatDate(point.x), // เก็บแค่วันที่
-            "ACTUAL VALUE": point.y,
-            DOC_NUMBER: point.docNumber, // เพิ่ม DOC_NUMBER
-            JOB_ITEM_NAME: point.jobItemName, // เพิ่ม JOB_ITEM_NAME
-          }));
-      })
-      .filter(
-        (data) => data["ACTUAL VALUE"] !== "" && !isNaN(data["ACTUAL VALUE"])
-      );
-
+    const exportedData = datasets.flatMap((dataset) => {
+      // แยก LINE_NAME และ WORKGROUP_NAME ออกจาก label
+      const [lineName, workgroupName] = dataset.label.split(" - ");
+      return dataset.data.map((item) => ({
+        LINE_NAME: lineName, // LINE_NAME
+        WORKGROUP_NAME: workgroupName, // WORKGROUP_NAME
+        Date: new Date(item.x), // แปลงเป็น Date object โดยตรง
+        ACTUAL_VALUE: item.actualValue, // ใช้ค่า actualValue จาก item
+        DOC_NUMBER: item.docNumber, // DOC_NUMBER
+        JOB_ITEM_NAME: item.jobItemName, // JOB_ITEM_NAME
+      }));
+    });
+    // สร้างแผ่นงาน Excel จากข้อมูลที่ดึงมา
     const ws = XLSX.utils.json_to_sheet(exportedData);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
+    // แปลงข้อมูลเป็นไฟล์ Excel
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    const fileName = `LineNames:${
-      selectedLineNames.join(",") || "All_Line_Names"
-    }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.xlsx`;
+    // กำหนดชื่อไฟล์
+    const fileName =
+      selectedLineNames.length === 0 && selectedWorkgroups.length === 0
+        ? "All_LineNames_All_Workgroups.xlsx"
+        : `LineNames_${
+            selectedLineNames.length > 0 ? selectedLineNames.join("_") : "All"
+          }_Workgroups_${
+            selectedWorkgroups.length > 0 ? selectedWorkgroups.join("_") : "All"
+          }.xlsx`;
+    // ดาวน์โหลดไฟล์
     FileSaver.saveAs(data, fileName);
   };
-
   const saveAsPNG = async () => {
     try {
       const chart = chartRef.current;
