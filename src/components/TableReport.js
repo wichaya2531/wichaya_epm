@@ -80,11 +80,11 @@ const TableReport = ({ datasets }) => {
         <thead>
           <tr>
             {[
-              "Line Name",
               "Workgroup Name",
-              "Date",
+              "Line Name",
               "DOC_NUMBER",
               "JOB_ITEM_NAME",
+              "Date",
               "ACTUAL_VALUE",
             ].map((header) => (
               <th
@@ -100,20 +100,19 @@ const TableReport = ({ datasets }) => {
           {displayedData.map((row, index) => (
             <tr key={index} className="hover:bg-gray-50">
               <td className="border px-4 py-2 text-sm text-gray-700">
-                {row.lineName}
-              </td>
-              <td className="border px-4 py-2 text-sm text-gray-700">
                 {row.workgroupName}
               </td>
               <td className="border px-4 py-2 text-sm text-gray-700">
-                {/* แสดงวันที่และเวลา */}
-                {row.date.toLocaleString()}
+                {row.lineName}
               </td>
               <td className="border px-4 py-2 text-sm text-gray-700">
                 {row.docNumber}
               </td>
               <td className="border px-4 py-2 text-sm text-gray-700">
                 {row.jobItemName}
+              </td>
+              <td className="border px-4 py-2 text-sm text-gray-700">
+                {row.date.toLocaleString()}
               </td>
               <td
                 className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(

@@ -96,12 +96,12 @@ export const GET = async (req, res) => {
       {
         $project: {
           _id: 0,
-          LINE_NAME: "$_id.lineName",
-          jobItemsCreatedAt: "$_id.jobItemCreatedAt",
-          JOB_ITEM_NAME: "$_id.jobItemName",
-          DOC_NUMBER: "$_id.docNumber",
-          ACTUAL_VALUE: "$actualValue",
           WORKGROUP_NAME: "$workgroupName",
+          LINE_NAME: "$_id.lineName",
+          DOC_NUMBER: "$_id.docNumber",
+          JOB_ITEM_NAME: "$_id.jobItemName",
+          jobItemsCreatedAt: "$_id.jobItemCreatedAt",
+          ACTUAL_VALUE: "$actualValue",
         },
       },
     ]);
