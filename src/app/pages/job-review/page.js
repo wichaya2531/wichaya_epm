@@ -61,8 +61,7 @@ const Page = ({ searchParams }) => {
     setAddCommentForm(!AddCommentForm);
   };
 
-  const handleApprove = async (e) => {
-    e.preventDefault();
+  const handleApprove = async (isApproved, comment = null) => {
     try {
       const response = await fetch(`/api/approval/approve`, {
         method: "POST",
@@ -72,8 +71,8 @@ const Page = ({ searchParams }) => {
         body: JSON.stringify({
           job_id: job_id,
           user_id: user._id,
-          isApproved: true,
-          comment: null,
+          isApproved,
+          comment,
         }),
         next: { revalidate: 10 },
       });
@@ -108,31 +107,39 @@ const Page = ({ searchParams }) => {
   };
 
   const handleToShowOnClick = (item) => {
-            Swal.fire({
-              title: item.title,
-              html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
-              confirmButtonText: "OK",
-              width: "auto",
-              height: "80%",
-            });
+    Swal.fire({
+      title: item.title,
+      html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
+      confirmButtonText: "OK",
+      width: "auto",
+      height: "80%",
+    });
   };
 
-
-
   const handleShowTestMethodDescription = (item) => {
-            Swal.fire({
-              title: item.JobItemName,
-              html: `<div style="text-align:left;">
-                <p><strong>Description&nbsp;:&nbsp;</strong> ${item.description || ''}</p>
-                <p><strong>Test Location&nbsp;:&nbsp;</strong> ${item.TestLocationName}</p>
-                <p><strong>Test Method&nbsp;:&nbsp;</strong> ${item.TestMethod}</p>
+    Swal.fire({
+      title: item.JobItemName,
+      html: `<div style="text-align:left;">
+                <p><strong>Description&nbsp;:&nbsp;</strong> ${
+                  item.description || ""
+                }</p>
+                <p><strong>Test Location&nbsp;:&nbsp;</strong> ${
+                  item.TestLocationName
+                }</p>
+                <p><strong>Test Method&nbsp;:&nbsp;</strong> ${
+                  item.TestMethod
+                }</p>
                 <div style='padding:10px;'>
-                  ${item.File ? `<img src="/api/viewItem-template?imgName=${item.File}" alt="${item.File}" style="max-width: 100%; height: auto;" />` : ''}
+                  ${
+                    item.File
+                      ? `<img src="/api/viewItem-template?imgName=${item.File}" alt="${item.File}" style="max-width: 100%; height: auto;" />`
+                      : ""
+                  }
                 </div>
               </div>`,
-              icon: "info",
-              confirmButtonText: "OK",
-            });
+      icon: "info",
+      confirmButtonText: "OK",
+    });
   };
 
   const handleShowJobItemDescription = (item) => {
@@ -204,9 +211,7 @@ const Page = ({ searchParams }) => {
         isShowJobInfo={isShowJobInfo}
         toggleAddComment={toggleAddComment}
         view={view}
-        
         onclicktoShow={handleToShowOnClick}
-
       />
       {jobItemDetail && (
         <ItemInformationModal

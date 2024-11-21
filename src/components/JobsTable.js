@@ -146,18 +146,32 @@ const JobsTable = ({ refresh }) => {
                     </Link>
                   </div>
                 ) : job.STATUS_NAME === "renew" ? (
-                  <Link
-                    className="text-white bg-orange-500 hover:bg-orange-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                    href={{
-                      pathname: "/pages/job-renew",
-                      query: {
-                        job_id: job._id,
-                        retake: "true",
-                      },
-                    }}
-                  >
-                    Retake
-                  </Link>
+                  <div className="flex gap-2 items-center justify-center">
+                    <Link
+                      className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
+                      href={{
+                        pathname: "/pages/job-renew",
+                        query: {
+                          job_id: job._id,
+                          view: "false",
+                        },
+                      }}
+                    >
+                      Get
+                    </Link>
+                    <Link
+                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
+                      href={{
+                        pathname: "/pages/job-renew",
+                        query: {
+                          job_id: job._id,
+                          view: "true",
+                        },
+                      }}
+                    >
+                      View
+                    </Link>
+                  </div>
                 ) : (
                   <button
                     className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-not-allowed"

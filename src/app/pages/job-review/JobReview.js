@@ -10,7 +10,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import Image from "next/image";
 import { Img } from "@chakra-ui/react";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 const JobForm = ({
   jobData,
@@ -29,18 +29,14 @@ const JobForm = ({
   //console.log("jobData.=>", jobData);
   //console.log("jobItems.=>", jobItems);
   //console.log(jobData.IMAGE_FILENAME);
-      const handleShowComment = (item) => {
-        Swal.fire({
-          title: 'Comment',
-          text: item.Comment || 'No comment available',
-          icon: 'info',
-          confirmButtonText: 'Close'
-        });
-      };
-  
-
-
-
+  const handleShowComment = (item) => {
+    Swal.fire({
+      title: "Comment",
+      text: item.Comment || "No comment available",
+      icon: "info",
+      confirmButtonText: "Close",
+    });
+  };
 
   return (
     <form className="flex flex-col gap-8" onSubmit={handleApprove}>
@@ -310,16 +306,18 @@ const JobForm = ({
           <label
             htmlFor="image-file"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            
-          </label>
+          ></label>
           {jobData.IMAGE_FILENAME ? (
-            <img 
-              src={`/api/viewPicture?imgName=`+jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
+            <img
+              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
               alt="Job Image"
               width={200}
               height={200}
-              onClick={() => onclicktoShow(`/api/viewPicture?imgName=`+jobData.IMAGE_FILENAME)}
+              onClick={() =>
+                onclicktoShow(
+                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
+                )
+              }
             />
           ) : (
             <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
@@ -362,9 +360,9 @@ const JobForm = ({
             <tbody className="text-center">
               {jobItems.map((item, index) => (
                 <tr key={index}>
-                   <td className="border px-4 py-2 relative">
-                      <div>{item.JobItemTitle} </div>
-                   </td>
+                  <td className="border px-4 py-2 relative">
+                    <div>{item.JobItemTitle} </div>
+                  </td>
                   <td className="border px-4 py-2 relative">
                     <div>{item.JobItemName} </div>
                     <InfoIcon
@@ -386,14 +384,20 @@ const JobForm = ({
 
                                         />
                                     </td> */}
-                  <td className="border px-4 py-2"> <div>
-                      Upper <b style={{color:'red',fontWeight:'1200'}} >↑</b> : {item.UpperSpec}
+                  <td className="border px-4 py-2">
+                    {" "}
+                    <div>
+                      Upper{" "}
+                      <b style={{ color: "red", fontWeight: "1200" }}>↑</b> :{" "}
+                      {item.UpperSpec}
                     </div>
                     <div>
-                      Lower <b style={{color:'blue',fontWeight:'1200'}} >↓</b> : {item.LowerSpec}
+                      Lower{" "}
+                      <b style={{ color: "blue", fontWeight: "1200" }}>↓</b> :{" "}
+                      {item.LowerSpec}
                     </div>
                   </td>
-                  <td className="border px-4 py-2"> 
+                  <td className="border px-4 py-2">
                     <input
                       type="text"
                       id={`before_value_${item.JobItemID}`}
@@ -403,46 +407,47 @@ const JobForm = ({
                     />
                   </td>
                   <td className="border  py-2 relative">
-                   <input
+                    <input
                       type="text"
                       id={`actual_value_${item.JobItemID}`}
                       value={item.ActualValue}
                       className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
                       disabled
                     />
-                      {
-                        item.Comment!==null ? 
-                          <ChatIcon    
-                                className="absolute right-1 top-0 text-blue-600 size-6 cursor-pointer "
-                                // style={{ display: "none" }}
-                                onClick={() => handleShowComment(item)}
-                              />
-                          :<div></div>
-                      }
-                     
+                    {item.Comment !== null ? (
+                      <ChatIcon
+                        className="absolute right-1 top-0 text-blue-600 size-6 cursor-pointer "
+                        // style={{ display: "none" }}
+                        onClick={() => handleShowComment(item)}
+                      />
+                    ) : (
+                      <div></div>
+                    )}
                   </td>
-                  <td className="border px-4 py-2 relative" >
+                  <td className="border px-4 py-2 relative">
                     <center>
-                        <label
-                                htmlFor="image-file"
-                                className="text-sm ipadmini:text-md font-bold text-gray-600"
-                              >
-                                
-                              </label>
-                              {jobData.IMAGE_FILENAME ? (
-                                <img
-                                  src={`/api/viewPictureItem/?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                                  alt="Job Image"
-                                  width={200}
-                                  height={200}
-                                  onClick={() => onclicktoShow(`/api/viewPictureItem/?imgName=`+item.IMG_ATTACH)}
-                  
-                                />
-                              ) : (
-                                <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
-                              )}
+                      <label
+                        htmlFor="image-file"
+                        className="text-sm ipadmini:text-md font-bold text-gray-600"
+                      ></label>
+                      {jobData.IMAGE_FILENAME ? (
+                        <img
+                          src={
+                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                          } // ใช้เพียงชื่อไฟล์
+                          alt="Job Image"
+                          width={200}
+                          height={200}
+                          onClick={() =>
+                            onclicktoShow(
+                              `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                            )
+                          }
+                        />
+                      ) : (
+                        <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
+                      )}
                     </center>
-                        
                   </td>
                   {/* <td className="border py-2 relative">
                                         <div className="cursor-pointer" >
@@ -458,16 +463,20 @@ const JobForm = ({
           ""
         ) : (
           <div className="flex justify-end gap-4 mt-4">
+            {/* ปุ่ม Approve */}
             <button
-              type="submit"
+              type="button"
               name="action"
               value="approve"
               variant="contained"
               color="primary"
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => handleApprove(true)}
             >
               Approve
             </button>
+
+            {/* ปุ่ม Disapprove */}
             <button
               type="button"
               name="action"
@@ -475,7 +484,9 @@ const JobForm = ({
               variant="contained"
               color="secondary"
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() => alert('implement..') /* toggleAddComment(jobData)*/ }
+              onClick={() =>
+                handleApprove(false, "Disapproval reason goes here")
+              }
             >
               Disapprove
             </button>
