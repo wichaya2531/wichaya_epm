@@ -179,6 +179,7 @@ const Page = ({ searchParams }) => {
   const handlePosSelect = async (b,valueSelected) => {
         //console.log("valueSelected=>"+valueSelected+" => "+b._id);    
         //alert('use handlePosSelect ');
+        //return;
         const formData = new FormData();
         formData.append("jobItemTemplateID", b._id);
         formData.append("pos", valueSelected);
