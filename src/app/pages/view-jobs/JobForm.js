@@ -644,26 +644,18 @@ const JobForm = ({
                         disabled
                         title="This is a tooltip"
                       />
-                    ) : item.ActualValue ? (
-                      <input
-                        type="text"
-                        id={item.JobItemID}
-                        value={item.ActualValue}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                        disabled
-                        title="This is a tooltip"
-                      />
                     ) : (
                       <div>
                         <div>
                           <input
                             type="text"
                             id={item.JobItemID}
-                            onChange={(e) => handleInputChange(e, item)}
+                            value={item.ActualValue || ""} // ให้ค่าเป็นค่าว่างหรือค่าปัจจุบัน
+                            onChange={(e) => handleInputChange(e, item)} // เพิ่มการจัดการการเปลี่ยนแปลง
                             className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                             placeholder="fill in value"
                             onFocus={() => handleOnFocusItemInput(item)}
-                            autocomplete="off"
+                            autoComplete="off"
                           />
                         </div>
                         <div
@@ -690,7 +682,6 @@ const JobForm = ({
                                 {item}
                               </option>
                             ))}
-                            {/* เพิ่มตัวเลือกเพิ่มเติม */}
                           </select>
                           <span
                             onClick={() => handleHiddenSelectGuideInput(item)}

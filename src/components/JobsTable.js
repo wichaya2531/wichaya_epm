@@ -81,7 +81,17 @@ const JobsTable = ({ refresh }) => {
     filteredJobs &&
     filteredJobs.map((job, index) => {
       let statusColor = job.STATUS_COLOR;
-      //console.log("xxxxxx=>",job);
+
+      // ตรวจสอบค่า Active ตาม STATUS_NAME
+      const activeValue =
+        job.STATUS_NAME === "complete"
+          ? job.SUBMITTED_DATE
+            ? new Date(job.SUBMITTED_DATE).toLocaleString()
+            : "Not Active"
+          : job.createdAt
+          ? new Date(job.createdAt).toLocaleString()
+          : "Not Active";
+
       return {
         ID: index + 1,
         "Checklist Name": job.JOB_NAME,
@@ -94,12 +104,7 @@ const JobsTable = ({ refresh }) => {
             {job.STATUS_NAME ? job.STATUS_NAME : "pending"}
           </div>
         ),
-        // Active: job.createdAt
-        //   ? new Date(job.createdAt).toLocaleString()
-        //   : "Not Active",
-        Active: job.SUBMITTED_DATE
-          ? new Date(job.SUBMITTED_DATE).toLocaleString()
-          : "Not Active",
+        Active: activeValue, // ใช้ activeValue ที่ได้จากการตรวจสอบ
         "Submitted By": job.SUBMITTED_BY ? job.SUBMITTED_BY.EMP_NAME : "-",
         Action: (
           <div>
@@ -118,7 +123,9 @@ const JobsTable = ({ refresh }) => {
               </Link>
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
-                {job.STATUS_NAME === "ongoing" || job.STATUS_NAME === "new" ? (
+                {job.STATUS_NAME === "ongoing" ||
+                job.STATUS_NAME === "new" ||
+                job.STATUS_NAME === "renew" ? (
                   <div className="flex gap-2 items-center justify-center">
                     <Link
                       className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
@@ -136,33 +143,6 @@ const JobsTable = ({ refresh }) => {
                       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
                       href={{
                         pathname: "/pages/view-jobs",
-                        query: {
-                          job_id: job._id,
-                          view: "true",
-                        },
-                      }}
-                    >
-                      View
-                    </Link>
-                  </div>
-                ) : job.STATUS_NAME === "renew" ? (
-                  <div className="flex gap-2 items-center justify-center">
-                    <Link
-                      className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      href={{
-                        pathname: "/pages/job-renew",
-                        query: {
-                          job_id: job._id,
-                          view: "false",
-                        },
-                      }}
-                    >
-                      Get
-                    </Link>
-                    <Link
-                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      href={{
-                        pathname: "/pages/job-renew",
                         query: {
                           job_id: job._id,
                           view: "true",

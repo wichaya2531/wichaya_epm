@@ -13,9 +13,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 
-import SelectContainer from "@/components/SelectContainer.js";  // นำเข้า SelectContainer
+import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
-
 
 const jobTemplatesHeader = [
   "ID",
@@ -67,9 +66,6 @@ const Page = () => {
   const [filterStatus, setFilterStatus] = useState("All");
 
   var [allLineName, setAllLineName] = useState(false);
-  
-
-
 
   const filteredJobs =
     jobs &&
@@ -90,12 +86,10 @@ const Page = () => {
   }, [refresh]);
 
   const retrieveSession = async () => {
-   
-
     const session = await getSession();
     setSession(session);
     await fetchUser(session.user_id);
-    var bufLineName= await fetchLineNames(session);
+    var bufLineName = await fetchLineNames(session);
     //console.log("tt..=>",tt);
     setAllLineName(bufLineName);
     // try {
@@ -104,35 +98,31 @@ const Page = () => {
     //       );
     //       const lineNamesData = await lineNamesResponse.json();
     //       //console.log("lineNamesData.selectLineNames=>", lineNamesData.selectLineNames);
-    //       setAllLineName(lineNamesData.selectLineNames.map((line) => line.name));  
+    //       setAllLineName(lineNamesData.selectLineNames.map((line) => line.name));
     // } catch (error) {
-      
+
     // }
-
-
   };
-
 
   const fetchLineNames = async (userSession) => {
     try {
-        const formData = new FormData();
-        formData.append('user_id', userSession.user_id);  
-  
-        const response = await fetch(`/api/select-line-name/get-line-name`, {
-          method: "POST",
-          body: formData
-        });
-        const data = await response.json();
-      if (data.status === 200){
+      const formData = new FormData();
+      formData.append("user_id", userSession.user_id);
+
+      const response = await fetch(`/api/select-line-name/get-line-name`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.status === 200) {
         //setSelectLineNames(data.selectLineNames);
-        //console.log("data.selectLineNames=>", data.selectLineNames);  
+        //console.log("data.selectLineNames=>", data.selectLineNames);
         //await setAllLineName(data.selectLineNames.map((line) => line.name));
-        //console.log("allLineName=>", allLineName);  
-        return data.selectLineNames.map((line) => line.name);  
-      } else{
-          console.error("Failed to fetch data:", data.error);
+        //console.log("allLineName=>", allLineName);
+        return data.selectLineNames.map((line) => line.name);
+      } else {
+        console.error("Failed to fetch data:", data.error);
       }
-      
     } catch (error) {
       console.error("Error fetching line names.:", error);
     }
@@ -173,133 +163,125 @@ const Page = () => {
     //showInvalidLineNamePopup;
   };
 
-
-  
-
-  const onLineNameSelected = async (linenameSelected,dataJobTemplate) => {
+  const onLineNameSelected = async (linenameSelected, dataJobTemplate) => {
     //console.log("before dataJobTemplate=>", dataJobTemplate);
     dataJobTemplate.LINE_NAME = linenameSelected;
     //console.log("after dataJobTemplate=>", dataJobTemplate);
-        Swal.fire({
-          title: 'Are you sure?',
-          text: "You won't be confirm for this line :"+linenameSelected+" !",
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: 'Yes, confirm!',
-          cancelButtonText: 'No, cancel!',
-          reverseButtons: true
-        }).then((result) => {
-          if (result.isConfirmed) {
-                activateJobProcess(dataJobTemplate);
-                try {
-                      document.getElementById('allLinePanel-'+dataJobTemplate.jobTemplateID).style.display = "none";
-                } catch (error) {
-                  
-                }
-          } else if (result.dismiss === Swal.DismissReason.cancel) {
-          }
-        });
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be confirm for this line :" + linenameSelected + " !",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, confirm!",
+      cancelButtonText: "No, cancel!",
+      reverseButtons: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        activateJobProcess(dataJobTemplate);
+        try {
+          document.getElementById(
+            "allLinePanel-" + dataJobTemplate.jobTemplateID
+          ).style.display = "none";
+        } catch (error) {}
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+      }
+    });
   };
 
-
-
- function toogleAllLinePanel(b) {
-        
-       jobTemplates.forEach(element => {
-          if (element._id != b.jobTemplateID) {
-            try {
-                  document.getElementById('allLinePanel-'+element._id).style.display = "none";
-            } catch (error) {
-
-            }            
-          } 
-       });
-        var allLinePanel = document.getElementById('allLinePanel-'+b.jobTemplateID);
-        if (allLinePanel.style.display === "none") {
-          //  var allLinePanel = document.getElementById('allLinePanel-' + b.jobTemplateID);
-                if (allLinePanel.style.display === "none") {
-                  allLinePanel.style.display = "block";
-                  allLinePanel.style.opacity = 0;
-                  let opacity = 0;
-                  const fadeIn = setInterval(() => {
-                    if (opacity >= 1) {
-                      clearInterval(fadeIn);
-                    }
-                    allLinePanel.style.opacity = opacity;
-                    opacity += 0.1;
-                  }, 30);
-                } else {
-                  let opacity = 1;
-                  const fadeOut = setInterval(() => {
-                    if (opacity <= 0) {
-                      clearInterval(fadeOut);
-                      allLinePanel.style.display = "none";
-                    }
-                    allLinePanel.style.opacity = opacity;
-                    opacity -= 0.1;
-                  }, 30);
-                }
-        } else {
-          allLinePanel.style.display = "none";
-        }
- }
-  
-
+  function toogleAllLinePanel(b) {
+    jobTemplates.forEach((element) => {
+      if (element._id != b.jobTemplateID) {
+        try {
+          document.getElementById("allLinePanel-" + element._id).style.display =
+            "none";
+        } catch (error) {}
+      }
+    });
+    var allLinePanel = document.getElementById(
+      "allLinePanel-" + b.jobTemplateID
+    );
+    if (allLinePanel.style.display === "none") {
+      //  var allLinePanel = document.getElementById('allLinePanel-' + b.jobTemplateID);
+      if (allLinePanel.style.display === "none") {
+        allLinePanel.style.display = "block";
+        allLinePanel.style.opacity = 0;
+        let opacity = 0;
+        const fadeIn = setInterval(() => {
+          if (opacity >= 1) {
+            clearInterval(fadeIn);
+          }
+          allLinePanel.style.opacity = opacity;
+          opacity += 0.1;
+        }, 30);
+      } else {
+        let opacity = 1;
+        const fadeOut = setInterval(() => {
+          if (opacity <= 0) {
+            clearInterval(fadeOut);
+            allLinePanel.style.display = "none";
+          }
+          allLinePanel.style.opacity = opacity;
+          opacity -= 0.1;
+        }, 30);
+      }
+    } else {
+      allLinePanel.style.display = "none";
+    }
+  }
 
   const handleActivate = async (jobTemplateSelectedFromUser) => {
-    
-      if (!jobTemplateSelectedFromUser.LINE_NAME || ["N/A", "NA", "na", "n/a", "Na"].includes(jobTemplateSelectedFromUser.LINE_NAME)) {
-           //alert("กรุณาเลือก Line Name"); 
-           toogleAllLinePanel(jobTemplateSelectedFromUser); 
-           return;
-      }
-      activateJobProcess(jobTemplateSelectedFromUser);    
+    if (
+      !jobTemplateSelectedFromUser.LINE_NAME ||
+      ["N/A", "NA", "na", "n/a", "Na"].includes(
+        jobTemplateSelectedFromUser.LINE_NAME
+      )
+    ) {
+      //alert("กรุณาเลือก Line Name");
+      toogleAllLinePanel(jobTemplateSelectedFromUser);
+      return;
+    }
+    activateJobProcess(jobTemplateSelectedFromUser);
   };
 
+  const activateJobProcess = async (checkListTemplate) => {
+    try {
+      const response = await fetch("/api/job/activate-job-template-manual", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-const activateJobProcess = async (checkListTemplate) => {
-      try {
-        const response = await fetch(
-          "/api/job/activate-job-template-manual",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+        body: JSON.stringify({
+          JobTemplateID: checkListTemplate.jobTemplateID,
+          JobTemplateCreateID: checkListTemplate.jobTemplateCreateID,
+          ACTIVATER_ID: checkListTemplate.ACTIVATER_ID,
+          LINE_NAME: checkListTemplate.LINE_NAME,
+        }),
+      });
+      const responseData = await response.json();
 
-            body: JSON.stringify({
-              JobTemplateID: checkListTemplate.jobTemplateID,
-              JobTemplateCreateID: checkListTemplate.jobTemplateCreateID,
-              ACTIVATER_ID: checkListTemplate.ACTIVATER_ID,
-              LINE_NAME:checkListTemplate.LINE_NAME
-            }),
-          }
-        );
-        const responseData = await response.json();
-
-        //console.log(  "responseData after active jobs=>",responseData);    
-        if (responseData.status === 200) {
-          Swal.fire({
-            icon: "success",
-            title: "สำเร็จ",
-            text: "Checklist template ถูกเปิดใช้งานเรียบร้อยแล้ว",
-            confirmButtonText: "ตกลง",
-          }).then(async () => {
-            // ดึงข้อมูล jobs ใหม่
-            await fetchJobs(user.workgroup_id);
-          });
-        }
-      } catch (error) {
-        console.error(error);
+      //console.log(  "responseData after active jobs=>",responseData);
+      if (responseData.status === 200) {
         Swal.fire({
-          icon: "error",
-          title: "เกิดข้อผิดพลาด",
-          text: "ไม่สามารถเปิดใช้งาน Checklist template ได้",
-          confirmButtonText: "ตกลง",
+          icon: "success",
+          title: "Success",
+          text: "The checklist template has been successfully activated",
+          confirmButtonText: "OK",
+        }).then(async () => {
+          // ดึงข้อมูล jobs ใหม่
+          await fetchJobs(user.workgroup_id);
         });
       }
-}
-
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to activate the checklist template",
+        confirmButtonText: "OK",
+      });
+    }
+  };
 
   // const showInvalidLineNamePopup = (validLineNames, requestData) => {
   //   let selectedValue = null;
@@ -333,7 +315,7 @@ const activateJobProcess = async (checkListTemplate) => {
   //   const selectContainer = document.createElement('div'); // ประกาศ selectContainer
   //   selectContainer.id = 'select-container';
   //   document.body.appendChild(selectContainer);  // เพิ่มเข้าไปใน document.body
-  
+
   //   // เปิด SweetAlert popup
   //   Swal.fire({
   //     title: "",
@@ -357,12 +339,11 @@ const activateJobProcess = async (checkListTemplate) => {
   //       const x = rect.left + window.scrollX;  // ตำแหน่ง X ของ SweetAlert
   //       const y = rect.top + window.scrollY;   // ตำแหน่ง Y ของ SweetAlert
 
-
   //       ReactDOM.render(
-  //         <SelectContainer 
+  //         <SelectContainer
   //           validLineNames={validLineNames}
-  //           onSelect={(value) => selectedValue = value}             
-  //           position={{ x, y }}  // ส่งตำแหน่ง x, y ไปยัง SelectContainer 
+  //           onSelect={(value) => selectedValue = value}
+  //           position={{ x, y }}  // ส่งตำแหน่ง x, y ไปยัง SelectContainer
 
   //         />,
   //         selectContainer,  // เรนเดอร์ SelectContainer ใน selectContainer
@@ -381,18 +362,13 @@ const activateJobProcess = async (checkListTemplate) => {
   //                             lineElement.style.top = labelTagTop + 'px';
   //                             lineElement.style.left = labelTagLeft + 'px';
   //                     } catch (error) {
-                        
-  //                     } 
+
+  //                     }
   //               }, 20);
-        
+
   //         }
-            
+
   //       );
-
-       
-
-
-       
 
   //     },
   //     willClose: () => {
@@ -406,7 +382,7 @@ const activateJobProcess = async (checkListTemplate) => {
   //             handleSubmitWithNewLineName(selectedValue, requestData);
   //           }
   //   });
-    
+
   // };
 
   // ฟังก์ชันสำหรับการส่งค่า line name ใหม่
@@ -531,7 +507,6 @@ const activateJobProcess = async (checkListTemplate) => {
       });
   };
 
- 
   const jobTemplatesBody = jobTemplates.map((jobTemplate, index) => {
     const data = {
       jobTemplateID: jobTemplate._id,
@@ -539,121 +514,121 @@ const activateJobProcess = async (checkListTemplate) => {
       ACTIVATER_ID: user._id,
       LINE_NAME: jobTemplate.LINE_NAME,
     };
-    
-    //console.log("allLineNamev=>", allLineName);
-   // console.log("jobTemplate.LINE_NAME=>", jobTemplate.LINE_NAME);
-    
 
-    return { 
+    //console.log("allLineNamev=>", allLineName);
+    // console.log("jobTemplate.LINE_NAME=>", jobTemplate.LINE_NAME);
+
+    return {
       ID: index + 1,
       "Checklist Template Name": jobTemplate.JOB_TEMPLATE_NAME,
-       "Line Name": jobTemplate.LINE_NAME,
-    //  "Line Name": (
-    //       <select 
-    //           // onChange={(e) => handleLineNameChange(e.target.value)}
-    //       >
-    //         <option value="">Select Line Name</option> {/* Option เริ่มต้น */}
-    //         {allLineName.map((lineName) => (
-    //           <option key={lineName} value={lineName}>
-    //             {lineName}
-    //           </option>
-    //         ))}
-    //       </select>
-    //     ),
+      "Line Name": jobTemplate.LINE_NAME,
+      //  "Line Name": (
+      //       <select
+      //           // onChange={(e) => handleLineNameChange(e.target.value)}
+      //       >
+      //         <option value="">Select Line Name</option> {/* Option เริ่มต้น */}
+      //         {allLineName.map((lineName) => (
+      //           <option key={lineName} value={lineName}>
+      //             {lineName}
+      //           </option>
+      //         ))}
+      //       </select>
+      //     ),
       "Create At": jobTemplate.createdAt,
       Action: (
-        <div className="flex gap-1 items-center justify-center" style={{border:'1px solid none'}}>
-          <div style={{border:'1px solid none'}}>
-                <div className="py-3 inline-block">
-                    <button
-                    className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-3 rounded "
-                    onClick={() => handlePlan(data)}
-                    disabled={
-                      !userEnableFunctions.some(
-                        (action) =>
-                          action._id === enabledFunction["activate-job-template"]
-                      )
-                    }
-                    style={{
-                      cursor: !userEnableFunctions.some(
-                        (action) =>
-                          action._id === enabledFunction["activate-job-template"]
-                      )
-                        ? "not-allowed"
-                        : "pointer",
-                    }}
-                  >
-                    plan
-                  </button>
-                </div>
-                  
-
-                  &nbsp;&nbsp;
-                  <button
-                    className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-2 px-2 rounded"
-                    onClick={() => handleActivate(data)}
-                    disabled={
-                      !userEnableFunctions.some(
-                        (action) =>
-                          action._id === enabledFunction["activate-job-template"]
-                      )
-                    }
-                    style={{
-                      cursor: !userEnableFunctions.some(
-                        (action) =>
-                          action._id === enabledFunction["activate-job-template"]
-                      )
-                        ? "not-allowed"
-                        : "pointer",
-                    }}
-                  >
-                    Activate
-                  </button>
-                  &nbsp;&nbsp;
-                  <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-2 rounded"
-                    onClick={() => handleViewDetial(data)}
-                    disabled={
-                      !userEnableFunctions.some(
-                        (action) =>
-                          action._id === enabledFunction["activate-job-template"]
-                      )
-                    }
-                    style={{
-                      cursor: !userEnableFunctions.some(
-                        (action) =>
-                          action._id === enabledFunction["activate-job-template"]
-                      )
-                        ? "not-allowed"
-                        : "pointer",
-                        display:'none'
-                    }}
-                  >
-                    details
-                  </button>
-                  <div 
-                      id={"allLinePanel-"+data.jobTemplateID}
-                      style={{display:'none'}}            
-                  >
-                    <center style={{padding:'5px' , border:'1px solid none'}}>
-                      <select 
-                          onChange={(event) => onLineNameSelected(event.target.value,data)} 
-                          style={{padding:'10px'}}>
-                          <option value="">Select Line Name</option> {/* Option เริ่มต้น */}
-                           {allLineName.map((lineName) => (
-                            <option key={lineName} value={lineName}>
-                              {lineName}
-                            </option>
-                          ))} 
-                       </select>
-                    </center>
-                       
-                  </div>                  
-          </div>         
+        <div
+          className="flex gap-1 items-center justify-center"
+          style={{ border: "1px solid none" }}
+        >
+          <div style={{ border: "1px solid none" }}>
+            <div className="py-3 inline-block">
+              <button
+                className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-3 rounded "
+                onClick={() => handlePlan(data)}
+                disabled={
+                  !userEnableFunctions.some(
+                    (action) =>
+                      action._id === enabledFunction["activate-job-template"]
+                  )
+                }
+                style={{
+                  cursor: !userEnableFunctions.some(
+                    (action) =>
+                      action._id === enabledFunction["activate-job-template"]
+                  )
+                    ? "not-allowed"
+                    : "pointer",
+                }}
+              >
+                plan
+              </button>
+            </div>
+            &nbsp;&nbsp;
+            <button
+              className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-2 px-2 rounded"
+              onClick={() => handleActivate(data)}
+              disabled={
+                !userEnableFunctions.some(
+                  (action) =>
+                    action._id === enabledFunction["activate-job-template"]
+                )
+              }
+              style={{
+                cursor: !userEnableFunctions.some(
+                  (action) =>
+                    action._id === enabledFunction["activate-job-template"]
+                )
+                  ? "not-allowed"
+                  : "pointer",
+              }}
+            >
+              Activate
+            </button>
+            &nbsp;&nbsp;
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-2 rounded"
+              onClick={() => handleViewDetial(data)}
+              disabled={
+                !userEnableFunctions.some(
+                  (action) =>
+                    action._id === enabledFunction["activate-job-template"]
+                )
+              }
+              style={{
+                cursor: !userEnableFunctions.some(
+                  (action) =>
+                    action._id === enabledFunction["activate-job-template"]
+                )
+                  ? "not-allowed"
+                  : "pointer",
+                display: "none",
+              }}
+            >
+              details
+            </button>
+            <div
+              id={"allLinePanel-" + data.jobTemplateID}
+              style={{ display: "none" }}
+            >
+              <center style={{ padding: "5px", border: "1px solid none" }}>
+                <select
+                  onChange={(event) =>
+                    onLineNameSelected(event.target.value, data)
+                  }
+                  style={{ padding: "10px" }}
+                >
+                  <option value="">Select Line Name</option>{" "}
+                  {/* Option เริ่มต้น */}
+                  {allLineName.map((lineName) => (
+                    <option key={lineName} value={lineName}>
+                      {lineName}
+                    </option>
+                  ))}
+                </select>
+              </center>
+            </div>
+          </div>
         </div>
-          
-
-
       ),
     };
   });
@@ -788,15 +763,13 @@ const activateJobProcess = async (checkListTemplate) => {
   };
 
   const handleOnpageChange = (page) => {
-    jobTemplates.forEach(element => {
-        try {
-              document.getElementById('allLinePanel-'+element._id).style.display = "none";
-        } catch (error) {
-
-        }            
-   });
-  }
-
+    jobTemplates.forEach((element) => {
+      try {
+        document.getElementById("allLinePanel-" + element._id).style.display =
+          "none";
+      } catch (error) {}
+    });
+  };
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
@@ -845,7 +818,6 @@ const activateJobProcess = async (checkListTemplate) => {
           TableName="Active Checklist"
           searchColumn="Checklist Name"
           filterColumn="Line Name"
-          
         />
       </div>
       {isShowDetail && <ShowDetailModal />}
