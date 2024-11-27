@@ -568,7 +568,7 @@ const JobForm = ({
                 <th className="w-[50px]">Item Name </th>
                 <th className="w-[50px] px-4 py-2">Lower/Upper</th>
                 {/* <th className="w-[50px] px-4 py-2"></th> */}
-                <th className="w-[150px] py-2">Before Value</th>
+                <th className="w-[150px] px-4 py-2">Before Value</th>
                 <th className="w-[150px] px-4 py-2">Actual Value</th>
                 <th className="w-[150px] px-4 py-2">Attach</th>
               </tr>
@@ -604,7 +604,7 @@ const JobForm = ({
                       {item.LowerSpec}
                     </div>
                   </td>
-                  <td className="border py-2 relative">
+                  <td className="border px-4 py-2 relative">
                     {view === "true" ? (
                       <input
                         type="text"
@@ -614,22 +614,14 @@ const JobForm = ({
                         disabled
                         title={"Lastest Update: " + item.LastestUpdate}
                       />
-                    ) : item.BeforeValue ? (
-                      <input
-                        type="text"
-                        id={`before_value_${item.JobItemID}`}
-                        value={item.BeforeValue}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                        title={"Lastest Update: " + item.LastestUpdate}
-                        disabled
-                      />
                     ) : (
                       <input
                         type="text"
+                        defaultValue={item.BeforeValue || ""}
                         id={`before_value_${item.JobItemID}`}
                         onChange={(e) => handleBeforeValue(e, item)}
-                        className="bg-white border border-gray-300 text-gray-900 text-sm rounded-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 w-full p-1.5"
-                        placeholder="fill in value"
+                        className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                        placeholder="Enter value"
                         title={"Lastest Update: " + item.LastestUpdate}
                       />
                     )}
@@ -650,12 +642,12 @@ const JobForm = ({
                           <input
                             type="text"
                             id={item.JobItemID}
-                            value={item.ActualValue || ""} // ให้ค่าเป็นค่าว่างหรือค่าปัจจุบัน
-                            onChange={(e) => handleInputChange(e, item)} // เพิ่มการจัดการการเปลี่ยนแปลง
+                            defaultValue={item.ActualValue || ""}
+                            onChange={(e) => handleInputChange(e, item)}
                             className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                            placeholder="fill in value"
+                            placeholder={item.BeforeValue}
                             onFocus={() => handleOnFocusItemInput(item)}
-                            autoComplete="off"
+                            autoComplete="on"
                           />
                         </div>
                         <div

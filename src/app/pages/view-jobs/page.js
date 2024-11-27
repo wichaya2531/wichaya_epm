@@ -26,8 +26,6 @@ const options = {
   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
 };
 
-
-
 const Page = ({ searchParams }) => {
   //var n=0;
   //console.log("use Page view-jobs/page.js");
@@ -35,7 +33,10 @@ const Page = ({ searchParams }) => {
   const job_id = searchParams.job_id;
   const [view, setView] = useState(searchParams.view);
   const [refresh, setRefresh] = useState(false);
-  var { jobData, jobItems, isLoading, error } = useFetchJobValue(job_id, refresh );
+  var { jobData, jobItems, isLoading, error } = useFetchJobValue(
+    job_id,
+    refresh
+  );
   const {
     machines,
     isLoading: machinesLoading,
@@ -48,8 +49,8 @@ const Page = ({ searchParams }) => {
   const [testMethodDescription, setTestMethodDescription] = useState(null);
   const [AddCommentForm, setAddCommentForm] = useState(false);
   var [commentDetail, setCommentDetail] = useState(null);
- // let [inputValues, setInputValues] = useState([]);
- // const { status } = useFetchStatus(refresh);
+  // let [inputValues, setInputValues] = useState([]);
+  // const { status } = useFetchStatus(refresh);
   const [machineName, setMachineName] = useState(null);
   const [showDetail, setShowDetail] = useState(null);
   // const mqttClient = mqtt.connect(connectUrl, options);
@@ -59,29 +60,26 @@ const Page = ({ searchParams }) => {
 
   //const [message, setMessage] = useState("");....
 
-
   const handleShowComment = (item) => {
     //console.log("jobForm item=>",item);
 
-   Swal.fire({
-     title: 'Comment',
-     text: item.Comment || 'No comment available',
-     icon: 'info',
-     confirmButtonText: 'Close'
-   });
- };
-
-
-  const handleToShowOnClick = (item) => {
-      Swal.fire({
-        title: item.title,
-        html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
-        confirmButtonText: "OK",
-        width: "auto",
-        height: "80%",
-      });
+    Swal.fire({
+      title: "Comment",
+      text: item.Comment || "No comment available",
+      icon: "info",
+      confirmButtonText: "Close",
+    });
   };
 
+  const handleToShowOnClick = (item) => {
+    Swal.fire({
+      title: item.title,
+      html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
+      confirmButtonText: "OK",
+      width: "auto",
+      height: "80%",
+    });
+  };
 
   const updateJobStatusToOngoing = async () => {
     const body = {
@@ -107,8 +105,7 @@ const Page = ({ searchParams }) => {
 
   useEffect(() => {
     const asyncEffect = async () => {
-
-     // console.log("jobData", jobData);
+      // console.log("jobData", jobData);
 
       if (user && jobData) {
         // Ensure both user.workgroup_id and jobData.WorkGroupID are defined
@@ -167,32 +164,29 @@ const Page = ({ searchParams }) => {
   };
 
   const handleBeforeValue = (e, item) => {
-
-     for(var t in jobItems){
-           if (jobItems[t].JobItemID==item.JobItemID) {
-                jobItems[t].BeforeValue=e.target.value;            
-           }
-     }   
+    for (var t in jobItems) {
+      if (jobItems[t].JobItemID == item.JobItemID) {
+        jobItems[t].BeforeValue = e.target.value;
+      }
+    }
   };
 
-  const handleIMGItemChange = ( filePath,item) => {
-            const value = filePath;
-            
-            for(var t in jobItems){
-                  if (jobItems[t].JobItemID==item.JobItemID) {
-                        jobItems[t].IMG_ATTACH=value;
-                  }
-            }
-            
-            
-  }
+  const handleIMGItemChange = (filePath, item) => {
+    const value = filePath;
+
+    for (var t in jobItems) {
+      if (jobItems[t].JobItemID == item.JobItemID) {
+        jobItems[t].IMG_ATTACH = value;
+      }
+    }
+  };
 
   const handleInputChange = (e, item) => {
     //console.log('item ',item);
-    
-    for(var t in jobItems){
-      if (jobItems[t].JobItemID==item.JobItemID) {
-        jobItems[t].value=e.target.value;
+
+    for (var t in jobItems) {
+      if (jobItems[t].JobItemID == item.JobItemID) {
+        jobItems[t].value = e.target.value;
       }
     }
   };
@@ -201,32 +195,33 @@ const Page = ({ searchParams }) => {
     setIsShowJobItem(!isShowJobItem);
   };
 
-  const toggleAddComment = (item) => {    
+  const toggleAddComment = (item) => {
     Swal.fire({
-      title: 'Add Comment to '+item.JobItemName,
-      html: `<textarea id="comment" class="swal2-textarea" placeholder="Enter your comment">`+item.Comment+`</textarea>`,
+      title: "Add Comment to " + item.JobItemName,
+      html:
+        `<textarea id="comment" class="swal2-textarea" placeholder="Enter your comment">` +
+        item.Comment +
+        `</textarea>`,
       showCancelButton: true,
-      confirmButtonText: 'Save',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: "Save",
+      cancelButtonText: "Cancel",
       preConfirm: () => {
-        const comment = Swal.getPopup().querySelector('#comment').value;
+        const comment = Swal.getPopup().querySelector("#comment").value;
         if (!comment) {
-          Swal.showValidationMessage('Please enter a comment');
+          Swal.showValidationMessage("Please enter a comment");
         }
         return comment;
-      }
+      },
     }).then((result) => {
       if (result.isConfirmed) {
-     
-              for(var t in jobItems){
-                if (jobItems[t].JobItemID===item.JobItemID) {
-                  jobItems[t].Comment=result.value;
-                }
-              }
+        for (var t in jobItems) {
+          if (jobItems[t].JobItemID === item.JobItemID) {
+            jobItems[t].Comment = result.value;
+          }
+        }
       }
     });
   };
-
 
   const handleUploadFileToJob = (event) => {
     const file = event.target.files[0];
@@ -235,44 +230,40 @@ const Page = ({ searchParams }) => {
 
     setTimeout(() => {
       uploadJobPictureToServer(file);
-    },10);
+    }, 10);
   };
 
   const uploadJobPictureToServer = async (inputFile) => {
-   if (!inputFile) {
-     alert('Please select a file first.');
-     return;
-   }
+    if (!inputFile) {
+      alert("Please select a file first.");
+      return;
+    }
     const formData = new FormData();
-    formData.append('file', inputFile);
-    formData.append('job_id', jobData.JobID);
+    formData.append("file", inputFile);
+    formData.append("job_id", jobData.JobID);
 
-      try {
-        const res = await fetch('/api/uploadPicture', {
-          method: 'POST',
-          body: formData,
-        });
+    try {
+      const res = await fetch("/api/uploadPicture", {
+        method: "POST",
+        body: formData,
+      });
 
-        const data = await res.json(); // อ่าน response จาก API
+      const data = await res.json(); // อ่าน response จาก API
 
       if (data.result) {
         setWdtagImg(data.filePath);
       } else {
-        alert('Failed to upload file. Error '+data.error);
+        alert("Failed to upload file. Error " + data.error);
       }
     } catch (error) {
       //console.error(error);
-      alert('An error occurred while uploading the file.');
+      alert("An error occurred while uploading the file.");
     }
   };
-
 
   const handleSubmit = async (e) => {
     //alert('On Submit');
     e.preventDefault();
-
-   
-
 
     const wdTag = e.target.wd_tag.value.trim(); // ตัดช่องว่าง
 
@@ -313,24 +304,24 @@ const Page = ({ searchParams }) => {
       wdtagImage: wdtagImg,
     };
 
-   //  console.log("inputValues", inputValues);
+    //  console.log("inputValues", inputValues);
 
-  //console.log("jobItems",jobItems);
-  var actualValuIsNotReady=true;
-   jobItems.forEach(element => {
-       //console.log("ActualValue=>", element.value);
-       if (element.value == null) { // ใช้ == เพื่อครอบคลุมทั้ง null และ undefined
-           actualValuIsNotReady = false;
-         //  console.log("ActualValue is null or undefined. Break!!");
-           return;
-       }
-   });
-   
+    //console.log("jobItems",jobItems);
+    var actualValuIsNotReady = true;
+    jobItems.forEach((element) => {
+      //console.log("ActualValue=>", element.value);
+      if (element.value == null) {
+        // ใช้ == เพื่อครอบคลุมทั้ง null และ undefined
+        actualValuIsNotReady = false;
+        //  console.log("ActualValue is null or undefined. Break!!");
+        return;
+      }
+    });
 
-  // console.log("actualValuIsNotReady=>",actualValuIsNotReady);
-  // return;
-   
-    if (actualValuIsNotReady==false) {
+    // console.log("actualValuIsNotReady=>",actualValuIsNotReady);
+    // return;
+
+    if (actualValuIsNotReady == false) {
       Swal.fire({
         title: "Error!",
         text: "Please add at least one job item.",
@@ -380,13 +371,10 @@ const Page = ({ searchParams }) => {
           }
         });
         e.target.reset();
-         //setRefresh((prev) => !prev);
-         setTimeout(() => {
-             router.push("/pages/dashboard");
+        //setRefresh((prev) => !prev);
+        setTimeout(() => {
+          router.push("/pages/dashboard");
         }, 2000);
-
-
-
       }
     } catch (err) {
       console.error("Error:", err);
@@ -402,17 +390,24 @@ const Page = ({ searchParams }) => {
     Swal.fire({
       title: item.JobItemName,
       html: `<div style="text-align:left;">
-        <p><strong>Description&nbsp;:&nbsp;</strong> ${item.description || ''}</p>
-        <p><strong>Test Location&nbsp;:&nbsp;</strong> ${item.TestLocationName}</p>
+        <p><strong>Description&nbsp;:&nbsp;</strong> ${
+          item.description || ""
+        }</p>
+        <p><strong>Test Location&nbsp;:&nbsp;</strong> ${
+          item.TestLocationName
+        }</p>
         <p><strong>Test Method&nbsp;:&nbsp;</strong> ${item.TestMethod}</p>
         <div style='padding:10px;'>
-          ${item.File ? `<img src="/api/viewItem-template?imgName=${item.File}" alt="${item.File}" style="max-width: 100%; height: auto;" />` : ''}
+          ${
+            item.File
+              ? `<img src="/api/viewItem-template?imgName=${item.File}" alt="${item.File}" style="max-width: 100%; height: auto;" />`
+              : ""
+          }
         </div>
       </div>`,
       icon: "info",
       confirmButtonText: "OK",
     });
-
   };
 
   const handleShowJobItemDescription = (item) => {
@@ -472,9 +467,7 @@ const Page = ({ searchParams }) => {
           jobItemDetail={jobItemDetail}
         />
       )}
-      {AddCommentForm && (        
-        <div>&nbsp;</div>
-      )}
+      {AddCommentForm && <div>&nbsp;</div>}
     </Layout>
   );
 };
