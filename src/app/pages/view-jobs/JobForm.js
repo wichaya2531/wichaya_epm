@@ -617,11 +617,10 @@ const JobForm = ({
                     ) : (
                       <input
                         type="text"
-                        defaultValue={item.BeforeValue || ""}
                         id={`before_value_${item.JobItemID}`}
                         onChange={(e) => handleBeforeValue(e, item)}
                         className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                        placeholder="Enter value"
+                        placeholder={item.BeforeValue || ""}
                         title={"Lastest Update: " + item.LastestUpdate}
                       />
                     )}
@@ -645,7 +644,7 @@ const JobForm = ({
                             defaultValue={item.ActualValue || ""}
                             onChange={(e) => handleInputChange(e, item)}
                             className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                            placeholder={item.BeforeValue}
+                            placeholder="Enter value"
                             onFocus={() => handleOnFocusItemInput(item)}
                             autoComplete="on"
                           />
