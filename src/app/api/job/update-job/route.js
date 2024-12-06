@@ -4,7 +4,11 @@ import { Status } from "@/lib/models/Status";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { User } from "@/lib/models/User";
-import { ActivateJobTemplate, getRevisionNo, sendEmails } from "@/lib/utils/utils";
+import {
+  ActivateJobTemplate,
+  getRevisionNo,
+  sendEmails,
+} from "@/lib/utils/utils";
 //import fs from "fs";
 //import path from "path";
 
@@ -52,22 +56,20 @@ export const POST = async (req) => {
     // ค้นหาผู้ส่งข้อมูล
     const submittedUser = await User.findById(jobData.submittedBy);
 
-
-    if(process.env.WD_INTRANET_MODE === false){
-            const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
-            // ปิดไว้เมื่อต้องการทดสอบ local fee
-            console.log(" ตรวจสอบหมายเลขเอกสาร");
-            if (latestDocNo.message) {
-              console.log("Doc number error");
-              return NextResponse.json({ status: 455, message: latestDocNo.message });
-            } else if (job.CHECKLIST_VERSION !== latestDocNo) {
-              return NextResponse.json({
-                status: 455,
-                message: "This Checklist does not have the latest revision",
-              });
-            }
+    if (process.env.WD_INTRANET_MODE === false) {
+      const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
+      // ปิดไว้เมื่อต้องการทดสอบ local fee
+      console.log(" ตรวจสอบหมายเลขเอกสาร");
+      if (latestDocNo.message) {
+        console.log("Doc number error");
+        return NextResponse.json({ status: 455, message: latestDocNo.message });
+      } else if (job.CHECKLIST_VERSION !== latestDocNo) {
+        return NextResponse.json({
+          status: 455,
+          message: "This Checklist does not have the latest revision",
+        });
+      }
     }
-        
 
     // อัปเดต job items
     await updateJobItems(jobItemsData); // ตรวจสอบที่นี่
@@ -135,14 +137,17 @@ const updateJobItems = async (jobItemsData) => {
       // อัปเดตค่า ACTUAL_VALUE, COMMENT และ BEFORE_VALUE
       jobItem.ACTUAL_VALUE = jobItemData.value || jobItem.ACTUAL_VALUE; // อัปเดต ActualValue
       jobItem.COMMENT = jobItemData.Comment || jobItem.COMMENT; // อัปเดต Comment
-      jobItem.BEFORE_VALUE = jobItemData.BeforeValue || jobItem.BEFORE_VALUE; // อัปเดต BeforeValue
+      jobItem.BEFORE_VALUE =
+        jobItemData.BeforeValue === "" || jobItemData.BeforeValue == null
+          ? "" // ถ้า BeforeValue เป็นค่าว่างหรือ null ให้ตั้งค่าเป็นค่าว่าง
+          : jobItemData.BeforeValue; // ถ้าไม่เป็นค่าว่าง ให้ใช้ค่า BeforeValue ที่ส่งมา
       jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // อัปเดต ImageFileName
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
 
-         //console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
+      //console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
     } else {
-         console.error(`JobItem with ID ${jobItemData.JobItemID} not found.`);
+      console.error(`JobItem with ID ${jobItemData.JobItemID} not found.`);
     }
   });
 

@@ -163,14 +163,6 @@ const Page = ({ searchParams }) => {
     setIsShowJobInfo(!isShowJobInfo);
   };
 
-  const handleBeforeValue = (e, item) => {
-    for (var t in jobItems) {
-      if (jobItems[t].JobItemID == item.JobItemID) {
-        jobItems[t].BeforeValue = e.target.value;
-      }
-    }
-  };
-
   const handleIMGItemChange = (filePath, item) => {
     const value = filePath;
 
@@ -259,6 +251,21 @@ const Page = ({ searchParams }) => {
       //console.error(error);
       alert("An error occurred while uploading the file.");
     }
+  };
+
+  const handleBeforeValue = (e, item) => {
+    const value = e.target.value.trim(); // ลบช่องว่างออกจากค่าที่กรอก
+
+    // ตรวจสอบว่าเมื่อผู้ใช้ไม่กรอกค่า (ช่องว่างหรือค่าว่างเปล่า), จะตั้งค่า BeforeValue เป็น ""
+    for (let t in jobItems) {
+      if (jobItems[t].JobItemID === item.JobItemID) {
+        // ถ้าค่าในช่องว่างหรือลบออกหมด ให้ตั้งค่า BeforeValue เป็น ""
+        jobItems[t].BeforeValue = value === "" ? "" : value; // กำหนดค่าใหม่ให้ BeforeValue
+      }
+    }
+
+    // ตรวจสอบค่าที่อัปเดต
+    // console.log("Updated jobItems:", jobItems);
   };
 
   const handleSubmit = async (e) => {
