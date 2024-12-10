@@ -11,7 +11,7 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 import { sendEmails } from "@/lib/utils/utils";
 import { Workgroup } from "@/lib/models/Workgroup";
 import { User } from "@/lib/models/User";
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 import { Notified, Notifies } from "@/lib/models/Notifies.js";
 
 async function getEmailfromUserID(userID) {
@@ -31,21 +31,21 @@ async function getApproversUserEmail(job) {
     try {
       const approver = await User.findOne({ _id: new ObjectId(element) });
       if (approver) {
-        approvers.push(approver.EMAIL);  // เก็บข้อมูลใน array
+        approvers.push(approver.EMAIL); // เก็บข้อมูลใน array
       }
     } catch (error) {
       console.error("Error:", error);
     }
   }
 
-  return approvers;  // return ข้อมูลทั้งหมดหลังจากประมวลผลเสร็จ
+  return approvers; // return ข้อมูลทั้งหมดหลังจากประมวลผลเสร็จ
 }
 
 export const POST = async (req, res) => {
- // console.log("Activate Job Template Manual");
+  // console.log("Activate Job Template Manual");
   await connectToDb();
   const body = await req.json();
-  const { JobTemplateID, ACTIVATER_ID, JobTemplateCreateID,LINE_NAME } = body;
+  const { JobTemplateID, ACTIVATER_ID, JobTemplateCreateID, LINE_NAME } = body;
 
   try {
     //1 create job
@@ -133,6 +133,7 @@ export const POST = async (req, res) => {
           JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
           FILE: jobItemTemplate.FILE,
           createdAt: jobItemTemplate.createdAt,
+          BEFORE_VALUE2: null,
         });
         await jobItem.save();
 
@@ -174,27 +175,25 @@ export const POST = async (req, res) => {
     const workgroup = await Workgroup.findOne({
       _id: jobTemplate.WORKGROUP_ID,
     });
-    
 
-  var userEmailNotified = [];
-  try {
+    var userEmailNotified = [];
+    try {
       // ใช้ await เพื่อรอให้คำสั่ง find สำเร็จ
       const notified = await Notifies.find({ JOB_TEMPLATE_ID: JobTemplateID });
       // ใช้ for...of loop เพื่อรองรับการใช้ await ในลูป
       for (const element of notified) {
-          //console.log("element->USER_ID", element.USER_ID); // แสดง USER_ID ที่ได้รับ
-          const email = await getEmailfromUserID(element.USER_ID); // รอให้ getEmailfromUserID คืนค่า
-          //console.log("element->USER_ID->Email", email); // แสดง email ที่ได้รับ
-          userEmailNotified.push(email); // เก็บข้อมูลใน array
+        //console.log("element->USER_ID", element.USER_ID); // แสดง USER_ID ที่ได้รับ
+        const email = await getEmailfromUserID(element.USER_ID); // รอให้ getEmailfromUserID คืนค่า
+        //console.log("element->USER_ID->Email", email); // แสดง email ที่ได้รับ
+        userEmailNotified.push(email); // เก็บข้อมูลใน array
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error:", error);
-  }
+    }
 
-  const userEmailsApprover = await getApproversUserEmail(job);
-  const allEmails = [...userEmailsApprover, ...userEmailNotified];
-  const uniqueEmails = [...new Set(allEmails)];
-
+    const userEmailsApprover = await getApproversUserEmail(job);
+    const allEmails = [...userEmailsApprover, ...userEmailNotified];
+    const uniqueEmails = [...new Set(allEmails)];
 
     const activater = await User.findOne({ _id: ACTIVATER_ID });
     const jobData = {

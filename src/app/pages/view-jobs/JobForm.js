@@ -608,8 +608,8 @@ const JobForm = ({
                     {view === "true" ? (
                       <input
                         type="text"
-                        id={`before_value_${item.JobItemID}`}
-                        value={item.BeforeValue}
+                        id={`before_value_2${item.JobItemID}`}
+                        value={item.BeforeValue2}
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
                         title={"Lastest Update: " + item.LastestUpdate}
@@ -617,7 +617,7 @@ const JobForm = ({
                     ) : (
                       <input
                         type="text"
-                        id={`before_value_${item.JobItemID}`}
+                        id={`before_value_2${item.JobItemID}`}
                         onChange={(e) => handleBeforeValue(e, item)}
                         className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                         placeholder={item.BeforeValue || ""}

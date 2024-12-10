@@ -22,7 +22,7 @@ const JobItemSchema = new mongoose.Schema(
     COMMENT: { type: String, default: null },
     JOB_ITEM_EXECUTE_DATE: { type: String, default: null },
     BEFORE_VALUE: { type: String, default: null },
-
+    BEFORE_VALUE2: { type: String, default: null },
     JOB_ITEM_TITLE: { type: String, required: true },
     JOB_ITEM_NAME: { type: String, required: true },
     UPPER_SPEC: { type: String, required: true },

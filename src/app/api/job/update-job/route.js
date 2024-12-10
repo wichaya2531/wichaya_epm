@@ -139,12 +139,15 @@ const updateJobItems = async (jobItemsData) => {
       jobItem.COMMENT = jobItemData.Comment || jobItem.COMMENT; // อัปเดต Comment
       jobItem.BEFORE_VALUE =
         jobItemData.BeforeValue === "" || jobItemData.BeforeValue == null
-          ? "" // ถ้า BeforeValue เป็นค่าว่างหรือ null ให้ตั้งค่าเป็นค่าว่าง
-          : jobItemData.BeforeValue; // ถ้าไม่เป็นค่าว่าง ให้ใช้ค่า BeforeValue ที่ส่งมา
+          ? ""
+          : jobItemData.BeforeValue;
+      jobItem.BEFORE_VALUE2 =
+        jobItemData.BeforeValue2 === "" || jobItemData.BeforeValue2 == null
+          ? null
+          : jobItemData.BeforeValue2;
       jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // อัปเดต ImageFileName
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
-
       //console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
     } else {
       console.error(`JobItem with ID ${jobItemData.JobItemID} not found.`);

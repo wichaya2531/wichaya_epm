@@ -94,6 +94,7 @@ export const POST = async (req) => {
           JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
           FILE: jobItemTemplate.FILE,
           createdAt: jobItemTemplate.createdAt,
+          BEFORE_VALUE2: null,
         });
 
         await jobItem.save();
