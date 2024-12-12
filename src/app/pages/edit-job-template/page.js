@@ -16,9 +16,9 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { getSession } from "@/lib/utils/utils.js";
 import { set } from "mongoose";
 
-
 const approverHeader = ["ID", "Name", "Action"];
 const notifyHeader = ["ID", "Name", "Action"];
+const notifyOverdueHeader = ["ID", "Name", "Action"];
 
 const Page = ({ searchParams }) => {
   const jobTemplate_id = searchParams.jobTemplate_id;
@@ -26,8 +26,10 @@ const Page = ({ searchParams }) => {
   const [selectLineNames, setSelectLineNames] = useState([]);
   const [approvers, setApprovers] = useState([]);
   const [notifies, setNotifies] = useState([]);
+  const [notifiesOverdue, setNotifiesOverdue] = useState([]);
   const [selectedApprover, setSelectedApprover] = useState(null);
   const [selectedNotify, setSelectedNotify] = useState(null);
+  const [selectedNotifyOverdue, setSelectedNotifyOverdue] = useState(null);
   const [options, setOptions] = useState([]);
   const [dueDate, setDueDate] = useState("");
   const [refresh, setRefresh] = useState(false);
@@ -57,14 +59,14 @@ const Page = ({ searchParams }) => {
     getCurrentUser();
   }, []);
 
-//   setTimeout(() => {
-//     // console.log(jobTemplate.LINE_NAME);
-//     // if (!selectLineNames.some(lineName => lineName.name === jobTemplate.LINE_NAME)) {
-//     //  console.log("selectLineNames=>",selectLineNames); 
-//     //  //setSelectLineNames(prev => [...prev, { _id: 'custom', name: jobTemplate.LINE_NAME }]);
-//     //   //console.log("jobTemplate.LINE_NAME=>",jobTemplate.LINE_NAME);
-//     // }
-// }, 4000);  
+  //   setTimeout(() => {
+  //     // console.log(jobTemplate.LINE_NAME);
+  //     // if (!selectLineNames.some(lineName => lineName.name === jobTemplate.LINE_NAME)) {
+  //     //  console.log("selectLineNames=>",selectLineNames);
+  //     //  //setSelectLineNames(prev => [...prev, { _id: 'custom', name: jobTemplate.LINE_NAME }]);
+  //     //   //console.log("jobTemplate.LINE_NAME=>",jobTemplate.LINE_NAME);
+  //     // }
+  // }, 4000);
 
   const getCurrentUser = async () => {
     const session = await getSession();
@@ -89,7 +91,7 @@ const Page = ({ searchParams }) => {
 
       const data = await response.json();
       if (data.status === 200) {
-            setSelectLineNames(data.selectLineNames);
+        setSelectLineNames(data.selectLineNames);
       } else {
         console.error("Failed to fetch data:", data.error);
       }
@@ -97,7 +99,6 @@ const Page = ({ searchParams }) => {
       console.error("Error fetching line names:", error);
     }
   };
-
 
   useEffect(() => {
     calculateDueDate();
@@ -126,6 +127,10 @@ const Page = ({ searchParams }) => {
   useEffect(() => {
     setNotifies(jobTemplate.NotifyList);
   }, [jobTemplate.NotifyList]);
+
+  useEffect(() => {
+    setNotifiesOverdue(jobTemplate.NotifyOverdueList);
+  }, [jobTemplate.NotifyOverdueList]);
 
   useEffect(() => {
     if (jobTemplate) {
@@ -169,6 +174,29 @@ const Page = ({ searchParams }) => {
 
     const newOptions = options.filter(
       (option) => option.value !== selectedNotify.value
+    );
+    setOptions(newOptions);
+  };
+
+  const handleAddNotifyOverdue = () => {
+    if (!selectedNotifyOverdue) {
+      Swal.fire("Oops..", "Please select a Notify Overdue!", "error");
+      return;
+    }
+
+    const newNotifyOverdue = {
+      _id: selectedNotifyOverdue.value,
+      EMP_NAME: selectedNotifyOverdue.label,
+    };
+
+    setNotifiesOverdue((prevNotifiesOverdue) => [
+      ...prevNotifiesOverdue,
+      newNotifyOverdue,
+    ]);
+    setSelectedNotifyOverdue(null);
+
+    const newOptions = options.filter(
+      (option) => option.value !== selectedNotifyOverdue.value
     );
     setOptions(newOptions);
   };
@@ -261,6 +289,47 @@ const Page = ({ searchParams }) => {
     }
   };
 
+  const handleRemoveNotifyOverdue = async (userId) => {
+    try {
+      const response = await fetch(`/api/job-template/remove-notifyoverdue`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobTemplateId: jobTemplate_id, // ระบุ ID ของ job template ที่ต้องการลบ notify overdue
+          userId: userId, // ID ของ notify overdue ที่ต้องการลบ
+        }),
+      });
+
+      if (response.ok) {
+        // ถ้าการลบสำเร็จ อัปเดตสถานะ notifiesOverdue
+        setNotifiesOverdue(
+          notifiesOverdue.filter(
+            (notifyOverdue) => notifyOverdue._id !== userId
+          )
+        );
+
+        // เพิ่ม notify overdue กลับไปยัง options สำหรับ dropdown
+        const removedNotifyOverdue = users.find((user) => user._id === userId);
+        if (removedNotifyOverdue) {
+          const newOptions = [
+            ...options,
+            {
+              value: removedNotifyOverdue._id,
+              label: removedNotifyOverdue.name,
+            },
+          ];
+          setOptions(newOptions);
+        }
+      } else {
+        console.error("Failed to remove notify overdue");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const dataApprover = approvers?.map((approver, index) => {
     return {
       ID: index + 1,
@@ -291,6 +360,21 @@ const Page = ({ searchParams }) => {
     };
   });
 
+  const dataNotifyOverdue = notifiesOverdue?.map((notifyOverdue, index) => {
+    return {
+      ID: index + 1,
+      Name: notifyOverdue.EMP_NAME,
+      Action: (
+        <button
+          onClick={() => handleRemoveNotifyOverdue(notifyOverdue._id)} // ตรวจสอบให้แน่ใจว่าใช้ notifyOverdue._id
+          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+        >
+          Remove
+        </button>
+      ),
+    };
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -307,6 +391,9 @@ const Page = ({ searchParams }) => {
     const timeout = formData.get("timeout");
     const approvers_id = approvers.map((approver) => approver._id);
     const notifies_id = notifies.map((notify) => notify._id);
+    const notifiesOverdue_id = notifiesOverdue.map(
+      (notifyOverdue) => notifyOverdue._id
+    );
 
     // รับ ID ที่ต้องการลบ
     const removedApprovers = jobTemplate.ApproverList.filter(
@@ -316,6 +403,10 @@ const Page = ({ searchParams }) => {
     const removedNotifies = jobTemplate.NotifyList.filter(
       (notify) => !notifies_id.includes(notify._id)
     ).map((notify) => notify._id);
+
+    const removedNotifiesOverdue = jobTemplate.NotifyOverdueList.filter(
+      (notifyOverdue) => !notifiesOverdue_id.includes(notifyOverdue._id)
+    ).map((notifyOverdue) => notifyOverdue._id);
 
     const data = {
       jobTemplateID,
@@ -331,10 +422,10 @@ const Page = ({ searchParams }) => {
       notifies_id,
       removedApprovers,
       removedNotifies,
+      removedNotifiesOverdue,
     };
 
     try {
-
       //console.log("data=>", data);
 
       const res = await fetch(`/api/job-template/edit-job-template`, {
@@ -348,7 +439,7 @@ const Page = ({ searchParams }) => {
       const response = await res.json();
       //console.log("response=>", response);
       if (response.status === 500) {
-            console.error(response.error);
+        console.error(response.error);
       } else {
         Swal.fire({
           title: "Done!",
@@ -358,6 +449,7 @@ const Page = ({ searchParams }) => {
         e.target.reset();
         setNotifies([]);
         setApprovers([]);
+        setNotifiesOverdue([]);
         setRefresh((prev) => !prev);
       }
     } catch (error) {
@@ -509,22 +601,24 @@ const Page = ({ searchParams }) => {
                 required
               /> */}
               <select
-                   id="line_name" 
-                   name="line_name"             
-                   className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   defaultValue={jobTemplate.LINE_NAME}
-               >
-                  <option value={jobTemplate.LINE_NAME}>{jobTemplate.LINE_NAME}{" (Current) "}</option>                  
-                  <option value="N/A">&nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;</option>                  
-                  {selectLineNames.map((lineName) => (
-                    <option key={lineName._id} 
-                      value={lineName.name}>
-                      {lineName.name}
-                    </option>
-                  ))}
+                id="line_name"
+                name="line_name"
+                className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                defaultValue={jobTemplate.LINE_NAME}
+              >
+                <option value={jobTemplate.LINE_NAME}>
+                  {jobTemplate.LINE_NAME}
+                  {" (Current) "}
+                </option>
+                <option value="N/A">
+                  &nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;
+                </option>
+                {selectLineNames.map((lineName) => (
+                  <option key={lineName._id} value={lineName.name}>
+                    {lineName.name}
+                  </option>
+                ))}
               </select>
-
-
             </div>
             <div className="z-50">
               <label
@@ -599,6 +693,30 @@ const Page = ({ searchParams }) => {
                 Add
               </button>
             </div>
+            <div className="flex gap-5">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="visitors"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Add Notify Overdue
+                </label>
+                <Select
+                  options={options}
+                  value={selectedNotifyOverdue}
+                  onChange={setSelectedNotifyOverdue}
+                  isSearchable={true}
+                  className="z-40"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddNotifyOverdue}
+                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+              >
+                Add
+              </button>
+            </div>
           </div>
 
           <button
@@ -613,11 +731,19 @@ const Page = ({ searchParams }) => {
           headers={approverHeader}
           datas={dataApprover}
           TableName="Approver List"
+          searchColumn="Name"
         />
         <TableComponent
           headers={notifyHeader}
           datas={dataNotify}
           TableName="Notify List"
+          searchColumn="Name"
+        />
+        <TableComponent
+          headers={notifyOverdueHeader}
+          datas={dataNotifyOverdue}
+          TableName="Notify Overdue List"
+          searchColumn="Name"
         />
       </div>
     </Layout>

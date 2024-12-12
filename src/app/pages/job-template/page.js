@@ -19,13 +19,16 @@ const enabledFunction = {
 
 const approverHeader = ["ID", "Name", "Action"];
 const notifyHeader = ["ID", "Name", "Action"];
+const notifyOverdueHeader = ["ID", "Name", "Action"];
 
 const Page = () => {
   const [selectLineNames, setSelectLineNames] = useState([]);
   const [approvers, setApprovers] = useState([]);
   const [notifies, setNotifies] = useState([]);
+  const [notifiesOverdue, setNotifiesOverdue] = useState([]);
   const [selectedApprover, setSelectedApprover] = useState(null);
   const [selectedNotify, setSelectedNotify] = useState(null);
+  const [selectedNotifyOverdue, setSelectedNotifyOverdue] = useState(null);
   const [users, setUsers] = useState([]);
   const [options, setOptions] = useState([]);
   const [dueDate, setDueDate] = useState("");
@@ -34,8 +37,7 @@ const Page = () => {
   const [refresh, setRefresh] = useState(false);
   //const [showPopup, setShowPopup] = useState(false);
   //const togglePopup = () => setShowPopup(!showPopup);
- 
-  
+
   useEffect(() => {
     retreiveSession();
     calculateDueDate();
@@ -56,22 +58,23 @@ const Page = () => {
     }
   };
 
-
-
   useEffect(() => {
     // Filter options to exclude approvers and notifies
     const updatedOptions = users
       .filter(
         (user) =>
           !approvers.some((approver) => approver.user_id === user._id) &&
-          !notifies.some((notify) => notify.user_id === user._id)
+          !notifies.some((notify) => notify.user_id === user._id) &&
+          !notifiesOverdue.some(
+            (notifyOverdue) => notifyOverdue.user_id === user._id
+          )
       )
       .map((user) => ({
         value: user._id,
         label: user.name,
       }));
     setOptions(updatedOptions);
-  }, [approvers, notifies, users]);
+  }, [approvers, notifies, notifiesOverdue, users]);
 
   const retreiveSession = async () => {
     try {
@@ -108,8 +111,7 @@ const Page = () => {
         throw new Error(response.statusText);
       }
       const data = await response.json();
-      
-      
+
       setUsers(data.users);
       const userOptions = data.users.map((user) => ({
         value: user._id,
@@ -122,7 +124,6 @@ const Page = () => {
     }
   };
 
-
   const fetchLineNames = async (userSession) => {
     try {
       const formData = new FormData();
@@ -134,7 +135,7 @@ const Page = () => {
 
       const data = await response.json();
       if (data.status === 200) {
-            setSelectLineNames(data.selectLineNames);
+        setSelectLineNames(data.selectLineNames);
       } else {
         console.error("Failed to fetch data:", data.error);
       }
@@ -181,6 +182,31 @@ const Page = () => {
     setOptions(newOptions);
   };
 
+  const handleAddNotifyOverdue = () => {
+    if (!selectedNotifyOverdue) {
+      Swal.fire("Oops...", "Please select a Notify Overdue!", "error");
+      return;
+    }
+
+    const newNotifyOverdue = {
+      user_id: selectedNotifyOverdue.value,
+      name: selectedNotifyOverdue.label,
+    };
+
+    // เพิ่ม Notify Overdue ใหม่ไปยัง state
+    setNotifiesOverdue((prevNotifiesOverdue) => [
+      ...prevNotifiesOverdue,
+      newNotifyOverdue,
+    ]);
+    setSelectedNotifyOverdue(null);
+
+    // Update options after adding notify overdue
+    const newOptions = options.filter(
+      (option) => option.value !== selectedNotifyOverdue.value
+    );
+    setOptions(newOptions);
+  };
+
   const handleRemoveApprover = (userId) => {
     const removedApprover = users.find((user) => user._id === userId);
     setApprovers(approvers.filter((approver) => approver.user_id !== userId));
@@ -201,6 +227,24 @@ const Page = () => {
     const newOptions = [
       ...options,
       { value: removedNotify._id, label: removedNotify.name },
+    ];
+    setOptions(newOptions);
+  };
+
+  const handleRemoveNotifyOverdue = (userId) => {
+    const removedNotifyOverdue = users.find((user) => user._id === userId);
+
+    // ลบ notify overdue จาก state
+    setNotifiesOverdue(
+      notifiesOverdue.filter(
+        (notifyOverdue) => notifyOverdue.user_id !== userId
+      )
+    );
+
+    // เพิ่ม notify overdue ที่ถูกลบกลับไปใน options
+    const newOptions = [
+      ...options,
+      { value: removedNotifyOverdue._id, label: removedNotifyOverdue.name },
     ];
     setOptions(newOptions);
   };
@@ -235,8 +279,23 @@ const Page = () => {
     };
   });
 
+  const dataNotifyOverdue = notifiesOverdue.map((notifyOverdue, index) => {
+    return {
+      ID: index + 1,
+      Name: notifyOverdue.name,
+      Action: (
+        <button
+          onClick={() => handleRemoveNotifyOverdue(notifyOverdue.user_id)}
+          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+        >
+          Remove
+        </button>
+      ),
+    };
+  });
+
   const handleSubmit = async (e) => {
-    console.log("submit to create ");  
+    console.log("submit to create ");
     e.preventDefault();
 
     const formData = new FormData(e.target);
@@ -250,6 +309,9 @@ const Page = () => {
     const WORKGROUP_ID = user.workgroup_id;
     const APPROVERS_ID = approvers.map((approver) => approver.user_id);
     const NOTIFIES_ID = notifies.map((notify) => notify.user_id);
+    const NOTIFIES_OVERDUE_ID = notifiesOverdue.map(
+      (notifyOverdue) => notifyOverdue.user_id
+    );
 
     const data = {
       AUTHOR_ID,
@@ -262,6 +324,7 @@ const Page = () => {
       WORKGROUP_ID,
       APPROVERS_ID,
       NOTIFIES_ID,
+      NOTIFIES_OVERDUE_ID,
     };
 
     try {
@@ -285,6 +348,7 @@ const Page = () => {
         e.target.reset();
         setApprovers([]);
         setNotifies([]);
+        setNotifiesOverdue([]);
         setDueDate("");
         //setSelectedMachine(null);
         setSelectedApprover(null);
@@ -327,8 +391,7 @@ const Page = () => {
             Manage Checklist Template and its items
           </p>
         </div>
-        
-        
+
         {/* View All Checklist Templates Button */}
         <Link
           href="/pages/job-item-template"
@@ -458,19 +521,23 @@ const Page = () => {
                 Line Name
               </label>
               <select
-                   id="line_name"              
-                   className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    name="line_name"
-               >
-                  <option value="">&nbsp;&nbsp;&nbsp;Select&nbsp;&nbsp;&nbsp;</option>
-                  <option value="N/A">&nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;</option>
-                  {selectLineNames.map((lineName) => (
-                    <option key={lineName._id} value={lineName.name}>
-                      {lineName.name}
-                    </option>
-                  ))}
+                id="line_name"
+                className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                name="line_name"
+              >
+                <option value="">
+                  &nbsp;&nbsp;&nbsp;Select&nbsp;&nbsp;&nbsp;
+                </option>
+                <option value="N/A">
+                  &nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;
+                </option>
+                {selectLineNames.map((lineName) => (
+                  <option key={lineName._id} value={lineName.name}>
+                    {lineName.name}
+                  </option>
+                ))}
               </select>
-              
+
               {/* <input
                 type="text"
                 id="line_name"
@@ -553,6 +620,30 @@ const Page = () => {
                 Add
               </button>
             </div>
+            <div className="flex gap-5">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="visitors"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Add Notify Overdue
+                </label>
+                <Select
+                  options={options}
+                  value={selectedNotifyOverdue}
+                  onChange={setSelectedNotifyOverdue}
+                  isSearchable={true}
+                  className="z-40 max-w-[300px]"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddNotifyOverdue}
+                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+              >
+                Add
+              </button>
+            </div>
           </div>
           {
             // check if user has permission to create Checklist template
@@ -587,6 +678,12 @@ const Page = () => {
           headers={notifyHeader}
           datas={dataNotify}
           TableName="Notify List"
+          searchColumn="Name"
+        />
+        <TableComponent
+          headers={notifyOverdueHeader}
+          datas={dataNotifyOverdue}
+          TableName="Notify Overdue List"
           searchColumn="Name"
         />
       </div>

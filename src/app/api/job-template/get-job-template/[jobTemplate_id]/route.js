@@ -30,7 +30,10 @@ export const GET = async (req, { params }) => {
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
     });
 
-    // console.log("Notify user", notifier);
+    const notifiesOverdue = await NotifiesOverdue.find({
+      JOB_TEMPLATE_ID: jobTemplate_id,
+      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+    });
 
     const approversUserID = approvers.map((approver) => approver.USER_ID);
     const usersApprove = await Promise.all(
@@ -44,6 +47,16 @@ export const GET = async (req, { params }) => {
     const usersNotifier = await Promise.all(
       notifierUserID.map(async (notifier) => {
         const user = await User.findOne({ _id: notifier });
+        return user;
+      })
+    );
+
+    const notifierOverdueUserID = notifierOverdue.map(
+      (notifierOverdue) => notifierOverdue.USER_ID
+    );
+    const usersNotifierOverdue = await Promise.all(
+      notifierOverdueUserID.map(async (notifierOverdue) => {
+        const user = await User.findOne({ _id: notifierOverdue });
         return user;
       })
     );
@@ -80,6 +93,7 @@ export const GET = async (req, { params }) => {
       createdAt: createdAt,
       ApproverList: usersApprove,
       NotifyList: usersNotifier,
+      NotifyOverdueList: usersNotifierOverdue,
     };
 
     return NextResponse.json({ status: 200, jobTemplate: data });

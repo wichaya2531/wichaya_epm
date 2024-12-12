@@ -2,6 +2,7 @@ import { JobTemplate } from "@/lib/models/JobTemplate.js";
 import { NextResponse } from "next/server.js";
 import { Approves } from "@/lib/models/Approves.js";
 import { Notifies } from "@/lib/models/Notifies";
+import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 import { generateUniqueKey } from "@/lib/utils/utils.js";
 import { connectToDb } from "@/app/api/mongo/index.js";
 
@@ -20,6 +21,7 @@ export const POST = async (req, res) => {
     WORKGROUP_ID,
     APPROVERS_ID,
     NOTIFIES_ID,
+    NOTIFIES_OVERDUE_ID,
   } = body;
   try {
     const jobTemplate = new JobTemplate({
@@ -36,23 +38,31 @@ export const POST = async (req, res) => {
 
     await jobTemplate.save();
 
-    const approvers = APPROVERS_ID.map((approver) => {
-      return new Approves({
-        JOB_TEMPLATE_ID: jobTemplate._id,
-        JobTemplateCreateID,
-        USER_ID: approver,
-      });
-    });
-    await Approves.insertMany(approvers);
+    // สร้างข้อมูลสำหรับ Approves, Notifies, NotifiesOverdue
+    const approvers = APPROVERS_ID.map((approver) => ({
+      JOB_TEMPLATE_ID: jobTemplate._id,
+      JobTemplateCreateID,
+      USER_ID: approver,
+    }));
 
-    const notifies = NOTIFIES_ID.map((notify) => {
-      return new Notifies({
-        JOB_TEMPLATE_ID: jobTemplate._id,
-        JobTemplateCreateID,
-        USER_ID: notify,
-      });
-    });
-    await Notifies.insertMany(notifies);
+    const notifies = NOTIFIES_ID.map((notify) => ({
+      JOB_TEMPLATE_ID: jobTemplate._id,
+      JobTemplateCreateID,
+      USER_ID: notify,
+    }));
+
+    const notifiesOverdue = NOTIFIES_ID.map((notifyOverdue) => ({
+      JOB_TEMPLATE_ID: jobTemplate._id,
+      JobTemplateCreateID,
+      USER_ID: notifyOverdue,
+    }));
+
+    // บันทึกข้อมูลพร้อมกันโดยใช้ Promise.all
+    await Promise.all([
+      Approves.insertMany(approvers),
+      Notifies.insertMany(notifies),
+      NotifiesOverdue.insertMany(notifiesOverdue),
+    ]);
 
     return NextResponse.json({ status: 200, jobTemplate });
   } catch (err) {

@@ -4,6 +4,7 @@ import { JobTemplateEdit } from "@/lib/models/AE/JobTemplateEdit";
 import { JobItemTemplate } from "@/lib/models/JobItemTemplate";
 import { Approves } from "@/lib/models/Approves";
 import { Notifies } from "@/lib/models/Notifies";
+import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 
@@ -25,6 +26,7 @@ export const PUT = async (req, res) => {
     timeout,
     approvers_id,
     notifies_id,
+    notifiesOverdue_id,
   } = body;
 
   try {
@@ -57,7 +59,6 @@ export const PUT = async (req, res) => {
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
 
     await jobTemplate.save();
-    // console.log("Updated jobTemplate:", jobTemplate);
     const newApprovers = approvers_id.map((approver_id) => {
       return new Approves({
         JOB_TEMPLATE_ID: jobTemplate._id,
@@ -77,6 +78,16 @@ export const PUT = async (req, res) => {
     });
 
     await Notifies.insertMany(newNotifies);
+
+    const newNotifiesOverdue = notifiesOverdue_id.map((notifyOverdue_id) => {
+      return new NotifiesOverdue({
+        JOB_TEMPLATE_ID: jobTemplate._id,
+        JobTemplateCreateID: JobTemplateCreateID,
+        USER_ID: notifyOverdue_id,
+      });
+    });
+
+    await NotifiesOverdue.insertMany(newNotifiesOverdue);
 
     const jobItemTemplates = await JobItemTemplate.find({
       JOB_TEMPLATE_ID: jobTemplateID,
