@@ -115,13 +115,18 @@ export async function sendEmailsOverdude(emailList, job) {
   }
 
   const usrsparams = new URLSearchParams({
-    subject: "Overdue Task Notification",
+    subject: "Notification: Overdue Task Alert",
     body: `
-      The following task is overdue:
-      Details:
-      Task Name: ${job.name}
-      activated by: ${job.activatedBy}
-      timeout: ${job.timeout}
+      Dear User,
+
+      The following task is currently overdue. Please review the details below and take the necessary actions:
+      
+      **Task Details:**
+      - Task Name: ${job.name}
+      - Activated by: ${job.activatedBy}
+      - Timeout: ${job.timeout}
+
+      You can access the task directly using the link below:
       direct link : http://10.171.134.51:3000/pages/login
       `,
     mailsender: "epm-system@wdc.com",
