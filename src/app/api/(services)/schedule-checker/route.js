@@ -101,18 +101,32 @@ export const POST = async (req, res) => {
         // บันทึกงานที่เปลี่ยนสถานะ
         await job.save();
 
-        // ดึงข้อมูลผู้อนุมัติจาก ACTIVATE_USER โดยใช้ _id จาก ACTIVATE_USER
-        const approver = await User.findOne({ _id: job.ACTIVATE_USER }).select(
-          "EMAIL"
-        );
+        // ดึงข้อมูลผู้อนุมัติจาก JOB_APPROVERS
+        let emailList = [];
+        if (job.JOB_APPROVERS && Array.isArray(job.JOB_APPROVERS)) {
+          for (const approverId of job.JOB_APPROVERS) {
+            const email = await getEmailfromUserID(approverId); // ใช้ getEmailfromUserID ดึงอีเมล
+            if (email) {
+              emailList.push(email); // เก็บอีเมลในรายการ
+            }
+          }
+        }
 
         // ตรวจสอบว่าเราได้อีเมลล์จาก ACTIVATE_USER หรือไม่
-        if (approver && approver.EMAIL) {
-          const emailList = [approver.EMAIL]; // ใส่อีเมลล์ของผู้อนุมัติ
+        const activater = await User.findOne({ _id: job.ACTIVATE_USER }).select(
+          "EMAIL"
+        );
+        if (activater && activater.EMAIL) {
+          emailList.push(activater.EMAIL); // ใส่อีเมลของผู้สร้างงาน
+        }
+
+        // ตรวจสอบว่า emailList มีข้อมูลหรือไม่
+        if (emailList.length > 0) {
+          emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
           console.log("send emailList to=>", emailList); // แสดง emailList ที่จะส่ง
 
-          // ส่งอีเมลล์ไปยังผู้อนุมัติ
-          await sendEmailsOverdude(emailList, job); // ฟังก์ชันการส่งอีเมลล์
+          // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
+          await sendEmailsOverdude(emailList, job); // ฟังก์ชันการส่งอีเมล
         } else {
           console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
         }
