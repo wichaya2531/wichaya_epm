@@ -51,7 +51,7 @@ export const POST = async (req, res) => {
       USER_ID: notify,
     }));
 
-    const notifiesOverdue = NOTIFIES_ID.map((notifyOverdue) => ({
+    const notifiesOverdue = NOTIFIES_OVERDUE_ID.map((notifyOverdue) => ({
       JOB_TEMPLATE_ID: jobTemplate._id,
       JobTemplateCreateID,
       USER_ID: notifyOverdue,

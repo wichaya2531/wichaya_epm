@@ -31,7 +31,7 @@ export const GET = async (req, { params }) => {
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
     });
 
-    const notifiesOverdue = await NotifiesOverdue.find({
+    const notifierOverdue = await NotifiesOverdue.find({
       JOB_TEMPLATE_ID: jobTemplate_id,
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
     });
@@ -52,7 +52,7 @@ export const GET = async (req, { params }) => {
       })
     );
 
-    const notifierOverdueUserID = notifiesOverdue.map(
+    const notifierOverdueUserID = notifierOverdue.map(
       (notifierOverdue) => notifierOverdue.USER_ID
     );
     const usersNotifierOverdue = await Promise.all(
