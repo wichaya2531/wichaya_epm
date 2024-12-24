@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { Machine } from "@/lib/models/Machine";
 import { Approves } from "@/lib/models/Approves";
 import { Notifies } from "@/lib/models/Notifies";
+import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 import { User } from "@/lib/models/User";
 import { connectToDb } from "@/app/api/mongo/index.js";
 export const dynamic = "force-dynamic";
@@ -51,7 +52,7 @@ export const GET = async (req, { params }) => {
       })
     );
 
-    const notifierOverdueUserID = notifierOverdue.map(
+    const notifierOverdueUserID = notifiesOverdue.map(
       (notifierOverdue) => notifierOverdue.USER_ID
     );
     const usersNotifierOverdue = await Promise.all(
