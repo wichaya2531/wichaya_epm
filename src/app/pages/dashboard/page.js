@@ -50,7 +50,7 @@ const Page = () => {
       <div className="z-50">
         {/* Header section */}
         <div className="flex flex-col gap-4 bg-white rounded-xl p-4">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+          <div className="flex flex-col md:flex-row items-start lg:items-center gap-4">
             <img
               src="/assets/card-logo/dashboard.png"
               alt="wd logo"
@@ -68,7 +68,7 @@ const Page = () => {
         </div>
 
         {/* Cards section */}
-        <div className="flex flex-wrap mt-9 gap-8 justify-start">
+        <div className="flex flex-wrap mt-9 gap-8 justify-center">
           {cards &&
             cards.map((card, index) => {
               return (
