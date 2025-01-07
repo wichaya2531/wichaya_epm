@@ -314,28 +314,28 @@ const Page = ({ searchParams }) => {
     //  console.log("inputValues", inputValues);
 
     //console.log("jobItems",jobItems);
-    var actualValuIsNotReady = true;
-    jobItems.forEach((element) => {
-      //console.log("ActualValue=>", element.value);
-      if (element.value == null) {
-        // ใช้ == เพื่อครอบคลุมทั้ง null และ undefined
-        actualValuIsNotReady = false;
-        //  console.log("ActualValue is null or undefined. Break!!");
-        return;
-      }
-    });
+    // var actualValuIsNotReady = true;
+    // jobItems.forEach((element) => {
+    //console.log("ActualValue=>", element.value);
+    // if (element.value == null) {
+    // ใช้ == เพื่อครอบคลุมทั้ง null และ undefined
+    // actualValuIsNotReady = false;
+    //  console.log("ActualValue is null or undefined. Break!!");
+    //     return;
+    //   }
+    // });
 
     // console.log("actualValuIsNotReady=>",actualValuIsNotReady);
     // return;
 
-    if (actualValuIsNotReady == false) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please add at least one job item.",
-        icon: "error",
-      });
-      return;
-    }
+    // if (actualValuIsNotReady == false) {
+    //   Swal.fire({
+    //     title: "Error!",
+    //     text: "Please add at least one job item.",
+    //     icon: "error",
+    //   });
+    //   return;
+    // }
 
     const formData = new FormData();
     //formData.append("wdtagPictuer", selectedFile);

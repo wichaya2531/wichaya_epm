@@ -23,7 +23,7 @@ const statusOptions = [
   "Plan",
   "Waiting for approval",
   "Complete",
-  "Retake",
+  "Renew",
   "Overdue",
 ];
 
