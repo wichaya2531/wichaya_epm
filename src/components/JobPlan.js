@@ -45,6 +45,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
         const requestData = {
             activationDate: nextDate,
+            activationTime: document.getElementById('activate-time').value,
             recurrence: showRecurring ? recurrenceOption : null,
             endDate: endDate ? new Date(endDate).toISOString() : null,
             ...data
@@ -69,6 +70,9 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
             });
             return;
         }
+         
+
+       //console.log("requestData",requestData);
 
         try {
             const response = await fetch('/api/job/activate-job-template-plan', {
@@ -255,8 +259,15 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                                 onChange={(e) => setEndDate(e.target.value)}
                                 className="border border-gray-300 rounded-md p-2"
                             />
-
-
+                            <label htmlFor="activate-time" className="text-sm font-semibold">Activate Time</label>
+                            <input
+                                type="time"
+                                id="activate-time"
+                                name="activate-time"
+                        
+                                //onChange={(e) => setEndDate(e.target.value)}
+                                className="border border-gray-300 rounded-md p-2"
+                            />
                         </div>
                     )}
                 </div>

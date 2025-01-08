@@ -47,7 +47,6 @@ export const GET = async (req, { params }) => {
         JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
       });
       const Line_Name = LineName?.LINE_NAME || "Unknown";
-
       return {
         _id: schedule.JOB_TEMPLATE_ID,
         REVIEWS: "",

@@ -46,6 +46,7 @@ export const POST = async (req, res) => {
 
     const {
         activationDate,
+        activationTime,
         recurrence,
         jobTemplateID,
         jobTemplateCreateID,
@@ -76,6 +77,7 @@ export const POST = async (req, res) => {
                 JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
                 JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
                 ACTIVATE_DATE: AdvanceActivationDate,
+                ACTIVATE_TIME: activationTime,
                 DOC_NUMBER: jobTemplate.DOC_NUMBER,
                 WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
             });

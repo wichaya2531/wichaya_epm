@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Time } from "rrule/dist/esm/datetime";
 
 const scheduleSchema = new mongoose.Schema(
   {
@@ -10,6 +11,7 @@ const scheduleSchema = new mongoose.Schema(
     JOB_TEMPLATE_CREATE_ID: { type: String, required: true },
     JOB_TEMPLATE_NAME: { type: String, required: true },
     ACTIVATE_DATE: { type: Date, required: true },
+    ACTIVATE_TIME: { type: String, required: false },
     DOC_NUMBER: { type: String, required: true },
     STATUS: { type: String, default: "plan" },
     WORKGROUP_ID: {

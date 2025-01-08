@@ -184,8 +184,8 @@ export const POST = async (req, res) => {
       },
     });
     
-    //console.log("scheduler=>", scheduler);
-    //return NextResponse.json({ status: 200 });   
+    console.log("scheduler=>", scheduler);
+    return NextResponse.json({ status: 200 });   
 
 
     scheduler.map(async (schedulers) => {
