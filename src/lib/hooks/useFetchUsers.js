@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 
 
 const useFetchUsers = () => {
+
+    //console.log("use fetch user");
+
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,7 +15,9 @@ const useFetchUsers = () => {
         const fetchUsers = async () => {
             try {
                 const res = await fetch(`/api/user/get-users`, { next: { revalidate: 10 } });
+
                 const data = await res.json();
+                //console.log("data users:",data);
                 setUsers(data.users);
                 setLoading(false);
             } catch (error) {

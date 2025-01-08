@@ -101,8 +101,27 @@ const Page = ({ searchParams }) => {
   };
 
   useEffect(() => {
+    //console.log("useEffect...");
     calculateDueDate();
     // user must not be SuperAdmin
+    ///console.log("user...",user);
+
+    // var n= users.filter((user) => user.name !== "SuperAdmin")
+    // .filter(
+    //   (user) =>
+    //     Array.isArray(approvers) &&
+    //     !approvers.some((approver) => approver._id === user._id)
+    // )
+    // .filter(
+    //   (user) =>
+    //     Array.isArray(notifies) &&
+    //     !notifies.some((notify) => notify._id === user._id)
+    // )
+    // .map((user) => ({ value: user._id, label: user.name }));
+
+    // console.log("user",user);
+
+
     setOptions(
       users
         .filter((user) => user.name !== "SuperAdmin")

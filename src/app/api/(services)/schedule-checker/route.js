@@ -123,10 +123,10 @@ export const POST = async (req, res) => {
         // ตรวจสอบว่า emailList มีข้อมูลหรือไม่
         if (emailList.length > 0) {
           emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
-          console.log("send emailList to=>", emailList); // แสดง emailList ที่จะส่ง
+          console.log("OVERDUE send emailList to=>", emailList); // แสดง emailList ที่จะส่ง
 
-          // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
-          await sendEmailsOverdude(emailList, job); // ฟังก์ชันการส่งอีเมล
+             // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
+             //await sendEmailsOverdude(emailList, job); // ฟังก์ชันการส่งอีเมล
         } else {
           console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
         }
@@ -150,23 +150,44 @@ export const POST = async (req, res) => {
 
   //-------------------------ค้นหา Schedual-------------------------
   try {
-    console.log("-------Checking for active by schedual--------");
-    const today = new Date(); // วันที่ปัจจุบัน
-    const startDate = new Date(today); // สำเนาวันที่ปัจจุบัน
-    startDate.setDate(today.getDate() - 1); // ลบ 1 วัน
+    // console.log("-------Checking for active by schedual--------");
+    // const today = new Date(); // วันที่ปัจจุบัน
+    // const startDate = new Date(today); // สำเนาวันที่ปัจจุบัน
+    // startDate.setDate(today.getDate() - 1); // ลบ 1 วัน
 
-    const endDate = new Date(today); // สำเนาวันที่ปัจจุบัน
-    endDate.setDate(today.getDate()); // เพิ่ม 1 วัน
+    // const endDate = new Date(today); // สำเนาวันที่ปัจจุบัน
+    // endDate.setDate(today.getDate()); // เพิ่ม 1 วัน
 
+    // const scheduler = await Schedule.find({
+    //   /*EMP_NAME: 'scheduler',*/
+    //   ACTIVATE_DATE: {
+    //     $gte: startDate, // วันเริ่มต้น (1 วันก่อนหน้า)
+    //     $lte: endDate, // วันสิ้นสุด (1 วันถัดไป)
+    //   },
+    // });
+
+    // console.log("scheduler=>",scheduler);
+
+    console.log("-------Checking for active by schedule (±60 minutes)--------");
+
+    const now = new Date(); // เวลาปัจจุบัน
+    const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
+    startTime.setMinutes(now.getMinutes() - 60); // ลบ 60 นาที
+    
+    const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
+    endTime.setMinutes(now.getMinutes() + 60); // เพิ่ม 60 นาที
+    
     const scheduler = await Schedule.find({
-      /*EMP_NAME: 'scheduler',*/
       ACTIVATE_DATE: {
-        $gte: startDate, // วันเริ่มต้น (1 วันก่อนหน้า)
-        $lte: endDate, // วันสิ้นสุด (1 วันถัดไป)
+        $gte: startTime, // เวลาที่มากกว่าหรือเท่ากับ startTime (60 นาทีก่อนหน้า)
+        $lte: endTime,   // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
       },
     });
+    
+    //console.log("scheduler=>", scheduler);
+    //return NextResponse.json({ status: 200 });   
 
-    //console.log("scheduler=>",scheduler);
+
     scheduler.map(async (schedulers) => {
       //console.log("scheduler=>",scheduler);
       if (
