@@ -63,7 +63,7 @@ const TableReport = ({ datasets }) => {
             value={rowsPerPage}
             onChange={(e) => {
               setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1); // กลับไปหน้าแรกเมื่อเปลี่ยนจำนวนแถว
+              setCurrentPage(1);
             }}
           >
             {[5, 10, 15, 20, 25, 50, 100].map((num) => (
@@ -82,10 +82,10 @@ const TableReport = ({ datasets }) => {
             {[
               "Workgroup Name",
               "Line Name",
-              "DOC_NUMBER",
-              "JOB_ITEM_NAME",
+              "Doc Number",
+              "Job Item Name",
               "Date",
-              "ACTUAL_VALUE",
+              "Actual Value",
             ].map((header) => (
               <th
                 key={header}
@@ -125,22 +125,31 @@ const TableReport = ({ datasets }) => {
           ))}
         </tbody>
       </table>
-
       {/* ปุ่มเปลี่ยนหน้า */}
       <div className="flex justify-evenly items-center m-4">
         <button
-          className="px-4 py-2 border rounded bg-blue-600 text-white hover:bg-blue-500"
+          className={`px-4 py-2 border rounded-lg font-medium transition-all duration-300 ${
+            currentPage === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-md"
+          }`}
           disabled={currentPage === 1}
           onClick={() => setCurrentPage((prev) => prev - 1)}
         >
           Prev
         </button>
-        <span className="text-sm font-semibold text-gray-700">
-          Page {currentPage} of {totalPages}
-        </span>
+        {totalPages > 0 && (
+          <span className="text-sm font-semibold text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+        )}
         <button
-          className="px-4 py-2 border rounded bg-blue-600 text-white hover:bg-blue-500"
-          disabled={currentPage === totalPages}
+          className={`px-4 py-2 border rounded-lg font-medium transition-all duration-300 ${
+            currentPage === totalPages || totalPages === 0
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-md"
+          }`}
+          disabled={currentPage === totalPages || totalPages === 0}
           onClick={() => setCurrentPage((prev) => prev + 1)}
         >
           Next

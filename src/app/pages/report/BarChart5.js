@@ -50,7 +50,7 @@ const BarChart5 = () => {
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const { report } = useFetchReport1(refresh);
+  const { report, isLoading } = useFetchReport1(refresh);
   // const { lineNames, workgroupNames } =
   //   useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
@@ -101,17 +101,17 @@ const BarChart5 = () => {
     "not change",
     "done",
     "check",
-    "Unknown", // เพิ่มค่าอื่น ๆ ที่ต้องการแสดง
+    "Unknown",
   ];
   const getPastelColorForValue = (value) => {
     const colors = new Map([
-      ["pass", "rgba(198, 255, 198, 0.6)"], // สีพาสเทลเขียว
-      ["good", "rgba(204, 229, 255, 0.6)"], // สีพาสเทลฟ้า
-      ["change", "rgba(255, 227, 153, 0.6)"], // สีพาสเทลเหลือง
-      ["not change", "rgba(255, 239, 204, 0.6)"], // สีพาสเทลครีม
-      ["fail", "rgba(255, 182, 193, 0.6)"], // สีพาสเทลชมพู
-      ["done", "rgba(221, 160, 221, 0.6)"], // สีพาสเทลม่วง
-      ["check", "rgba(255, 255, 204, 0.6)"], // สีพาสเทลเหลืองอ่อน
+      ["pass", "rgba(198, 255, 198, 0.6)"],
+      ["good", "rgba(204, 229, 255, 0.6)"],
+      ["change", "rgba(255, 227, 153, 0.6)"],
+      ["not change", "rgba(255, 239, 204, 0.6)"],
+      ["fail", "rgba(255, 182, 193, 0.6)"],
+      ["done", "rgba(221, 160, 221, 0.6)"],
+      ["check", "rgba(255, 255, 204, 0.6)"],
     ]);
     return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
   };
@@ -292,7 +292,6 @@ const BarChart5 = () => {
     return date.toLocaleString("en-GB", options); // แสดงในรูปแบบ "DD/MM/YYYY HH:mm:ss"
   };
   useEffect(() => {
-    // สร้างฟังก์ชันเพื่อดึงข้อมูลที่ไม่ซ้ำ
     const uniqueValues = (key) => [
       ...new Set(report.map((item) => item[key]).filter(Boolean)),
     ];
@@ -493,14 +492,43 @@ const BarChart5 = () => {
             Workgroups
           </label>
           <button
-            onClick={() => setIsOpen((prevOpen) => !prevOpen)}
-            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+            onClick={() => !isLoading && setIsOpen((prevOpen) => !prevOpen)}
+            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
+            disabled={isLoading}
           >
-            {selectedWorkgroups.length > 0
-              ? `Selected ${selectedWorkgroups.length} Workgroups`
-              : "Select Workgroups"}
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Loading...
+              </div>
+            ) : selectedWorkgroups.length > 0 ? (
+              `Selected ${selectedWorkgroups.length} Workgroups`
+            ) : (
+              "Select Workgroups"
+            )}
           </button>
-          {isOpen && (
+          {isOpen && !isLoading && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
                 <input
@@ -531,7 +559,10 @@ const BarChart5 = () => {
           </label>
           <button
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
-            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
+            disabled={isLoading}
           >
             {selectedLineNames.length > 0
               ? `Selected ${selectedLineNames.length} LineNames`
@@ -568,7 +599,10 @@ const BarChart5 = () => {
           </label>
           <button
             onClick={() => setIsOpenDocNumber((prevOpen) => !prevOpen)}
-            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
+            disabled={isLoading}
           >
             {selectedDocNumbers.length > 0
               ? `Selected ${selectedDocNumbers.length} DOC Numbers`
@@ -604,7 +638,10 @@ const BarChart5 = () => {
           </label>
           <button
             onClick={() => setIsOpenJobItemName((prevOpen) => !prevOpen)}
-            className="w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none"
+            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
+            disabled={isLoading}
           >
             {selectedJobItemNames.length > 0
               ? `${selectedJobItemNames[0]}`
@@ -645,7 +682,9 @@ const BarChart5 = () => {
             Start Date
           </label>
           <input
-            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
             type="date"
             id="start-date"
             value={
@@ -654,6 +693,7 @@ const BarChart5 = () => {
                 : ""
             }
             onChange={(e) => setStartDate(new Date(e.target.value))}
+            disabled={isLoading}
           />
         </div>
         <div className="relative">
@@ -664,13 +704,16 @@ const BarChart5 = () => {
             End Date
           </label>
           <input
-            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
             type="date"
             id="end-date"
             value={
               endDate && isValid(endDate) ? format(endDate, "yyyy-MM-dd") : ""
             }
             onChange={(e) => setEndDate(new Date(e.target.value))}
+            disabled={isLoading}
           />
         </div>
         <div className="relative ">
