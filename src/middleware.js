@@ -41,6 +41,23 @@ export default async function middleware(req) {
   const token = await getSession();
   const userRoleId = token?.Role;
 
+
+  // Check if the user is coming from the acknowledge page
+  
+  
+  //const referer = req.nextUrl;
+
+    //console.log("req.nextUrl===>>", req.nextUrl.pathname);
+
+    // If no user session and coming from the acknowledge page, skip redirect to login
+    if (req.nextUrl.pathname.includes("/api/acknowledge")) {
+      return NextResponse.next();  // Skip login redirect if coming from acknowledge page
+    }
+    if (req.nextUrl.pathname.includes("/pages/acknowledge")) {
+      return NextResponse.next();  // Skip login redirect if coming from acknowledge page
+    }
+
+
   if (!userRoleId) {
     return NextResponse.redirect(new URL("/pages/login", req.nextUrl));
   }

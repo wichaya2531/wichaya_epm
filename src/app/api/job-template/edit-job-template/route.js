@@ -8,6 +8,8 @@ import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 
+
+
 export const PUT = async (req, res) => {
   await connectToDb();
 
@@ -71,34 +73,65 @@ export const PUT = async (req, res) => {
 
     await Approves.insertMany(newApprovers);
 
-    const newNotifies = notifies_id.map((notify_id) => {
-      return new Notifies({
-        JOB_TEMPLATE_ID: jobTemplate._id,
-        JobTemplateCreateID: JobTemplateCreateID,
-        USER_ID: notify_id,
-      });
-    });
+    const newNotifies = await Promise.all(
+      notifies_id.map(async (notify_id) => {
+        // ตรวจสอบว่ามี USER_ID ซ้ำในฐานข้อมูลหรือไม่
+        const exists = await Notifies.findOne({ USER_ID: notify_id });
+        if (!exists) {
+          return {
+            JOB_TEMPLATE_ID: jobTemplate._id,
+            JobTemplateCreateID: JobTemplateCreateID,
+            USER_ID: notify_id,
+          };
+        }
+        return null; // คืนค่า null หากมีอยู่แล้ว
+      })
+    );
+    
+    // กรอง null ออกจากผลลัพธ์
+    const filteredNotifies = newNotifies.filter((item) => item !== null);
 
-    await Notifies.insertMany(newNotifies);
+    //console.log("filteredNotifies",filteredNotifies);
 
-    const newNotifiesOverdue = notifiesOverdue_id.map((notifyOverdue_id) => {
-      return new NotifiesOverdue({
-        JOB_TEMPLATE_ID: jobTemplate._id,
-        JobTemplateCreateID: JobTemplateCreateID,
-        USER_ID: notifyOverdue_id,
-      });
-    });
+    await Notifies.insertMany(filteredNotifies);
 
+    //return NextResponse.json({ status: 200});
+
+    var newNotifiesOverdue = (
+      await Promise.all(
+        notifiesOverdue_id.map(async (notifyOverdue_id) => {
+          // เช็คข้อมูล
+          var c = await NotifiesOverdue.findOne({ USER_ID: notifyOverdue_id });
+          
+          // ถ้า c เป็น null สร้าง object, ถ้าไม่ใช่ return null
+          if (c === null) {
+            return {
+              JOB_TEMPLATE_ID: jobTemplate._id,
+              JobTemplateCreateID: JobTemplateCreateID,
+              USER_ID: notifyOverdue_id,
+            };
+          } else {
+            return null;
+          }
+        })
+      )
+    ).filter((item) => item !== null); // กรอง null ออก
+    //console.log("***newNotifiesOverdue***",newNotifiesOverdue);    
+    //addNotifiesOverdue(newNotifiesOverdue,JOB_TEMPLATE_ID);
+    // return NextResponse.json({ status: 200 }); 
     await NotifiesOverdue.insertMany(newNotifiesOverdue);
-
     const jobItemTemplates = await JobItemTemplate.find({
       JOB_TEMPLATE_ID: jobTemplateID,
     });
 
+    
+    //console.log("NotifiesOverdue",NotifiesOverdue);  
+    
+
     if (jobItemTemplates.length > 0) {
-      const updatePromises = jobItemTemplates.map(async (template) => {
-        template.JobTemplateCreateID = jobTemplate.JobTemplateCreateID;
-        return template.save();
+              const updatePromises = jobItemTemplates.map(async (template) => {
+              template.JobTemplateCreateID = jobTemplate.JobTemplateCreateID;
+          return template.save();
       });
 
       await Promise.all(updatePromises);

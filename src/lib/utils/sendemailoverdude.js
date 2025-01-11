@@ -110,10 +110,10 @@ export const getRevisionNo = async (documentNo) => {
 
 export async function sendEmailsOverdude(emailList, job) {
   if (process.env.WD_INTRANET_MODE === false) {
-    console.log("send emailList to=>", emailList);
+    console.log("send emailList to...=>", emailList);
     return;
   }
-
+  //console.log("-- job",job);
   const usrsparams = new URLSearchParams({
     subject: "Notification: Overdue Task Alert",
     body: `
@@ -122,12 +122,13 @@ export async function sendEmailsOverdude(emailList, job) {
       The following task is currently overdue. Please review the details below and take the necessary actions:
       
       **Task Details:**
-      - Task Name: ${job.name}
-      - Activated by: ${job.activatedBy}
-      - Timeout: ${job.timeout}
+      - Checklist name: ${job.JOB_NAME}
+      - DOC_NUMBER : ${job.DOC_NUMBER}
+      - Activate Time : ${job.createdAt} 
+      - Timeout: ${job.TIMEOUT}
 
       You can access the task directly using the link below:
-      direct link : http://10.171.134.51:3000/pages/login
+      Click for Acknowledge  : ${config.host}/pages/acknowledge/${job._id}
       `,
     mailsender: "epm-system@wdc.com",
     cc: "",

@@ -8,7 +8,7 @@ import { JobApproves } from "@/lib/models/JobApprove";
 export const POST = async (req, res) => {
     await connectToDb();
     const body = await req.json();
-    const { job_id, user_id, isApproved, comment } = body;
+    const { job_id, user_id, isApproved, comment,disapprove_reason } = body;
 
     try {
         const renew = await Status.findOne({ status_name: 'renew' });
@@ -16,6 +16,7 @@ export const POST = async (req, res) => {
         const job = await Job.findOne({ _id: job_id });
         if ( !isApproved ) {
             job.JOB_STATUS_ID = renew._id;
+            job.DISAPPROVE_REASON=disapprove_reason;
             await job.save();
         }
         else {
@@ -27,7 +28,7 @@ export const POST = async (req, res) => {
             JOB: job,
             USER_ID: user_id,
             IS_APPROVE: isApproved,
-            COMMENT: comment
+            COMMENT: comment,
         });
 
         await jobApprove.save();

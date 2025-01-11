@@ -27,14 +27,17 @@ export const GET = async (req, { params }) => {
     });
 
     const notifier = await Notifies.find({
-      JOB_TEMPLATE_ID: jobTemplate_id,
-      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+      JOB_TEMPLATE_ID: jobTemplate_id /*,
+      JobTemplateCreateID: jobTemplate.JobTemplateCreateID, */
     });
 
+
     const notifierOverdue = await NotifiesOverdue.find({
-      JOB_TEMPLATE_ID: jobTemplate_id,
-      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+      JOB_TEMPLATE_ID: jobTemplate_id/*,
+      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,*/
     });
+
+    //console.log("notifierOverdue",notifierOverdue);
 
     const approversUserID = approvers.map((approver) => approver.USER_ID);
     const usersApprove = await Promise.all(

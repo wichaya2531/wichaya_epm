@@ -62,6 +62,24 @@ const Page = ({ searchParams }) => {
   };
 
   const handleApprove = async (isApproved, comment = null) => {
+    
+    var disapprove_reason="";
+    if(!isApproved){
+       
+        const { value: disapprove_reason_1 } = await Swal.fire({
+        title: "Please provide a reason",
+        input: "textarea",
+        inputPlaceholder: "Enter your reason here...",
+        inputAttributes: {
+          "aria-label": "Enter your reason here",
+        },
+        showCancelButton: true,
+        confirmButtonText: "Submit",
+        cancelButtonText: "Cancel",
+      });
+      disapprove_reason=disapprove_reason_1;
+    }
+    
     try {
       const response = await fetch(`/api/approval/approve`, {
         method: "POST",
@@ -73,6 +91,7 @@ const Page = ({ searchParams }) => {
           user_id: user._id,
           isApproved,
           comment,
+          disapprove_reason,
         }),
         next: { revalidate: 10 },
       });

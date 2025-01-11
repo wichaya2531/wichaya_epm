@@ -264,7 +264,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                                 type="time"
                                 id="activate-time"
                                 name="activate-time"
-                        
+                                value="07:00"
                                 //onChange={(e) => setEndDate(e.target.value)}
                                 className="border border-gray-300 rounded-md p-2"
                             />

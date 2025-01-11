@@ -13,6 +13,7 @@ import { Workgroup } from "@/lib/models/Workgroup";
 import { User } from "@/lib/models/User";
 import { ObjectId } from "mongodb";
 import { Notified, Notifies } from "@/lib/models/Notifies.js";
+import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 
 async function getEmailfromUserID(userID) {
   try {
@@ -74,6 +75,16 @@ export const POST = async (req, res) => {
       });
     }
 
+    console.log("---------------------------");  
+    const notisOnOverdues = await NotifiesOverdue.find({
+       JOB_TEMPLATE_ID: JobTemplateID
+       //,
+      // JobTemplateCreateID: JobTemplateCreateID,
+    });
+    //console.log("notis  list on over due",notisOnOverdue);
+
+
+
     const newID = await Status.findOne({ status_name: "new" });
     if (!newID) {
       return NextResponse.json({
@@ -93,7 +104,10 @@ export const POST = async (req, res) => {
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       ACTIVATE_USER: ACTIVATER_ID,
       JOB_APPROVERS: approvers.map((approver) => approver.USER_ID),
+      OVERDUE_NOTIFYS:notisOnOverdues.map((notisOnOverdue) => notisOnOverdue.USER_ID),
+      OVERDUE_ACK:"",
       TIMEOUT: jobTemplate.TIMEOUT,
+      DISAPPROVE_REASON:"",
     });
     //console.log("Job->", job);
     await job.save();

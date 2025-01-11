@@ -10,5 +10,4 @@ const notifiesOverdueSchema = new mongoose.Schema(
 );
 
 export const NotifiesOverdue =
-  mongoose.models?.NotifiesOverdue ||
-  mongoose.model("NotifiesOverdue", notifiesOverdueSchema);
+  mongoose.models?.NotifiesOverdue || mongoose.model("NotifiesOverdue", notifiesOverdueSchema);

@@ -15,7 +15,8 @@ const jobSchema = new mongoose.Schema(
       required: true,
     },
     JOB_APPROVERS: { type: Array, required: true },
-    DISAPPROVE_COMMANT:{ type: String, required: false }, // เก็บ ข้อความ ตอบกลับ ในกรณีที่มีการ ให้ ทำ Checklist นั้น ใหม่
+    OVERDUE_NOTIFYS: { type: Array, required: false },
+    DISAPPROVE_REASON:{ type: String, required: false }, // เก็บ ข้อความ ตอบกลับ ในกรณีที่มีการ ให้ ทำ Checklist นั้น ใหม่    
     JOB_NAME: { type: String, required: true },
     DOC_NUMBER: { type: String, required: true },
     LINE_NAME: { type: String, required: true },
@@ -35,6 +36,7 @@ const jobSchema = new mongoose.Schema(
     },
     SUBMITTED_DATE: { type: Date, default: null },
     IMAGE_FILENAME: { type: String, default: null },
+    OVERDUE_ACK:{ type: String, required: false },
   },
   { timestamps: true }
 );

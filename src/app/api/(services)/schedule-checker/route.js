@@ -20,6 +20,8 @@ import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mon
 import { Notified, Notifies } from "@/lib/models/Notifies.js";
 import { User } from "@/lib/models/User.js";
 import { sendEmailsOverdude } from "@/lib/utils/sendemailoverdude";
+//import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
+
 
 async function getEmailfromUserID(userID) {
   try {
@@ -30,6 +32,25 @@ async function getEmailfromUserID(userID) {
     return null;
   }
 }
+
+
+// async function getOverdueList(jobs) {
+//    console.log("jobs",jobs);
+//    //678084a22b28e758d534aa24
+//    try {
+//      const notifiesoverdues = await NotifiesOverdue.findOne({JOB_TEMPLATE_ID:jobs.JOB_TEMPLATE_ID});
+//      console.log("notifiesoverdues",notifiesoverdues);
+//   //   return user ? user.EMAIL : null;
+//    } catch (error) {
+//      console.error("Error:", error);
+//   //   return null;
+//    }
+//     //console.log("Overdue Jobs Job",jobs);
+
+// }
+
+
+
 
 const convertTimeout = async (timeout, createdAt) => {
   const startDate = new Date(createdAt);
@@ -97,8 +118,23 @@ export const POST = async (req, res) => {
         if (job.LINE_NAME === undefined) {
           job.LINE_NAME = "Unknown";
         }
+        //    getOverdueList(job);       
+        //console.log("Notify Overdue List : ",job.OVERDUE_NOTIFYS);
+        let overdueEmailList=[];
+        if (job.OVERDUE_NOTIFYS && Array.isArray(job.OVERDUE_NOTIFYS)) {
+          for (const overdueListId of job.OVERDUE_NOTIFYS) {
+            const email = await getEmailfromUserID(overdueListId); // ใช้ getEmailfromUserID ดึงอีเมล
+            if (email) {
+              overdueEmailList.push(email); // เก็บอีเมลในรายการ
+            }
+          }
+        }
+        
+        //console.log("overdueEmailList",overdueEmailList);
 
-        // บันทึกงานที่เปลี่ยนสถานะ
+        //return NextResponse.json({ status: 200 });
+
+        //บันทึกงานที่เปลี่ยนสถานะ
         await job.save();
 
         // ดึงข้อมูลผู้อนุมัติจาก JOB_APPROVERS
@@ -121,12 +157,11 @@ export const POST = async (req, res) => {
         }
 
         // ตรวจสอบว่า emailList มีข้อมูลหรือไม่
-        if (emailList.length > 0) {
-          emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
-          console.log("OVERDUE send emailList to=>", emailList); // แสดง emailList ที่จะส่ง
-
+        if (overdueEmailList.length > 0) {
+          //emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
+            console.log("OVERDUE send emailList to=>", overdueEmailList); // แสดง emailList ที่จะส่ง
              // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
-             //await sendEmailsOverdude(emailList, job); // ฟังก์ชันการส่งอีเมล
+             await sendEmailsOverdude(overdueEmailList, job); // ฟังก์ชันการส่งอีเมล
         } else {
           console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
         }
