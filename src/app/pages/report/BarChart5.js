@@ -338,7 +338,9 @@ const BarChart5 = () => {
   };
   // ฟิลเตอร์เฉพาะรายการที่ไม่เป็น 'Unknown' หรือค่าว่าง
   const filteredValues = (items) =>
-    items.filter((item) => item && item.trim() !== "" && item !== "Unknown");
+    items
+      .filter((item) => item && item.trim() !== "" && item !== "Unknown") // กรองค่า
+      .sort((a, b) => a.localeCompare(b)); // เรียงลำดับตามตัวอักษ
   const availableLineNames = filteredValues(
     lineNames.filter((lineName) =>
       selectedWorkgroups.some((workgroup) =>
