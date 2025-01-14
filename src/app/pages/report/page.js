@@ -10,12 +10,14 @@ import BarChart3 from "./BarChart3";
 import BarChart4 from "./BarChart4";
 import BarChart5 from "./BarChart5";
 import BarChart1 from "./BarChart1";
+import ReportDoc from "./ReportDoc";
 import { useState } from "react";
 
 const Page = () => {
   const [selectedChart, setSelectedChart] = useState("BarChart5");
   const chartButtons = [
     { label: "Value in Item", value: "BarChart5" },
+    { label: "ReportDoc", value: "ReportDoc" },
     // { label: "Checklist Active By user", value: "BarChart" },
     // { label: "Template By Workgroups", value: "BarChart1" },
     // { label: "User Type workgroup", value: "BarChart2" },
@@ -60,12 +62,13 @@ const Page = () => {
         ))}
       </div>
       <div className="mb-4 p-4 bg-white rounded-xl">
-        {selectedChart === "BarChart" && <BarChart />}
+        {/* {selectedChart === "BarChart" && <BarChart />}
         {selectedChart === "BarChart1" && <BarChart1 />}
         {selectedChart === "BarChart2" && <BarChart2 />}
         {selectedChart === "BarChart3" && <BarChart3 />}
-        {selectedChart === "BarChart4" && <BarChart4 />}
+        {selectedChart === "BarChart4" && <BarChart4 />} */}
         {selectedChart === "BarChart5" && <BarChart5 />}
+        {selectedChart === "ReportDoc" && <ReportDoc />}
       </div>
     </Layout>
   );
