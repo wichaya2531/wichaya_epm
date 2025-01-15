@@ -47,7 +47,7 @@ const JobForm = ({
         <Link href="/pages/job-approve">
           <ArrowBackIosNewIcon />
         </Link>
-        Checklist Information
+        Checklist Header
         {isShowJobInfo ? (
           <ArrowDropUpIcon className="size-14" />
         ) : (
@@ -330,7 +330,7 @@ const JobForm = ({
           className="text-3xl font-bold text-primary flex items-center cursor-pointer"
           onClick={toggleJobItem}
         >
-          Checklist Items Information
+          Checklist Items 
           {isShowJobItem ? (
             <ArrowDropUpIcon className="size-14" />
           ) : (

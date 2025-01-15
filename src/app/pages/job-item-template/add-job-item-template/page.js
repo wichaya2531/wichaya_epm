@@ -150,6 +150,32 @@ const Page = ({ searchParams }) => {
     }
   };
 
+  
+  const handleMqtt = async (jobItemTemplate) => {
+    const idToCopy = jobItemTemplate._id;
+
+    // ใช้ SweetAlert2 (swal)
+    Swal.fire({
+        title: 'Mqtt Topic ID',
+        html: `<p>ID: <strong>${idToCopy}</strong></p>
+               <button id="copy-btn" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white;">
+                   Copy to Clipboard
+               </button>`,
+        showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
+    });
+
+    // เพิ่ม Event Listener ให้กับปุ่ม Copy
+    document.addEventListener('click', (event) => {
+        if (event.target.id === 'copy-btn') {
+            navigator.clipboard.writeText(idToCopy).then(() => {
+                Swal.fire('Copied!', 'ID has been copied to clipboard.', 'success');
+            }).catch(() => {
+                Swal.fire('Oops!', 'Failed to copy ID.', 'error');
+            });
+        }
+    });
+  };
+
   const handleRemove = async (jobItemTemplate_id) => {
     try {
       const response = await fetch(
@@ -252,6 +278,7 @@ const Page = ({ searchParams }) => {
           >
             Edit
           </Link>
+
           <button
             className={`text-white font-bold rounded-lg text-sm px-2 py-2.5 text-center 
                             ${
@@ -277,6 +304,33 @@ const Page = ({ searchParams }) => {
           >
             Remove
           </button>
+
+          <button
+            className={`text-white font-bold rounded-lg text-sm px-2 py-2.5 text-center 
+                            ${
+                              user &&
+                              user.actions &&
+                              !user.actions.some(
+                                (action) =>
+                                  action._id ===
+                                  enabledFunction["remove-job-item-template"]
+                              )
+                                ? "bg-lime-500 cursor-not-allowed"
+                                : "bg-lime-700 hover:bg-green-800 focus:ring-4 focus:outline-none dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+                            }`}
+            onClick={() => handleMqtt(jobItemTemplate)}
+            disabled={
+              !user ||
+              !user.actions ||
+              !user.actions.some(
+                (action) =>
+                  action._id === enabledFunction["remove-job-item-template"]
+              )
+            }
+          >
+            Mqtt
+          </button>
+
         </div>
       ),
     };

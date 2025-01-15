@@ -185,7 +185,7 @@ const JobForm = ({
         <Link href="/pages/dashboard">
           <ArrowBackIosNewIcon />
         </Link>
-        Checklist Information
+        Checklist Header
         {isShowJobInfo ? (
           <ArrowDropUpIcon
             style={{ fontSize: "5rem" }}
@@ -544,7 +544,7 @@ const JobForm = ({
       <hr />
       <div className="flex flex-col gap-8">
         <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
-          Checklist Items Information
+          Checklist Items 
           {isShowJobItem ? (
             <ArrowDropUpIcon
               style={{ fontSize: "5rem" }}
@@ -683,7 +683,7 @@ const JobForm = ({
                               color: "blue",
                             }}
                           >
-                            [ซ่อน]
+                            [hide]
                           </span>
                         </div>
                       </div>

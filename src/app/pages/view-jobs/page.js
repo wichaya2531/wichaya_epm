@@ -159,7 +159,12 @@ const Page = ({ searchParams }) => {
   mqttClient.on("message", (topic, message) => {
     jobItems.forEach(element => {
           if (element.JobItemTemplateMqtt==topic) {
-              document.getElementById(element.JobItemID.toString()).placeholder = message.toString();
+             try{
+                  document.getElementById(element.JobItemID.toString()).placeholder = message.toString();
+             }catch(err){
+             
+             } 
+          
           }
     });
     

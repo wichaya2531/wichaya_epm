@@ -602,7 +602,7 @@ const Page = () => {
                   htmlFor="visitors"
                   className="block mb-2 text-sm font-medium text-black"
                 >
-                  Add Notify
+                  Add Notify Active
                 </label>
                 <Select
                   options={options}
@@ -677,7 +677,7 @@ const Page = () => {
         <TableComponent
           headers={notifyHeader}
           datas={dataNotify}
-          TableName="Notify List"
+          TableName="Notify Active List"
           searchColumn="Name"
         />
         <TableComponent

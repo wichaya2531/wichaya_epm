@@ -756,7 +756,7 @@ const Page = ({ searchParams }) => {
         <TableComponent
           headers={notifyHeader}
           datas={dataNotify}
-          TableName="Notify List"
+          TableName="Notify Active List"
           searchColumn="Name"
         />
         <TableComponent
