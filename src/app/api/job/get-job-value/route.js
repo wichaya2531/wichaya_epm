@@ -82,7 +82,7 @@ export const GET = async (req, res) => {
       ActivatedAt: job.createdAt.toLocaleString(),
       LastestUpdate: job.updatedAt.toLocaleString(),
       SubmittedBy: job.SUBMITTED_BY ? job.SUBMITTED_BY.EMP_NAME : "",
-      SubmitedAt: job.SUBMITTED_DATE ? job.SUBMITTED_DATE.toLocaleString() : "",
+      SubmitedAt: job.SUBMITTED_DATE ? job.SUBMITTED_DATE.toLocaleString() : "",     
       Status: statusName,
       Approvers: job.JOB_APPROVERS,
     };
@@ -94,6 +94,7 @@ export const GET = async (req, res) => {
         return {
           JobItemID: jobItem._id,
           JobItemTitle: jobItem.JOB_ITEM_TITLE,
+          JobItemTemplateMqtt:jobItem.JOB_ITEM_TEMPLATE_ID,
           JobItemName: jobItem.JOB_ITEM_NAME,
           UpperSpec: jobItem.UPPER_SPEC,
           LowerSpec: jobItem.LOWER_SPEC,
