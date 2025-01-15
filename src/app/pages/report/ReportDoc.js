@@ -1,23 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  LogarithmicScale,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  PointElement,
-  LineElement,
-  TimeScale,
-} from "chart.js";
-import ChartDataLabels from "chartjs-plugin-datalabels";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
-// import useFetchReportWorkgroupLinename from "@/lib/hooks/useFetchReportWorkgroupLinename";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO, isValid, startOfToday } from "date-fns";
 import "chartjs-adapter-date-fns";
@@ -31,21 +14,8 @@ import {
   VisibilityOff,
   CalendarViewMonth,
 } from "@mui/icons-material";
-import TableReport from "@/components/TableReport";
-ChartJS.register(
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  LogarithmicScale,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  ChartDataLabels,
-  PointElement,
-  LineElement,
-  TimeScale
-);
+import TableReportDoc from "@/components/TableReportDoc";
+
 const ReportDoc = () => {
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
@@ -59,7 +29,7 @@ const ReportDoc = () => {
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
-  const [selectedDocNumbers, setSelectedDocNumbers] = useState([]);
+  const [selectedDocNumbers, setSelectedDocNumbers] = useState("");
   const [selectedJobItemNames, setSelectedJobItemNames] = useState([]);
   const [isOpenDocNumber, setIsOpenDocNumber] = useState(false);
   const [isOpenJobItemName, setIsOpenJobItemName] = useState(false);
@@ -231,66 +201,7 @@ const ReportDoc = () => {
       };
     });
   const data = { labels: [], datasets };
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true },
-      title: { display: false },
-      datalabels: {
-        display: true,
-        color: (context) =>
-          context.raw && context.raw.actualValue
-            ? getPastelColorForValue(context.raw.actualValue)
-            : "#000",
-        anchor: "end",
-        align: "top",
-        font: { size: 12, weight: "normal" },
-        formatter: (value) =>
-          isNaN(value.y) ? value.actualValue : value.y.toLocaleString(),
-      },
-    },
-    layout: { padding: { top: 30, right: 20 } },
-    scales: {
-      x: {
-        type: "time",
-        time: {
-          unit: "month",
-          displayFormats: { month: "MMM yyyy" },
-        },
-        grid: { display: false },
-        border: { display: false },
-        ticks: {
-          font: { size: 12 },
-          autoSkip: true,
-          maxTicksLimit: 12,
-        },
-      },
-      y: {
-        type: "linear",
-        grid: { display: true, color: "rgba(0, 0, 0, 0.1)" },
-        border: { display: false },
-        ticks: {
-          font: { size: 12 },
-          callback: (value) => value.toLocaleString(),
-          beginAtZero: true,
-          suggestedMin: 0,
-        },
-      },
-    },
-  };
-  const formatDate = (dateString) => {
-    const options = {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    };
-    const date = new Date(dateString);
-    return date.toLocaleString("en-GB", options); // แสดงในรูปแบบ "DD/MM/YYYY HH:mm:ss"
-  };
+
   useEffect(() => {
     const uniqueValues = (key) => [
       ...new Set(report.map((item) => item[key]).filter(Boolean)),
@@ -326,15 +237,8 @@ const ReportDoc = () => {
     setSelectedJobItemNames([]);
   };
   const handleDocNumberChange = (docNumber) => {
-    handleSelectionChange(docNumber, selectedDocNumbers, setSelectedDocNumbers);
+    setSelectedDocNumbers(docNumber);
     setSelectedJobItemNames([]);
-  };
-  const handleJobItemNameChange = (jobItemName) => {
-    handleSelectionChange(
-      jobItemName,
-      selectedJobItemNames,
-      setSelectedJobItemNames
-    );
   };
   // ฟิลเตอร์เฉพาะรายการที่ไม่เป็น 'Unknown' หรือค่าว่าง
   const filteredValues = (items) =>
@@ -360,26 +264,45 @@ const ReportDoc = () => {
       )
     )
   );
-  const availableJobItemNames = filteredValues(
-    jobItemNames.filter((jobItemName) =>
-      report.some(
-        (item) =>
-          item.JOB_ITEM_NAME === jobItemName &&
-          selectedDocNumbers.includes(item.DOC_NUMBER)
-      )
-    )
-  );
   const availableWorkgroups = filteredValues(workgroupNames);
   const exportToPDF = async () => {
     try {
-      const element = chartRef.current;
-      if (!element) throw new Error("Chart reference is null");
-      const canvas = await html2canvas(element);
+      const table = document.querySelector(".min-w-full"); // เลือกตารางจาก class ที่ใช้
+      if (!table) throw new Error("Table not found");
+
+      const canvas = await html2canvas(table); // ใช้ html2canvas กับตารางแทน chart
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF();
       const pageHeight = pdf.internal.pageSize.height;
       const imgWidth = 190;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // ใช้วันที่ที่เลือกจากฟอร์ม
+      const formattedStartDate = startDate
+        ? format(startDate, "dd-MM-yyyy")
+        : "";
+      const formattedEndDate = endDate ? format(endDate, "dd-MM-yyyy") : "";
+
+      // ถ้าไม่มีวันที่เริ่มต้นหรือสิ้นสุดจากฟอร์ม ใช้วันที่จากข้อมูลในตาราง
+      let startDateFormatted = formattedStartDate;
+      let endDateFormatted = formattedEndDate;
+
+      if (!startDateFormatted || !endDateFormatted) {
+        const tableData = Object.values(datasets).flatMap((dataset) =>
+          dataset.data.map((item) => ({
+            date: new Date(item.x),
+          }))
+        );
+
+        const sortedDates = tableData
+          .map((item) => item.date)
+          .sort((a, b) => a - b);
+        startDateFormatted = sortedDates[0]?.toISOString().split("T")[0];
+        endDateFormatted = sortedDates[sortedDates.length - 1]
+          ?.toISOString()
+          .split("T")[0];
+      }
+
       // ดึงข้อมูลในรูปแบบเดียวกับ CSV
       const exportedData = datasets.flatMap((dataset) => {
         const [lineName, workgroupName] = dataset.label.split(" - ");
@@ -392,33 +315,46 @@ const ReportDoc = () => {
           JOB_ITEM_NAME: item.jobItemName,
         }));
       });
+
       let yPosition = 20;
+      const lineHeight = 5; // ระยะห่างระหว่างบรรทัด
+      const columnSpacing = 10; // ระยะห่างระหว่างคอลัมน์
+      const fontSize = 10; // ขนาดฟอนต์
+
       // วาดข้อมูลใน PDF
       exportedData.forEach((data) => {
-        if (yPosition + 10 > pageHeight) pdf.addPage(), (yPosition = 20);
+        if (yPosition + lineHeight > pageHeight) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+
+        // สร้างข้อความในรูปแบบที่จัดระเบียบ
         const dataText = `
-          LINE_NAME: ${data.LINE_NAME}, WORKGROUP_NAME: ${data.WORKGROUP_NAME},
-          Date: ${data.Date}, ACTUAL_VALUE: ${data.ACTUAL_VALUE},
-          DOC_NUMBER: ${data.DOC_NUMBER}, JOB_ITEM_NAME: ${data.JOB_ITEM_NAME}
+          LINE_NAME: ${data.LINE_NAME}
+          WORKGROUP_NAME: ${data.WORKGROUP_NAME}
+          Date: ${data.Date}
+          ACTUAL_VALUE: ${data.ACTUAL_VALUE}
+          DOC_NUMBER: ${data.DOC_NUMBER}
+          JOB_ITEM_NAME: ${data.JOB_ITEM_NAME}
         `.trim();
+
+        // ใช้ splitTextToSize เพื่อแบ่งข้อความให้พอดีกับความกว้าง
         const dataLines = pdf.splitTextToSize(dataText, 180);
+
+        // วาดข้อความใน PDF
+        pdf.setFontSize(fontSize);
         pdf.text(dataLines, 10, yPosition);
-        yPosition += dataLines.length * 10;
+
+        // เพิ่มระยะห่างระหว่างบรรทัด
+        yPosition += dataLines.length * lineHeight;
       });
+
       if (yPosition + imgHeight + 10 > pageHeight)
         pdf.addPage(), (yPosition = 20);
       pdf.addImage(imgData, "PNG", 10, yPosition + 10, imgWidth, imgHeight);
-      // กำหนดชื่อไฟล์
-      const fileName =
-        selectedLineNames.length === 0 && selectedWorkgroups.length === 0
-          ? "All_LineNames_All_Workgroups.pdf"
-          : `LineNames_${
-              selectedLineNames.length > 0 ? selectedLineNames.join("_") : "All"
-            }_Workgroups_${
-              selectedWorkgroups.length > 0
-                ? selectedWorkgroups.join("_")
-                : "All"
-            }.pdf`;
+
+      // สร้างชื่อไฟล์ที่มีวันที่เริ่มต้นถึงวันที่สิ้นสุด
+      const fileName = `TableReportDoc_${startDateFormatted}_to_${endDateFormatted}.pdf`;
 
       pdf.save(fileName);
     } catch (error) {
@@ -426,46 +362,127 @@ const ReportDoc = () => {
       alert("Unable to export PDF file: " + error.message);
     }
   };
+
   const exportToCSV = () => {
-    const exportedData = datasets.flatMap((dataset) => {
-      // แยก LINE_NAME และ WORKGROUP_NAME ออกจาก label
-      const [lineName, workgroupName] = dataset.label.split(" - ");
-      return dataset.data.map((item) => ({
-        LINE_NAME: lineName, // LINE_NAME
-        WORKGROUP_NAME: workgroupName, // WORKGROUP_NAME
-        Date: new Date(item.x), // แปลงเป็น Date object โดยตรง
-        ACTUAL_VALUE: item.actualValue, // ใช้ค่า actualValue จาก item
-        DOC_NUMBER: item.docNumber, // DOC_NUMBER
-        JOB_ITEM_NAME: item.jobItemName, // JOB_ITEM_NAME
-      }));
-    });
+    // สร้างชื่อเดือนที่ใช้ในการ export
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    // ใช้วันที่ที่เลือกจากฟอร์ม
+    const formattedStartDate = startDate ? format(startDate, "dd-MM-yyyy") : "";
+    const formattedEndDate = endDate ? format(endDate, "dd-MM-yyyy") : "";
+
+    // ถ้าไม่มีวันที่เริ่มต้นหรือสิ้นสุดจากฟอร์ม ใช้วันที่จากข้อมูลในตาราง
+    let startDateFormatted = formattedStartDate;
+    let endDateFormatted = formattedEndDate;
+
+    if (!startDateFormatted || !endDateFormatted) {
+      const tableData = Object.values(datasets).flatMap((dataset) =>
+        dataset.data.map((item) => ({
+          docNumber: item.docNumber,
+          jobItemName: item.jobItemName,
+          month: new Date(item.x).getMonth(),
+          actualValue: item.actualValue,
+        }))
+      );
+
+      const sortedDates = tableData
+        .map((item) => new Date(item.x))
+        .sort((a, b) => a - b);
+      startDateFormatted = sortedDates[0]?.toISOString().split("T")[0];
+      endDateFormatted = sortedDates[sortedDates.length - 1]
+        ?.toISOString()
+        .split("T")[0];
+    }
+
+    // แปลงข้อมูล datasets ให้เป็นรูปแบบตามที่ต้องการ
+    const formattedData = Object.values(datasets)
+      .flatMap((dataset) =>
+        dataset.data.map((item) => ({
+          docNumber: item.docNumber,
+          jobItemName: item.jobItemName,
+          month: new Date(item.x).getMonth(),
+          actualValue: item.actualValue,
+        }))
+      )
+      .reduce((acc, item) => {
+        const key = `${item.docNumber}-${item.jobItemName}`;
+        if (!acc[key]) {
+          acc[key] = {
+            docNumber: item.docNumber,
+            jobItemName: item.jobItemName,
+            months: Array(12).fill("-"),
+          };
+        }
+        acc[key].months[item.month] = item.actualValue || "-";
+        return acc;
+      }, {});
+
+    // แปลงข้อมูลที่จัดกลุ่มแล้วให้เป็น array พร้อมคอลัมน์เดือน
+    const exportData = Object.values(formattedData).map((item) => ({
+      DOC_NUMBER: item.docNumber,
+      JOB_ITEM_NAME: item.jobItemName,
+      ...months.reduce((acc, month, index) => {
+        acc[month] = item.months[index];
+        return acc;
+      }, {}),
+    }));
+
     // สร้างแผ่นงาน Excel จากข้อมูลที่ดึงมา
-    const ws = XLSX.utils.json_to_sheet(exportedData);
+    const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
+
     // แปลงข้อมูลเป็นไฟล์ Excel
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    // กำหนดชื่อไฟล์
-    const fileName =
-      selectedLineNames.length === 0 && selectedWorkgroups.length === 0
-        ? "All_LineNames_All_Workgroups.xlsx"
-        : `LineNames_${
-            selectedLineNames.length > 0 ? selectedLineNames.join("_") : "All"
-          }_Workgroups_${
-            selectedWorkgroups.length > 0 ? selectedWorkgroups.join("_") : "All"
-          }.xlsx`;
+
+    // สร้างชื่อไฟล์ที่มีวันที่เริ่มต้นถึงวันที่สิ้นสุด
+    const fileName = `TableReportDoc_${startDateFormatted}_to_${endDateFormatted}.xlsx`;
+
     // ดาวน์โหลดไฟล์
     FileSaver.saveAs(data, fileName);
   };
+
   const saveAsPNG = async () => {
     try {
-      const chart = chartRef.current;
-      if (!chart) throw new Error("Chart reference is null");
-      const canvas = await html2canvas(chart);
+      const table = document.querySelector(".min-w-full");
+      if (!table) throw new Error("Table not found");
+
+      // ใช้วันที่ที่เลือกจากฟอร์ม
+      const startDateFormatted = startDate
+        ? format(startDate, "dd-MM-yyyy")
+        : "";
+      const endDateFormatted = endDate ? format(endDate, "dd-MM-yyyy") : "";
+
+      // ถ้าไม่มีวันที่จากฟอร์ม ใช้วันที่จากข้อมูลในตาราง
+      const tableData = Object.values(datasets).flatMap((dataset) =>
+        dataset.data.map((item) => new Date(item.x))
+      );
+      const sortedDates = tableData.sort((a, b) => a - b);
+      const startDateFinal =
+        startDateFormatted || format(sortedDates[0], "dd-MM-yyyy");
+      const endDateFinal =
+        endDateFormatted ||
+        format(sortedDates[sortedDates.length - 1], "dd-MM-yyyy");
+
+      // สร้างชื่อไฟล์ที่มีวันที่เริ่มต้นถึงวันที่สิ้นสุด
+      const fileName = `TableReportDoc_${startDateFinal}_to_${endDateFinal}.png`;
+
+      const canvas = await html2canvas(table);
       const imgData = canvas.toDataURL("image/png");
-      const fileName = `LineNames:${
-        selectedLineNames.join(",") || "All_Line_Names"
-      }_Workgroups:${selectedWorkgroups.join(",") || "All_Workgroups"}.png`;
+
       const link = document.createElement("a");
       link.href = imgData;
       link.download = fileName;
@@ -473,7 +490,7 @@ const ReportDoc = () => {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error("Error saving as PNG:", error);
+      console.error("Error saving table as PNG:", error);
       alert("ไม่สามารถบันทึกไฟล์ PNG ได้: " + error.message);
     }
   };
@@ -594,88 +611,6 @@ const ReportDoc = () => {
             </div>
           )}
         </div>
-        {/* DOC Numbers Dropdown */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            DOC Numbers
-          </label>
-          <button
-            onClick={() => setIsOpenDocNumber((prevOpen) => !prevOpen)}
-            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
-              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
-            }`}
-            disabled={isLoading}
-          >
-            {selectedDocNumbers.length > 0
-              ? `Selected ${selectedDocNumbers.length} DOC Numbers`
-              : "Select DOC Numbers"}
-          </button>
-          {isOpenDocNumber && (
-            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
-              <label className="block p-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  onChange={() => setSelectedDocNumbers([])}
-                  checked={selectedDocNumbers.length === 0}
-                />
-                All DOC Numbers
-              </label>
-              {availableDocNumbers.map((docNumber) => (
-                <label key={docNumber} className="block p-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value={docNumber}
-                    checked={selectedDocNumbers.includes(docNumber)}
-                    onChange={() => handleDocNumberChange(docNumber)}
-                  />
-                  {docNumber}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            JOB Item Names
-          </label>
-          <button
-            onClick={() => setIsOpenJobItemName((prevOpen) => !prevOpen)}
-            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
-              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
-            }`}
-            disabled={isLoading}
-          >
-            {selectedJobItemNames.length > 0
-              ? `${selectedJobItemNames[0]}`
-              : "Select Job Item Name"}
-          </button>
-          {isOpenJobItemName && (
-            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
-              <label className="block p-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="jobItemName"
-                  value=""
-                  checked={selectedJobItemNames.length === 0}
-                  onChange={() => setSelectedJobItemNames([])}
-                />
-                All Job Item Names
-              </label>
-              {availableJobItemNames.map((jobItemName) => (
-                <label key={jobItemName} className="block p-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="jobItemName"
-                    value={jobItemName}
-                    checked={selectedJobItemNames[0] === jobItemName}
-                    onChange={() => setSelectedJobItemNames([jobItemName])}
-                  />
-                  {jobItemName}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
         <div className="relative">
           <label
             htmlFor="start-date"
@@ -723,23 +658,6 @@ const ReportDoc = () => {
             htmlFor="end-date"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Chart
-          </label>
-          <button
-            onClick={handleToggleGraph}
-            className="border border-gray-300 rounded-md py-2 px-4 w-full text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center"
-          >
-            <span className="mr-2">
-              {showGraph ? <VisibilityOff /> : <ShowChart />}
-            </span>
-            {showGraph ? "Hide Chart" : "Show Chart"}
-          </button>
-        </div>
-        <div className="relative ">
-          <label
-            htmlFor="end-date"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
             Table
           </label>
           <button
@@ -751,6 +669,24 @@ const ReportDoc = () => {
             </span>
             {showTable ? "Hide Table" : "Show Table"}
           </button>
+        </div>
+        {/* DOC Numbers */}
+        <div className="relative">
+          <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
+            <label className="block p-2 cursor-pointer">DOC Numbers</label>
+            {availableDocNumbers.map((docNumber) => (
+              <label key={docNumber} className="block p-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="docNumber" // ใช้ name เดียวกันเพื่อให้ทำงานเป็น radio group
+                  value={docNumber}
+                  checked={selectedDocNumbers === docNumber} // เปรียบเทียบค่า
+                  onChange={() => handleDocNumberChange(docNumber)} // อัปเดตค่า
+                />
+                {docNumber}
+              </label>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
           {colorValues.map((value) => (
@@ -764,14 +700,9 @@ const ReportDoc = () => {
           ))}
         </div>
       </div>
-      {showGraph && (
-        <div style={{ height: "450px", width: "100%" }} ref={chartRef}>
-          <Line data={data} options={options} />
-        </div>
-      )}
       {showTable && (
         <div className="overflow-x-auto w-full mt-5">
-          <TableReport datasets={datasets} />
+          <TableReportDoc datasets={datasets} />
         </div>
       )}
       <ExportButtons handleExport={handleExport} />
