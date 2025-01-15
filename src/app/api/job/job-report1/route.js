@@ -65,11 +65,12 @@ export const GET = async (req, res) => {
       {
         $match: {
           "jobItems.ACTUAL_VALUE": { $ne: null },
-          "jobItems.updatedAt": { $ne: null }, // เปลี่ยนจาก createdAt เป็น updatedAt
+          "jobItems.updatedAt": { $ne: null },
           "jobs.LINE_NAME": { $ne: null },
           "workgroupInfo.WORKGROUP_NAME": { $ne: null },
           "jobs.DOC_NUMBER": { $ne: null },
           "jobItems.JOB_ITEM_NAME": { $ne: null },
+          "jobItems.JOB_ITEM_TITLE": { $ne: null },
         },
       },
       {
@@ -79,13 +80,14 @@ export const GET = async (req, res) => {
           LINE_NAME: "$jobs.LINE_NAME",
           DOC_NUMBER: "$jobs.DOC_NUMBER",
           JOB_ITEM_NAME: "$jobItems.JOB_ITEM_NAME",
-          jobItemsUpdatedAt: "$jobItems.updatedAt", // เปลี่ยนเป็น updatedAt
+          JOB_ITEM_TITLE: "$jobItems.JOB_ITEM_TITLE",
+          jobItemsUpdatedAt: "$jobItems.updatedAt",
           ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
         },
       },
       {
         $sort: {
-          jobItemsUpdatedAt: 1, // ใช้ updatedAt แทน jobItemsCreatedAt
+          jobItemsUpdatedAt: 1,
         },
       },
     ]);
@@ -96,6 +98,7 @@ export const GET = async (req, res) => {
         item.LINE_NAME &&
         item.WORKGROUP_NAME &&
         item.JOB_ITEM_NAME &&
+        item.JOB_ITEM_TITLE &&
         item.DOC_NUMBER &&
         item.ACTUAL_VALUE &&
         item.jobItemsUpdatedAt

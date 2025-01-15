@@ -29,7 +29,7 @@ const ReportDoc = () => {
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
-  const [selectedDocNumbers, setSelectedDocNumbers] = useState([]);
+  const [selectedDocNumbers, setSelectedDocNumbers] = useState("");
   const [selectedJobItemNames, setSelectedJobItemNames] = useState([]);
   const [isOpenDocNumber, setIsOpenDocNumber] = useState(false);
   const [isOpenJobItemName, setIsOpenJobItemName] = useState(false);
@@ -237,7 +237,7 @@ const ReportDoc = () => {
     setSelectedJobItemNames([]);
   };
   const handleDocNumberChange = (docNumber) => {
-    handleSelectionChange(docNumber, selectedDocNumbers, setSelectedDocNumbers);
+    setSelectedDocNumbers(docNumber);
     setSelectedJobItemNames([]);
   };
   // ฟิลเตอร์เฉพาะรายการที่ไม่เป็น 'Unknown' หรือค่าว่าง
@@ -261,15 +261,6 @@ const ReportDoc = () => {
         (item) =>
           item.DOC_NUMBER === docNumber &&
           selectedLineNames.includes(item.LINE_NAME)
-      )
-    )
-  );
-  const availableJobItemNames = filteredValues(
-    jobItemNames.filter((jobItemName) =>
-      report.some(
-        (item) =>
-          item.JOB_ITEM_NAME === jobItemName &&
-          selectedDocNumbers.includes(item.DOC_NUMBER)
       )
     )
   );
@@ -620,46 +611,6 @@ const ReportDoc = () => {
             </div>
           )}
         </div>
-        {/* DOC Numbers Dropdown */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            DOC Numbers
-          </label>
-          <button
-            onClick={() => setIsOpenDocNumber((prevOpen) => !prevOpen)}
-            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
-              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
-            }`}
-            disabled={isLoading}
-          >
-            {selectedDocNumbers.length > 0
-              ? `Selected ${selectedDocNumbers.length} DOC Numbers`
-              : "Select DOC Numbers"}
-          </button>
-          {isOpenDocNumber && (
-            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
-              <label className="block p-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  onChange={() => setSelectedDocNumbers([])}
-                  checked={selectedDocNumbers.length === 0}
-                />
-                All DOC Numbers
-              </label>
-              {availableDocNumbers.map((docNumber) => (
-                <label key={docNumber} className="block p-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value={docNumber}
-                    checked={selectedDocNumbers.includes(docNumber)}
-                    onChange={() => handleDocNumberChange(docNumber)}
-                  />
-                  {docNumber}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
         <div className="relative">
           <label
             htmlFor="start-date"
@@ -718,6 +669,24 @@ const ReportDoc = () => {
             </span>
             {showTable ? "Hide Table" : "Show Table"}
           </button>
+        </div>
+        {/* DOC Numbers */}
+        <div className="relative">
+          <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
+            <label className="block p-2 cursor-pointer">DOC Numbers</label>
+            {availableDocNumbers.map((docNumber) => (
+              <label key={docNumber} className="block p-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="docNumber" // ใช้ name เดียวกันเพื่อให้ทำงานเป็น radio group
+                  value={docNumber}
+                  checked={selectedDocNumbers === docNumber} // เปรียบเทียบค่า
+                  onChange={() => handleDocNumberChange(docNumber)} // อัปเดตค่า
+                />
+                {docNumber}
+              </label>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
           {colorValues.map((value) => (
