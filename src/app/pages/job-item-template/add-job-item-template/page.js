@@ -165,15 +165,25 @@ const Page = ({ searchParams }) => {
     });
 
     // เพิ่ม Event Listener ให้กับปุ่ม Copy
+
     document.addEventListener('click', (event) => {
-        if (event.target.id === 'copy-btn') {
-            navigator.clipboard.writeText(idToCopy).then(() => {
-                Swal.fire('Copied!', 'ID has been copied to clipboard.', 'success');
-            }).catch(() => {
-                Swal.fire('Oops!', 'Failed to copy ID.', 'error');
-            });
-        }
-    });
+      if (event.target.id === 'copy-btn') {
+          const textArea = document.createElement('textarea');
+          textArea.value = idToCopy;
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+              document.execCommand('copy');
+              Swal.fire('Copied!', 'ID has been copied to clipboard.', 'success');
+          } catch (err) {
+              Swal.fire('Oops!', 'Failed to copy ID.', 'error');
+          }
+          document.body.removeChild(textArea);
+      }
+  });
+  
+
+
   };
 
   const handleRemove = async (jobItemTemplate_id) => {
