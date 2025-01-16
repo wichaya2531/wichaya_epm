@@ -120,26 +120,37 @@ const TableReportDoc = ({ datasets }) => {
           </tr>
         </thead>
         <tbody>
-          {displayedData.map((row, index) => (
-            <tr key={index} className="hover:bg-gray-50">
-              <td className="border px-4 py-2 text-sm text-gray-700">
-                {row.docNumber}
-              </td>
-              <td className="border px-4 py-2 text-sm text-gray-700">
-                {row.jobItemName}
-              </td>
-              {row.months.map((value, monthIndex) => (
-                <td
-                  key={monthIndex}
-                  className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                    value
-                  )}`}
-                >
-                  {value || "-"}
+          {displayedData.length > 0 ? (
+            displayedData.map((row, index) => (
+              <tr key={index} className="hover:bg-gray-50">
+                <td className="border px-4 py-2 text-sm text-gray-700">
+                  {row.docNumber}
                 </td>
-              ))}
+                <td className="border px-4 py-2 text-sm text-gray-700">
+                  {row.jobItemName}
+                </td>
+                {row.months.map((value, monthIndex) => (
+                  <td
+                    key={monthIndex}
+                    className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                      value
+                    )}`}
+                  >
+                    {value || "-"}
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan={14}
+                className="border px-4 py-6 text-center text-gray-500 text-sm"
+              >
+                Please select an option above to display data.
+              </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 

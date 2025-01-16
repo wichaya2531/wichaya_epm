@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO, isValid, startOfToday } from "date-fns";
@@ -9,11 +9,6 @@ import * as XLSX from "xlsx";
 import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import {
-  ShowChart,
-  VisibilityOff,
-  CalendarViewMonth,
-} from "@mui/icons-material";
 import TableReportDoc from "@/components/TableReportDoc";
 
 const ReportDoc = () => {
@@ -24,30 +19,16 @@ const ReportDoc = () => {
   // const { lineNames, workgroupNames } =
   //   useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
-  const chartRef = useRef(null);
   const [selectedLineNames, setSelectedLineNames] = useState([]);
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
   const [selectedDocNumbers, setSelectedDocNumbers] = useState("");
   const [selectedJobItemNames, setSelectedJobItemNames] = useState([]);
-  const [isOpenDocNumber, setIsOpenDocNumber] = useState(false);
-  const [isOpenJobItemName, setIsOpenJobItemName] = useState(false);
   const [docNumbers, setDocNumbers] = useState([]);
   const [jobItemNames, setJobItemNames] = useState([]);
   const [workgroupNames, setWorkgroupNames] = useState([]);
   const [lineNames, setLineNames] = useState([]);
-  const [activeButton, setActiveButton] = useState("");
-  const [showGraph, setShowGraph] = useState(false);
-  const handleToggleGraph = () => {
-    // เมื่อกดปุ่มจะทำการสลับสถานะการแสดงกราฟ
-    setShowGraph(!showGraph);
-  };
-  const [showTable, setShowTable] = useState(false);
-  const handleToggleTable = () => {
-    // เมื่อกดปุ่มจะทำการสลับสถานะการแสดงกราฟ
-    setShowTable(!showTable);
-  };
   const pastelColors = {
     "9309A": "#FFB6C1",
     "9303A": "#ADD8E6",
@@ -653,23 +634,6 @@ const ReportDoc = () => {
             disabled={isLoading}
           />
         </div>
-        <div className="relative ">
-          <label
-            htmlFor="end-date"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Table
-          </label>
-          <button
-            onClick={handleToggleTable}
-            className="border border-gray-300 rounded-md py-2 px-4 w-full text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center"
-          >
-            <span className="mr-2">
-              {showTable ? <VisibilityOff /> : <CalendarViewMonth />}
-            </span>
-            {showTable ? "Hide Table" : "Show Table"}
-          </button>
-        </div>
         {/* DOC Numbers */}
         <div className="relative">
           <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
@@ -700,11 +664,9 @@ const ReportDoc = () => {
           ))}
         </div>
       </div>
-      {showTable && (
-        <div className="overflow-x-auto w-full mt-5">
-          <TableReportDoc datasets={datasets} />
-        </div>
-      )}
+      <div className="overflow-x-auto w-full mt-5">
+        <TableReportDoc datasets={datasets} />
+      </div>
       <ExportButtons handleExport={handleExport} />
     </div>
   );
