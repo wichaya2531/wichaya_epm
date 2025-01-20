@@ -544,7 +544,7 @@ const JobForm = ({
       <hr />
       <div className="flex flex-col gap-8">
         <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
-          Checklist Items 
+          Checklist Items
           {isShowJobItem ? (
             <ArrowDropUpIcon
               style={{ fontSize: "5rem" }}
@@ -610,7 +610,7 @@ const JobForm = ({
                       <input
                         type="text"
                         id={`before_value_2${item.JobItemID}`}
-                        value={item.BeforeValue2}
+                        value={item.BeforeValue2 || item.BeforeValue || ""}
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
                         title={"Lastest Update: " + item.LastestUpdate}

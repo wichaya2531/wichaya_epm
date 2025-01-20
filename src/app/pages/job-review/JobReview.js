@@ -330,7 +330,7 @@ const JobForm = ({
           className="text-3xl font-bold text-primary flex items-center cursor-pointer"
           onClick={toggleJobItem}
         >
-          Checklist Items 
+          Checklist Items
           {isShowJobItem ? (
             <ArrowDropUpIcon className="size-14" />
           ) : (
@@ -401,7 +401,7 @@ const JobForm = ({
                     <input
                       type="text"
                       id={`before_value_${item.JobItemID}`}
-                      value={item.BeforeValue}
+                      value={item.BeforeValue2 || item.BeforeValue || ""}
                       className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
                       disabled
                     />
@@ -485,8 +485,7 @@ const JobForm = ({
               color="secondary"
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
               onClick={() =>
-                handleApprove
-                (false, "Disapproval reason goes here")
+                handleApprove(false, "Disapproval reason goes here")
               }
             >
               Disapprove
