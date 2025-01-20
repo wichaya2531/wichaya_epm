@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO, isValid, startOfToday } from "date-fns";
 import "chartjs-adapter-date-fns";
@@ -11,11 +10,10 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import TableReportDoc from "@/components/TableReportDoc";
 
-const ReportDoc = () => {
+const ReportDoc = ({ report, isLoading }) => {
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const { report, isLoading } = useFetchReport1(refresh);
   // const { lineNames, workgroupNames } =
   //   useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);

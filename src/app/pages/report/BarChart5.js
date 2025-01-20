@@ -16,7 +16,6 @@ import {
   TimeScale,
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 // import useFetchReportWorkgroupLinename from "@/lib/hooks/useFetchReportWorkgroupLinename";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO, isValid, startOfToday } from "date-fns";
@@ -46,11 +45,10 @@ ChartJS.register(
   LineElement,
   TimeScale
 );
-const BarChart5 = () => {
+const BarChart5 = ({ report, isLoading }) => {
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const { report, isLoading } = useFetchReport1(refresh);
   // const { lineNames, workgroupNames } =
   //   useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);

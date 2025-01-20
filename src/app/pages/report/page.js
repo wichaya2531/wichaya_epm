@@ -12,8 +12,11 @@ import BarChart5 from "./BarChart5";
 import BarChart1 from "./BarChart1";
 import ReportDoc from "./ReportDoc";
 import { useState } from "react";
+import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 
 const Page = () => {
+  const [refresh, setRefresh] = useState(false);
+  const { report, isLoading } = useFetchReport1(refresh);
   const [selectedChart, setSelectedChart] = useState("BarChart5");
   const chartButtons = [
     { label: "Value in Item", value: "BarChart5" },
@@ -67,8 +70,12 @@ const Page = () => {
         {selectedChart === "BarChart2" && <BarChart2 />}
         {selectedChart === "BarChart3" && <BarChart3 />}
         {selectedChart === "BarChart4" && <BarChart4 />} */}
-        {selectedChart === "BarChart5" && <BarChart5 />}
-        {selectedChart === "ReportDoc" && <ReportDoc />}
+        {selectedChart === "BarChart5" && (
+          <BarChart5 report={report} isLoading={isLoading} />
+        )}
+        {selectedChart === "ReportDoc" && (
+          <ReportDoc report={report} isLoading={isLoading} />
+        )}
       </div>
     </Layout>
   );
