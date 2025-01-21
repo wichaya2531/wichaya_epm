@@ -5,20 +5,28 @@ const TableReportDoc = ({ datasets }) => {
     dataset.data.map((item) => ({
       docNumber: item.docNumber,
       jobItemName: item.jobItemName,
+      jobItemTitle: item.jobItemTitle, // เพิ่ม jobItemTitle
       month: new Date(item.x).getMonth(),
       actualValue: item.actualValue,
     }))
   );
+
   const groupedData = tableData.reduce((acc, item) => {
     const key = `${item.docNumber}-${item.jobItemName}`;
+
+    // ถ้ายังไม่มี key นี้ใน acc ให้สร้างใหม่
     if (!acc[key]) {
       acc[key] = {
         docNumber: item.docNumber,
         jobItemName: item.jobItemName,
-        months: Array(12).fill(null),
+        jobItemTitle: item.jobItemTitle, // เก็บ jobItemTitle
+        months: Array(12).fill(null), // สร้าง array ที่มี 12 เดือน (เริ่มต้นเป็น null)
       };
     }
+
+    // เพิ่ม actualValue ในเดือนที่ตรงกับ month
     acc[key].months[item.month] = item.actualValue;
+
     return acc;
   }, {});
 
@@ -94,7 +102,10 @@ const TableReportDoc = ({ datasets }) => {
               Doc Number
             </th>
             <th className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white">
-              Job Item Name
+              Item Title
+            </th>
+            <th className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white">
+              Item Name
             </th>
             {[
               "January",
@@ -127,6 +138,9 @@ const TableReportDoc = ({ datasets }) => {
                   {row.docNumber}
                 </td>
                 <td className="border px-4 py-2 text-sm text-gray-700">
+                  {row.jobItemTitle}
+                </td>
+                <td className="border px-4 py-2 text-sm text-gray-700">
                   {row.jobItemName}
                 </td>
                 {row.months.map((value, monthIndex) => (
@@ -144,7 +158,7 @@ const TableReportDoc = ({ datasets }) => {
           ) : (
             <tr>
               <td
-                colSpan={14}
+                colSpan={15} // เพิ่มคอลัมน์ใหม่ทำให้จำนวนคอลัมน์รวมเป็น 15
                 className="border px-4 py-6 text-center text-gray-500 text-sm"
               >
                 Please select an option above to display data.

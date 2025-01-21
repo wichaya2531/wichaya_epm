@@ -80,6 +80,7 @@ const ReportDoc = ({ report, isLoading }) => {
         lineName: item.LINE_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
         workgroupName: item.WORKGROUP_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
         jobItemName: item.JOB_ITEM_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
+        jobItemTitle: item.JOB_ITEM_TITLE || "Unknown", // เพิ่ม jobItemTitle
         x: updatedAt.toISOString(), // ใช้ updatedAt แทน createdAt
         y: yValue,
         actualValue: item.ACTUAL_VALUE || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
@@ -104,11 +105,13 @@ const ReportDoc = ({ report, isLoading }) => {
           actualValue: curr.actualValue,
           docNumber: curr.docNumber,
           jobItemName: curr.jobItemName, // เก็บ jobItemName ในแต่ละรายการ
+          jobItemTitle: curr.jobItemTitle, // เก็บ jobItemTitle
         });
       }
       acc[groupKey] = lineGroup;
       return acc;
     }, {});
+
   Object.entries(groupedDataByLineNameAndWorkgroupAndJobItem).forEach(
     ([_, data]) => {
       data.forEach((item, index) => {
@@ -120,12 +123,14 @@ const ReportDoc = ({ report, isLoading }) => {
       });
     }
   );
+
   const sortedDataByLineNameAndWorkgroupAndJobItem = Object.entries(
     groupedDataByLineNameAndWorkgroupAndJobItem
   ).reduce((acc, [groupKey, data]) => {
     acc[groupKey] = data.sort((a, b) => new Date(a.x) - new Date(b.x));
     return acc;
   }, {});
+
   const datasets = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
     .filter((groupKey) => {
       const [lineName, workgroupName, jobItemName] = groupKey.split("-");
@@ -161,6 +166,7 @@ const ReportDoc = ({ report, isLoading }) => {
             actualValue: item.actualValue,
             docNumber: item.docNumber,
             jobItemName: item.jobItemName,
+            jobItemTitle: item.jobItemTitle, // เพิ่ม jobItemTitle
           })),
         tension: 0.4,
         fill: true,
@@ -179,6 +185,7 @@ const ReportDoc = ({ report, isLoading }) => {
         },
       };
     });
+
   const data = { labels: [], datasets };
 
   useEffect(() => {
@@ -592,7 +599,7 @@ const ReportDoc = ({ report, isLoading }) => {
         </div>
         <div className="relative">
           <label
-            htmlFor="start-date"
+            htmlFor="start-month"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
             Start Date
@@ -601,20 +608,24 @@ const ReportDoc = ({ report, isLoading }) => {
             className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            type="date"
-            id="start-date"
+            type="month"
+            id="start-month"
             value={
-              startDate && isValid(startDate)
-                ? format(startDate, "yyyy-MM-dd")
+              startDate && !isNaN(startDate.getTime())
+                ? format(startDate, "yyyy-MM")
                 : ""
             }
-            onChange={(e) => setStartDate(new Date(e.target.value))}
+            onChange={(e) =>
+              e.target.value
+                ? setStartDate(new Date(e.target.value + "-01"))
+                : setStartDate(null)
+            }
             disabled={isLoading}
           />
         </div>
         <div className="relative">
           <label
-            htmlFor="end-date"
+            htmlFor="end-month"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
             End Date
@@ -623,15 +634,22 @@ const ReportDoc = ({ report, isLoading }) => {
             className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            type="date"
-            id="end-date"
+            type="month"
+            id="end-month"
             value={
-              endDate && isValid(endDate) ? format(endDate, "yyyy-MM-dd") : ""
+              endDate && !isNaN(endDate.getTime())
+                ? format(endDate, "yyyy-MM")
+                : ""
             }
-            onChange={(e) => setEndDate(new Date(e.target.value))}
+            onChange={(e) =>
+              e.target.value
+                ? setEndDate(new Date(e.target.value + "-01"))
+                : setEndDate(null)
+            }
             disabled={isLoading}
           />
         </div>
+
         {/* DOC Numbers */}
         <div className="relative">
           <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
