@@ -649,9 +649,22 @@ const ReportDoc = ({ report, isLoading }) => {
             disabled={isLoading}
           />
         </div>
-
-        {/* DOC Numbers */}
-        <div className="relative">
+        <div className="flex flex-wrap gap-2 mt-4">
+          {colorValues.map((value) => (
+            <div key={value} className="flex items-center space-x-2">
+              <span
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: getPastelColorForValue(value) }}
+              ></span>
+              <span className="text-sm text-gray-700">{value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* DOC Numbers */}
+      <div className="flex flex-col md:flex-row gap-5 mt-5">
+        {/* Section ตัวเลือก DOC Numbers */}
+        <div className="relative w-full md:w-1/4 lg:w-1/6">
           <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
             <label className="block p-2 cursor-pointer">DOC Numbers</label>
             {availableDocNumbers.map((docNumber) => (
@@ -668,25 +681,16 @@ const ReportDoc = ({ report, isLoading }) => {
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {colorValues.map((value) => (
-            <div key={value} className="flex items-center space-x-2">
-              <span
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: getPastelColorForValue(value) }}
-              ></span>
-              <span className="text-sm text-gray-700">{value}</span>
-            </div>
-          ))}
+        {/* Section ตาราง */}
+        <div className="overflow-x-auto w-full md:w-3/4 lg:w-full">
+          <TableReportDoc
+            datasets={datasets}
+            startDate={startDate}
+            endDate={endDate}
+          />
         </div>
       </div>
-      <div className="overflow-x-auto w-full mt-5">
-        <TableReportDoc
-          datasets={datasets}
-          startDate={startDate}
-          endDate={endDate}
-        />
-      </div>
+
       <ExportButtons handleExport={handleExport} />
     </div>
   );
