@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { connectToDb } from "@/app/api/mongo/index.js";
 
 /*
 const pushDataToElasticsearch = async (index, id, data) => {
@@ -61,9 +62,6 @@ const postDataToSql = async (t_wd_tag,t_mc_name) => {
   }  
 };
 
-  
-
-
 const postDataToCreateMachineName = async (t_wd_tag,t_mc_name) => {
   try {
     const response = await fetch('http://localhost:3000/api/machine/create-machine', {
@@ -90,22 +88,22 @@ const postDataToCreateMachineName = async (t_wd_tag,t_mc_name) => {
 
 
 
+
+
 const Page = () => {
-  const handleClick = () => {
+ 
+  const handleClick = () => {    
       //sendDataToElastic();
       //postDataToCreateMachineName();
-            
-
-        // แสดงผลในรูปแบบ JSON
-        //console.log(jsonData);
-       
-         //       postDataToCreateMachineName("RT-77003", "SCREW SORTING");
-     
-        
-
+      // แสดงผลในรูปแบบ JSON
+      //console.log(jsonData);
+      //       postDataToCreateMachineName("RT-77003", "SCREW SORTING");
       //  console.log('Finish');
-      postDataToSql("","");
+      //postDataToSql("","");
+
       
+
+
   }
 
   return (

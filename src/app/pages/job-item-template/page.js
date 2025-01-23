@@ -133,6 +133,41 @@ const Page = () => {
       });
   };
 
+
+  const handleInfo = async (job_template_id) => {
+        Swal.fire({
+          title: 'API Topic Key',
+          html: `
+              <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                  <p style="margin: 0;">Key: ${job_template_id}</p>
+                  <button id="copy-btn" class="swal2-confirm swal2-styled" 
+                      style="background-color: #3085d6; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">
+                      Copy 
+                  </button>
+              </div>
+          `,
+          showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
+      });
+      // เพิ่ม Event Listener ให้กับปุ่ม Copy
+  
+      document.addEventListener('click', (event) => {
+        if (event.target.id === 'copy-btn') {
+            const textArea = document.createElement('textarea');
+            textArea.value = job_template_id;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                Swal.fire('Copied!', 'ID has been copied to clipboard.', 'success');
+            } catch (err) {
+                Swal.fire('Oops!', 'Failed to copy ID.', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+    });
+          
+  }
+
   const handleCopy = async (job_template_id) => {
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
@@ -288,6 +323,14 @@ const Page = () => {
           >
             Add Item
           </Link>
+
+          <button
+            onClick={() => handleInfo(jobTemplate._id)}
+            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
+          >
+            Info
+          </button>
+
         </div>
       ),
     };

@@ -67,6 +67,48 @@ const BarChart5 = ({ report, isLoading }) => {
   const [lineNames, setLineNames] = useState([]);
   const [activeButton, setActiveButton] = useState("");
   const [showGraph, setShowGraph] = useState(false);
+  
+  const [availableWorkgroups,setavailableWorkgroups]=useState([]);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/test/`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          next: { revalidate: 10 },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        
+        //console.log("data from test ", data);
+        var workgroupElement=new Array();
+        data.data.forEach(element => {
+              //console.log(element.WORKGROUP_NAME);
+              workgroupElement.push(element.WORKGROUP_NAME);
+        });
+
+       // console.log("workgroupElement",workgroupElement);
+
+        setavailableWorkgroups(workgroupElement);
+        //setReport(data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+
+
+
   const handleToggleGraph = () => {
     // เมื่อกดปุ่มจะทำการสลับสถานะการแสดงกราฟ
     setShowGraph(!showGraph);
@@ -359,7 +401,7 @@ const BarChart5 = ({ report, isLoading }) => {
     )
   );
   const availableJobItemNames = filteredValues(
-    jobItemNames.filter((jobItemName) =>
+      jobItemNames.filter((jobItemName) =>
       report.some(
         (item) =>
           item.JOB_ITEM_NAME === jobItemName &&
@@ -367,7 +409,8 @@ const BarChart5 = ({ report, isLoading }) => {
       )
     )
   );
-  const availableWorkgroups = filteredValues(workgroupNames);
+  //const availableWorkgroups = ["name1","name2"] ;//filteredValues(workgroupNames);
+  //console.log("availableWorkgroups",availableWorkgroups);
   const exportToPDF = async () => {
     try {
       const element = chartRef.current;
@@ -489,7 +532,7 @@ const BarChart5 = ({ report, isLoading }) => {
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Workgroups
+            Workgroups.
           </label>
           <button
             onClick={() => !isLoading && setIsOpen((prevOpen) => !prevOpen)}
@@ -528,15 +571,15 @@ const BarChart5 = ({ report, isLoading }) => {
               "Select Workgroups"
             )}
           </button>
-          {isOpen && !isLoading && (
+          {(
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
-                <input
+                {/* <input
                   type="checkbox"
                   onChange={() => setSelectedWorkgroups([])}
-                  checked={selectedWorkgroups.length === 0}
-                />
-                All Workgroups
+                  checked={false} //{selectedWorkgroups.length === 0}
+                /> */}
+                ---Selected--- 
               </label>
               {availableWorkgroups.map((workgroupName) => (
                 <label key={workgroupName} className="block p-2 cursor-pointer">

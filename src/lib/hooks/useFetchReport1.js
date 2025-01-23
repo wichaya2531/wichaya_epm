@@ -4,6 +4,7 @@ const useFetchReport1 = (refresh) => {
   const [report, setReport] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
+
     const fetchReport = async () => {
       setIsLoading(true);
       try {
@@ -15,6 +16,7 @@ const useFetchReport1 = (refresh) => {
           next: { revalidate: 10 },
         });
         const data = await response.json();
+        console.log("data from useFetchReport1 ",data);
         setReport(data);
       } catch (error) {
         console.error("Error:", error);
