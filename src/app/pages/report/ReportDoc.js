@@ -681,7 +681,11 @@ const ReportDoc = ({ report, isLoading }) => {
         </div>
       </div>
       <div className="overflow-x-auto w-full mt-5">
-        <TableReportDoc datasets={datasets} />
+        <TableReportDoc
+          datasets={datasets}
+          startDate={startDate}
+          endDate={endDate}
+        />
       </div>
       <ExportButtons handleExport={handleExport} />
     </div>

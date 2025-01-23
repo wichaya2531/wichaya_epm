@@ -1,31 +1,62 @@
 import React, { useState } from "react";
 
-const TableReportDoc = ({ datasets }) => {
+const TableReportDoc = ({ datasets, startDate, endDate }) => {
+  const startMonth = startDate ? startDate.getMonth() : 0; // เดือนของ startDate
+  const startYear = startDate ? startDate.getFullYear() : 0; // ปีของ startDate
+  const endMonth = endDate ? endDate.getMonth() : 11; // เดือนของ endDate
+  const endYear = endDate ? endDate.getFullYear() : 9999; // ปีของ endDate
+
+  // คำนวณจำนวนเดือนที่ต้องแสดง
+  const monthsToShow = [];
+  let currentMonth = new Date(startDate);
+  while (currentMonth <= endDate) {
+    monthsToShow.push(new Date(currentMonth)); // เก็บเดือนที่ต้องการแสดง
+    currentMonth.setMonth(currentMonth.getMonth() + 1); // เพิ่มเดือน
+  }
+
   const tableData = Object.values(datasets).flatMap((dataset) =>
-    dataset.data.map((item) => ({
-      docNumber: item.docNumber,
-      jobItemName: item.jobItemName,
-      jobItemTitle: item.jobItemTitle, // เพิ่ม jobItemTitle
-      month: new Date(item.x).getMonth(),
-      actualValue: item.actualValue,
-    }))
+    dataset.data
+      .map((item) => ({
+        docNumber: item.docNumber,
+        jobItemName: item.jobItemName,
+        jobItemTitle: item.jobItemTitle,
+        month: new Date(item.x).getMonth(),
+        year: new Date(item.x).getFullYear(),
+        actualValue: item.actualValue,
+        date: new Date(item.x), // เพิ่มข้อมูลวันที่
+      }))
+      .filter((item) => {
+        // ตรวจสอบว่าเดือนและปีของ item อยู่ในช่วง startDate และ endDate หรือไม่
+        const isInRange =
+          (item.year > startYear ||
+            (item.year === startYear && item.month >= startMonth)) &&
+          (item.year < endYear ||
+            (item.year === endYear && item.month <= endMonth));
+        return isInRange;
+      })
   );
 
   const groupedData = tableData.reduce((acc, item) => {
     const key = `${item.docNumber}-${item.jobItemName}`;
 
-    // ถ้ายังไม่มี key นี้ใน acc ให้สร้างใหม่
     if (!acc[key]) {
       acc[key] = {
         docNumber: item.docNumber,
         jobItemName: item.jobItemName,
-        jobItemTitle: item.jobItemTitle, // เก็บ jobItemTitle
-        months: Array(12).fill(null), // สร้าง array ที่มี 12 เดือน (เริ่มต้นเป็น null)
+        jobItemTitle: item.jobItemTitle,
+        months: Array(monthsToShow.length).fill(null), // สร้าง array ที่มีจำนวนเดือนที่ต้องแสดง
       };
     }
 
-    // เพิ่ม actualValue ในเดือนที่ตรงกับ month
-    acc[key].months[item.month] = item.actualValue;
+    // หาตำแหน่งเดือนใน array
+    const monthIndex = monthsToShow.findIndex(
+      (month) =>
+        month.getMonth() === item.month && month.getFullYear() === item.year
+    );
+
+    if (monthIndex !== -1) {
+      acc[key].months[monthIndex] = item.actualValue;
+    }
 
     return acc;
   }, {});
@@ -107,27 +138,33 @@ const TableReportDoc = ({ datasets }) => {
             <th className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white">
               Item Name
             </th>
-            {[
-              "January",
-              "February",
-              "March",
-              "April",
-              "May",
-              "June",
-              "July",
-              "August",
-              "September",
-              "October",
-              "November",
-              "December",
-            ].map((month) => (
-              <th
-                key={month}
-                className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white"
-              >
-                {month}
-              </th>
-            ))}
+            {/* แสดงเฉพาะเดือนที่อยู่ในช่วง startDate ถึง endDate */}
+            {monthsToShow.map((monthDate, index) => {
+              const monthNames = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+              ];
+              return (
+                <th
+                  key={index}
+                  className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white"
+                >
+                  {`${
+                    monthNames[monthDate.getMonth()]
+                  } ${monthDate.getFullYear()}`}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
@@ -158,7 +195,7 @@ const TableReportDoc = ({ datasets }) => {
           ) : (
             <tr>
               <td
-                colSpan={15} // เพิ่มคอลัมน์ใหม่ทำให้จำนวนคอลัมน์รวมเป็น 15
+                colSpan={monthsToShow.length + 3} // จำนวนคอลัมน์ที่แสดง (รวมเดือน)
                 className="border px-4 py-6 text-center text-gray-500 text-sm"
               >
                 Please select an option above to display data.
