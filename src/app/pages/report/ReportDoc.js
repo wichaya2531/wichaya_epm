@@ -205,27 +205,40 @@ const ReportDoc = ({ report, isLoading }) => {
     );
   };
   const handleWorkgroupChange = (workgroupName) => {
-    handleSelectionChange(
-      workgroupName,
-      selectedWorkgroups,
-      setSelectedWorkgroups
-    );
-    const filteredLineNames = report
-      .filter((item) => selectedWorkgroups.includes(item.WORKGROUP_NAME))
-      .map((item) => item.LINE_NAME);
-    setSelectedLineNames(filteredLineNames);
-    setSelectedDocNumbers([]);
-    setSelectedJobItemNames([]);
+    // อัปเดต selectedWorkgroups
+    setSelectedWorkgroups((prev) => {
+      const updatedWorkgroups = prev.includes(workgroupName)
+        ? prev.filter((item) => item !== workgroupName)
+        : [...prev, workgroupName];
+
+      // ตั้งค่า LineNames เป็น "All LineNames" (ว่างเปล่า)
+      setSelectedLineNames([]);
+
+      // รีเซ็ต DocNumbers และ JobItemNames
+      setSelectedDocNumbers([]);
+      setSelectedJobItemNames([]);
+
+      return updatedWorkgroups;
+    });
   };
+
   const handleLineNameChange = (lineName) => {
-    handleSelectionChange(lineName, selectedLineNames, setSelectedLineNames);
+    setSelectedLineNames((prev) =>
+      prev.includes(lineName)
+        ? prev.filter((item) => item !== lineName)
+        : [...prev, lineName]
+    );
+
+    // รีเซ็ต DocNumbers และ JobItemNames
     setSelectedDocNumbers([]);
     setSelectedJobItemNames([]);
   };
+
   const handleDocNumberChange = (docNumber) => {
     setSelectedDocNumbers(docNumber);
     setSelectedJobItemNames([]);
   };
+
   // ฟิลเตอร์เฉพาะรายการที่ไม่เป็น 'Unknown' หรือค่าว่าง
   const filteredValues = (items) =>
     items
@@ -538,7 +551,10 @@ const ReportDoc = ({ report, isLoading }) => {
               <label className="block p-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  onChange={() => setSelectedWorkgroups([])}
+                  onChange={() => {
+                    setSelectedWorkgroups([]);
+                    setSelectedLineNames([]); // รีเซ็ต LineNames เมื่อเลือก "All Workgroups"
+                  }}
                   checked={selectedWorkgroups.length === 0}
                 />
                 All Workgroups
@@ -557,7 +573,8 @@ const ReportDoc = ({ report, isLoading }) => {
             </div>
           )}
         </div>
-        {/* // UI ของ LineNames */}
+
+        {/* LineNames UI */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             LineNames
@@ -567,13 +584,15 @@ const ReportDoc = ({ report, isLoading }) => {
             className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            disabled={isLoading}
+            disabled={isLoading || selectedWorkgroups.length === 0} // ปิดการใช้งานถ้าไม่มี Workgroups ถูกเลือก
           >
             {selectedLineNames.length > 0
               ? `Selected ${selectedLineNames.length} LineNames`
-              : "Select LineNames"}
+              : selectedWorkgroups.length > 0
+              ? "Select LineNames"
+              : "Please select Workgroups first"}
           </button>
-          {isOpen1 && (
+          {isOpen1 && selectedWorkgroups.length > 0 && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
                 <input
@@ -597,6 +616,7 @@ const ReportDoc = ({ report, isLoading }) => {
             </div>
           )}
         </div>
+
         <div className="relative">
           <label
             htmlFor="start-month"
