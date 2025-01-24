@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export const GET = async (req, res) => {
 
-  console.log("get report start ",new Date());
+  //console.log("get report start ",new Date());
   try {
     await connectToDb();
     const jobValues = await User.aggregate([
@@ -111,7 +111,7 @@ export const GET = async (req, res) => {
       console.log("No data found for the given filters.");
     }
 
-    console.log("get report end ",new Date());
+    //console.log("get report end ",new Date());
 
     return NextResponse.json(cleanedJobValues);
   } catch (error) {
