@@ -54,11 +54,11 @@ const Page = () => {
           <button
             key={button.value}
             onClick={() => setSelectedChart(button.value)}
-            className={`px-4 py-2 rounded-md ${
+            className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-150 ease-in-out ${
               selectedChart === button.value
-                ? "bg-blue-600 text-white"
-                : "bg-gray-300 text-black"
-            } hover:bg-blue-500`}
+                ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            } hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
           >
             {button.label}
           </button>
