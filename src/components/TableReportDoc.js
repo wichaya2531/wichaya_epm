@@ -141,18 +141,18 @@ const TableReportDoc = ({ datasets, startDate, endDate }) => {
             {/* แสดงเฉพาะเดือนที่อยู่ในช่วง startDate ถึง endDate */}
             {monthsToShow.map((monthDate, index) => {
               const monthNames = [
-                "January",
-                "February",
-                "March",
-                "April",
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
                 "May",
-                "June",
-                "July",
-                "August",
-                "September",
-                "October",
-                "November",
-                "December",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
               ];
               return (
                 <th
