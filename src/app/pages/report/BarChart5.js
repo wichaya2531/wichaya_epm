@@ -67,10 +67,9 @@ const BarChart5 = ({ report, isLoading }) => {
   const [lineNames, setLineNames] = useState([]);
   const [activeButton, setActiveButton] = useState("");
   const [showGraph, setShowGraph] = useState(false);
-  
-  const [availableWorkgroups,setavailableWorkgroups]=useState([]);
+
+  const [availableWorkgroups, setavailableWorkgroups] = useState([]);
   const [availableLineNames, setAvailableLineNames] = useState([]);
-  
 
   const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
 
@@ -88,29 +87,27 @@ const BarChart5 = ({ report, isLoading }) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
+
         const data = await response.json();
-        
+
         //console.log("data from test ", data);
-        var workgroupElement=new Array();
-        data.data.forEach(element => {
-              //console.log(element.WORKGROUP_NAME);
-              workgroupElement.push(element.WORKGROUP_NAME);
+        var workgroupElement = new Array();
+        data.data.forEach((element) => {
+          //console.log(element.WORKGROUP_NAME);
+          workgroupElement.push(element.WORKGROUP_NAME);
         });
 
-       // console.log("workgroupElement",workgroupElement);
+        // console.log("workgroupElement",workgroupElement);
 
         setavailableWorkgroups(workgroupElement);
         //setReport(data);
       } catch (error) {
         console.error("Error:", error);
       }
-   };
-  
+    };
+
     fetchData();
   }, []);
-
-
 
   const handleToggleGraph = () => {
     // เมื่อกดปุ่มจะทำการสลับสถานะการแสดงกราฟ
@@ -351,20 +348,22 @@ const BarChart5 = ({ report, isLoading }) => {
     );
   };
 
-
   async function qryLineNames(workgroupName) {
     try {
-      const response = await fetch(`/api/componentqry/qrylinenames?workgroup=${workgroupName}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-  
+      const response = await fetch(
+        `/api/componentqry/qrylinenames?workgroup=${workgroupName}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const data = await response.json(); // แปลง response เป็น JSON
       //console.log("Fetched data:", data); // Debug: ดูข้อมูลที่ได้จาก API
       return data; // ส่งข้อมูลกลับไปใช้ในโค้ดที่เรียก
@@ -373,9 +372,8 @@ const BarChart5 = ({ report, isLoading }) => {
       return []; // คืนค่าเป็น array ว่างในกรณีที่มี error
     }
   }
-  
 
-  async function qryDocnames(linenames,selectedWorkgroup) {
+  async function qryDocnames(linenames, selectedWorkgroup) {
     //console.log(linenames+":"+selectedWorkgroup);
     try {
       const response = await fetch(`/api/componentqry/qrydocnames/`, {
@@ -383,17 +381,16 @@ const BarChart5 = ({ report, isLoading }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          linename:linenames ,
-          workgroup:selectedWorkgroup
+        body: JSON.stringify({
+          linename: linenames,
+          workgroup: selectedWorkgroup,
         }), // ส่ง linenameFilterList เป็น JSON ไปยัง API
-
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const data = await response.json(); // แปลง response เป็น JSON
       //console.log("Fetched data:", data); // Debug: ดูข้อมูลที่ได้จาก API
       return data; // ส่งข้อมูลกลับไปใช้ในโค้ดที่เรียก
@@ -402,14 +399,10 @@ const BarChart5 = ({ report, isLoading }) => {
       return []; // คืนค่าเป็น array ว่างในกรณีที่มี error
     }
   }
-  
-  
 
   //var linenameFilterList = []; // เริ่มต้นด้วย array ว่างๆ
   const handleLineNameChange = async (action, linename) => {
-
-
-     await setSelectedLineNames((prevSelectedLineNames) => {
+    await setSelectedLineNames((prevSelectedLineNames) => {
       if (action) {
         // Add: ตรวจสอบว่า linename ไม่มีอยู่ในรายการก่อน แล้วจึงเพิ่ม
         if (!prevSelectedLineNames.includes(linename)) {
@@ -418,42 +411,35 @@ const BarChart5 = ({ report, isLoading }) => {
         return prevSelectedLineNames; // ไม่เปลี่ยนแปลงหากมีอยู่แล้ว
       } else {
         // Delete: กรองรายการออกโดยเอา linename ออก
-        return prevSelectedLineNames.filter(name => name !== linename);
+        return prevSelectedLineNames.filter((name) => name !== linename);
       }
     });
 
-    console.log("setSelectedLineNames",selectedLineNames);
+    console.log("setSelectedLineNames", selectedLineNames);
 
-   //qryDocnames(selectedLineNames,selectedWorkgroup);   
-
+    //qryDocnames(selectedLineNames,selectedWorkgroup);
   };
 
-  
-  const handleWorkgroupChangeN = async (action,workgroupName) => {
+  const handleWorkgroupChangeN = async (action, workgroupName) => {
     //console.log(action+"::"+workgroupName);
     //    //setSelectedWorkgroups(workgroupName);
-      
-      if (action) {      
-            setSelectedWorkgroup(workgroupName);
-            console.log("selectedWorkgroup",selectedWorkgroup);
-      }       
-      //linenameFilterList=[];   
-      
-   
-      let dataLineNames = await qryLineNames(workgroupName);  // ใช้ await ที่นี่
-      //console.log("dataLineNames", dataLineNames);
-      var Lines=[]; 
-      dataLineNames.data.forEach(element => {
-          Lines.push(element.LINE_NAME);
-      });
-      setAvailableLineNames(Lines);
-  
-      
-  }
 
+    if (action) {
+      setSelectedWorkgroup(workgroupName);
+      console.log("selectedWorkgroup", selectedWorkgroup);
+    }
+    //linenameFilterList=[];
+
+    let dataLineNames = await qryLineNames(workgroupName); // ใช้ await ที่นี่
+    //console.log("dataLineNames", dataLineNames);
+    var Lines = [];
+    dataLineNames.data.forEach((element) => {
+      Lines.push(element.LINE_NAME);
+    });
+    setAvailableLineNames(Lines);
+  };
 
   const handleWorkgroupChange_old = (workgroupName) => {
-    
     //let dataLineNames=qryLineNames(workgroupName);
     //console.log("dataLineNames",dataLineNames);
 
@@ -487,41 +473,39 @@ const BarChart5 = ({ report, isLoading }) => {
       setSelectedJobItemNames
     );
   };
-  // ฟิลเตอร์เฉพาะรายการที่ไม่เป็น 'Unknown' หรือค่าว่าง
 
-  // const filteredValues = (items) =>
-  //   items
-  //     .filter((item) => item && item.trim() !== "" && item !== "Unknown") // กรองค่า
-  //     .sort((a, b) => a.localeCompare(b)); // เรียงลำดับตามตัวอักษ
-  //         const availableLineNames = filteredValues(
-  //           lineNames.filter((lineName) =>
-  //             selectedWorkgroups.some((workgroup) =>
-  //               report.some(
-  //                 (item) =>
-  //                   item.LINE_NAME === lineName && item.WORKGROUP_NAME === workgroup
-  //               )
-  //             )
-  //           )
-  // );
-  
-  // const availableDocNumbers = filteredValues(
-  //   docNumbers.filter((docNumber) =>
-  //     report.some(
-  //       (item) =>
-  //         item.DOC_NUMBER === docNumber &&
-  //         selectedLineNames.includes(item.LINE_NAME)
+  const filteredValues = (items) =>
+    items
+      .filter((item) => item && item.trim() !== "" && item !== "Unknown") // กรองค่า
+      .sort((a, b) => a.localeCompare(b)); // เรียงลำดับตามตัวอักษ
+  // const availableLineNames = filteredValues(
+  //   lineNames.filter((lineName) =>
+  //     selectedWorkgroups.some((workgroup) =>
+  //       report.some(
+  //         (item) =>
+  //           item.LINE_NAME === lineName && item.WORKGROUP_NAME === workgroup
+  //       )
   //     )
   //   )
   // );
-  // const availableJobItemNames = filteredValues(
-  //     jobItemNames.filter((jobItemName) =>
-  //     report.some(
-  //       (item) =>
-  //         item.JOB_ITEM_NAME === jobItemName &&
-  //         selectedDocNumbers.includes(item.DOC_NUMBER)
-  //     )
-  //   )
-  // );
+  const availableDocNumbers = filteredValues(
+    docNumbers.filter((docNumber) =>
+      report.some(
+        (item) =>
+          item.DOC_NUMBER === docNumber &&
+          selectedLineNames.includes(item.LINE_NAME)
+      )
+    )
+  );
+  const availableJobItemNames = filteredValues(
+    jobItemNames.filter((jobItemName) =>
+      report.some(
+        (item) =>
+          item.JOB_ITEM_NAME === jobItemName &&
+          selectedDocNumbers.includes(item.DOC_NUMBER)
+      )
+    )
+  );
   //const availableWorkgroups = filteredValues(workgroupNames);
   //console.log("availableWorkgroups",availableWorkgroups);
   const exportToPDF = async () => {
@@ -643,19 +627,20 @@ const BarChart5 = ({ report, isLoading }) => {
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
-      <div className="relative" style={{width:'250px'}}>
+        <div className="relative" style={{ width: "250px" }}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Workgroups..
           </label>
           <button
-            onClick={() =>  setIsOpen((prevOpen) => !prevOpen)}
-             className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none }`}            
+            onClick={() => setIsOpen((prevOpen) => !prevOpen)}
+            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none }`}
             // className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
             //   isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             // }`}
             //disabled={isLoading}
           >
-            {/*isLoading ? (
+            {
+              /*isLoading ? (
               <div className="flex items-center justify-center">
                 <svg
                   className="animate-spin h-5 w-5 mr-2 text-gray-400"
@@ -681,9 +666,8 @@ const BarChart5 = ({ report, isLoading }) => {
               </div>
             ) : selectedWorkgroups.length > 0 ? (
               `Selected ${selectedWorkgroups.length} Workgroups`
-            ) : */(
-              "Select Workgroups"
-            )}
+            ) : */ "Select Workgroups"
+            }
           </button>
           {isOpen && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
@@ -695,20 +679,23 @@ const BarChart5 = ({ report, isLoading }) => {
                 /> */}
                 Select workgroup
               </label>
-              {availableWorkgroups.map((workgroupName) => (                
+              {availableWorkgroups.map((workgroupName) => (
                 <label key={workgroupName} className="block p-2 cursor-pointer">
                   <input
                     type="radio"
                     name="workgroup"
                     value={workgroupName}
-                    checked={selectedWorkgroup===workgroupName}
+                    checked={selectedWorkgroup === workgroupName}
                     //checked={checkWorkGroupSelected(workgroupName)
-                          //  selectedWorkgroups.includes(workgroupName)
+                    //  selectedWorkgroups.includes(workgroupName)
                     //}
                     //onClick={alert(1)}
                     //onChange={() => handleWorkgroupChangeN(workgroupName)}
-                    onClick={(e) => handleWorkgroupChangeN(e.target.checked,workgroupName)}
-                  />&nbsp;
+                    onClick={(e) =>
+                      handleWorkgroupChangeN(e.target.checked, workgroupName)
+                    }
+                  />
+                  &nbsp;
                   {workgroupName}
                 </label>
               ))}
@@ -723,10 +710,10 @@ const BarChart5 = ({ report, isLoading }) => {
           </label>
           <button
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
-            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none}`}// ${
+            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none}`} // ${
             //  isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             //}`}
-           // disabled={isLoading}
+            // disabled={isLoading}
           >
             {selectedLineNames.length > 0
               ? `Selected ${selectedLineNames.length} LineNames`
@@ -748,7 +735,9 @@ const BarChart5 = ({ report, isLoading }) => {
                     type="checkbox"
                     value={lineName}
                     checked={selectedLineNames.includes(lineName)}
-                    onChange={(e) => handleLineNameChange(e.target.checked,lineName)}
+                    onChange={(e) =>
+                      handleLineNameChange(e.target.checked, lineName)
+                    }
                   />
                   {lineName}
                 </label>
