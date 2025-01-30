@@ -13,6 +13,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
+import * as XLSX from "xlsx";
 
 const jobItemTemplateHeader = [
   "Pos.",
@@ -40,8 +41,8 @@ const Page = ({ searchParams }) => {
   );
   const { locations, isLoading: locationsLoading } =
     useFetchTestLocations(refresh);
-
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onDrop = (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -107,7 +108,7 @@ const Page = ({ searchParams }) => {
       TEST_METHOD: form.get("test_method"),
       JOB_TEMPLATE_ID: jobTemplate_id,
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
-      TEST_LOCATION_ID: '667b915a596b4d721ec60c40'//form.get("test_location"),
+      TEST_LOCATION_ID: "667b915a596b4d721ec60c40", //form.get("test_location"),
     };
 
     const formData = new FormData();
@@ -150,40 +151,107 @@ const Page = ({ searchParams }) => {
     }
   };
 
-  
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      if (jsonData.length === 0) {
+        Swal.fire("Error", "ไฟล์ไม่มีข้อมูล", "error");
+        return;
+      }
+
+      // สร้าง FormData สำหรับข้อมูลหลายแถว
+      const formData = new FormData();
+
+      // เพิ่มข้อมูลจาก jsonData ทีละแถว
+      jsonData.forEach((row, index) => {
+        // เพิ่มข้อมูลจากไฟล์ Excel
+        formData.append(
+          "JOB_ITEM_TEMPLATE_TITLE[]",
+          row["JOB_ITEM_TEMPLATE_TITLE"]
+        );
+        formData.append(
+          "JOB_ITEM_TEMPLATE_NAME[]",
+          row["JOB_ITEM_TEMPLATE_NAME"]
+        );
+        formData.append("UPPER_SPEC[]", row["UPPER_SPEC"]);
+        formData.append("LOWER_SPEC[]", row["LOWER_SPEC"]);
+        formData.append("TEST_METHOD[]", row["TEST_METHOD"]);
+
+        // ข้อมูลเพิ่มเติมจากฟอร์มที่กรอก
+        formData.append("AUTHOR_ID", user._id);
+        formData.append("JOB_TEMPLATE_ID", jobTemplate_id);
+        formData.append("JobTemplateCreateID", jobTemplate.JobTemplateCreateID);
+        formData.append("TEST_LOCATION_ID", "667b915a596b4d721ec60c40");
+      });
+
+      // ถ้ามีการเลือกไฟล์เพื่ออัปโหลด
+      if (selectedFile) {
+        formData.append("FILE", selectedFile);
+      }
+
+      try {
+        const response = await fetch(
+          "/api/job-item-template/create-job-item-templates",
+          {
+            method: "POST",
+            body: formData, // ส่ง FormData
+          }
+        );
+
+        const result = await response.json();
+        if (response.ok) {
+          Swal.fire("Success", "ข้อมูลถูกอัปโหลดสำเร็จ", "success");
+        } else {
+          Swal.fire("Error", result.message || "เกิดข้อผิดพลาด", "error");
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "เกิดข้อผิดพลาดในการส่งข้อมูล", "error");
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
   const handleMqtt = async (jobItemTemplate) => {
     const idToCopy = jobItemTemplate._id;
 
     // ใช้ SweetAlert2 (swal)
     Swal.fire({
-        title: 'Mqtt Topic ID',
-        html: `<p>ID: <strong>${idToCopy}</strong></p>
+      title: "Mqtt Topic ID",
+      html: `<p>ID: <strong>${idToCopy}</strong></p>
                <button id="copy-btn" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white;">
                    Copy to Clipboard
                </button>`,
-        showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
+      showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
     });
 
     // เพิ่ม Event Listener ให้กับปุ่ม Copy
 
-    document.addEventListener('click', (event) => {
-      if (event.target.id === 'copy-btn') {
-          const textArea = document.createElement('textarea');
-          textArea.value = idToCopy;
-          document.body.appendChild(textArea);
-          textArea.select();
-          try {
-              document.execCommand('copy');
-              Swal.fire('Copied!', 'ID has been copied to clipboard.', 'success');
-          } catch (err) {
-              Swal.fire('Oops!', 'Failed to copy ID.', 'error');
-          }
-          document.body.removeChild(textArea);
+    document.addEventListener("click", (event) => {
+      if (event.target.id === "copy-btn") {
+        const textArea = document.createElement("textarea");
+        textArea.value = idToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand("copy");
+          Swal.fire("Copied!", "ID has been copied to clipboard.", "success");
+        } catch (err) {
+          Swal.fire("Oops!", "Failed to copy ID.", "error");
+        }
+        document.body.removeChild(textArea);
       }
-  });
-  
-
-
+    });
   };
 
   const handleRemove = async (jobItemTemplate_id) => {
@@ -211,66 +279,70 @@ const Page = ({ searchParams }) => {
     setSelectedFile(null);
   };
 
+  const handlePosSelect = async (b, valueSelected) => {
+    //console.log("valueSelected=>"+valueSelected+" => "+b._id);
+    //alert('use handlePosSelect ');
+    //return;
+    const formData = new FormData();
+    formData.append("jobItemTemplateID", b._id);
+    formData.append("pos", valueSelected);
 
-  const handlePosSelect = async (b,valueSelected) => {
-        //console.log("valueSelected=>"+valueSelected+" => "+b._id);    
-        //alert('use handlePosSelect ');
-        //return;
-        const formData = new FormData();
-        formData.append("jobItemTemplateID", b._id);
-        formData.append("pos", valueSelected);
-        
-        try {
-          const res = await fetch("/api/job-item-template/edit-job-item-template/edit-job-item-template-pos", {
-            method: "POST",
-             body: formData,
-          });
-    
-          const data = await res.json();
-          console.log("data=>",data);
-
-          //if (data.result) {
-          //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
-          //} else {
-            //alert("An error occurred while uploading the file.");
-          //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
-          //}
-        } catch (error) {
-          //console.error(error);
-          //alert("An error occurred while uploading the file.");
-          //return null; // คืนค่า null หากเกิดข้อผิดพลาด
+    try {
+      const res = await fetch(
+        "/api/job-item-template/edit-job-item-template/edit-job-item-template-pos",
+        {
+          method: "POST",
+          body: formData,
         }
+      );
 
-  }
+      const data = await res.json();
+      console.log("data=>", data);
+
+      //if (data.result) {
+      //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
+      //} else {
+      //alert("An error occurred while uploading the file.");
+      //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      //}
+    } catch (error) {
+      //console.error(error);
+      //alert("An error occurred while uploading the file.");
+      //return null; // คืนค่า null หากเกิดข้อผิดพลาด
+    }
+  };
 
   const jobItemTemplateBody = jobItemTemplates.map((jobItemTemplate, index) => {
     //console.log("jobItemTemplates.length=>",jobItemTemplates.length);
-    var buffer_position_list=[];
-    var counter=1;
+    var buffer_position_list = [];
+    var counter = 1;
     jobItemTemplates.map((jobItemTemplate, index) => {
       buffer_position_list.push({
-          id:counter,
-          name:counter            
-    });
+        id: counter,
+        name: counter,
+      });
       counter++;
     });
     return {
-      ID:/* index + 1 */ /*jobItemTemplate.pos+ */(
-            <div className="flex items-center justify-center gap-2">
-            <select className="p-2" onChange={(e)=>handlePosSelect(jobItemTemplate,e.target.value)}>
-                <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
-                {buffer_position_list.map((point, index) => (
-                    <option key={point.id || index} value={point.name}>
-                        {point.name}
-                    </option>
-                ))}
-            </select>
+      ID: (
+        /* index + 1 */ /*jobItemTemplate.pos+ */ <div className="flex items-center justify-center gap-2">
+          <select
+            className="p-2"
+            onChange={(e) => handlePosSelect(jobItemTemplate, e.target.value)}
+          >
+            <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
+            {buffer_position_list.map((point, index) => (
+              <option key={point.id || index} value={point.name}>
+                {point.name}
+              </option>
+            ))}
+          </select>
         </div>
-      
       ),
       Title: jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE,
-      Name:jobItemTemplate.JOB_ITEM_TEMPLATE_NAME ,
-      Upper_Lower: jobItemTemplate.UPPER_SPEC+"/"+jobItemTemplate.LOWER_SPEC,
+      Name: jobItemTemplate.JOB_ITEM_TEMPLATE_NAME,
+      Upper_Lower:
+        jobItemTemplate.UPPER_SPEC + "/" + jobItemTemplate.LOWER_SPEC,
       Test_Method: jobItemTemplate.TEST_METHOD,
       "Create At": jobItemTemplate.createdAt,
       Action: (
@@ -340,7 +412,6 @@ const Page = ({ searchParams }) => {
           >
             Mqtt
           </button>
-
         </div>
       ),
     };
@@ -518,7 +589,7 @@ const Page = ({ searchParams }) => {
                 required
               />
             </div>
-            <div style={{display:'none'}}>
+            <div style={{ display: "none" }}>
               <label
                 htmlFor="test_location"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
@@ -568,6 +639,27 @@ const Page = ({ searchParams }) => {
           >
             Add Checklist Item Template
           </button>
+          <div className="flex flex-col items-center gap-6 p-6 bg-white shadow-lg rounded-lg">
+            <h2 className="text-lg font-bold text-gray-800">
+              อัปโหลดไฟล์ Excel
+            </h2>
+
+            <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Upload Excel
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileUpload} // เมื่อเลือกไฟล์ให้เรียก handleFileUpload
+                className="hidden"
+              />
+            </label>
+
+            {isSubmitting && (
+              <p className="text-blue-600 font-medium">
+                กำลังอัปโหลดและส่งข้อมูล...
+              </p>
+            )}
+          </div>
         </form>
         <hr className="mt-2" />
         <TableComponent
