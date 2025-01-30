@@ -5,7 +5,7 @@ const ExportButtons = ({ handleExport }) => {
     <div className="flex justify-end mt-6 space-x-3">
       <button
         onClick={() => handleExport("csv")}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+        className=" bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
       >
         <FaFileCsv />
         <span className="hidden md:inline">Export CSV</span>
@@ -13,7 +13,7 @@ const ExportButtons = ({ handleExport }) => {
 
       <button
         onClick={() => handleExport("png")}
-        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
       >
         <FaImage />
         <span className="hidden md:inline">Save as PNG</span>

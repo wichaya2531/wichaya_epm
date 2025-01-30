@@ -14,6 +14,7 @@ import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
+import { FaFileCsv } from "react-icons/fa";
 
 const jobItemTemplateHeader = [
   "Pos.",
@@ -431,10 +432,7 @@ const Page = ({ searchParams }) => {
         </h1>
       </div>
       <div className="flex flex-col gap-4 mb-4 p-4 bg-white rounded-xl">
-        <form
-          onSubmit={HandleSubmit}
-          className="flex flex-col justify-center gap-8"
-        >
+        <form onSubmit={HandleSubmit} className="flex flex-col justify-center ">
           <div className="grid gap-6 mb-6 md:grid-cols-3 row-span-4">
             <div className="flex flex-col gap-4 justify-center items-center w-full row-span-4">
               <div
@@ -613,39 +611,35 @@ const Page = ({ searchParams }) => {
               /> */}
             </div>
           </div>
-
-          <button
-            type="submit"
-            className={`text-white font-bold rounded-lg text-sm px-1 py-2.5 text-center w-1/3 hover:bg-blue-800 focus:ring-4 focus:outline-none
-                    ${
-                      user &&
-                      user.actions &&
-                      !user.actions.some(
-                        (action) =>
-                          action._id ===
-                          enabledFunction["add-job-item-template"]
-                      )
-                        ? "bg-blue-500 cursor-not-allowed"
-                        : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    }`}
-            disabled={
-              !user ||
-              !user.actions ||
+          <div className="flex justify-around items-center p-6 ">
+            <button
+              type="submit"
+              className={`text-white font-bold rounded-lg text-sm p-4 text-center hover:bg-blue-800 focus:ring-4 focus:outline-none
+            ${
+              user &&
+              user.actions &&
               !user.actions.some(
                 (action) =>
                   action._id === enabledFunction["add-job-item-template"]
               )
-            }
-          >
-            Add Checklist Item Template
-          </button>
-          <div className="flex flex-col items-center gap-6 p-6 bg-white shadow-lg rounded-lg">
-            <h2 className="text-lg font-bold text-gray-800">
-              อัปโหลดไฟล์ Excel
-            </h2>
+                ? "bg-blue-500 cursor-not-allowed"
+                : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            }`}
+              disabled={
+                !user ||
+                !user.actions ||
+                !user.actions.some(
+                  (action) =>
+                    action._id === enabledFunction["add-job-item-template"]
+                )
+              }
+            >
+              Add Checklist Item Template
+            </button>
 
-            <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              Upload Excel
+            <label className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center">
+              <span className="hidden md:inline">Upload Excel</span>
+              <FaFileCsv />
               <input
                 type="file"
                 accept=".xlsx, .xls"
@@ -653,13 +647,13 @@ const Page = ({ searchParams }) => {
                 className="hidden"
               />
             </label>
-
-            {isSubmitting && (
-              <p className="text-blue-600 font-medium">
-                กำลังอัปโหลดและส่งข้อมูล...
-              </p>
-            )}
           </div>
+
+          {isSubmitting && (
+            <p className="text-blue-600 font-medium text-center mt-2">
+              กำลังอัปโหลดและส่งข้อมูล...
+            </p>
+          )}
         </form>
         <hr className="mt-2" />
         <TableComponent
