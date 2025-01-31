@@ -14,13 +14,14 @@ import Swal from "sweetalert2";
 //import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { getSession } from "@/lib/utils/utils.js";
-import { set } from "mongoose";
+import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
 
 const approverHeader = ["ID", "Name", "Action"];
 const notifyHeader = ["ID", "Name", "Action"];
 const notifyOverdueHeader = ["ID", "Name", "Action"];
 
 const Page = ({ searchParams }) => {
+  const { workgroups, loading, error } = useFetchWorkgroups();
   const jobTemplate_id = searchParams.jobTemplate_id;
   //const [timeout, setTimeout] = useState("");
   const [selectLineNames, setSelectLineNames] = useState([]);
@@ -80,6 +81,38 @@ const Page = ({ searchParams }) => {
     }
   };
 
+  useEffect(() => {
+    if (user && users && workgroups) {
+      // หาค่าของ workgroup ที่ตรงกับ user.workgroup
+      const currentWorkgroup = workgroups.find(
+        (workgroup) => workgroup.WORKGROUP_NAME === user.workgroup
+      );
+
+      // กรอง users สำหรับ Add Approver และ Add Notify Active ตาม USER_LIST ของ workgroup
+      if (currentWorkgroup) {
+        const filteredUsers = users
+          .filter((userItem) =>
+            currentWorkgroup.USER_LIST.includes(userItem._id)
+          )
+          .map((userItem) => ({
+            value: userItem._id,
+            label: userItem.name,
+          }));
+
+        setOptions(filteredUsers); // อัปเดตตัวเลือกใน Select สำหรับ Add Approver และ Add Notify Active
+      }
+    }
+  }, [approvers, notifies, users, workgroups, user]);
+
+  useEffect(() => {
+    // สำหรับ Add Notify Overdue ไม่ต้องกรอง ใช้ users ทั้งหมด
+    const allUsers = users.map((userItem) => ({
+      value: userItem._id,
+      label: userItem.name,
+    }));
+    setOptions(allUsers); // อัปเดตตัวเลือกใน Select สำหรับ Add Notify Overdue
+  }, [users]);
+
   const fetchLineNames = async (userSession) => {
     try {
       const formData = new FormData();
@@ -120,7 +153,6 @@ const Page = ({ searchParams }) => {
     // .map((user) => ({ value: user._id, label: user.name }));
 
     // console.log("user",user);
-
 
     setOptions(
       users
@@ -664,6 +696,7 @@ const Page = ({ searchParams }) => {
                 name="timeout"
                 value={timeout}
                 onChange={setTimeout}
+                className="z-50"
               />
             </div>
             <div className="flex gap-5 ">
@@ -679,6 +712,7 @@ const Page = ({ searchParams }) => {
                   value={selectedApprover}
                   onChange={setSelectedApprover}
                   isSearchable={true}
+                  className="z-40"
                 />
               </div>
               <button
@@ -702,7 +736,7 @@ const Page = ({ searchParams }) => {
                   value={selectedNotify}
                   onChange={setSelectedNotify}
                   isSearchable={true}
-                  className="z-50"
+                  className="z-30"
                 />
               </div>
               <button
@@ -722,11 +756,14 @@ const Page = ({ searchParams }) => {
                   Add Notify Overdue
                 </label>
                 <Select
-                  options={options}
+                  options={users.map((userItem) => ({
+                    value: userItem._id,
+                    label: userItem.name,
+                  }))}
                   value={selectedNotifyOverdue}
                   onChange={setSelectedNotifyOverdue}
                   isSearchable={true}
-                  className="z-40"
+                  className="z-20"
                 />
               </div>
               <button
