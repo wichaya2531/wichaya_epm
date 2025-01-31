@@ -42,19 +42,21 @@ const ReportDoc = ({ report, isLoading }) => {
     "9919A": "#FFA07A",
   };
   const colorValues = [
-    "pass",
-    "good",
+    "Pass",
+    "OK",
+    "Good",
     "Not Change",
     "Fail",
-    "change",
-    "not change",
-    "done",
-    "check",
+    "Change",
+    "Not Change",
+    "Done",
+    "Check",
     "Unknown",
   ];
   const getPastelColorForValue = (value) => {
     const colors = new Map([
       ["pass", "rgba(198, 255, 198, 0.6)"],
+      ["ok", "rgba(198, 255, 198, 0.6)"],
       ["good", "rgba(204, 229, 255, 0.6)"],
       ["change", "rgba(255, 227, 153, 0.6)"],
       ["not change", "rgba(255, 239, 204, 0.6)"],

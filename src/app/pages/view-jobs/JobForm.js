@@ -169,6 +169,33 @@ const JobForm = ({
   // };
 
   // console.log("jobData",jobData);
+
+  const colorValues = [
+    "Pass",
+    "OK",
+    "Good",
+    "Not Change",
+    "Fail",
+    "Change",
+    "Not Change",
+    "Done",
+    "Check",
+    "Unknown",
+  ];
+  const getPastelColorForValue = (value) => {
+    const colors = new Map([
+      ["pass", "rgba(198, 255, 198, 0.6)"],
+      ["ok", "rgba(198, 255, 198, 0.6)"],
+      ["good", "rgba(204, 229, 255, 0.6)"],
+      ["change", "rgba(255, 227, 153, 0.6)"],
+      ["not change", "rgba(255, 239, 204, 0.6)"],
+      ["fail", "rgba(255, 182, 193, 0.6)"],
+      ["done", "rgba(221, 160, 221, 0.6)"],
+      ["check", "rgba(255, 255, 204, 0.6)"],
+    ]);
+    return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
+  };
+
   return (
     <form
       className="flex flex-col gap-8 p-4 bg-white rounded-xl"
@@ -562,6 +589,17 @@ const JobForm = ({
             isShowJobItem ? "" : "hidden"
           } flex flex-col gap-5`}
         >
+          <div className="flex flex-wrap gap-2 mt-4">
+            {colorValues.map((value) => (
+              <div key={value} className="flex items-center space-x-2">
+                <span
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: getPastelColorForValue(value) }}
+                ></span>
+                <span className="text-sm text-gray-700">{value}</span>
+              </div>
+            ))}
+          </div>
           <table className="table-auto border-collapse w-full text-sm">
             <thead className="text-center">
               <tr className="bg-gray-200">
@@ -614,6 +652,11 @@ const JobForm = ({
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
                         title={"Lastest Update: " + item.LastestUpdate}
+                        style={{
+                          backgroundColor: getPastelColorForValue(
+                            item.BeforeValue2 || item.BeforeValue || ""
+                          ),
+                        }}
                       />
                     ) : (
                       <input
@@ -635,6 +678,11 @@ const JobForm = ({
                         className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
                         title="This is a tooltip"
+                        style={{
+                          backgroundColor: getPastelColorForValue(
+                            item.ActualValue || ""
+                          ),
+                        }}
                       />
                     ) : (
                       <div>
