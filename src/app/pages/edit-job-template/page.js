@@ -584,7 +584,7 @@ const Page = ({ searchParams }) => {
                 id="due_date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="due_date"
                 required
               />
@@ -599,7 +599,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="job_template_name"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 defaultValue={jobTemplate.JOB_TEMPLATE_NAME}
                 name="job_template_name"
                 required
@@ -615,7 +615,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="doc_num"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="doc_num"
                 defaultValue={jobTemplate.DOC_NUMBER}
                 required
@@ -631,7 +631,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="text"
                 id="checklist_ver"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="checklist_ver"
                 defaultValue={jobTemplate.CHECKLIST_VERSION}
                 required
@@ -655,7 +655,7 @@ const Page = ({ searchParams }) => {
               <select
                 id="line_name"
                 name="line_name"
-                className="max-w-[300px] p-x-10 bg-white border border-gray-300 text-gray-900 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="max-w-[300px] p-x-10 bg-white border border-gray-300  text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 defaultValue={jobTemplate.LINE_NAME}
               >
                 <option value={jobTemplate.LINE_NAME}>
