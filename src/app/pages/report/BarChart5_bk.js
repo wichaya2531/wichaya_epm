@@ -16,7 +16,6 @@ import {
   TimeScale,
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 // import useFetchReportWorkgroupLinename from "@/lib/hooks/useFetchReportWorkgroupLinename";
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { format, parseISO, isValid, startOfToday } from "date-fns";
@@ -46,11 +45,10 @@ ChartJS.register(
   LineElement,
   TimeScale
 );
-const BarChart5 = () => {
+const BarChart5 = ({ report, isLoading }) => {
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const { report, isLoading } = useFetchReport1(refresh);
   // const { lineNames, workgroupNames } =
   //   useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
@@ -138,21 +136,19 @@ const BarChart5 = () => {
     "9919A": "#FFA07A",
   };
   const colorValues = [
-    "Pass",
-    "OK",
-    "Good",
+    "pass",
+    "good",
     "Not Change",
     "Fail",
-    "Change",
-    "Not Change",
-    "Done",
-    "Check",
+    "change",
+    "not change",
+    "done",
+    "check",
     "Unknown",
   ];
   const getPastelColorForValue = (value) => {
     const colors = new Map([
       ["pass", "rgba(198, 255, 198, 0.6)"],
-      ["ok", "rgba(198, 255, 198, 0.6)"],
       ["good", "rgba(204, 229, 255, 0.6)"],
       ["change", "rgba(255, 227, 153, 0.6)"],
       ["not change", "rgba(255, 239, 204, 0.6)"],
@@ -410,27 +406,31 @@ const BarChart5 = () => {
   
 
   //var linenameFilterList = []; // เริ่มต้นด้วย array ว่างๆ
-  // const handleLineNameChange = async (action, linename) => {
+  const handleLineNameChange = async (action, linename) => {
+    if(action){
+      console.log("line name add "+linename);
+    }
+    
 
+    var n= await setSelectedLineNames((prevSelectedLineNames) => {
+      if (action) {
+        // Add: ตรวจสอบว่า linename ไม่มีอยู่ในรายการก่อน แล้วจึงเพิ่ม
+        if (!prevSelectedLineNames.includes(linename)) {
+            
+          return [...prevSelectedLineNames, linename];
+        }
+        return prevSelectedLineNames; // ไม่เปลี่ยนแปลงหากมีอยู่แล้ว
+      } else {
+        // Delete: กรองรายการออกโดยเอา linename ออก
+          return prevSelectedLineNames.filter(name => name !== linename);
+      }
+    });
 
-  //    await setSelectedLineNames((prevSelectedLineNames) => {
-  //     if (action) {
-  //       // Add: ตรวจสอบว่า linename ไม่มีอยู่ในรายการก่อน แล้วจึงเพิ่ม
-  //       if (!prevSelectedLineNames.includes(linename)) {
-  //         return [...prevSelectedLineNames, linename];
-  //       }
-  //       return prevSelectedLineNames; // ไม่เปลี่ยนแปลงหากมีอยู่แล้ว
-  //     } else {
-  //       // Delete: กรองรายการออกโดยเอา linename ออก
-  //       return prevSelectedLineNames.filter(name => name !== linename);
-  //     }
-  //   });
+    console.log("n",n);
 
-  //   console.log("setSelectedLineNames",selectedLineNames);
+   //qryDocnames(selectedLineNames,selectedWorkgroup);   
 
-  //  //qryDocnames(selectedLineNames,selectedWorkgroup);   
-
-  // };
+  };
 
   
   const handleWorkgroupChangeN = async (action,workgroupName) => {
@@ -473,11 +473,13 @@ const BarChart5 = () => {
     setSelectedDocNumbers([]);
     setSelectedJobItemNames([]);
   };
-  const handleLineNameChange = (lineName) => {
-    handleSelectionChange(lineName, selectedLineNames, setSelectedLineNames);
-    setSelectedDocNumbers([]);
-    setSelectedJobItemNames([]);
-  };
+
+  // const handleLineNameChange = (lineName) => {
+  //   handleSelectionChange(lineName, selectedLineNames, setSelectedLineNames);
+  //   setSelectedDocNumbers([]);
+  //   setSelectedJobItemNames([]);
+  // };
+
   const handleDocNumberChange = (docNumber) => {
     handleSelectionChange(docNumber, selectedDocNumbers, setSelectedDocNumbers);
     setSelectedJobItemNames([]);
@@ -647,7 +649,7 @@ const BarChart5 = () => {
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
       <div className="relative" style={{width:'250px'}}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Workgroups
+            Workgroups..
           </label>
           <button
             onClick={() =>  setIsOpen((prevOpen) => !prevOpen)}
@@ -687,20 +689,21 @@ const BarChart5 = () => {
               "Select Workgroups"
             )}
           </button>
-          {isOpen && !isLoading && (
+          {isOpen && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
-                <input
+                {/* <input
                   type="checkbox"
                   onChange={() => setSelectedWorkgroups([])}
                   checked={selectedWorkgroups.length === 0}
-                />
-                All Workgroups
+                /> */}
+                Select workgroup
               </label>
-              {availableWorkgroups.map((workgroupName) => (
+              {availableWorkgroups.map((workgroupName) => (                
                 <label key={workgroupName} className="block p-2 cursor-pointer">
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="workgroup"
                     value={workgroupName}
                     checked={selectedWorkgroup===workgroupName}
                     //checked={checkWorkGroupSelected(workgroupName)
@@ -716,6 +719,7 @@ const BarChart5 = () => {
             </div>
           )}
         </div>
+
         {/* // UI ของ LineNames */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -735,12 +739,12 @@ const BarChart5 = () => {
           {isOpen1 && (
             <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
-                <input
+                {/* <input
                   type="checkbox"
                   onChange={() => setSelectedLineNames([])}
-                  checked={selectedLineNames.length === 0}
-                />
-                All LineNames
+                  // checked={selectedLineNames.length === 0}
+                /> */}
+                Select LineNames
               </label>
               {availableLineNames.map((lineName) => (
                 <label key={lineName} className="block p-2 cursor-pointer">
@@ -749,6 +753,7 @@ const BarChart5 = () => {
                     value={lineName}
                     checked={selectedLineNames.includes(lineName)}
                     onChange={(e) => handleLineNameChange(e.target.checked,lineName)}
+                    //onClick={(e) => handleLineNameChange(e.target.checked,lineName)}
                   />
                   {lineName}
                 </label>

@@ -27,7 +27,7 @@ const JobForm = ({
   onclicktoShow,
 }) => {
   //console.log("jobData.=>", jobData);
-  console.log("jobItems.=>", jobItems);
+  //console.log("jobItems.=>", jobItems);
   //console.log(jobData.IMAGE_FILENAME);
   const handleShowComment = (item) => {
     Swal.fire({

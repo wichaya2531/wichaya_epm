@@ -116,6 +116,7 @@ const Page = () => {
         });
       } else if (event.status_name === "renew") {
         router.push(`/pages/job-renew?job_id=${event.job_id}`);
+        //router.push(`/pages/view-jobs?job_id=${event.job_id}&view=true`);
       } else {
         router.push(`/pages/view-jobs?job_id=${event.job_id}&view=true`);
       }
