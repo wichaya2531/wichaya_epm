@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
-import { FaFileCsv } from "react-icons/fa";
+import { FaFileCsv, FaDownload } from "react-icons/fa";
 
 const jobItemTemplateHeader = [
   "Pos.",
@@ -221,6 +221,28 @@ const Page = ({ searchParams }) => {
     };
 
     reader.readAsArrayBuffer(file);
+  };
+
+  const handleDownloadExcel = () => {
+    const data = [
+      [
+        "JOB_ITEM_TEMPLATE_TITLE",
+        "JOB_ITEM_TEMPLATE_NAME",
+        "UPPER_SPEC",
+        "LOWER_SPEC",
+        "TEST_METHOD",
+      ],
+      ["Item A", "Name A", 50, 40, "Method 1"],
+      ["Item B", "Name B", 40, 20, "Method 2"],
+      ["Item C", "Name C", 60, 35, "Method 3"],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Job Templates");
+
+    // บันทึกเป็นไฟล์ Excel
+    XLSX.writeFile(wb, "Job_Item_Template.xlsx");
   };
 
   const handleMqtt = async (jobItemTemplate) => {
@@ -638,8 +660,8 @@ const Page = ({ searchParams }) => {
             </button>
            
             <label className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center">
-              <span className="hidden md:inline">Upload Excel</span>
               <FaFileCsv />
+              <span className="hidden md:inline">Upload Excel</span>
               <input
                 type="file"
                 accept=".xlsx, .xls"
@@ -647,8 +669,14 @@ const Page = ({ searchParams }) => {
                 className="hidden"
               />
             </label>
+            <button
+              onClick={handleDownloadExcel}
+              className="cursor-pointer bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center gap-2"
+            >
+              <FaDownload />
+              <span className="hidden md:inline">Download Excel format</span>
+            </button>
           </div>
-
           {isSubmitting && (
             <p className="text-blue-600 font-medium text-center mt-2">
               กำลังอัปโหลดและส่งข้อมูล...

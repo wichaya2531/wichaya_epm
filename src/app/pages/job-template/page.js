@@ -10,6 +10,7 @@ import { getSession } from "@/lib/utils/utils.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
 
 const enabledFunction = {
   "create-job-template": "6632f9e4eccb576a719dfa7a",
@@ -22,6 +23,7 @@ const notifyHeader = ["ID", "Name", "Action"];
 const notifyOverdueHeader = ["ID", "Name", "Action"];
 
 const Page = () => {
+  const { workgroups, loading, error } = useFetchWorkgroups();
   const [selectLineNames, setSelectLineNames] = useState([]);
   const [approvers, setApprovers] = useState([]);
   const [notifies, setNotifies] = useState([]);
@@ -59,22 +61,36 @@ const Page = () => {
   };
 
   useEffect(() => {
-    // Filter options to exclude approvers and notifies
-    const updatedOptions = users
-      .filter(
-        (user) =>
-          !approvers.some((approver) => approver.user_id === user._id) &&
-          !notifies.some((notify) => notify.user_id === user._id) &&
-          !notifiesOverdue.some(
-            (notifyOverdue) => notifyOverdue.user_id === user._id
+    if (user && users && workgroups) {
+      // หาค่าของ workgroup ที่ตรงกับ user.workgroup
+      const currentWorkgroup = workgroups.find(
+        (workgroup) => workgroup.WORKGROUP_NAME === user.workgroup
+      );
+
+      // กรอง users สำหรับ Add Approver และ Add Notify Active ตาม USER_LIST ของ workgroup
+      if (currentWorkgroup) {
+        const filteredUsers = users
+          .filter((userItem) =>
+            currentWorkgroup.USER_LIST.includes(userItem._id)
           )
-      )
-      .map((user) => ({
-        value: user._id,
-        label: user.name,
-      }));
-    setOptions(updatedOptions);
-  }, [approvers, notifies, notifiesOverdue, users]);
+          .map((userItem) => ({
+            value: userItem._id,
+            label: userItem.name,
+          }));
+
+        setOptions(filteredUsers); // อัปเดตตัวเลือกใน Select สำหรับ Add Approver และ Add Notify Active
+      }
+    }
+  }, [approvers, notifies, users, workgroups, user]);
+
+  useEffect(() => {
+    // สำหรับ Add Notify Overdue ไม่ต้องกรอง ใช้ users ทั้งหมด
+    const allUsers = users.map((userItem) => ({
+      value: userItem._id,
+      label: userItem.name,
+    }));
+    setOptions(allUsers); // อัปเดตตัวเลือกใน Select สำหรับ Add Notify Overdue
+  }, [users]);
 
   const retreiveSession = async () => {
     try {
@@ -568,7 +584,7 @@ const Page = () => {
                 ]}
                 isSearchable={true}
                 name="timeout"
-                className="max-w-[300px]"
+                className="z-50 max-w-[300px]"
               />
             </div>
 
@@ -585,7 +601,7 @@ const Page = () => {
                   value={selectedApprover}
                   onChange={setSelectedApprover}
                   isSearchable={true}
-                  className="z-50 max-w-[300px]"
+                  className="z-40 max-w-[300px]"
                 />
               </div>
               <button
@@ -609,7 +625,7 @@ const Page = () => {
                   value={selectedNotify}
                   onChange={setSelectedNotify}
                   isSearchable={true}
-                  className="z-50 max-w-[300px]"
+                  className="z-30 max-w-[300px]"
                 />
               </div>
               <button
@@ -629,11 +645,14 @@ const Page = () => {
                   Add Notify Overdue
                 </label>
                 <Select
-                  options={options}
+                  options={users.map((userItem) => ({
+                    value: userItem._id,
+                    label: userItem.name,
+                  }))}
                   value={selectedNotifyOverdue}
                   onChange={setSelectedNotifyOverdue}
                   isSearchable={true}
-                  className="z-40 max-w-[300px]"
+                  className="z-20 max-w-[300px]"
                 />
               </div>
               <button
