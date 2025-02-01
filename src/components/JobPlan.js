@@ -45,7 +45,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
         const requestData = {
             activationDate: nextDate,
-            activationTime: document.getElementById('activate-time').value,
+            activationTime: document.getElementById('activate-time').value==""?"07:00":document.getElementById('activate-time').value,
             recurrence: showRecurring ? recurrenceOption : null,
             endDate: endDate ? new Date(endDate).toISOString() : null,
             ...data
@@ -264,7 +264,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                                 type="time"
                                 id="activate-time"
                                 name="activate-time"
-                                value="07:00"
+                                //value="07:00"
                                 //onChange={(e) => setEndDate(e.target.value)}
                                 className="border border-gray-300 rounded-md p-2"
                             />

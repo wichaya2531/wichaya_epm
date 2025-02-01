@@ -36,10 +36,21 @@ import { Schedule } from "@/lib/models/Schedule.js";
 
 // export const Schedule = mongoose.models?.Schedule || mongoose.model('Schedule', scheduleSchema);
 
+function formatDateToString(dateObj) {
+    if (!(dateObj instanceof Date) || isNaN(dateObj)) return "Invalid Date";
+
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // เดือนเริ่มที่ 0 ต้องบวก 1
+    const day = String(dateObj.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+
 export const POST = async (req, res) => {
 
 
-   // console.log("use job planning");
+    console.log("************use job planning******************");
 
     await connectToDb();
     const body = await req.json();
@@ -61,20 +72,53 @@ export const POST = async (req, res) => {
         }
 
         // Calculate the end date based on the recurrence type
-        let endDateObj;
-        if (recurrence && endDate) {
-            endDateObj = new Date(endDate); // Convert endDate to a Date object
-        }
 
+        let startDateActive=new Date(activationDate+"T"+activationTime);
+        startDateActive.setHours(startDateActive.getHours() + 7);
+
+
+        let endDateActive=new Date( formatDateToString(new Date( endDate ))+"T"+activationTime );
+        endDateActive.setHours(endDateActive.getHours() + 7);
+
+        // console.log("activationDate",activationDate);
+        // console.log("activationTime",activationTime);
+        // console.log("startDateActive",startDateActive);
+        // console.log("endDateActive",endDateActive);
+        
+        // console.log("********************************");
+
+        //let endDateObj;
+        //if (recurrence && endDate) {
+        //    endDateObj = new Date(activationDate+"T"+activationTime); // Convert endDate to a Date object
+            //endDateObj.setHours(endDateObj.getHours() + 7);
+        //}
+        
+        //let currentDateTime=new Date();
+        //currentDateTime.setHours(endDateObj.getHours() + 7);
+       // console.log("เวลาปัจจุบัน:",currentDateTime);
+        
+        //let rollingDateTime=new Date(activationDate+"T"+activationTime);
+        //console.log("เวลาปัจจุบัน:",currentDateTime);
+
+       // console.log("endDateObj:",endDateObj);
+      //  return NextResponse.json({ status: 200, message: 'Jobs activated successfully' });
         // Activate jobs until the end date based on the recurrence type
         //console.log("activationDate=>",activationDate);
         //console.log("activationTime=>",activationTime);
 
-        let currentDate = new Date(activationDate+"T"+activationTime);
+        //let currentDate = new Date(activationDate+"T"+activationTime);
+        //currentDate.setHours(currentDate.getHours());
         //console.log("currentDate", currentDate)
-        while (!endDateObj || currentDate <= endDateObj) {
+
+             ///console.log("endDateObj :",endDateObj);
+             //console.log("currentDate :",currentDate);
+             //console.log("*********************************");
+        let rolling_Datetime = startDateActive;
+        while (rolling_Datetime <= endDateActive) {
             // Create a new job
-            const AdvanceActivationDate = new Date(currentDate);
+            // console.log("สร้าง  Schedual :",rolling_Datetime);
+            const AdvanceActivationDate = new Date(rolling_Datetime);
+            AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - 7);
             const schedule = new Schedule({
                 JOB_TEMPLATE_ID: jobTemplateID,
                 JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
@@ -85,15 +129,16 @@ export const POST = async (req, res) => {
                 WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
             });
             await schedule.save();
+
             // Increment currentDate based on the recurrence type
             if (recurrence === 'daily') {
-                currentDate.setDate(currentDate.getDate() + 1); // Add one day for daily recurrence
+                rolling_Datetime.setDate(rolling_Datetime.getDate() + 1); // Add one day for daily recurrence
             } else if (recurrence === 'weekly') {
-                currentDate.setDate(currentDate.getDate() + 7); // Add seven days for weekly recurrence
+                rolling_Datetime.setDate(rolling_Datetime.getDate() + 7); // Add seven days for weekly recurrence
             } else if (recurrence === 'monthly') {
-                currentDate.setMonth(currentDate.getMonth() + 1); // Add one month for monthly recurrence
+                rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 1); // Add one month for monthly recurrence
             } else if (recurrence === 'yearly') {
-                currentDate.setFullYear(currentDate.getFullYear() + 1); // Add one year for yearly recurrence
+                rolling_Datetime.setFullYear(rolling_Datetime.getFullYear() + 1); // Add one year for yearly recurrence
             } else {
                 break; // If recurrence type is not specified or invalid, exit the loop
             }
