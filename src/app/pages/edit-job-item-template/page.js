@@ -270,7 +270,7 @@ const Page = ({ searchParams }) => {
                 type="text"
                 id="test_method"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                defaultValue={jobItemTemplate.TEST_METHOD || ""}
+                defaultValue={jobItemTemplate.TEST_METHOD || "-"}
                 name="test_method"
                 required
               />

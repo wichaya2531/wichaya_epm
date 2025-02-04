@@ -73,7 +73,7 @@ export const POST = async (req, res) => {
 
         // Calculate the end date based on the recurrence type
 
-        let startDateActive=new Date(activationDate+"T"+activationTime);
+        let startDateActive=new Date(formatDateToString(new Date())+"T"+activationTime);
         startDateActive.setHours(startDateActive.getHours() + 7);
 
 
@@ -82,41 +82,16 @@ export const POST = async (req, res) => {
 
         // console.log("activationDate",activationDate);
         // console.log("activationTime",activationTime);
-        // console.log("startDateActive",startDateActive);
+       
+       //  console.log("startDateActive",startDateActive);
         // console.log("endDateActive",endDateActive);
         
         // console.log("********************************");
 
-        //let endDateObj;
-        //if (recurrence && endDate) {
-        //    endDateObj = new Date(activationDate+"T"+activationTime); // Convert endDate to a Date object
-            //endDateObj.setHours(endDateObj.getHours() + 7);
-        //}
-        
-        //let currentDateTime=new Date();
-        //currentDateTime.setHours(endDateObj.getHours() + 7);
-       // console.log("เวลาปัจจุบัน:",currentDateTime);
-        
-        //let rollingDateTime=new Date(activationDate+"T"+activationTime);
-        //console.log("เวลาปัจจุบัน:",currentDateTime);
-
-       // console.log("endDateObj:",endDateObj);
-      //  return NextResponse.json({ status: 200, message: 'Jobs activated successfully' });
-        // Activate jobs until the end date based on the recurrence type
-        //console.log("activationDate=>",activationDate);
-        //console.log("activationTime=>",activationTime);
-
-        //let currentDate = new Date(activationDate+"T"+activationTime);
-        //currentDate.setHours(currentDate.getHours());
-        //console.log("currentDate", currentDate)
-
-             ///console.log("endDateObj :",endDateObj);
-             //console.log("currentDate :",currentDate);
-             //console.log("*********************************");
         let rolling_Datetime = startDateActive;
         while (rolling_Datetime <= endDateActive) {
             // Create a new job
-            // console.log("สร้าง  Schedual :",rolling_Datetime);
+           // console.log("สร้าง  Schedual :",rolling_Datetime);
             const AdvanceActivationDate = new Date(rolling_Datetime);
             AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - 7);
             const schedule = new Schedule({
