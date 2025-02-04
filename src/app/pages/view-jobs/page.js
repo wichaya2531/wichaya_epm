@@ -8,7 +8,7 @@ import useFetchMachines from "@/lib/hooks/useFetchMachines";
 import TestMethodDescriptionModal from "@/components/TestMethodDescriptionModal";
 import ItemInformationModal from "@/components/ItemInformationModal";
 import AddCommentModal from "@/components/AddCommentModal";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import JobForm from "./JobForm";
 import mqtt from "mqtt";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
@@ -27,16 +27,26 @@ const options = {
 };
 
 const Page = ({ searchParams }) => {
-  //var n=0;
-  //console.log("use Page view-jobs/page.js");
   const router = useRouter();
-  const job_id = searchParams.job_id;
-  const [view, setView] = useState(searchParams.view);
+  const job_id = searchParams?.job_id;
+  const [view, setView] = useState(false);
+
   const [refresh, setRefresh] = useState(false);
   var { jobData, jobItems, isLoading, error } = useFetchJobValue(
     job_id,
     refresh
   );
+  useEffect(() => {
+    const storedViewMode = sessionStorage.getItem("viewMode");
+    setView(storedViewMode === "true");
+
+    if (job_id) {
+      fetch(`/api/jobs/${job_id}`)
+        .then((res) => res.json())
+        .then((data) => setJobData(data))
+        .catch((err) => console.error(err));
+    }
+  }, [job_id]);
   const {
     machines,
     isLoading: machinesLoading,
@@ -53,7 +63,7 @@ const Page = ({ searchParams }) => {
   // const { status } = useFetchStatus(refresh);
   const [machineName, setMachineName] = useState(null);
   const [showDetail, setShowDetail] = useState(null);
-   const mqttClient = mqtt.connect(connectUrl, options);
+  const mqttClient = mqtt.connect(connectUrl, options);
   //const [selectedFile, setSelectedFile] = useState(null);
   const [wdtagImg, setWdtagImg] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -131,13 +141,15 @@ const Page = ({ searchParams }) => {
 
       jobItems.forEach((item) => {
         //console.log("mqttClient item ",item);
-        mqttClient.subscribe(item.JobItemTemplateMqtt /*item.JobItemID*/, (err) => {
-          if (!err) {
-          } else {
-            console.error("Subscription error: ", err);
+        mqttClient.subscribe(
+          item.JobItemTemplateMqtt /*item.JobItemID*/,
+          (err) => {
+            if (!err) {
+            } else {
+              console.error("Subscription error: ", err);
+            }
           }
-        });
-
+        );
       });
     };
 
@@ -155,19 +167,16 @@ const Page = ({ searchParams }) => {
       updateJobStatusToOngoing();
     }
   }, [view]);
-  
+
   mqttClient.on("message", (topic, message) => {
-    jobItems.forEach(element => {
-          if (element.JobItemTemplateMqtt==topic) {
-             try{
-                  document.getElementById(element.JobItemID.toString()).placeholder = message.toString();
-             }catch(err){
-             
-             } 
-          
-          }
+    jobItems.forEach((element) => {
+      if (element.JobItemTemplateMqtt == topic) {
+        try {
+          document.getElementById(element.JobItemID.toString()).placeholder =
+            message.toString();
+        } catch (err) {}
+      }
     });
-    
   });
 
   const toggleJobInfo = () => {

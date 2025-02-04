@@ -447,7 +447,7 @@ const JobForm = ({
           >
             WD Tag
           </label>
-          {view === "true" ? (
+          {view ? (
             <input
               type="text"
               id="disabled-input"
@@ -487,7 +487,7 @@ const JobForm = ({
           >
             Machine Name
           </label>
-          {view === "true" ? (
+          {view ? (
             jobData.MachineName ? (
               <input
                 type="text"
@@ -522,15 +522,13 @@ const JobForm = ({
             htmlFor="text"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
           ></label>
-          {/* ซ่อนปุ่มอัปโหลดไฟล์ถ้า view === "true" */}
-          {view !== "true" && (
-            <p>
+          {!view && (
+            <div className="flex flex-col items-center">
               {/* ซ่อน input อัปโหลดไฟล์ */}
-
               <input
                 type="file"
                 id="fileInput"
-                style={{ display: "none" }}
+                className="hidden"
                 onChange={handleUploadFileToJob}
                 accept="image/*"
               />
@@ -538,14 +536,12 @@ const JobForm = ({
               {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
               <label
                 htmlFor="fileInput"
-                className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+                className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
               >
-                {}
-                <CameraAltIcon className="mr-2" />
+                <CameraAltIcon />
                 Upload Image
-                {}
               </label>
-            </p>
+            </div>
           )}
 
           {/* แสดงตัวอย่างรูปภาพถ้ามี */}
@@ -644,7 +640,7 @@ const JobForm = ({
                     </div>
                   </td>
                   <td className="border px-4 py-2 relative">
-                    {view === "true" ? (
+                    {view ? (
                       <input
                         type="text"
                         id={`before_value_2${item.JobItemID}`}
@@ -670,7 +666,7 @@ const JobForm = ({
                     )}
                   </td>
                   <td className="border px-4 py-2 relative">
-                    {view === "true" ? (
+                    {view ? (
                       <input
                         type="text"
                         id={item.JobItemID}
@@ -737,7 +733,7 @@ const JobForm = ({
                       </div>
                     )}
 
-                    {view === "true" ? (
+                    {view ? (
                       item.Comment !== null ? (
                         <ChatIcon
                           className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
@@ -783,7 +779,7 @@ const JobForm = ({
                     </center>
 
                     {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                    {view === "false" && (
+                    {view === false && (
                       <div>
                         <CameraAltIcon
                           className="text-blue-600 size-10 cursor-pointer"
@@ -799,7 +795,7 @@ const JobForm = ({
           </table>
         </div>
         <div>
-          {view === "true" || jobData.Status === "complete" ? null : (
+          {!view && jobData.Status !== "complete" && (
             <button
               type="submit"
               className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-14 py-3 bg-primary text-base font-medium text-white hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"

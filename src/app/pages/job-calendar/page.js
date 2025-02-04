@@ -85,8 +85,8 @@ const Page = () => {
 
   // Define the onSelectEvent function
   const handleSelectEvent = (event) => {
-    //console.log(" use handleSelectEvent ");
     if (router) {
+      let viewMode = "";
       if (event.status_name === "plan") {
         Swal.fire({
           title: "Checklist is in plan status",
@@ -94,8 +94,9 @@ const Page = () => {
           icon: "warning",
           confirmButtonText: "OK",
         });
+        return;
       } else if (event.status_name === "complete") {
-        router.push(`/pages/view-jobs?job_id=${event.job_id}&view=true`);
+        viewMode = "true";
       } else if (event.status_name === "overdue") {
         Swal.fire({
           title: "Checklist is overdue",
@@ -103,10 +104,7 @@ const Page = () => {
           icon: "warning",
           confirmButtonText: "OK",
         });
-      } else if (event.status_name === "new") {
-        router.push(`/pages/view-jobs?job_id=${event.job_id}&view=false`);
-      } else if (event.status_name === "ongoing") {
-        router.push(`/pages/view-jobs?job_id=${event.job_id}&view=false`);
+        return;
       } else if (event.status_name === "waiting for approval") {
         Swal.fire({
           title: "Checklist is waiting for approval",
@@ -114,14 +112,18 @@ const Page = () => {
           icon: "warning",
           confirmButtonText: "OK",
         });
-      } else if (event.status_name === "renew") {
-        router.push(`/pages/view-jobs?job_id=${event.job_id}&view=false`);
-      } else {
-        router.push(`/pages/view-jobs?job_id=${event.job_id}&view=true`);
+        return;
+      } else if (
+        event.status_name === "new" ||
+        event.status_name === "ongoing" ||
+        event.status_name === "renew"
+      ) {
+        viewMode = "false";
       }
+      sessionStorage.setItem("viewMode", viewMode);
+      router.push(`/pages/view-jobs?job_id=${event.job_id}`);
     }
   };
-
   const handleShowmore = (events, date) => {
     setEventData({ events, date: date.toString() });
     setOpen(true);
@@ -247,13 +249,13 @@ const Page = () => {
             </div>
             <div
               className="flex items-center"
-              title="Retake: The checklist has been rejected and needs to be retaken."
+              title="Renew: The checklist has been rejected and needs to be retaken."
             >
               <span
                 className="w-4 h-4 inline-block mr-2 rounded-full"
                 style={{ backgroundColor: "#FFD700" }}
               ></span>
-              <span className="text-sm">Retake</span>
+              <span className="text-sm">Renew</span>
             </div>
             <div
               className="flex items-center"
