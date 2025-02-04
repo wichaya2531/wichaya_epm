@@ -28,10 +28,15 @@ const options = {
 
 const Page = ({ searchParams }) => {
   //var n=0;
-  //console.log("use Page view-jobs/page.js");
+
+
   const router = useRouter();
   const job_id = searchParams.job_id;
-  const [view, setView] = useState(searchParams.view);
+  const [view, setView] = useState(false);
+  //var view = searchParams.view;
+  
+  //console.log("use Page view-jobs/page.js ",searchParams.view);
+
   const [refresh, setRefresh] = useState(false);
   var { jobData, jobItems, isLoading, error } = useFetchJobValue(
     job_id,
@@ -109,15 +114,27 @@ const Page = ({ searchParams }) => {
 
       if (user && jobData) {
         // Ensure both user.workgroup_id and jobData.WorkGroupID are defined
+        
+        
         if (user.workgroup_id && jobData.WorkGroupID) {
+
+          //console.log("searchParams.view=="+searchParams.view);
+          //setView(false);
           if (user.workgroup_id.toString() !== jobData.WorkGroupID.toString()) {
-            setView("true");
+              //console.log("A");
+              setView(true);
+              //setView("true");
           } else {
             if (searchParams.view === "false") {
-              setView("false");
+              //setView("false");
+              setView(false);
+              //console.log("B");
             }
             if (searchParams.view === "true") {
-              setView("true");
+              //setView("true");
+              setView(true);
+              //console.log("C");
+
             }
           }
         } else {
@@ -150,11 +167,11 @@ const Page = ({ searchParams }) => {
     };
   }, [jobItems, user, jobData]);
 
-  useEffect(() => {
-    if (view === "false") {
-      updateJobStatusToOngoing();
-    }
-  }, [view]);
+  // useEffect(() => {
+  //   if (view === "false") {
+  //     updateJobStatusToOngoing();
+  //   }
+  // }, [view]);
   
   mqttClient.on("message", (topic, message) => {
     jobItems.forEach(element => {
@@ -322,32 +339,6 @@ const Page = ({ searchParams }) => {
       wdtagImage: wdtagImg,
     };
 
-    //  console.log("inputValues", inputValues);
-
-    //console.log("jobItems",jobItems);
-    // var actualValuIsNotReady = true;
-    // jobItems.forEach((element) => {
-    //console.log("ActualValue=>", element.value);
-    // if (element.value == null) {
-    // ใช้ == เพื่อครอบคลุมทั้ง null และ undefined
-    // actualValuIsNotReady = false;
-    //  console.log("ActualValue is null or undefined. Break!!");
-    //     return;
-    //   }
-    // });
-
-    // console.log("actualValuIsNotReady=>",actualValuIsNotReady);
-    // return;
-
-    // if (actualValuIsNotReady == false) {
-    //   Swal.fire({
-    //     title: "Error!",
-    //     text: "Please add at least one job item.",
-    //     icon: "error",
-    //   });
-    //   return;
-    // }
-
     const formData = new FormData();
     //formData.append("wdtagPictuer", selectedFile);
     formData.append("jobData", JSON.stringify(jobInfo)); // ใช้ JSON.stringify
@@ -441,6 +432,7 @@ const Page = ({ searchParams }) => {
     });
   };
 
+
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       {/* <input
@@ -464,12 +456,12 @@ const Page = ({ searchParams }) => {
         isShowJobItem={isShowJobItem}
         toggleJobInfo={toggleJobInfo}
         isShowJobInfo={isShowJobInfo}
-        view={false}
+        view={view}
         toggleAddComment={toggleAddComment}
         handleUploadFileToJob={handleUploadFileToJob}
         //handleUploadFileToJobItem={handleUploadFileToJobItem}
         onItemImgChange={handleIMGItemChange}
-        preview={false}
+        preview={preview}
         onclicktoShow={handleToShowOnClick}
       />
 

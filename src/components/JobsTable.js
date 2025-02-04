@@ -4,6 +4,7 @@ import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import TableComponent from "./TableComponent";
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
+import { useRouter } from "next/navigation";
 
 const jobsActiveHeader = [
   "ID",
@@ -28,6 +29,7 @@ const statusOptions = [
 ];
 
 const JobsTable = ({ refresh }) => {
+   const router = useRouter();
   //console.log("use JibsTable");
   //console.log("JobsTable=>",refresh);
   //console.log(refresh);
@@ -72,6 +74,18 @@ const JobsTable = ({ refresh }) => {
       return true;
     });
 
+
+    const navigateToJob = (job_id,viewMode) => {
+      //alert('OK '+job_id+' '+viewMode);
+      //console.log("use search");
+      //setSearchQuery(e.target.value);
+      //const navigate = useNavigate();
+     // const url = `/pages/view-jobs?job_id=`+job_id; // ปรับ URL ให้ตรงกับเส้นทางของแอปคุณ
+      //navigate(url); // ทำการ navigate
+      router.push('/pages/view-jobs?job_id='+job_id);
+    };
+  
+
   const handleSearch = (e) => {
     //console.log("use search");
     setSearchQuery(e.target.value);
@@ -109,52 +123,77 @@ const JobsTable = ({ refresh }) => {
         Action: (
           <div>
             {job.STATUS_NAME === "complete" ? (
-              <Link
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                href={{
-                  pathname: "/pages/view-jobs",
-                  query: {
-                    job_id: job._id,
-                    view: "true",
-                  },
+              <div
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                 
+                // href={{
+                //   pathname: "/pages/view-jobs",
+                //   query: {
+                //     job_id: job._id,
+                //     view: "true",
+                //   },
+                // }}
+
+                onClick={() => {
+                  //console.log("Button clicked!");
+                  // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
+                  //alert(`You clicked the job: ${job._id}`);
+                  navigateToJob(job._id,true);
                 }}
               >
                 View
-              </Link>
+              </div>
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
                 {job.STATUS_NAME === "ongoing" ||
                 job.STATUS_NAME === "new" ||
                 job.STATUS_NAME === "renew" ? (
                   <div className="flex gap-2 items-center justify-center">
-                    <Link
-                      className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      href={{
-                        pathname: "/pages/view-jobs",
-                        query: {
-                          job_id: job._id,
-                          view: "false",
-                        },
+                    <div
+                      className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                      
+                      // href={{
+                      //   pathname: "/pages/view-jobs",
+                      //   query: {
+                      //     job_id: job._id,
+                      //     view: "false",
+                      //   },
+                      // }}
+                      
+                      onClick={() => {
+                        //console.log("Button clicked!");
+                        // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
+                        //alert(`You clicked the job: ${job._id}`);
+                        navigateToJob(job._id,false);
                       }}
+
                     >
                       Get
-                    </Link>
-                    <Link
-                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      href={{
-                        pathname: "/pages/view-jobs",
-                        query: {
-                          job_id: job._id,
-                          view: "true",
-                        },
+                    </div>
+                    <div
+                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                      
+                      // href={{
+                      //   pathname: "/pages/view-jobs",
+                      //   query: {
+                      //     job_id: job._id,
+                      //     view: "true",
+                      //   },
+                      // }}
+
+                      onClick={() => {
+                       // console.log("Button clicked!");
+                        // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
+                        //alert(`You clicked the job: ${job._id}`);
+                        navigateToJob(job._id,true);
                       }}
                     >
                       View
-                    </Link>
+                    </div>
                   </div>
                 ) : (
                   <button
-                    className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-not-allowed"
+                    className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-not-allowed cursor-pointer"
                     disabled
                   >
                     unavailable now
@@ -163,7 +202,7 @@ const JobsTable = ({ refresh }) => {
               </>
             ) : (
               <button
-                className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-not-allowed"
+                className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-not-allowed cursor-pointer"
                 disabled
               >
                 overdue

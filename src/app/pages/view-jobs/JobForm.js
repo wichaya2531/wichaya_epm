@@ -34,6 +34,7 @@ const JobForm = ({
   preview,
   onclicktoShow,
 }) => {
+  //view=false;
   const [showWebcam, setShowWebcam] = useState(false);
   const [previewItemPicture, setPreviewItemPicture] = useState(null);
 
