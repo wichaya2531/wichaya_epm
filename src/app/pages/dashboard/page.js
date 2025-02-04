@@ -7,6 +7,12 @@ import useFetchCards from "@/lib/hooks/useFetchCards.js";
 import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import JobsTable from "@/components/JobsTable";
 import { motion } from "framer-motion";
+
+
+
+
+
+
 const sendData = async () => {
   try {
     const response = await fetch(
@@ -40,6 +46,9 @@ const Page = () => {
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
+   
+
+
 
   const handleClcik = () => {
     // sendData();

@@ -84,11 +84,11 @@ export const POST = async (req, res) => {
         let endDateActive=new Date( formatDateToString(new Date( endDate ))+"T"+activationTime );
         endDateActive.setHours(endDateActive.getHours() + 7);
 
-         //console.log("activationDate",activationDate);
-        // console.log("activationTime",activationTime);
+          //console.log("activationDate",activationDate);
+          //console.log("activationTime",activationTime);
        
-        //  console.log("startDateActive",startDateActive);
-        //  console.log("endDateActive",endDateActive);        
+          //console.log("startDateActive",startDateActive);
+          //console.log("endDateActive",endDateActive);        
           //console.log("********************************");
 
         let rolling_Datetime = startDateActive;

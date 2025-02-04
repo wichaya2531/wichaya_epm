@@ -4,6 +4,7 @@ import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import TableComponent from "./TableComponent";
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
+import { useRouter } from "next/navigation";
 
 const jobsActiveHeader = [
   "ID",
@@ -27,7 +28,7 @@ const statusOptions = [
   "Overdue",
 ];
 
-const JobsTable = ({ refresh }) => {
+const JobsTable = ({ job, refresh }) => {
   //console.log("use JibsTable");
   //console.log("JobsTable=>",refresh);
   //console.log(refresh);
@@ -36,6 +37,17 @@ const JobsTable = ({ refresh }) => {
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  
+  
+  const navigateToJob = (jobId, viewMode) => {
+    // เก็บค่า viewMode ไว้ใน sessionStorage
+    //sessionStorage.setItem("viewMode", viewMode);
+    router.push(`/pages/view-jobs?job_id=${jobId}&view=`+viewMode);
+  };
+
+
 
   // console.log("jobs=>", jobs);
   const filteredJobs =
@@ -109,48 +121,28 @@ const JobsTable = ({ refresh }) => {
         Action: (
           <div>
             {job.STATUS_NAME === "complete" ? (
-              <Link
+              <button
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                href={{
-                  pathname: "/pages/view-jobs",
-                  query: {
-                    job_id: job._id,
-                    view: "true",
-                  },
-                }}
+                onClick={() => navigateToJob(job._id, "true")}
               >
                 View
-              </Link>
+              </button>
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
-                {job.STATUS_NAME === "ongoing" ||
-                job.STATUS_NAME === "new" ||
-                job.STATUS_NAME === "renew" ? (
+                {["ongoing", "new", "renew"].includes(job.STATUS_NAME) ? (
                   <div className="flex gap-2 items-center justify-center">
-                    <Link
+                    <button
                       className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      href={{
-                        pathname: "/pages/view-jobs",
-                        query: {
-                          job_id: job._id,
-                          view: "false",
-                        },
-                      }}
+                      onClick={() => navigateToJob(job._id, "false")}
                     >
                       Get
-                    </Link>
-                    <Link
+                    </button>
+                    <button
                       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      href={{
-                        pathname: "/pages/view-jobs",
-                        query: {
-                          job_id: job._id,
-                          view: "true",
-                        },
-                      }}
+                      onClick={() => navigateToJob(job._id, "true")}
                     >
                       View
-                    </Link>
+                    </button>
                   </div>
                 ) : (
                   <button
@@ -190,13 +182,13 @@ const JobsTable = ({ refresh }) => {
         <div className="flex-1.5">
           <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium text-gray-900 text-black"
+            className="block text-sm font-medium text-black "
           >
             Search Checklist
           </label>
           <label
             htmlFor="search"
-            className="mb-2 text-sm font-medium text-gray-900 sr-only"
+            className="mb-2 text-sm font-medium text-black sr-only"
           >
             Search
           </label>
@@ -207,7 +199,7 @@ const JobsTable = ({ refresh }) => {
             <input
               type="search"
               id="search"
-              className="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block w-full p-2.5 pl-10 text-sm text-black border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search"
               required
               onChange={handleSearch}
@@ -217,7 +209,7 @@ const JobsTable = ({ refresh }) => {
         <div className="flex-2">
           <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium text-gray-900 text-black"
+            className="block text-sm font-medium text-black "
           >
             Filter by Status
           </label>
