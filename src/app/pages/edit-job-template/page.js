@@ -34,6 +34,8 @@ const Page = ({ searchParams }) => {
   const [options, setOptions] = useState([]);
   const [dueDate, setDueDate] = useState("");
   const [refresh, setRefresh] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const [allOptions, setAllOptions] = useState([]);
   const {
     user,
     isLoading: isUserLoading,
@@ -87,7 +89,6 @@ const Page = ({ searchParams }) => {
       const currentWorkgroup = workgroups.find(
         (workgroup) => workgroup.WORKGROUP_NAME === user.workgroup
       );
-
       // กรอง users สำหรับ Add Approver และ Add Notify Active ตาม USER_LIST ของ workgroup
       if (currentWorkgroup) {
         const filteredUsers = users
@@ -98,19 +99,18 @@ const Page = ({ searchParams }) => {
             value: userItem._id,
             label: userItem.name,
           }));
-
-        setOptions(filteredUsers); // อัปเดตตัวเลือกใน Select สำหรับ Add Approver และ Add Notify Active
+        setFilteredOptions(filteredUsers);
       }
     }
   }, [approvers, notifies, users, workgroups, user]);
 
   useEffect(() => {
-    // สำหรับ Add Notify Overdue ไม่ต้องกรอง ใช้ users ทั้งหมด
+    // สำหรับ Add Notify Overdue ใช้ users ทั้งหมด
     const allUsers = users.map((userItem) => ({
       value: userItem._id,
       label: userItem.name,
     }));
-    setOptions(allUsers); // อัปเดตตัวเลือกใน Select สำหรับ Add Notify Overdue
+    setAllOptions(allUsers);
   }, [users]);
 
   const fetchLineNames = async (userSession) => {
@@ -708,7 +708,7 @@ const Page = ({ searchParams }) => {
                   Add Approver
                 </label>
                 <Select
-                  options={options}
+                  options={filteredOptions}
                   value={selectedApprover}
                   onChange={setSelectedApprover}
                   isSearchable={true}
@@ -729,10 +729,10 @@ const Page = ({ searchParams }) => {
                   htmlFor="visitors"
                   className="block mb-2 text-sm font-medium text-black"
                 >
-                  Add Notify
+                  Add Notify Active
                 </label>
                 <Select
-                  options={options}
+                  options={filteredOptions}
                   value={selectedNotify}
                   onChange={setSelectedNotify}
                   isSearchable={true}
@@ -756,10 +756,7 @@ const Page = ({ searchParams }) => {
                   Add Notify Overdue
                 </label>
                 <Select
-                  options={users.map((userItem) => ({
-                    value: userItem._id,
-                    label: userItem.name,
-                  }))}
+                  options={allOptions}
                   value={selectedNotifyOverdue}
                   onChange={setSelectedNotifyOverdue}
                   isSearchable={true}
