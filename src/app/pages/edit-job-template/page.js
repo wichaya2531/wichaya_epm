@@ -756,7 +756,7 @@ const Page = ({ searchParams }) => {
                   Add Notify Overdue
                 </label>
                 <Select
-                  options={allOptions}
+                  options={filteredOptions}
                   value={selectedNotifyOverdue}
                   onChange={setSelectedNotifyOverdue}
                   isSearchable={true}
