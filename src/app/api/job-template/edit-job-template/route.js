@@ -102,7 +102,7 @@ export const PUT = async (req, res) => {
       await Promise.all(
         notifiesOverdue_id.map(async (notifyOverdue_id) => {
           // เช็คข้อมูล
-          var c = await NotifiesOverdue.findOne({ USER_ID: notifyOverdue_id });
+          var c = await NotifiesOverdue.findOne({ USER_ID: notifyOverdue_id, JOB_TEMPLATE_ID: jobTemplate._id });
           
           // ถ้า c เป็น null สร้าง object, ถ้าไม่ใช่ return null
           if (c === null) {
