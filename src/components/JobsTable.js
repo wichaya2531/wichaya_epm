@@ -4,7 +4,6 @@ import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import TableComponent from "./TableComponent";
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
-import { useRouter } from "next/navigation";
 
 const jobsActiveHeader = [
   "ID",
@@ -37,14 +36,7 @@ const JobsTable = ({ refresh }) => {
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
 
-  const navigateToJob = (jobId, viewMode) => {
-    router.push(
-      "/pages/view-jobs?job_id=" + jobId,
-      { state: { view: viewMode } } // ส่งค่า view ใน state แทน
-    );
-  };
   // console.log("jobs=>", jobs);
   const filteredJobs =
     jobs &&
@@ -117,30 +109,48 @@ const JobsTable = ({ refresh }) => {
         Action: (
           <div>
             {job.STATUS_NAME === "complete" ? (
-              <button
+              <Link
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                onClick={() => navigateToJob(job._id, "true")}
+                href={{
+                  pathname: "/pages/view-jobs",
+                  query: {
+                    job_id: job._id,
+                    view: "true",
+                  },
+                }}
               >
                 View
-              </button>
+              </Link>
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
                 {job.STATUS_NAME === "ongoing" ||
                 job.STATUS_NAME === "new" ||
                 job.STATUS_NAME === "renew" ? (
                   <div className="flex gap-2 items-center justify-center">
-                    <button
+                    <Link
                       className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      onClick={() => navigateToJob(job._id, "false")}
+                      href={{
+                        pathname: "/pages/view-jobs",
+                        query: {
+                          job_id: job._id,
+                          view: "false",
+                        },
+                      }}
                     >
                       Get
-                    </button>
-                    <button
+                    </Link>
+                    <Link
                       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-                      onClick={() => navigateToJob(job._id, "true")}
+                      href={{
+                        pathname: "/pages/view-jobs",
+                        query: {
+                          job_id: job._id,
+                          view: "true",
+                        },
+                      }}
                     >
                       View
-                    </button>
+                    </Link>
                   </div>
                 ) : (
                   <button
