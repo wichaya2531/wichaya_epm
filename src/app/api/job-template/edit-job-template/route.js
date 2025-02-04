@@ -11,6 +11,7 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 
 
 export const PUT = async (req, res) => {
+  console.log("****call edit job template***");
   await connectToDb();
 
   //console.log("<= use edit job template => ");
@@ -76,7 +77,7 @@ export const PUT = async (req, res) => {
     const newNotifies = await Promise.all(
       notifies_id.map(async (notify_id) => {
         // ตรวจสอบว่ามี USER_ID ซ้ำในฐานข้อมูลหรือไม่
-        const exists = await Notifies.findOne({ USER_ID: notify_id });
+        const exists = await Notifies.findOne({ USER_ID: notify_id,JOB_TEMPLATE_ID:jobTemplate._id });
         if (!exists) {
           return {
             JOB_TEMPLATE_ID: jobTemplate._id,

@@ -72,26 +72,29 @@ export const POST = async (req, res) => {
         }
 
         // Calculate the end date based on the recurrence type
-
+        
         let startDateActive=new Date(formatDateToString(new Date())+"T"+activationTime);
         startDateActive.setHours(startDateActive.getHours() + 7);
-
-
+        
+        if (recurrence==="weekly" || recurrence=="monthly" || recurrence === 'yearly') {
+            /*let*/
+            startDateActive=new Date(formatDateToString(new Date(activationDate))+"T"+activationTime);
+            startDateActive.setHours(startDateActive.getHours() + 7);
+        }
         let endDateActive=new Date( formatDateToString(new Date( endDate ))+"T"+activationTime );
         endDateActive.setHours(endDateActive.getHours() + 7);
 
-        // console.log("activationDate",activationDate);
+         //console.log("activationDate",activationDate);
         // console.log("activationTime",activationTime);
        
-       //  console.log("startDateActive",startDateActive);
-        // console.log("endDateActive",endDateActive);
-        
-        // console.log("********************************");
+        //  console.log("startDateActive",startDateActive);
+        //  console.log("endDateActive",endDateActive);        
+          //console.log("********************************");
 
         let rolling_Datetime = startDateActive;
         while (rolling_Datetime <= endDateActive) {
             // Create a new job
-           // console.log("สร้าง  Schedual :",rolling_Datetime);
+            //console.log("สร้าง  Schedual :",rolling_Datetime);
             const AdvanceActivationDate = new Date(rolling_Datetime);
             AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - 7);
             const schedule = new Schedule({
@@ -122,6 +125,7 @@ export const POST = async (req, res) => {
 
         return NextResponse.json({ status: 200, message: 'Jobs activated successfully' });
     } catch (err) {
+        console.log("Error",err)
         return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
 };

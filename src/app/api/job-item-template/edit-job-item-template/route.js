@@ -6,6 +6,7 @@ import { JobTemplate } from "@/lib/models/JobTemplate";
 import { connectToDb } from "@/app/api/mongo/index.js";
 
 export const PUT = async (req, res) => {
+
   await connectToDb();
   const body = await req.json();
   const {
