@@ -457,7 +457,7 @@ const JobForm = ({
                       disabled
                       style={{
                         backgroundColor: getPastelColorForValue(
-                          item.BeforeValue2 || item.BeforeValue || ""
+                          item.ActualValue || ""
                         ),
                       }}
                     />
@@ -481,7 +481,7 @@ const JobForm = ({
                         <img
                           src={
                             `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
-                          } // ใช้เพียงชื่อไฟล์
+                          }
                           alt="Job Image"
                           width={200}
                           height={200}

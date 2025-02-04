@@ -178,13 +178,13 @@ const JobsTable = ({ job, refresh }) => {
         <div className="flex-1.5">
           <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium text-gray-900 text-black"
+            className="block text-sm font-medium text-black "
           >
             Search Checklist
           </label>
           <label
             htmlFor="search"
-            className="mb-2 text-sm font-medium text-gray-900 sr-only"
+            className="mb-2 text-sm font-medium text-black sr-only"
           >
             Search
           </label>
@@ -195,7 +195,7 @@ const JobsTable = ({ job, refresh }) => {
             <input
               type="search"
               id="search"
-              className="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block w-full p-2.5 pl-10 text-sm text-black border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search"
               required
               onChange={handleSearch}
@@ -205,7 +205,7 @@ const JobsTable = ({ job, refresh }) => {
         <div className="flex-2">
           <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium text-gray-900 text-black"
+            className="block text-sm font-medium text-black "
           >
             Filter by Status
           </label>
