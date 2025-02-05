@@ -76,12 +76,7 @@ const JobsTable = ({ refresh }) => {
 
 
     const navigateToJob = (job_id,viewMode) => {
-      //alert('OK '+job_id+' '+viewMode);
-      //console.log("use search");
-      //setSearchQuery(e.target.value);
-      //const navigate = useNavigate();
-     // const url = `/pages/view-jobs?job_id=`+job_id; // ปรับ URL ให้ตรงกับเส้นทางของแอปคุณ
-      //navigate(url); // ทำการ navigate
+      sessionStorage.setItem("viewMode", viewMode);
       router.push('/pages/view-jobs?job_id='+job_id);
     };
   

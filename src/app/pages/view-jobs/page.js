@@ -27,14 +27,10 @@ const options = {
 };
 
 const Page = ({ searchParams }) => {
-  //var n=0;
-
-
   const router = useRouter();
   const job_id = searchParams.job_id;
   const [view, setView] = useState(false);
-  //var view = searchParams.view;
-  
+  //var view = searchParams.view;  
   //console.log("use Page view-jobs/page.js ",searchParams.view);
 
   const [refresh, setRefresh] = useState(false);
@@ -114,27 +110,28 @@ const Page = ({ searchParams }) => {
 
       if (user && jobData) {
         // Ensure both user.workgroup_id and jobData.WorkGroupID are defined
-        
-        
         if (user.workgroup_id && jobData.WorkGroupID) {
-
           //console.log("searchParams.view=="+searchParams.view);
           //setView(false);
+          const viewMode = sessionStorage.getItem("viewMode");
           if (user.workgroup_id.toString() !== jobData.WorkGroupID.toString()) {
               //console.log("A");
               setView(true);
               //setView("true");
           } else {
-            if (searchParams.view === "false") {
+            if (viewMode === "false") {
               //setView("false");
               setView(false);
+              try{
+                updateJobStatusToOngoing();
+              }catch(err){}
+              
               //console.log("B");
             }
-            if (searchParams.view === "true") {
+            if (viewMode === "true") {
               //setView("true");
               setView(true);
               //console.log("C");
-
             }
           }
         } else {
@@ -169,7 +166,7 @@ const Page = ({ searchParams }) => {
 
   // useEffect(() => {
   //   if (view === "false") {
-  //     updateJobStatusToOngoing();
+             
   //   }
   // }, [view]);
   

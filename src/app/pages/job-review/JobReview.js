@@ -477,7 +477,7 @@ const JobForm = ({
                         htmlFor="image-file"
                         className="text-sm ipadmini:text-md font-bold text-gray-600"
                       ></label>
-                      {jobData.IMAGE_FILENAME ? (
+                      {item.IMG_ATTACH ? (
                         <img
                           src={
                             `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH

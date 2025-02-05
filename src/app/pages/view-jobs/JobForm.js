@@ -35,6 +35,7 @@ const JobForm = ({
   onclicktoShow,
 }) => {
   //view=false;
+ 
   const [showWebcam, setShowWebcam] = useState(false);
   const [previewItemPicture, setPreviewItemPicture] = useState(null);
 
@@ -749,11 +750,13 @@ const JobForm = ({
                         onClick={() => toggleAddComment(item)}
                       />
                     )}
+                    
                   </td>
 
                   <td className="border py-2 relative">
+                    
                     {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                    {item.IMG_ATTACH && (
+                    { item.IMG_ATTACH && (
                       <img
                         src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
                         alt="Preview"
