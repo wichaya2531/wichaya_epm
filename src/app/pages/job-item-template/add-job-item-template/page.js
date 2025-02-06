@@ -278,23 +278,38 @@ const Page = ({ searchParams }) => {
   };
 
   const handleRemove = async (jobItemTemplate_id) => {
-    try {
-      const response = await fetch(
-        `/api/job-item-template/remove-job-item-template`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ jobItemTemplate_id }),
-          next: { revalidate: 10 },
-        }
-      );
-      const data = await response.json();
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
+      reverseButtons: true,
+    });
 
-      setRefresh((prev) => !prev);
-    } catch (err) {
-      console.log(err);
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(
+          `/api/job-item-template/remove-job-item-template`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ jobItemTemplate_id }),
+          }
+        );
+
+        const data = await response.json();
+
+        Swal.fire("Deleted!", "The item has been deleted.", "success");
+
+        setRefresh((prev) => !prev);
+      } catch (err) {
+        console.log(err);
+        Swal.fire("Error!", "Failed to delete the item.", "error");
+      }
     }
   };
 
@@ -659,7 +674,7 @@ const Page = ({ searchParams }) => {
             >
               Add Checklist Item Template
             </button>
-           
+
             <label className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center">
               <FaFileCsv />
               <span className="hidden md:inline">Upload Excel</span>

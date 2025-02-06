@@ -5,8 +5,11 @@ import TableComponent from "./TableComponent";
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/navigation";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Swal from "sweetalert2";
 
 const jobsActiveHeader = [
+  "",
   "ID",
   "Checklist Name",
   "Line Name",
@@ -29,15 +32,86 @@ const statusOptions = [
 ];
 
 const JobsTable = ({ refresh }) => {
-   const router = useRouter();
+  const router = useRouter();
   //console.log("use JibsTable");
   //console.log("JobsTable=>",refresh);
   //console.log(refresh);
-  const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh); // Assuming useFetchJobs supports filters
+  const { jobs, setJobs, isLoading: jobsLoading } = useFetchJobs(refresh); // Assuming useFetchJobs supports filters
   const [filterStatus, setFilterStatus] = useState("All");
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedJobs, setSelectedJobs] = useState([]);
+
+  const handleSelectJob = (jobId) => {
+    setSelectedJobs((prevSelected) =>
+      prevSelected.includes(jobId)
+        ? prevSelected.filter((id) => id !== jobId)
+        : [...prevSelected, jobId]
+    );
+  };
+
+  // ฟังก์ชันลบงานที่เลือก
+  const handleDeleteSelected = async () => {
+    if (selectedJobs.length === 0) return;
+
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(
+          `/api/job-item-template/remove-multi-job-item`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ job_ids: selectedJobs }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (response.ok) {
+          Swal.fire(
+            "Deleted!",
+            "The selected jobs have been deleted.",
+            "success"
+          );
+
+          // อัปเดต jobs ด้วยการกรองข้อมูลที่ถูกลบออก
+          setJobs((prevJobs) =>
+            prevJobs.filter((job) => !selectedJobs.includes(job._id))
+          );
+
+          setSelectedJobs([]); // เคลียร์การเลือก
+        } else {
+          Swal.fire(
+            "Error!",
+            result.error || "Failed to delete the selected jobs.",
+            "error"
+          );
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error!", "Failed to delete the selected jobs.", "error");
+      }
+    }
+  };
+
+  const handleSelectAllJobs = () => {
+    if (selectedJobs.length === filteredJobs.length) {
+      setSelectedJobs([]);
+    } else {
+      setSelectedJobs(filteredJobs.map((job) => job._id));
+    }
+  };
 
   // console.log("jobs=>", jobs);
   const filteredJobs =
@@ -74,12 +148,10 @@ const JobsTable = ({ refresh }) => {
       return true;
     });
 
-
-    const navigateToJob = (job_id,viewMode) => {
-      sessionStorage.setItem("viewMode", viewMode);
-      router.push('/pages/view-jobs?job_id='+job_id);
-    };
-  
+  const navigateToJob = (job_id, viewMode) => {
+    sessionStorage.setItem("viewMode", viewMode);
+    router.push("/pages/view-jobs?job_id=" + job_id);
+  };
 
   const handleSearch = (e) => {
     //console.log("use search");
@@ -90,7 +162,6 @@ const JobsTable = ({ refresh }) => {
     filteredJobs &&
     filteredJobs.map((job, index) => {
       let statusColor = job.STATUS_COLOR;
-
       // ตรวจสอบค่า Active ตาม STATUS_NAME
       const activeValue =
         job.STATUS_NAME === "complete"
@@ -100,8 +171,14 @@ const JobsTable = ({ refresh }) => {
           : job.createdAt
           ? new Date(job.createdAt).toLocaleString()
           : "Not Active";
-
       return {
+        Select: (
+          <input
+            type="checkbox"
+            checked={selectedJobs.includes(job._id)}
+            onChange={() => handleSelectJob(job._id)}
+          />
+        ),
         ID: index + 1,
         "Checklist Name": job.JOB_NAME,
         "Document no.": job.LINE_NAME,
@@ -120,7 +197,6 @@ const JobsTable = ({ refresh }) => {
             {job.STATUS_NAME === "complete" ? (
               <div
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
-                 
                 // href={{
                 //   pathname: "/pages/view-jobs",
                 //   query: {
@@ -133,7 +209,7 @@ const JobsTable = ({ refresh }) => {
                   //console.log("Button clicked!");
                   // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
                   //alert(`You clicked the job: ${job._id}`);
-                  navigateToJob(job._id,true);
+                  navigateToJob(job._id, true);
                 }}
               >
                 View
@@ -146,7 +222,6 @@ const JobsTable = ({ refresh }) => {
                   <div className="flex gap-2 items-center justify-center">
                     <div
                       className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
-                      
                       // href={{
                       //   pathname: "/pages/view-jobs",
                       //   query: {
@@ -154,20 +229,18 @@ const JobsTable = ({ refresh }) => {
                       //     view: "false",
                       //   },
                       // }}
-                      
+
                       onClick={() => {
                         //console.log("Button clicked!");
                         // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
                         //alert(`You clicked the job: ${job._id}`);
-                        navigateToJob(job._id,false);
+                        navigateToJob(job._id, false);
                       }}
-
                     >
                       Get
                     </div>
                     <div
                       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
-                      
                       // href={{
                       //   pathname: "/pages/view-jobs",
                       //   query: {
@@ -177,10 +250,10 @@ const JobsTable = ({ refresh }) => {
                       // }}
 
                       onClick={() => {
-                       // console.log("Button clicked!");
+                        // console.log("Button clicked!");
                         // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
                         //alert(`You clicked the job: ${job._id}`);
-                        navigateToJob(job._id,true);
+                        navigateToJob(job._id, true);
                       }}
                     >
                       View
@@ -224,13 +297,13 @@ const JobsTable = ({ refresh }) => {
         <div className="flex-1.5">
           <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium text-gray-900 text-black"
+            className="block text-sm font-medium  text-black"
           >
             Search Checklist
           </label>
           <label
             htmlFor="search"
-            className="mb-2 text-sm font-medium text-gray-900 sr-only"
+            className="mb-2 text-sm font-medium text-black sr-only"
           >
             Search
           </label>
@@ -251,13 +324,13 @@ const JobsTable = ({ refresh }) => {
         <div className="flex-2">
           <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium text-gray-900 text-black"
+            className="block text-sm font-medium text-black"
           >
             Filter by Status
           </label>
           <select
             id="statusFilter"
-            className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -274,7 +347,7 @@ const JobsTable = ({ refresh }) => {
         <div className="flex-2">
           <label
             htmlFor="startDate"
-            className="block text-sm font-medium text-gray-900 text-black"
+            className="block text-sm font-medium  text-black"
           >
             Start Date
           </label>
@@ -302,6 +375,34 @@ const JobsTable = ({ refresh }) => {
             onChange={handleEndDateChange}
             className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
           />
+        </div>
+        <div className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
+          {/* Select All Checkbox */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              onChange={handleSelectAllJobs}
+              checked={
+                selectedJobs.length === filteredJobs.length &&
+                filteredJobs.length > 0
+              }
+              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+            />
+            <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+              Select All
+            </label>
+          </div>
+
+          {/* Remove Selected Button */}
+          <div className="flex items-center space-x-2">
+            <button
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleDeleteSelected}
+              disabled={selectedJobs.length === 0}
+            >
+              <DeleteIcon className="mr-2 w-5 h-5" /> Remove Selected
+            </button>
+          </div>
         </div>
       </div>
       <TableComponent
