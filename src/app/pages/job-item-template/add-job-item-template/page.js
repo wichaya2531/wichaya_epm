@@ -196,6 +196,7 @@ const Page = ({ searchParams }) => {
 
       // ถ้ามีการเลือกไฟล์เพื่ออัปโหลด
       if (selectedFile) {
+        console.log("upload file from input");
         formData.append("FILE", selectedFile);
       }
 
@@ -619,8 +620,7 @@ const Page = ({ searchParams }) => {
                 type="text"
                 id="test_method"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="test method"
-                value={"-"}
+                placeholder="test method"              
                 name="test_method"
                 required
               />

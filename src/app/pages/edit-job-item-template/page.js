@@ -329,6 +329,7 @@ const Page = ({ searchParams }) => {
                     <UploadFileIcon />
                   </span>
                 </label>
+
                 <input
                   type="file"
                   id="file"
