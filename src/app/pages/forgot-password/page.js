@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import Link from "next/link";
 
 
-const host_link=process.env.HOST_LINK;
+const host_link=process.env.NEXT_PUBLIC_HOST_LINK;
 
 
 export default function Page() {
@@ -14,17 +14,12 @@ export default function Page() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("host_link ::  "+ process.env.NEXT_PUBLIC_HOST_LINK);  
 
-    return;
     //get reset link
     const res = await fetch(
-      `http://localhost:3000/api/user/forget-password-email/${email}`
+      process.env.NEXT_PUBLIC_HOST_LINK+`/api/user/forget-password-email/${email}`
     );
 
-    console.log("reset password res ",res);  
-
-    
     const data = await res.json();
     if (data.error) {
       Swal.fire({

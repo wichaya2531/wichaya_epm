@@ -74,15 +74,15 @@ export const POST = async (req, res) => {
         // Calculate the end date based on the recurrence type
         
         let startDateActive=new Date(formatDateToString(new Date())+"T"+activationTime);
-        startDateActive.setHours(startDateActive.getHours() + process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
+        startDateActive.setHours(startDateActive.getHours() + parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10) );
         
         if (recurrence==="weekly" || recurrence=="monthly" || recurrence === 'yearly') {
             /*let*/
             startDateActive=new Date(formatDateToString(new Date(activationDate))+"T"+activationTime);
-            startDateActive.setHours(startDateActive.getHours() + process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
+            startDateActive.setHours(startDateActive.getHours() + parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10));
         }
         let endDateActive=new Date( formatDateToString(new Date( endDate ))+"T"+activationTime );
-        endDateActive.setHours(endDateActive.getHours() + process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
+        endDateActive.setHours(endDateActive.getHours() + parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10));
 
           //console.log("activationDate",activationDate);
           //console.log("activationTime",activationTime);
@@ -96,7 +96,7 @@ export const POST = async (req, res) => {
             // Create a new job
             //console.log("สร้าง  Schedual :",rolling_Datetime);
             const AdvanceActivationDate = new Date(rolling_Datetime);
-            AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
+            AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10));
             const schedule = new Schedule({
                 JOB_TEMPLATE_ID: jobTemplateID,
                 JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
