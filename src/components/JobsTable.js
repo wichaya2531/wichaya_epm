@@ -2,13 +2,24 @@
 import { useState, useEffect } from "react";
 import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import TableComponent from "./TableComponent";
+import TableComponentAdmin from "./TableComponentAdmin";
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/navigation";
-import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from "sweetalert2";
+import useFetchUser from "@/lib/hooks/useFetchUser";
 
 const jobsActiveHeader = [
+  "ID",
+  "Checklist Name",
+  "Line Name",
+  // "Document no.",
+  "Status",
+  "Active",
+  "Submitted By",
+  "Action",
+];
+const jobsActiveHeaderAdmin = [
   "",
   "ID",
   "Checklist Name",
@@ -36,6 +47,7 @@ const JobsTable = ({ refresh }) => {
   //console.log("use JibsTable");
   //console.log("JobsTable=>",refresh);
   //console.log(refresh);
+  const { user, isLoading: userLoading } = useFetchUser(refresh);
   const { jobs, setJobs, isLoading: jobsLoading } = useFetchJobs(refresh); // Assuming useFetchJobs supports filters
   const [filterStatus, setFilterStatus] = useState("All");
   const [startDate, setStartDate] = useState(null); // Default start date as null
@@ -172,13 +184,15 @@ const JobsTable = ({ refresh }) => {
           ? new Date(job.createdAt).toLocaleString()
           : "Not Active";
       return {
-        Select: (
-          <input
-            type="checkbox"
-            checked={selectedJobs.includes(job._id)}
-            onChange={() => handleSelectJob(job._id)}
-          />
-        ),
+        ...(user.role === "Admin Group" && {
+          checkbox: (
+            <input
+              type="checkbox"
+              checked={selectedJobs.includes(job._id)}
+              onChange={() => handleSelectJob(job._id)}
+            />
+          ),
+        }),
         ID: index + 1,
         "Checklist Name": job.JOB_NAME,
         "Document no.": job.LINE_NAME,
@@ -376,43 +390,30 @@ const JobsTable = ({ refresh }) => {
             className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
           />
         </div>
-        <div className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
-          {/* Select All Checkbox */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              onChange={handleSelectAllJobs}
-              checked={
-                selectedJobs.length === filteredJobs.length &&
-                filteredJobs.length > 0
-              }
-              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-            />
-            <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
-              Select All
-            </label>
-          </div>
-
-          {/* Remove Selected Button */}
-          <div className="flex items-center space-x-2">
-            <button
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleDeleteSelected}
-              disabled={selectedJobs.length === 0}
-            >
-              <DeleteIcon className="mr-2 w-5 h-5" /> Remove Selected
-            </button>
-          </div>
-        </div>
       </div>
-      <TableComponent
-        headers={jobsActiveHeader}
-        datas={jobsActiveBody}
-        TableName="Active Jobs"
-        PageSize={5}
-        searchColumn={"Checklist Name"}
-        searchHidden={true}
-      />
+      {user.role === "Admin Group" ? (
+        <TableComponentAdmin
+          headers={jobsActiveHeaderAdmin}
+          datas={jobsActiveBody}
+          TableName="Active Jobs"
+          PageSize={5}
+          searchColumn={"Checklist Name"}
+          searchHidden={true}
+          filteredJobs={filteredJobs}
+          handleSelectAllJobs={handleSelectAllJobs}
+          selectedJobs={selectedJobs}
+          handleDeleteSelected={handleDeleteSelected}
+        />
+      ) : (
+        <TableComponent
+          headers={jobsActiveHeader}
+          datas={jobsActiveBody}
+          TableName="Active Jobs"
+          PageSize={5}
+          searchColumn={"Checklist Name"}
+          searchHidden={true}
+        />
+      )}
     </div>
   );
 };
