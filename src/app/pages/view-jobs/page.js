@@ -32,6 +32,7 @@ const Page = ({ searchParams }) => {
   const [view, setView] = useState(false);
   //var view = searchParams.view;  
   //console.log("use Page view-jobs/page.js ",searchParams.view);
+  console.log("process.env.NEXT_PUBLIC_MQT_USERNAME",connectUrl);
 
   const [refresh, setRefresh] = useState(false);
   var { jobData, jobItems, isLoading, error } = useFetchJobValue(

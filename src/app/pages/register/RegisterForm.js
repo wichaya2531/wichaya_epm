@@ -9,6 +9,8 @@ import { config } from "@/config/config";
 import Image from "next/image";
 
 export default function RegisterForm() {
+
+
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
@@ -33,7 +35,7 @@ export default function RegisterForm() {
       return;
     }
 
-    const res = await fetch(`${config.host}/api/auth/register`, {
+    const res = await fetch(`/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

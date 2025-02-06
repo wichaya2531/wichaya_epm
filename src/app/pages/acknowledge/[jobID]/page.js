@@ -3,18 +3,22 @@ import Image from "next/image";
 import { config } from "@/config/config.js";
 
 export default function Page({ params }) {
+  
+  console.log("test xxxx");
   //console.log(config);  
-
+  
   const handleActivateClick = async () => {
-    //console.log("Activate button clicked!");
-    // เพิ่ม logic ที่คุณต้องการ
-    if (!params.jobID) {
+      // เพิ่ม logic ที่คุณต้องการ
+      if (!params.jobID) {
         console.error("No jobID provided.");
         return;
       }
     
       try {
-        const response = await fetch(config.host+`/api/acknowledge`, {
+        
+          //console.log(`/api/acknowledge`);
+          const response = await fetch(`/api/acknowledge`, {
+
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -23,7 +27,7 @@ export default function Page({ params }) {
         });
     
         if (response.ok) {
-          console.log(`Task ID ${params.jobID} acknowledged successfully.`);
+          console.log(`Task ID ${params.jobID} acknowledged successfully..`);
           document.getElementById(params.jobID).innerHTML="Success"; 
 
 

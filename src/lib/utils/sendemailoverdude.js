@@ -28,7 +28,7 @@ export async function login(prevState, formData) {
   //console.log("Login credentials:", username);
   //console.log("config.host:", config.host);
   //console.log("config:", config);
-  const res = await fetch(`${config.host}/api/auth/login`, {
+  const res = await fetch(`${process.env.HOST}/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -128,7 +128,7 @@ export async function sendEmailsOverdude(emailList, job) {
       - Timeout: ${job.TIMEOUT}
 
       You can access the task directly using the link below:
-      Click for Acknowledge  : ${config.host}/pages/acknowledge/${job._id}
+      Click for Acknowledge  : ${process.env.HOST}/pages/acknowledge/${job._id}
       `,
     mailsender: "epm-system@wdc.com",
     cc: "",
@@ -169,7 +169,7 @@ export async function sendResetEmail(information, token) {
       Email: ${info.email}
       Workgroup: ${info.workgroup}
       Username: ${info.username}
-      Reset Link: ${config.host}/pages${info.reset_link}
+      Reset Link: ${process.env.HOST}/pages${info.reset_link}
     `
       )
       .join("")}

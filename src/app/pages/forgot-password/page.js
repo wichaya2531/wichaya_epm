@@ -4,17 +4,27 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import Link from "next/link";
 
+
+const host_link=process.env.HOST_LINK;
+
+
 export default function Page() {
   const [email, setEmail] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("host_link ::  "+ host_link);  
+
+    return;
     //get reset link
     const res = await fetch(
-      `http://10.171.134.51:3000/api/user/forget-password-email/${email}`
+      `http://localhost:3000/api/user/forget-password-email/${email}`
     );
 
+    console.log("reset password res ",res);  
+
+    
     const data = await res.json();
     if (data.error) {
       Swal.fire({

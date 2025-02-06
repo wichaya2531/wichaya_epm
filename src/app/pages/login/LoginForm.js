@@ -2,11 +2,12 @@
 import { login } from "@/lib/utils/utils.js";
 import Link from "next/link";
 import { useFormState } from "react-dom";
-import { useState } from "react"; // Import useState hook
+import { useState ,useEffect} from "react"; // Import useState hook
 import KeyIcon from "@mui/icons-material/Key";
 import Image from "next/image";
 
 export default function LoginForm() {
+  const [host, setHost]=useState("default");
   const [state, formAction] = useFormState(login, undefined);
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
 
@@ -14,6 +15,17 @@ export default function LoginForm() {
     console.log("use togglePasswordVisibility");
     setShowPassword(!showPassword); // Toggle password visibility
   };
+
+  
+  useEffect(() => {
+    try{
+      let host=document.getElementById('md-data-host').innerHTML;
+      //setHost(host0);
+      //console.log("host",host);
+      setHost(host);
+    }catch(err){}
+  }, []); 
+  
 
   return (
     <div
@@ -54,8 +66,10 @@ export default function LoginForm() {
           <form
             className="flex flex-col items-center gap-5 w-full"
             action={formAction}
-          >
+          >       
+           <input type="hidden" name="host_link" value={host} />
             <div className="flex w-full max-w-xs">
+            
               <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-e-0 border-gray-300 border-e-0 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
                 <svg
                   className="w-6 h-6 text-gray-500 dark:text-gray-400"

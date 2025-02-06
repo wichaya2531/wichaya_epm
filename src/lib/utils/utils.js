@@ -3,6 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { config } from "@/config/config.js";
+
 const secretKey = process.env.SECRET_KEY;
 const key = new TextEncoder().encode(secretKey);
 
@@ -24,11 +25,13 @@ export async function decrypt(input) {
 export async function login(prevState, formData) {
   const username = formData.get("username");
   const password = formData.get("password");
-
-  //console.log("Login credentials:", username);
-  //console.log("config.host:", config.host);
-  //console.log("config:", config);
-  const res = await fetch(`${config.host}/api/auth/login`, {
+  const host_link=formData.get("host_link");
+   
+   //console.log("username:"+username);
+   //console.log("link:"+host_link);
+   //return;
+   
+   const res = await fetch(host_link+`/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -148,41 +151,39 @@ export const getRevisionNo = async (documentNo) => {
 };
 
 export async function sendEmails(emailList, job) {
+  
 
   if(process.env.WD_INTRANET_MODE === false){
     console.log("send emailList to=>", emailList);
     return;
   }
-  
-  const usrsparams = new URLSearchParams({
-    subject: "New CheckList Checklist activated",
-    body: `
-      You have a new checklist to do.
-      Please check the EPM system for more details.
-      Details:
-      name: ${job.name}
-      activated by: ${job.activatedBy}
-      timeout: ${job.timeout}
-      direct link : http://10.171.134.51:3000/pages/login
-      `,
-    mailsender: "epm-system@wdc.com",
-    cc: "",
-    namesender: "epm-system@wdc.com",
-  });
 
   const emailString = emailList.join(",");
-  usrsparams.set("mailto", emailString);
-  console.log("Sending emails to:", emailString);
 
-  const response = await fetch(
-    `http://172.17.70.201/tme/api/email_send.php?${usrsparams}`
-  );
+  const response = await fetch(process.env.HOST+'/api/emailsent', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+           email:emailString,
+           subject:"New CheckList activated",
+           body:`
+            You have a new checklist to do.
+            Please check the EPM system for more details.
+            Details:
+            name: ${job.name}
+            activated by: ${job.activatedBy}
+            timeout: ${job.timeout}
+            direct link : ${process.env.HOST}/pages/login
+            `,  
+            mailsender:'epm-system@wdc.com',
+            namesender:'epm-system@wdc.com'
+    }),
+  });
+  
+  
 
-  if (response.ok) {
-    console.log("Emails sent successfully");
-  } else {
-    console.error("Failed to send emails", response.statusText);
-  }
 }
 
 export async function sendResetEmail(information, token) {
@@ -204,7 +205,7 @@ export async function sendResetEmail(information, token) {
       Email: ${info.email}
       Workgroup: ${info.workgroup}
       Username: ${info.username}
-      Reset Link: ${config.host}/pages${info.reset_link}
+      Reset Link: ${process.env.HOST}/pages${info.reset_link}
     `
       )
       .join("")}
@@ -220,6 +221,7 @@ export async function sendResetEmail(information, token) {
 
   const emails = information.map((info) => info.email);
   const emailString = emails.join(","); // Join emails with a comma separator
+  /*
   usrsparams.set("mailto", emailString);
 
   console.log("Sending emails to:", emailString);
@@ -233,4 +235,22 @@ export async function sendResetEmail(information, token) {
   } else {
     console.error("Failed to send emails", response.statusText);
   }
+
+  const emailString = emailList.join(",");
+*/
+  const response = await fetch(process.env.HOST+'/api/emailsent', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+           email:emailString,
+           subject:"Password Reset",
+           body:body,  
+            mailsender:'epm-system@wdc.com',
+            namesender:'epm-system@wdc.com'
+    }),
+  });
+
+
 }
