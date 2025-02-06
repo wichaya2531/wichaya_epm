@@ -14,7 +14,7 @@ export default function Page() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("host_link ::  "+ host_link);  
+    console.log("host_link ::  "+ process.env.NEXT_PUBLIC_HOST_LINK);  
 
     return;
     //get reset link

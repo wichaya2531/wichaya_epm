@@ -74,15 +74,15 @@ export const POST = async (req, res) => {
         // Calculate the end date based on the recurrence type
         
         let startDateActive=new Date(formatDateToString(new Date())+"T"+activationTime);
-        startDateActive.setHours(startDateActive.getHours() + 7);
+        startDateActive.setHours(startDateActive.getHours() + process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
         
         if (recurrence==="weekly" || recurrence=="monthly" || recurrence === 'yearly') {
             /*let*/
             startDateActive=new Date(formatDateToString(new Date(activationDate))+"T"+activationTime);
-            startDateActive.setHours(startDateActive.getHours() + 7);
+            startDateActive.setHours(startDateActive.getHours() + process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
         }
         let endDateActive=new Date( formatDateToString(new Date( endDate ))+"T"+activationTime );
-        endDateActive.setHours(endDateActive.getHours() + 7);
+        endDateActive.setHours(endDateActive.getHours() + process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
 
           //console.log("activationDate",activationDate);
           //console.log("activationTime",activationTime);
@@ -96,7 +96,7 @@ export const POST = async (req, res) => {
             // Create a new job
             //console.log("สร้าง  Schedual :",rolling_Datetime);
             const AdvanceActivationDate = new Date(rolling_Datetime);
-            AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - 7);
+            AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - process.env.NEXT_PUBLIC_TIMEZONE_OFFSET);
             const schedule = new Schedule({
                 JOB_TEMPLATE_ID: jobTemplateID,
                 JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,

@@ -43,39 +43,6 @@ const Page = () => {
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
    
-  //console.log(" Hello World");  
-
-  useEffect(() => {
-    // โค้ดที่ต้องการให้ทำงานครั้งเดียว    
-    //const { result } = useFetchEnv(false);
-    var t=document.getElementById('md-data-developper');
-   
-    console.log("Page loaded with data "+t.innerHTML);
-
-    // const fetchData = async () => {
-    //   try {
-    //     const response = await fetch("/api/env2cfg");
-    //     if (!response.ok) {
-    //       throw new Error(`Error: ${response.status}`);
-    //     }
-    //     const result = await response.json();
-    //     //setData(result);
-    //     console.log("result",result);
-
-    //   } catch (error) {
-    //     console.error("Error fetching data:", error);
-    //   } finally {
-    //     //setLoading(false);
-    //   }
-    // };
-
-    // fetchData();
-
-    //setRefresh(true);
-  }, []); // ใช้ dependency ว่าง เพื่อให้ทำงานแค่ครั้งเดียว
-
-
-
   const handleClcik = () => {
     // sendData();
   };

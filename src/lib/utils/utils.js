@@ -25,13 +25,13 @@ export async function decrypt(input) {
 export async function login(prevState, formData) {
   const username = formData.get("username");
   const password = formData.get("password");
-  const host_link=formData.get("host_link");
+  //const host_link=formData.get("host_link");
    
    //console.log("username:"+username);
    //console.log("link:"+host_link);
    //return;
    
-   const res = await fetch(host_link+`/api/auth/login`, {
+   const res = await fetch(process.env.NEXT_PUBLIC_HOST_LINK+`/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -160,7 +160,7 @@ export async function sendEmails(emailList, job) {
 
   const emailString = emailList.join(",");
 
-  const response = await fetch(process.env.HOST+'/api/emailsent', {
+  const response = await fetch(process.env.NEXT_PUBLIC_HOST_LINK+'/api/emailsent', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ export async function sendEmails(emailList, job) {
             name: ${job.name}
             activated by: ${job.activatedBy}
             timeout: ${job.timeout}
-            direct link : ${process.env.HOST}/pages/login
+            direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
             `,  
             mailsender:'epm-system@wdc.com',
             namesender:'epm-system@wdc.com'
@@ -205,7 +205,7 @@ export async function sendResetEmail(information, token) {
       Email: ${info.email}
       Workgroup: ${info.workgroup}
       Username: ${info.username}
-      Reset Link: ${process.env.HOST}/pages${info.reset_link}
+      Reset Link: ${process.env.NEXT_PUBLIC_HOST_LINK}/pages${info.reset_link}
     `
       )
       .join("")}
@@ -238,7 +238,7 @@ export async function sendResetEmail(information, token) {
 
   const emailString = emailList.join(",");
 */
-  const response = await fetch(process.env.HOST+'/api/emailsent', {
+  const response = await fetch(process.env.NEXT_PUBLIC_HOST_LINK+'/api/emailsent', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
