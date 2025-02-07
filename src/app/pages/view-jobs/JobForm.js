@@ -31,11 +31,14 @@ const JobForm = ({
   handleUploadFileToJob,
   onItemImgChange,
   //handleUploadFileToJobItem,
-  preview,
+  preview_1,
+  preview_2,
   onclicktoShow,
 }) => {
   //view=false;
- 
+  //console.log("jobData",jobData);
+  const isPictureRequired = jobData.PICTURE_EVEDENT_REQUIRE;
+
   const [showWebcam, setShowWebcam] = useState(false);
   const [previewItemPicture, setPreviewItemPicture] = useState(null);
 
@@ -520,104 +523,113 @@ const JobForm = ({
           )}
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col"></div>   
+              <div className={`flex flex-col ${isPictureRequired ? "" : "hidden"}`}>
+              
+              {(  
+                <label
+                  htmlFor="text"
+                  className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
+                >&nbsp;&nbsp;&nbsp;&nbsp;Evident Before </label>
+              )}
 
-        </div>    
+              { !view && (
+                <div className="flex flex-col items-center">
+                  {/* ซ่อน input อัปโหลดไฟล์ */}
+                  <input
+                    type="file"
+                    id="fileInput-1"
+                    className="hidden"
+                    onChange={(e) => handleUploadFileToJob(e.target.files[0],'fileInput-1')}
+                    accept="image/*"
+                  />
 
+                  {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+                  <label
+                    htmlFor="fileInput-1"
+                    className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
+                  >
+                    <CameraAltIcon />
+                    Upload Image
+                  </label>
+                </div>
+              )}
 
-        <div className="flex flex-col">
-          <label
-            htmlFor="text"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >Evident Picture Before </label>
-          {!view && (
-            <div className="flex flex-col items-center">
-              {/* ซ่อน input อัปโหลดไฟล์ */}
-              <input
-                type="file"
-                id="fileInput"
-                className="hidden"
-                onChange={handleUploadFileToJob}
-                accept="image/*"
-              />
+              {/* แสดงตัวอย่างรูปภาพถ้ามี */}
+              {preview_1 && (
+                <img src={preview_1} alt="Preview" width={200} className="mt-4" />
+              )}
+              {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+              {jobData.IMAGE_FILENAME && (
+                <img
+                  src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
+                  alt="Preview"
+                  width={200}
+                  className="mt-4"
+                  onClick={() =>
+                    onclicktoShow(
+                      `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
+                    )
+                  }
+                />
+              )}
 
-              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
-              <label
-                htmlFor="fileInput"
-                className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
-              >
-                <CameraAltIcon />
-                Upload Image
-              </label>
+              
             </div>
-          )}
 
-          {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-          {preview && (
-            <img src={preview} alt="Preview" width={200} className="mt-4" />
-          )}
-          {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-          {jobData.IMAGE_FILENAME && (
-            <img
-              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
-              alt="Preview"
-              width={200}
-              className="mt-4"
-              onClick={() =>
-                onclicktoShow(
-                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
-                )
-              }
-            />
-          )}
-        </div>
+            <div className={`flex flex-col ${isPictureRequired ? "" : "hidden"}`}>
+              {
+              
+              (
+                <label
+                  htmlFor="text"
+                  className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4" 
+                >&nbsp;&nbsp;&nbsp;&nbsp;Evident After </label>
+              )}
+              
+              { !view && (
 
-        <div className="flex flex-col">
-          <label
-            htmlFor="text"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >Evident Picture After </label>
-          {!view && (
-            <div className="flex flex-col items-center">
-              {/* ซ่อน input อัปโหลดไฟล์ */}
-              <input
-                type="file"
-                id="fileInput"
-                className="hidden"
-                onChange={handleUploadFileToJob}
-                accept="image/*"
-              />
+                  <div className="flex flex-col items-center">
+                    {/* ซ่อน input อัปโหลดไฟล์ */}
+                    <input
+                      type="file"
+                      id="fileInput-2"
+                      className="hidden"
+                      onChange={(e) => handleUploadFileToJob(e.target.files[0],'fileInput-2')}
+                      accept="image/*"
+                    />
 
-              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
-              <label
-                htmlFor="fileInput"
-                className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
-              >
-                <CameraAltIcon />
-                Upload Image
-              </label>
+                    {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+                    <label
+                      htmlFor="fileInput-2"
+                      className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
+                    >
+                      <CameraAltIcon />
+                      Upload Image
+                    </label>
+                  </div>
+
+              )}
+
+              {/* แสดงตัวอย่างรูปภาพถ้ามี */}
+              {preview_2 && (
+                <img src={preview_2} alt="Preview" width={200} className="mt-4" />
+              )}
+              {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+              {jobData.IMAGE_FILENAME_2 && (
+                <img
+                  src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
+                  alt="Preview"
+                  width={200}
+                  className="mt-4"
+                  onClick={() =>
+                    onclicktoShow(
+                      `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
+                    )
+                  }
+                />
+              )}
             </div>
-          )}
-
-          {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-          {preview && (
-            <img src={preview} alt="Preview" width={200} className="mt-4" />
-          )}
-          {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-          {jobData.IMAGE_FILENAME_2 && (
-            <img
-              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
-              alt="Preview"
-              width={200}
-              className="mt-4"
-              onClick={() =>
-                onclicktoShow(
-                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
-                )
-              }
-            />
-          )}
-        </div>
 
       </div>
       <hr />

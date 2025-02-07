@@ -275,6 +275,7 @@ export const POST = async (req, res) => {
           JOB_APPROVERS: approvers.map((approverss) => approverss.USER_ID),
           TIMEOUT: jobTemplate.TIMEOUT,
           LINE_NAME: jobTemplate.LINE_NAME,
+          PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false
         });
 
         await job.save();

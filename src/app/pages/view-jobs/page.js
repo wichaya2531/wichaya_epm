@@ -57,8 +57,10 @@ const Page = ({ searchParams }) => {
   const [showDetail, setShowDetail] = useState(null);
    const mqttClient = mqtt.connect(connectUrl, options);
   //const [selectedFile, setSelectedFile] = useState(null);
-  const [wdtagImg, setWdtagImg] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [wdtagImg_1, setWdtagImg_1] = useState(null);
+  const [wdtagImg_2, setWdtagImg_2] = useState(null);
+  const [preview_1, setPreview_1] = useState(null);
+  const [preview_2, setPreview_2] = useState(null);
 
   //const [message, setMessage] = useState("");....
 
@@ -241,17 +243,24 @@ const Page = ({ searchParams }) => {
     });
   };
 
-  const handleUploadFileToJob = (event) => {
-    const file = event.target.files[0];
+  const handleUploadFileToJob = (files,event) => {
+   console.log("event",event);
+
+    const file =files ;//event.target.files[0];
     //setSelectedFile(file);
-    setPreview(URL.createObjectURL(file)); // แสดง preview ของไฟล์
+    if(event=="fileInput-1"){
+      setPreview_1(URL.createObjectURL(file)); // แสดง preview ของไฟล์
+    }else if(event=="fileInput-2"){
+      setPreview_2(URL.createObjectURL(file)); // แสดง preview ของไฟล์
+    }
+    
 
     setTimeout(() => {
-      uploadJobPictureToServer(file);
+      uploadJobPictureToServer(file,event);
     }, 10);
   };
 
-  const uploadJobPictureToServer = async (inputFile) => {
+  const uploadJobPictureToServer = async (inputFile,selector) => {
     if (!inputFile) {
       alert("Please select a file first.");
       return;
@@ -269,7 +278,13 @@ const Page = ({ searchParams }) => {
       const data = await res.json(); // อ่าน response จาก API
 
       if (data.result) {
-        setWdtagImg(data.filePath);
+        if(selector=="fileInput-1"){
+          setWdtagImg_1(data.filePath);
+        }else if(selector=="fileInput-2"){
+          setWdtagImg_2(data.filePath);
+        }
+
+        
       } else {
         alert("Failed to upload file. Error " + data.error);
       }
@@ -320,6 +335,21 @@ const Page = ({ searchParams }) => {
       return;
     }
 
+
+    //console.log("wdtagImg_1",wdtagImg_1);
+
+    if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
+      Swal.fire({
+        title: "Error!",
+        text: "Please upload Evident picture.",
+        icon: "error",
+      });
+      return;
+    }
+
+
+   // return ;
+
     // ตรวจสอบว่า inputValues มีข้อมูลหรือไม่
     // if (!Array.isArray(inputValues) || inputValues.length === 0) {
     //   Swal.fire({
@@ -334,7 +364,8 @@ const Page = ({ searchParams }) => {
       JobID: jobData.JobID,
       wd_tag: wdTag,
       submittedBy: user._id,
-      wdtagImage: wdtagImg,
+      wdtagImage_1: wdtagImg_1,
+      wdtagImage_2: wdtagImg_2,
     };
 
     const formData = new FormData();
@@ -459,7 +490,9 @@ const Page = ({ searchParams }) => {
         handleUploadFileToJob={handleUploadFileToJob}
         //handleUploadFileToJobItem={handleUploadFileToJobItem}
         onItemImgChange={handleIMGItemChange}
-        preview={preview}
+        preview_1={preview_1}
+        preview_2={preview_2}
+
         onclicktoShow={handleToShowOnClick}
       />
 

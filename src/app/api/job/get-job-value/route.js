@@ -77,6 +77,7 @@ export const GET = async (req, res) => {
       MachineName: machineName,
       WorkGroupID: job.WORKGROUP_ID,
       IMAGE_FILENAME: job.IMAGE_FILENAME,
+      IMAGE_FILENAME_2: job.IMAGE_FILENAME_2,
       WorkgroupName: workgroupName,
       ActivatedBy: activatedBy,
       ActivatedAt: job.createdAt.toLocaleString(),
@@ -85,6 +86,7 @@ export const GET = async (req, res) => {
       SubmitedAt: job.SUBMITTED_DATE ? job.SUBMITTED_DATE.toLocaleString() : "",     
       Status: statusName,
       Approvers: job.JOB_APPROVERS,
+      PICTURE_EVEDENT_REQUIRE:job.PICTURE_EVEDENT_REQUIRE || false 
     };
 
     const jobItemData = await Promise.all(

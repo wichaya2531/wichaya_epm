@@ -328,11 +328,13 @@ const JobForm = ({
             disabled
           />
         </div>
+        <div></div>
+
         <div className="flex flex-col">
           <label
             htmlFor="image-file"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          ></label>
+            className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
+          >Evident before</label>
           {jobData.IMAGE_FILENAME ? (
             <img
               src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
@@ -349,6 +351,30 @@ const JobForm = ({
             <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
           )}
         </div>
+
+        <div className="flex flex-col">
+          <label
+            htmlFor="image-file"
+            className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
+          > Evident after</label>
+          {jobData.IMAGE_FILENAME_2 ? (
+            <img
+              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
+              alt="Job Image"
+              width={200}
+              height={200}
+              onClick={() =>
+                onclicktoShow(
+                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
+                )
+              }
+            />
+          ) : (
+            <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
+          )}
+        </div>
+
+
       </div>
       <hr />
       <div className="flex flex-col gap-8">

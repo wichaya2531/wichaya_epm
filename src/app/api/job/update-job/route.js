@@ -85,7 +85,8 @@ export const POST = async (req) => {
     job.JOB_STATUS_ID = waitingStatus._id;
     job.SUBMITTED_BY = submittedUser;
     job.SUBMITTED_DATE = new Date();
-    job.IMAGE_FILENAME = jobData.wdtagImage;
+    job.IMAGE_FILENAME = jobData.wdtagImage_1;
+    job.IMAGE_FILENAME_2 = jobData.wdtagImage_2;
 
     await job.save();
     // console.log("Job updated successfully");
