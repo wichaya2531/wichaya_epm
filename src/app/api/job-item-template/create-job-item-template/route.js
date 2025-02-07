@@ -43,8 +43,8 @@ export const POST = async (req) => {
     const FILE = form.get("FILE");
     const pos=await checkLastIndexOfItem(JobTemplateCreateID);
 
-    let filePath = null; // Initialize filePath to null
-
+    let filePath = form.get("FILE"); // Initialize filePath to null
+    /*
     if (FILE && FILE.size > 0) {
       const buffer = Buffer.from(await FILE.arrayBuffer());
       const fileExtension = FILE.name.split(".").pop();
@@ -53,7 +53,7 @@ export const POST = async (req) => {
 
       fs.writeFileSync(uploadDir, buffer); // Save the file
       filePath = filename; // Set filePath to the saved filename
-    }
+    }*/
 
     // Create jobItemTemplateData object
     const jobItemTemplateData = {

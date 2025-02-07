@@ -15,12 +15,14 @@ import Swal from "sweetalert2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { getSession } from "@/lib/utils/utils.js";
 import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
+import { CheckBox } from "@mui/icons-material";
 
 const approverHeader = ["ID", "Name", "Action"];
 const notifyHeader = ["ID", "Name", "Action"];
 const notifyOverdueHeader = ["ID", "Name", "Action"];
 
 const Page = ({ searchParams }) => {
+
   const { workgroups, loading, error } = useFetchWorkgroups();
   const jobTemplate_id = searchParams.jobTemplate_id;
   //const [timeout, setTimeout] = useState("");
@@ -36,16 +38,21 @@ const Page = ({ searchParams }) => {
   const [refresh, setRefresh] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [allOptions, setAllOptions] = useState([]);
+  
+
+
   const {
     user,
     isLoading: isUserLoading,
     error: userError,
   } = useFetchUser(refresh);
+
   const {
     jobTemplate,
     isLoading: isJobTemplateLoading,
     error: jobTemplateError,
   } = useFetchJobTemplate(jobTemplate_id, refresh);
+  
   const {
     users,
     isLoading: isUsersLoading,
@@ -426,6 +433,9 @@ const Page = ({ searchParams }) => {
     };
   });
 
+  
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -445,6 +455,9 @@ const Page = ({ searchParams }) => {
     const notifiesOverdue_id = notifiesOverdue.map(
       (notifyOverdue) => notifyOverdue._id
     );
+
+    const PICTURE_EVEDENT_REQUIRE=document.getElementById('picture-evident-require').checked;
+
 
     // รับ ID ที่ต้องการลบ
     const removedApprovers = jobTemplate.ApproverList.filter(
@@ -475,6 +488,7 @@ const Page = ({ searchParams }) => {
       removedApprovers,
       removedNotifies,
       removedNotifiesOverdue,
+      PICTURE_EVEDENT_REQUIRE
     };
 
     try {
@@ -747,6 +761,7 @@ const Page = ({ searchParams }) => {
                 Add
               </button>
             </div>
+            
             <div className="flex gap-5">
               <div className="flex flex-col w-full">
                 <label
@@ -771,6 +786,36 @@ const Page = ({ searchParams }) => {
                 Add
               </button>
             </div>
+
+            {/* <div className="flex gap-5">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="evident-checkbox"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Evident Picture Require
+                </label>
+                <CheckBox id="evident-checkbox" />
+              </div>
+            </div> */}
+
+            <div className="flex items-center space-x-2 border-red-300">
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <input
+                type="checkbox"
+                id="picture-evident-require"  
+                //onClick={(e) =>handleUpdatePictureEvidentRequire(e.target.checked)}
+                defaultChecked={jobTemplate.PICTURE_EVEDENT_REQUIRE}
+                //defaultValue={jobTemplate.CHECKLIST_VERSION}
+                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+              />
+              <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                     Evident Picture Require
+              </label>
+            </div>
+
+
+
           </div>
 
           <button

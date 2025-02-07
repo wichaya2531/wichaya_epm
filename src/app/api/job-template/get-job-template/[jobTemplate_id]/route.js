@@ -98,6 +98,7 @@ export const GET = async (req, { params }) => {
       ApproverList: usersApprove,
       NotifyList: usersNotifier,
       NotifyOverdueList: usersNotifierOverdue,
+      PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false
     };
 
     return NextResponse.json({ status: 200, jobTemplate: data });

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { config } from "@/config/config.js";
 
 const useFetchJobTemplate = (jobTemplate_id, refresh = null) => {
-    const [jobTemplate, setJobTemplate] = useState({});
+    const [jobTemplate, setJobTemplate] = useState({ PICTURE_EVEDENT_REQUIRE: false});
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -15,7 +15,7 @@ const useFetchJobTemplate = (jobTemplate_id, refresh = null) => {
                 const response = await fetch(`/api/job-template/get-job-template/${jobTemplate_id}`, { next: { revalidate: 10 } });
                 const data = await response.json();
                 if (data.status === 200) {
-                    //console.log(data.jobTemplate);
+                    //console.log("data.jobTemplate==>",data.jobTemplate);
                     setJobTemplate(data.jobTemplate);
                 }
             } catch (err) {

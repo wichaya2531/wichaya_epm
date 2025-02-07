@@ -108,6 +108,7 @@ export const POST = async (req, res) => {
       OVERDUE_ACK:"",
       TIMEOUT: jobTemplate.TIMEOUT,
       DISAPPROVE_REASON:"",
+      PICTURE_EVEDENT_REQUIRE : jobTemplate.PICTURE_EVEDENT_REQUIRE || false
     });
     //console.log("Job->", job);
     await job.save();

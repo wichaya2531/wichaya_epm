@@ -35,8 +35,10 @@ const jobSchema = new mongoose.Schema(
       required: false,
     },
     SUBMITTED_DATE: { type: Date, default: null },
-    IMAGE_FILENAME: { type: String, default: null },
+    IMAGE_FILENAME: { type: String, default: null }, // image for evident before
     OVERDUE_ACK:{ type: String, required: false },
+    IMAGE_FILENAME_2: { type: String, default: null }, //// image for evident after
+    PICTURE_EVEDENT_REQUIRE:{ type: Boolean, default: false }
   },
   { timestamps: true }
 );

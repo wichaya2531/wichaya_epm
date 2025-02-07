@@ -519,11 +519,17 @@ const JobForm = ({
             />
           )}
         </div>
+
+        <div className="flex flex-col">
+
+        </div>    
+
+
         <div className="flex flex-col">
           <label
             htmlFor="text"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
-          ></label>
+          >Evident Picture Before </label>
           {!view && (
             <div className="flex flex-col items-center">
               {/* ซ่อน input อัปโหลดไฟล์ */}
@@ -565,6 +571,54 @@ const JobForm = ({
             />
           )}
         </div>
+
+        <div className="flex flex-col">
+          <label
+            htmlFor="text"
+            className="text-sm ipadmini:text-md font-bold text-gray-600"
+          >Evident Picture After </label>
+          {!view && (
+            <div className="flex flex-col items-center">
+              {/* ซ่อน input อัปโหลดไฟล์ */}
+              <input
+                type="file"
+                id="fileInput"
+                className="hidden"
+                onChange={handleUploadFileToJob}
+                accept="image/*"
+              />
+
+              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+              <label
+                htmlFor="fileInput"
+                className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
+              >
+                <CameraAltIcon />
+                Upload Image
+              </label>
+            </div>
+          )}
+
+          {/* แสดงตัวอย่างรูปภาพถ้ามี */}
+          {preview && (
+            <img src={preview} alt="Preview" width={200} className="mt-4" />
+          )}
+          {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+          {jobData.IMAGE_FILENAME_2 && (
+            <img
+              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
+              alt="Preview"
+              width={200}
+              className="mt-4"
+              onClick={() =>
+                onclicktoShow(
+                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
+                )
+              }
+            />
+          )}
+        </div>
+
       </div>
       <hr />
       <div className="flex flex-col gap-8">

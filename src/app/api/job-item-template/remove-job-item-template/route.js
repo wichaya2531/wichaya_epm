@@ -22,10 +22,12 @@ export const DELETE = async (req, res) => {
 
     // Remove the associated image file if it exists
     if (jobItemTemplate.FILE) {
-      console.log("Removing image file");
-      const imagePath = jobItemTemplate.FILE;
-      fs.unlinkSync(path.join(process.cwd(), "public", imagePath));
-    }
+      try{
+          console.log("Removing image file")
+          const imagePath = jobItemTemplate.FILE;
+          fs.unlinkSync(path.join(process.cwd(), "public", imagePath));
+      }catch(err){}    
+   }
 
     // Delete the JobItemTemplate from the database
     await JobItemTemplate.findByIdAndDelete(jobItemTemplate_id);

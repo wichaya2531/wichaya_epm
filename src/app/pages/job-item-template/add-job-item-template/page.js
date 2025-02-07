@@ -31,6 +31,9 @@ const enabledFunction = {
 };
 
 const Page = ({ searchParams }) => {
+  
+  const [itemPicture, setItemPicture] = useState(null);
+
   const jobTemplate_id = searchParams.jobTemplate_id;
   const [refresh, setRefresh] = useState(false);
   const { jobItemTemplates, isLoading: jobItemTemplatesLoading } =
@@ -45,10 +48,17 @@ const Page = ({ searchParams }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onDrop = (acceptedFiles) => {
+  const [previewPictureItem, setPreviewPictureItem] = useState("/assets/images/image.png");
+
+  const onDrop = async (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-      setSelectedFile(file);
+       //console.log("file seledcted by drop ",file);
+       const filePath = await uploadJobPictureToServer(file);
+       //console.log("filePath",filePath);
+       setPreviewPictureItem('/api/viewItem-template?imgName='+filePath);       
+       setSelectedFile(true);
+       setItemPicture(filePath);
     }
   };
 
@@ -62,9 +72,11 @@ const Page = ({ searchParams }) => {
     if (file) {
       // อัปโหลดไฟล์และรอผลลัพธ์
       const filePath = await uploadJobPictureToServer(file);
-      if (filePath) {
-        setSelectedFile(filePath); // เก็บพาธไฟล์ที่อัปโหลดสำเร็จ
-      }
+      console.log("filePath",filePath);
+     
+      setPreviewPictureItem('/api/viewItem-template?imgName='+filePath); 
+      setSelectedFile(true);
+      setItemPicture(filePath);
     }
   };
 
@@ -124,9 +136,7 @@ const Page = ({ searchParams }) => {
     formData.append("TEST_LOCATION_ID", data.TEST_LOCATION_ID);
 
     // ใช้พาธไฟล์ที่ได้จากการอัปโหลด
-    if (selectedFile) {
-      formData.append("FILE", selectedFile);
-    }
+    formData.append("FILE", itemPicture);
 
     try {
       const response = await fetch(
@@ -488,12 +498,12 @@ const Page = ({ searchParams }) => {
 
                 <div className="flex flex-col justify-center items-center">
                   {selectedFile ? (
-                    <Image
-                      src={URL.createObjectURL(selectedFile)} // แสดงภาพที่เลือก
+                     <Image
+                      src={previewPictureItem}
                       alt="selected"
                       width={200}
                       height={200}
-                    />
+                   />
                   ) : (
                     <>
                       <Image

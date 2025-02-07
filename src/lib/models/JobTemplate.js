@@ -11,6 +11,7 @@ const jobTemplateSchema = new mongoose.Schema(
     CHECKLIST_VERSION: { type: String, required: true },
     WORKGROUP_ID: { type: String, required: true },
     TIMEOUT: { type: String, required: true },
+    PICTURE_EVEDENT_REQUIRE: { type: Boolean, required: false },    
   },
   { timestamps: true }
 );

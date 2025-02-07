@@ -22,6 +22,7 @@ export const POST = async (req, res) => {
     APPROVERS_ID,
     NOTIFIES_ID,
     NOTIFIES_OVERDUE_ID,
+    PICTURE_EVEDENT_REQUIRE,
   } = body;
   try {
     const jobTemplate = new JobTemplate({
@@ -34,6 +35,7 @@ export const POST = async (req, res) => {
       TIMEOUT,
       WORKGROUP_ID,
       JobTemplateCreateID,
+      PICTURE_EVEDENT_REQUIRE,
     });
 
     await jobTemplate.save();

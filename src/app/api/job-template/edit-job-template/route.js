@@ -11,7 +11,7 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 
 
 export const PUT = async (req, res) => {
-  console.log("****call edit job template***");
+  //console.log("****call edit job template***");
   await connectToDb();
 
   //console.log("<= use edit job template => ");
@@ -30,6 +30,7 @@ export const PUT = async (req, res) => {
     approvers_id,
     notifies_id,
     notifiesOverdue_id,
+    PICTURE_EVEDENT_REQUIRE,
   } = body;
 
   // console.log("body:", body);
@@ -48,6 +49,7 @@ export const PUT = async (req, res) => {
       CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       TIMEOUT: jobTemplate.TIMEOUT,
+      PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false
     });
     //console.log("jobTemplateEdit", jobTemplateEdit)
     await jobTemplateEdit.save();
@@ -62,6 +64,7 @@ export const PUT = async (req, res) => {
     jobTemplate.WORKGROUP_ID = workgroup;
     jobTemplate.TIMEOUT = timeout;
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
+    jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
 
     await jobTemplate.save();
     const newApprovers = approvers_id.map((approver_id) => {
