@@ -265,7 +265,17 @@ const Page = ({ searchParams }) => {
       html: `<p>ID: <strong>${idToCopy}</strong></p>
                <button id="copy-btn" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white;">
                    Copy to Clipboard
-               </button>`,
+               </button>
+              
+              <div style="border:1px solid none;width:450px;text-align:left;padding:15px;">
+                <p style="padding-left:45px;"><strong>[--------Setting Info-------]</strong></p>
+                
+                <p style="padding-left:50px;">Broker IP&nbsp;&nbsp;: &nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQTT_BROKER_IP}</strong></p>
+                <p style="padding-left:50px;">Broker Port&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQTT_BROKER_PORT}</strong></p>
+                <p style="padding-left:50px;">User&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQT_USERNAME}</strong></p>
+                <p style="padding-left:50px;">Pass&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQT_PASSWORD}</strong></p>
+              </div>  
+               `,
       showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
     });
 

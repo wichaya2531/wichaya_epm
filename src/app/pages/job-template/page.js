@@ -407,7 +407,9 @@ const Page = () => {
               className="rounded-full"
             />
             <h1 className="text-3xl font-bold text-slate-900">
-              Create Checklist Template
+               <p>Create</p> 
+               <hr></hr>
+               <p>Checklist Template</p>               
             </h1>
           </div>
           <p className="text-sm font-bold text-secondary flex items-center">
@@ -425,9 +427,9 @@ const Page = () => {
         ) && "opacity-50 cursor-not-allowed"
       }`}
         >
-          <div className="flex gap-3 items-center">
-            <p>View all Checklist Templates</p>
-            <PageviewIcon />
+          <div className="flex gap-3 items-center ">
+            <p>View all<hr></hr> Checklist Templates</p>
+            {/* <PageviewIcon /> */}
           </div>
         </Link>
       </div>
@@ -697,7 +699,10 @@ const Page = () => {
                 type="submit"
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               >
-                Create Checklist Template.
+                <p>Create</p>
+                <hr></hr>
+                <p>Checklist Template.</p>
+               
               </button>
             ) : (
               <button
@@ -705,7 +710,9 @@ const Page = () => {
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 cursor-not-allowed"
                 disabled
               >
-                Create Checklist Template.
+                <p>Create</p>
+                <hr></hr>
+                <p>Checklist Template.</p>
               </button>
             )
           }

@@ -40,6 +40,7 @@ const Page = ({ searchParams }) => {
   const [allOptions, setAllOptions] = useState([]);
   
 
+  const [evidentImageReq, setEvidentImageReq] = useState([]);
 
   const {
     user,
@@ -53,6 +54,26 @@ const Page = ({ searchParams }) => {
     error: jobTemplateError,
   } = useFetchJobTemplate(jobTemplate_id, refresh);
   
+  useEffect(() => {
+    if (!isJobTemplateLoading && jobTemplate) {
+      //console.log("jobTemplate.PICTURE_EVEDENT_REQUIRE ",jobTemplate.PICTURE_EVEDENT_REQUIRE);
+      setEvidentImageReq(jobTemplate.PICTURE_EVEDENT_REQUIRE);
+      //console.log("evidentImageReq=",evidentImageReq);
+
+      var timerID=setInterval(() => {
+              try{
+                document.getElementById('picture-evident-require').checked=jobTemplate.PICTURE_EVEDENT_REQUIRE;
+                clearInterval(timerID);
+              }catch(err){
+                console.log("error",err);
+              }
+      }, 2000);
+      
+          
+    }
+  }, [jobTemplate, isJobTemplateLoading]);
+
+
   const {
     users,
     isLoading: isUsersLoading,
@@ -63,6 +84,11 @@ const Page = ({ searchParams }) => {
     value: jobTemplate.TIMEOUT, // เริ่มต้นค่าจาก jobTemplate
     label: jobTemplate.TIMEOUT, // เริ่มต้นค่าจาก jobTemplate
   });
+
+
+
+  //var evidentImageReq=jobTemplate.PICTURE_EVEDENT_REQUIRE;
+  //console.log("evident Image Req",evidentImageReq);
 
   useEffect(() => {
     //console.log(" use effect............ ");
@@ -805,7 +831,7 @@ const Page = ({ searchParams }) => {
                 type="checkbox"
                 id="picture-evident-require"  
                 //onClick={(e) =>handleUpdatePictureEvidentRequire(e.target.checked)}
-                defaultChecked={jobTemplate.PICTURE_EVEDENT_REQUIRE}
+                defaultChecked={evidentImageReq}
                 //defaultValue={jobTemplate.CHECKLIST_VERSION}
                 className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
               />

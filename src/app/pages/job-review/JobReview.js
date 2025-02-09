@@ -300,7 +300,7 @@ const JobForm = ({
             htmlFor="text-input"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
           >
-            WD Tag
+            WD Tag / Machine ID
           </label>
           <input
             type="text"

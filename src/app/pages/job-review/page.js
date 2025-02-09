@@ -66,7 +66,7 @@ const Page = ({ searchParams }) => {
     var disapprove_reason="";
     if(!isApproved){
        
-        const { value: disapprove_reason_1 } = await Swal.fire({
+        const { value: disapprove_reason_1,isDismissed } = await Swal.fire({
         title: "Please provide a reason",
         input: "textarea",
         inputPlaceholder: "Enter your reason here...",
@@ -77,9 +77,14 @@ const Page = ({ searchParams }) => {
         confirmButtonText: "Submit",
         cancelButtonText: "Cancel",
       });
+      if (isDismissed) {
+        return;
+      }
       disapprove_reason=disapprove_reason_1;
     }
+
     
+
     try {
       const response = await fetch(`/api/approval/approve`, {
         method: "POST",

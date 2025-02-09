@@ -329,7 +329,7 @@ const Page = ({ searchParams }) => {
     if (!wdTag) {
       Swal.fire({
         title: "Error!",
-        text: "Please fill in the WD Tag.",
+        text: "Please fill in the WD Tag / Machine ID.",
         icon: "error",
       });
       return;
@@ -337,15 +337,25 @@ const Page = ({ searchParams }) => {
 
 
     //console.log("wdtagImg_1",wdtagImg_1);
+    
+   if(jobData.IMAGE_FILENAME_2 && jobData.IMAGE_FILENAME){
+          // มี Attach ไฟล์ อยู่แล้ว  
+          //console.log("jobData.IMAGE_FILENAME 1,2 A");
+   }else{
+           // ไม่มี Attach ไฟล์ 
+          console.log("jobData.IMAGE_FILENAME 1,2 B");
+          if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
+            Swal.fire({
+              title: "Error!",
+              text: "Please upload Evident picture.",
+              icon: "error",
+            });
+            return;
+          }
+   }   
 
-    if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please upload Evident picture.",
-        icon: "error",
-      });
-      return;
-    }
+
+    
 
 
    // return ;
