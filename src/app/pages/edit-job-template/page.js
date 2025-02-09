@@ -482,6 +482,30 @@ const Page = ({ searchParams }) => {
       (notifyOverdue) => notifyOverdue._id
     );
 
+     if (approvers_id.length==0) {
+              const result = await Swal.fire({
+                title: 'Notifty',
+                text: "You have not specified the Approver List for this template. Do you want to confirm this action?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Continue',
+                cancelButtonText: 'Back to Edit',
+              });
+            
+              if (result.isConfirmed) {
+                // หากกด Continue
+                //console.log('ดำเนินการต่อ');
+                // ทำงานที่ต้องการที่นี่ เช่น ส่งข้อมูลหรือไปยังหน้าถัดไป
+              } else {
+                // หากกด Cancel
+                return; 
+                //console.log('ยกเลิกการดำเนินการ');
+              }
+         } 
+
+
+
+
     const PICTURE_EVEDENT_REQUIRE=document.getElementById('picture-evident-require').checked;
 
 

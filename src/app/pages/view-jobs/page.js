@@ -343,7 +343,7 @@ const Page = ({ searchParams }) => {
           //console.log("jobData.IMAGE_FILENAME 1,2 A");
    }else{
            // ไม่มี Attach ไฟล์ 
-          console.log("jobData.IMAGE_FILENAME 1,2 B");
+          //console.log("jobData.IMAGE_FILENAME 1,2 B");
           if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
             Swal.fire({
               title: "Error!",

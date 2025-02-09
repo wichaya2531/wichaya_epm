@@ -13,6 +13,8 @@ import {
 //import path from "path";
 
 export const POST = async (req) => {
+
+   
   try {
     // เชื่อมต่อฐานข้อมูล
     await connectToDb();
@@ -26,6 +28,9 @@ export const POST = async (req) => {
     const jobItemsData = JSON.parse(form.get("jobItemsData"));
     //console.log("jobData:", jobData);
     //console.log("jobItemsData:", jobItemsData);
+
+    //console.log("update job  with POST****");
+   // return NextResponse.json({ status : 200 });
 
     //return NextResponse.json({ status: 200, message: "Job updated successfully." });
     // ตรวจสอบข้อมูลที่จำเป็น
@@ -48,6 +53,9 @@ export const POST = async (req) => {
     // ค้นหา job ในฐานข้อมูล
     const job = await Job.findOne({ _id: jobData.JobID });
     //console.log("Job found:", job);
+     
+    //console.log("update job  with POST****");
+    //return NextResponse.json({ status : 200 });
 
     if (!job) {
       return NextResponse.json({ status: 404, message: "Job not found." });
@@ -59,7 +67,7 @@ export const POST = async (req) => {
     if (process.env.WD_INTRANET_MODE === false) {
       const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
       // ปิดไว้เมื่อต้องการทดสอบ local fee
-      console.log(" ตรวจสอบหมายเลขเอกสาร");
+      //console.log(" ตรวจสอบหมายเลขเอกสาร");
       if (latestDocNo.message) {
         console.log("Doc number error");
         return NextResponse.json({ status: 455, message: latestDocNo.message });
@@ -73,16 +81,33 @@ export const POST = async (req) => {
 
     // อัปเดต job items
     await updateJobItems(jobItemsData); // ตรวจสอบที่นี่
-
+    
     // อัปเดตสถานะ job และบันทึกชื่อไฟล์รูปภาพ
     job.WD_TAG = jobData.wd_tag;
-    const waitingStatus = await Status.findOne({
-      status_name: "waiting for approval",
-    });
-    if (!waitingStatus) {
+
+
+    var statusAssigned;  
+
+   
+
+    
+    if (job.JOB_APPROVERS.length==0) {
+      //console.log(" ไม่มี Approve"); 
+      statusAssigned = await Status.findOne({
+        status_name: "complete",
+      }); 
+    }else{
+      //console.log(" มี Approve"); 
+      statusAssigned = await Status.findOne({
+        status_name: "waiting for approval",
+      });
+    } 
+
+    if (!statusAssigned) {
       return NextResponse.json({ status: 404, message: "Status not found." });
     }
-    job.JOB_STATUS_ID = waitingStatus._id;
+    
+    job.JOB_STATUS_ID = statusAssigned._id;
     job.SUBMITTED_BY = submittedUser;
     job.SUBMITTED_DATE = new Date();
     job.IMAGE_FILENAME = jobData.wdtagImage_1;

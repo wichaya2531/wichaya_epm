@@ -333,7 +333,34 @@ const Page = () => {
     
     //console.log("PICTURE_EVEDENT_REQUIRE",PICTURE_EVEDENT_REQUIRE);
 
-//    return;
+
+
+
+    //console.log("APPROVERS_ID",APPROVERS_ID);  
+    if (APPROVERS_ID.length==0) {
+          const result = await Swal.fire({
+            title: 'Notifty',
+            text: "You have not specified the Approver List for this template. Do you want to confirm this action?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Continue',
+            cancelButtonText: 'Back to Edit',
+          });
+        
+          if (result.isConfirmed) {
+            // หากกด Continue
+            //console.log('ดำเนินการต่อ');
+            // ทำงานที่ต้องการที่นี่ เช่น ส่งข้อมูลหรือไปยังหน้าถัดไป
+          } else {
+            // หากกด Cancel
+            return; 
+            //console.log('ยกเลิกการดำเนินการ');
+          }
+     }
+
+
+
+   // return;
 
     const data = {
       AUTHOR_ID,
