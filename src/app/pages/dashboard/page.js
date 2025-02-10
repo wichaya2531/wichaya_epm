@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
 import { login } from "@/lib/utils/utils.js";
+import { FaTimes } from "react-icons/fa";
 
 const sendData = async () => {
   try {
@@ -53,9 +54,10 @@ const Page = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [username, setUsername] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const togglePasswordVisibility = () => {
-    console.log("use togglePasswordVisibility");
+    // console.log("use togglePasswordVisibility");
     setShowPassword(!showPassword);
   };
   const handleClcik = () => {
@@ -88,6 +90,7 @@ const Page = () => {
     // ค้นหาผู้ใช้ที่เลือกและเก็บไว้ใน selectedUser
     const selectedUser = users.find((u) => u._id === userId);
     setSelectedUser(selectedUser);
+    setIsOpen(true);
   };
 
   useEffect(() => {
@@ -136,67 +139,58 @@ const Page = () => {
           )}
 
           {/* แสดงฟอร์มกรอกข้อมูลเฉพาะเมื่อเลือกผู้ใช้แล้ว */}
-          {selectedUser && (
-            <form
-              className="flex flex-col items-center w-full max-w-md mx-auto p-6 bg-white rounded-lg"
-              action={formAction}
-            >
-              {/* ชื่อผู้ใช้ */}
-              <div className="w-full">
-                <input
-                  type="text"
-                  id="website-admin"
-                  className="w-full p-3 rounded-md border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
-                  name="username"
-                  // value={selectedUser.username}
-                  value={username}
-                  onChange={handleUsernameChange} // เพิ่ม onChange
-                  placeholder="Username"
-                  autoComplete="username"
-                />
-              </div>
-
-              {/* รหัสผ่าน */}
-              <div className="w-full mt-4">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="w-full p-3 rounded-md border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
-                  name="password"
-                  placeholder="Password"
-                  autoComplete="current-password"
-                />
-              </div>
-
-              {/* แสดงรหัสผ่าน */}
-              <div className="flex items-center mt-4">
-                <input
-                  type="checkbox"
-                  id="showPassword"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  checked={showPassword}
-                  onChange={togglePasswordVisibility}
-                />
-                <label
-                  htmlFor="showPassword"
-                  className="ml-2 text-sm text-gray-700 dark:text-gray-400"
+          {isOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
                 >
-                  Show Password
-                </label>
+                  <FaTimes size={24} />
+                </button>
+                <h2 className="text-xl font-bold mb-4 flex justify-center items-center">
+                  User Login
+                </h2>
+
+                <form action={formAction} className="flex flex-col">
+                  <input
+                    type="text"
+                    className="w-full p-3 rounded-md border mb-3"
+                    name="username"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    placeholder="Username"
+                    autoComplete="username"
+                  />
+
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full p-3 rounded-md border mb-3"
+                    name="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                  />
+
+                  <div className="flex items-center mb-3">
+                    <input
+                      type="checkbox"
+                      id="showPassword"
+                      checked={showPassword}
+                      onChange={togglePasswordVisibility}
+                      className="mr-2"
+                    />
+                    <label htmlFor="showPassword">Show Password</label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-500"
+                  >
+                    Login
+                  </button>
+                </form>
               </div>
-
-              {/* ปุ่ม Login */}
-              <button
-                type="submit"
-                className="mt-6 bg-blue-600 text-white py-3 w-full rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 font-semibold text-lg transition duration-300 ease-in-out"
-              >
-                Login
-              </button>
-
-              {/* ข้อความ error */}
-              {state?.message && (
-                <p className="text-red-500 mt-4 text-center">{state.message}</p>
-              )}
-            </form>
+            </div>
           )}
         </div>
 
