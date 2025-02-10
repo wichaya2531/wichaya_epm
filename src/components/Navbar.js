@@ -187,7 +187,7 @@ const Navbar = ({ menu }) => {
           href="/pages/edit-user-profile"
           className="flex gap-2 items-center"
         >
-          <div className="hidden lg:block">
+          <div>
             <p className="text-md font-bold">{user.name}</p>
             <p className="text-sm text-right">{user.role}</p>
           </div>
