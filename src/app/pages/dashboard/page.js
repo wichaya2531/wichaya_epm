@@ -132,7 +132,7 @@ const Page = () => {
               <option value="">Select User</option>
               {filteredUsers.map((user) => (
                 <option key={user._id} value={user._id}>
-                  {user.name} {user.workgroup}
+                  {user.name}, {user.workgroup}, {user.role}
                 </option>
               ))}
             </select>
