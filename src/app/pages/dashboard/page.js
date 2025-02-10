@@ -44,65 +44,13 @@ const sendData = async () => {
 const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: userloading } = useFetchUser(refresh);
-  const { users, isLoading: usersloading } = useFetchUsers(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [isClient, setIsClient] = useState(false);
-  const [state, formAction] = useFormState(login, undefined);
-  const [showPassword, setShowPassword] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [username, setUsername] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    // console.log("use togglePasswordVisibility");
-    setShowPassword(!showPassword);
-  };
   const handleClcik = () => {
     // sendData();
   };
 
-  // ตรวจสอบว่าอยู่ใน client หรือไม่
-  useEffect(() => {
-    setIsClient(true); // ตั้งค่า isClient เป็น true หลังจากที่ render ฝั่ง client เสร็จ
-  }, []);
-
-  // ใช้ useRouter เฉพาะเมื่อเป็นฝั่ง client
-  const router = isClient ? useRouter() : null;
-
-  // เมื่อผู้ใช้หรือข้อมูลผู้ใช้ทั้งหมดถูกโหลดแล้ว
-  useEffect(() => {
-    if (user && users) {
-      // กรองผู้ใช้ที่มี emp_number เหมือนกัน
-      const matchedUsers = users.filter(
-        (u) => u.emp_number === user.emp_number
-      );
-      setFilteredUsers(matchedUsers);
-    }
-  }, [user, users]);
-
-  const handleUserSelection = (e) => {
-    const userId = e.target.value;
-    setSelectedUserId(userId);
-
-    // ค้นหาผู้ใช้ที่เลือกและเก็บไว้ใน selectedUser
-    const selectedUser = users.find((u) => u._id === userId);
-    setSelectedUser(selectedUser);
-    setIsOpen(true);
-  };
-
-  useEffect(() => {
-    if (selectedUserId) {
-      const selected = filteredUsers.find((u) => u._id === selectedUserId);
-      setUsername(selected ? selected.username : "");
-    }
-  }, [selectedUserId]);
-
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
-  };
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="z-50">
@@ -123,75 +71,6 @@ const Page = () => {
           <h1 className="text-sm font-bold text-secondary flex items-center">
             Welcome to the e - PM System
           </h1>
-          {filteredUsers.length > 1 && (
-            <select
-              className="font-sm p-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              onChange={handleUserSelection}
-              value={selectedUserId}
-            >
-              <option value="">Select User</option>
-              {filteredUsers.map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.name}, {user.workgroup}, {user.role}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {/* แสดงฟอร์มกรอกข้อมูลเฉพาะเมื่อเลือกผู้ใช้แล้ว */}
-          {isOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-                >
-                  <FaTimes size={24} />
-                </button>
-                <h2 className="text-xl font-bold mb-4 flex justify-center items-center">
-                  User Login
-                </h2>
-
-                <form action={formAction} className="flex flex-col">
-                  <input
-                    type="text"
-                    className="w-full p-3 rounded-md border mb-3"
-                    name="username"
-                    value={username}
-                    onChange={handleUsernameChange}
-                    placeholder="Username"
-                    autoComplete="username"
-                  />
-
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    className="w-full p-3 rounded-md border mb-3"
-                    name="password"
-                    placeholder="Password"
-                    autoComplete="current-password"
-                  />
-
-                  <div className="flex items-center mb-3">
-                    <input
-                      type="checkbox"
-                      id="showPassword"
-                      checked={showPassword}
-                      onChange={togglePasswordVisibility}
-                      className="mr-2"
-                    />
-                    <label htmlFor="showPassword">Show Password</label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-500"
-                  >
-                    Login
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Cards section */}
