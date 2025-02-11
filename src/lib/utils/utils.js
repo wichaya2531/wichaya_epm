@@ -26,21 +26,24 @@ export async function login(prevState, formData) {
   const username = formData.get("username");
   const password = formData.get("password");
   //const host_link=formData.get("host_link");
-   
-   //console.log("username:"+username);
-   //console.log("link:"+host_link);
-   //return;
-   
-   const res = await fetch(process.env.NEXT_PUBLIC_HOST_LINK+`/api/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      username: username,
-      password: password,
-    }),
-  });
+
+  //console.log("username:"+username);
+  //console.log("link:"+host_link);
+  //return;
+
+  const res = await fetch(
+    process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    }
+  );
   const data = await res.json();
   if (data.status === 200) {
     cookies().set("token", data.token, {
@@ -49,6 +52,7 @@ export async function login(prevState, formData) {
     if (!data.user.Role) {
       return { message: "User is not assigned role." };
     }
+    return { success: true, role: data.user.Role };
     const path = routing(data.user.Role);
     redirect(path);
   } else {
@@ -131,12 +135,11 @@ export const getRevisionNo = async (documentNo) => {
   try {
     const res = await fetch(
       //`https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&xmlFlag=searchCriteria&docNum=${documentNo}`
-      `https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docNum=${documentNo}&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&revReleaseDate=&xmlFlag=searchCriteria`
-      ,
+      `https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docNum=${documentNo}&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&revReleaseDate=&xmlFlag=searchCriteria`,
       { next: { revalidate: 10 } }
     );
     const data = await res.json();
-    //console.log("html tag from agile:=>", data);  
+    //console.log("html tag from agile:=>", data);
     if (data.length > 1) {
       return { message: "Multiple records found" };
     } else if (data.NoRecords) {
@@ -151,24 +154,24 @@ export const getRevisionNo = async (documentNo) => {
 };
 
 export async function sendEmails(emailList, job) {
-  
-
-  if(process.env.WD_INTRANET_MODE === false){
+  if (process.env.WD_INTRANET_MODE === false) {
     console.log("send emailList to=>", emailList);
     return;
   }
 
   const emailString = emailList.join(",");
 
-  const response = await fetch(process.env.NEXT_PUBLIC_HOST_LINK+'/api/emailsent', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-           email:emailString,
-           subject:"New CheckList activated",
-           body:`
+  const response = await fetch(
+    process.env.NEXT_PUBLIC_HOST_LINK + "/api/emailsent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: emailString,
+        subject: "New CheckList activated",
+        body: `
             You have a new checklist to do.
             Please check the EPM system for more details.
             Details:
@@ -176,14 +179,12 @@ export async function sendEmails(emailList, job) {
             activated by: ${job.activatedBy}
             timeout: ${job.timeout}
             direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
-            `,  
-            mailsender:'epm-system@wdc.com',
-            namesender:'epm-system@wdc.com'
-    }),
-  });
-  
-  
-
+            `,
+        mailsender: "epm-system@wdc.com",
+        namesender: "epm-system@wdc.com",
+      }),
+    }
+  );
 }
 
 export async function sendResetEmail(information, token) {
@@ -238,19 +239,20 @@ export async function sendResetEmail(information, token) {
 
   const emailString = emailList.join(",");
 */
-  const response = await fetch(process.env.NEXT_PUBLIC_HOST_LINK+'/api/emailsent', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-           email:emailString,
-           subject:"Password Reset",
-           body:body,  
-            mailsender:'epm-system@wdc.com',
-            namesender:'epm-system@wdc.com'
-    }),
-  });
-
-
+  const response = await fetch(
+    process.env.NEXT_PUBLIC_HOST_LINK + "/api/emailsent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: emailString,
+        subject: "Password Reset",
+        body: body,
+        mailsender: "epm-system@wdc.com",
+        namesender: "epm-system@wdc.com",
+      }),
+    }
+  );
 }

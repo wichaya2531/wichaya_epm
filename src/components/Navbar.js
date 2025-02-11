@@ -19,7 +19,6 @@ const Navbar = ({ menu }) => {
   const [user, setUser] = useState("");
   const { users, isLoading: usersloading } = useFetchUsers(refresh);
   const [isOpen, setIsOpen] = useState(false);
-  const [isOpen1, setIsOpen1] = useState(false);
   const [state, formAction] = useFormState(login, undefined);
   const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -44,6 +43,12 @@ const Navbar = ({ menu }) => {
 
   // ใช้ useRouter เฉพาะเมื่อเป็นฝั่ง client
   const router = isClient ? useRouter() : null;
+
+  if (state?.success) {
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+  }
 
   // เมื่อผู้ใช้หรือข้อมูลผู้ใช้ทั้งหมดถูกโหลดแล้ว
   useEffect(() => {
@@ -236,7 +241,6 @@ const Navbar = ({ menu }) => {
                     placeholder="Username"
                     autoComplete="username"
                   />
-
                   <input
                     type={showPassword ? "text" : "password"}
                     className="w-full p-3 rounded-md border mb-3"
@@ -244,7 +248,6 @@ const Navbar = ({ menu }) => {
                     placeholder="Password"
                     autoComplete="current-password"
                   />
-
                   <div className="flex items-center mb-3">
                     <input
                       type="checkbox"
@@ -255,7 +258,6 @@ const Navbar = ({ menu }) => {
                     />
                     <label htmlFor="showPassword">Show Password</label>
                   </div>
-
                   <button
                     type="submit"
                     className="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-500"
