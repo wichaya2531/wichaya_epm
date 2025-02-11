@@ -7,7 +7,7 @@ import { getSession, logout } from "@/lib/utils/utils";
 import { config } from "../config/config.js";
 import Image from "next/image";
 import { FaTimes } from "react-icons/fa";
-import { login } from "@/lib/utils/utils.js";
+import { logins } from "@/lib/utils/utils.js";
 import { useFormState } from "react-dom";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
 import useFetchUsers from "@/lib/hooks/useFetchUsers";
@@ -19,7 +19,7 @@ const Navbar = ({ menu }) => {
   const [user, setUser] = useState("");
   const { users, isLoading: usersloading } = useFetchUsers(refresh);
   const [isOpen, setIsOpen] = useState(false);
-  const [state, formAction] = useFormState(login, undefined);
+  const [state, formAction] = useFormState(logins, undefined);
   const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isClient, setIsClient] = useState(false);

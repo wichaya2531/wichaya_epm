@@ -52,9 +52,44 @@ export async function login(prevState, formData) {
     if (!data.user.Role) {
       return { message: "User is not assigned role." };
     }
-    return { success: true, role: data.user.Role };
     const path = routing(data.user.Role);
     redirect(path);
+  } else {
+    return { message: "Wrong credential Please try again" };
+  }
+}
+
+export async function logins(prevState, formData) {
+  const username = formData.get("username");
+  const password = formData.get("password");
+  //const host_link=formData.get("host_link");
+
+  //console.log("username:"+username);
+  //console.log("link:"+host_link);
+  //return;
+
+  const res = await fetch(
+    process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    }
+  );
+  const data = await res.json();
+  if (data.status === 200) {
+    cookies().set("token", data.token, {
+      httpOnly: true,
+    });
+    if (!data.user.Role) {
+      return { message: "User is not assigned role." };
+    }
+    return { success: true, role: data.user.Role };
   } else {
     return { message: "Wrong credential Please try again" };
   }
