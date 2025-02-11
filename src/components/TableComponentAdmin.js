@@ -14,9 +14,11 @@ const TableComponentAdmin = ({
   linenameOnSelect = null,
   onPageChange,
   selectedJobs,
-  handleSelectAllJobs,
   handleDeleteSelected,
   filteredJobs,
+  currentPage,
+  setCurrentPage,
+  setSelectedJobs,
 }) => {
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
@@ -24,12 +26,13 @@ const TableComponentAdmin = ({
       setPageSize(Number(rowsVisible));
     } catch (error) {}
   }, 1000);
-
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(PageSize || 5);
   const [selectedFilter, setSelectedFilter] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }); // ใช้สำหรับเก็บสถานะการจัดเรียง
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const jobsInCurrentPage = filteredJobs.slice(startIndex, endIndex);
 
   const data = datas;
 
@@ -126,6 +129,16 @@ const TableComponentAdmin = ({
     return 5;
   };
 
+  // ✅ ฟังก์ชัน Select All: เลือกเฉพาะ jobs ในหน้าปัจจุบัน
+  const handleSelectAllJobs = () => {
+    const allCurrentPageIds = jobsInCurrentPage.map((job) => job._id);
+    if (selectedJobs.length === allCurrentPageIds.length) {
+      setSelectedJobs([]); // ยกเลิกการเลือกทั้งหมด
+    } else {
+      setSelectedJobs(allCurrentPageIds); // เลือกทั้งหมดในหน้าปัจจุบัน
+    }
+  };
+
   return (
     <div className="flex flex-col justify-center gap-5 items-center relative">
       <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left">
@@ -192,8 +205,10 @@ const TableComponentAdmin = ({
                 type="checkbox"
                 onChange={handleSelectAllJobs}
                 checked={
-                  selectedJobs.length === filteredJobs.length &&
-                  filteredJobs.length > 0
+                  jobsInCurrentPage.length > 0 &&
+                  jobsInCurrentPage.every((job) =>
+                    selectedJobs.includes(job._id)
+                  )
                 }
                 className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
               />

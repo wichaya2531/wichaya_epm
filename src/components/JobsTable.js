@@ -54,6 +54,7 @@ const JobsTable = ({ refresh }) => {
   const [endDate, setEndDate] = useState(null); // Default end date as null
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJobs, setSelectedJobs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleSelectJob = (jobId) => {
     setSelectedJobs((prevSelected) =>
@@ -114,14 +115,6 @@ const JobsTable = ({ refresh }) => {
         console.error(err);
         Swal.fire("Error!", "Failed to delete the selected jobs.", "error");
       }
-    }
-  };
-
-  const handleSelectAllJobs = () => {
-    if (selectedJobs.length === filteredJobs.length) {
-      setSelectedJobs([]);
-    } else {
-      setSelectedJobs(filteredJobs.map((job) => job._id));
     }
   };
 
@@ -400,9 +393,11 @@ const JobsTable = ({ refresh }) => {
           searchColumn={"Checklist Name"}
           searchHidden={true}
           filteredJobs={filteredJobs}
-          handleSelectAllJobs={handleSelectAllJobs}
           selectedJobs={selectedJobs}
           handleDeleteSelected={handleDeleteSelected}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          setSelectedJobs={setSelectedJobs}
         />
       ) : (
         <TableComponent
