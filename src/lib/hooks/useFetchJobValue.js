@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 const useFetchJobValue = (job_id, refresh=null) => {
-    console.log(" useFetchJobValue **");
+    //console.log(" useFetchJobValue **");
     const [jobData, setJobData] = useState([]);
     const [jobItems, setJobItems] = useState([]);
     const [isLoading, setIsLoading] = useState(false);

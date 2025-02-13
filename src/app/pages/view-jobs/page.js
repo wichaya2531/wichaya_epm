@@ -14,6 +14,7 @@ import mqtt from "mqtt";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
 import { setTime } from "@syncfusion/ej2-react-schedule";
 import { set } from "mongoose";
+import { typeOf } from "tls";
 // import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 // import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 // import InfoIcon from "@mui/icons-material/Info";
@@ -27,6 +28,8 @@ const options = {
 };
 
 const Page = ({ searchParams }) => {
+
+  console.log("Page on view jobs");
   const router = useRouter();
   const job_id = searchParams.job_id;
   const [view, setView] = useState(false);
@@ -202,13 +205,15 @@ const Page = ({ searchParams }) => {
   };
 
   const handleInputChange = (e, item) => {
-    //console.log('item ',item);
-
+    //console.log('jobItems before ',jobItems);
     for (var t in jobItems) {
       if (jobItems[t].JobItemID == item.JobItemID) {
         jobItems[t].value = e.target.value;
+        jobItems[t].ActualValue=e.target.value;
       }
     }
+    //console.log('jobItems after ',jobItems);
+
   };
 
   const toggleJobItem = () => {
@@ -329,7 +334,7 @@ const Page = ({ searchParams }) => {
     if (!wdTag) {
       Swal.fire({
         title: "Error!",
-        text: "Please fill in the WD Tag / Machine ID.",
+        text: "Please fill in the "+process.env.NEXT_PUBLIC_LABEL_WD_TAG+".",
         icon: "error",
       });
       return;
@@ -354,13 +359,37 @@ const Page = ({ searchParams }) => {
           }
    }   
 
+   var fillAllItems = true;
+   console.log("jobItems",jobItems);
+   for(var t in jobItems){
+           var item=jobItems[t];
+           console.log('item.ActualValue',item.ActualValue);
+           if (item.ActualValue === null || item.ActualValue === undefined) { 
+            fillAllItems = false;
+            break;
+          }
 
+   } 
+   
+   //   console.log("fillAllItems", fillAllItems);
+   if(fillAllItems==false){
+       // You have not entered all items completely.
+      Swal.fire({
+        title: "Error!",
+        text: "You have not entered all items completely.",
+        icon: "error",
+      });
+      return;
+   }
+
+    //console.log("jobItems=>",jobItems);
     
 
 
    // return ;
 
-    // ตรวจสอบว่า inputValues มีข้อมูลหรือไม่
+    //ตรวจสอบว่า inputValues มีข้อมูลหรือไม่
+    
     // if (!Array.isArray(inputValues) || inputValues.length === 0) {
     //   Swal.fire({
     //     title: "Error!",
@@ -369,6 +398,14 @@ const Page = ({ searchParams }) => {
     //   });
     //   return;
     // }
+    // Swal.fire({
+    //   title: "Done!",
+    //   text: "มีข้อมูล.",
+    //   icon: "error",
+    // });
+    //return ;  
+
+
 
     const jobInfo = {
       JobID: jobData.JobID,

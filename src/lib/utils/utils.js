@@ -44,6 +44,7 @@ export async function login(prevState, formData) {
       }),
     }
   );
+  
   const data = await res.json();
   if (data.status === 200) {
     cookies().set("token", data.token, {

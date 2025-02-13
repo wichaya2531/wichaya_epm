@@ -450,7 +450,8 @@ const JobForm = ({
             htmlFor="text-input"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
           >
-            WD Tag / Machine ID
+            {/* WD Tag / Machine ID */}
+            {process.env.NEXT_PUBLIC_LABEL_WD_TAG}
           </label>
           {view ? (
             <input
@@ -490,7 +491,8 @@ const JobForm = ({
             htmlFor="text-input"
             className="text-sm ipadmini:text-md font-bold text-gray-600"
           >
-            Machine Name
+            {/* Machine Name */}
+            {process.env.NEXT_PUBLIC_LABEL_MACHINE_NAME}
           </label>
           {view ? (
             jobData.MachineName ? (
