@@ -31,9 +31,8 @@ const enabledFunction = {
 };
 
 const Page = ({ searchParams }) => {
-  
   const [itemPicture, setItemPicture] = useState(null);
-
+  const [uploadMode, setUploadMode] = useState("resize");
   const jobTemplate_id = searchParams.jobTemplate_id;
   const [refresh, setRefresh] = useState(false);
   const { jobItemTemplates, isLoading: jobItemTemplatesLoading } =
@@ -48,17 +47,19 @@ const Page = ({ searchParams }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [previewPictureItem, setPreviewPictureItem] = useState("/assets/images/image.png");
+  const [previewPictureItem, setPreviewPictureItem] = useState(
+    "/assets/images/image.png"
+  );
 
   const onDrop = async (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-       //console.log("file seledcted by drop ",file);
-       const filePath = await uploadJobPictureToServer(file);
-       //console.log("filePath",filePath);
-       setPreviewPictureItem('/api/viewItem-template?imgName='+filePath);       
-       setSelectedFile(true);
-       setItemPicture(filePath);
+      //console.log("file seledcted by drop ",file);
+      const filePath = await uploadJobPictureToServer(file);
+      //console.log("filePath",filePath);
+      setPreviewPictureItem("/api/viewItem-template?imgName=" + filePath);
+      setSelectedFile(true);
+      setItemPicture(filePath);
     }
   };
 
@@ -72,9 +73,8 @@ const Page = ({ searchParams }) => {
     if (file) {
       // อัปโหลดไฟล์และรอผลลัพธ์
       const filePath = await uploadJobPictureToServer(file);
-      console.log("filePath",filePath);
-     
-      setPreviewPictureItem('/api/viewItem-template?imgName='+filePath); 
+      console.log("filePath", filePath);
+      setPreviewPictureItem("/api/viewItem-template?imgName=" + filePath);
       setSelectedFile(true);
       setItemPicture(filePath);
     }
@@ -89,8 +89,14 @@ const Page = ({ searchParams }) => {
     formData.append("file", inputFile);
     formData.append("JOB_Template_ID", jobTemplate_id);
 
+    // เลือก URL ตามโหมดการอัปโหลด
+    const url =
+      uploadMode === "resize"
+        ? "/api/uploadPicture/Item-templateResize"
+        : "/api/uploadPicture/Item-template";
+
     try {
-      const res = await fetch("/api/uploadPicture/Item-template", {
+      const res = await fetch(url, {
         method: "POST",
         body: formData,
       });
@@ -493,6 +499,33 @@ const Page = ({ searchParams }) => {
         <form onSubmit={HandleSubmit} className="flex flex-col justify-center ">
           <div className="grid gap-6 mb-6 md:grid-cols-3 row-span-4">
             <div className="flex flex-col gap-4 justify-center items-center w-full row-span-4">
+              <div className="flex justify-between mb-4">
+                <div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="uploadMode"
+                      value="default"
+                      checked={uploadMode === "default"}
+                      onChange={() => setUploadMode("default")}
+                    />
+                    <span>Default</span>
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="uploadMode"
+                      value="resize"
+                      checked={uploadMode === "resize"}
+                      onChange={() => setUploadMode("resize")}
+                    />
+                    <span>Resize</span>
+                  </label>
+                </div>
+              </div>
+
               <div
                 {...getRootProps()}
                 id="fileInputDropzone"
@@ -508,12 +541,12 @@ const Page = ({ searchParams }) => {
 
                 <div className="flex flex-col justify-center items-center">
                   {selectedFile ? (
-                     <Image
+                    <Image
                       src={previewPictureItem}
                       alt="selected"
                       width={200}
                       height={200}
-                   />
+                    />
                   ) : (
                     <>
                       <Image
@@ -640,7 +673,7 @@ const Page = ({ searchParams }) => {
                 type="text"
                 id="test_method"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="test method"              
+                placeholder="test method"
                 name="test_method"
                 required
               />
