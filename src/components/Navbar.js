@@ -14,6 +14,9 @@ import useFetchUsers from "@/lib/hooks/useFetchUsers";
 import { useRouter } from "next/navigation";
 
 const Navbar = ({ menu }) => {
+
+ // console.log("*****************Navbar**************");
+
   const [refresh, setRefresh] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [user, setUser] = useState("");
@@ -100,6 +103,8 @@ const Navbar = ({ menu }) => {
         throw new Error("Failed to fetch user data");
       }
       const data = await response.json();
+      //console.log("data.user",data.user);  
+
       setUser(data.user);
     } catch (error) {
       console.error(error);
@@ -200,8 +205,8 @@ const Navbar = ({ menu }) => {
         <div className="relative">
           {/* รูปโปรไฟล์ */}
           <div onClick={toggleDropdown} className="relative">
-            <img
-              src={user.image || "/user-profile/default-user.png"}
+            <img           
+              src={   process.env.NEXT_PUBLIC_HOST+ user.image || "/user-profile/default-user.png"}
               alt="user"
               className="w-10 h-10 rounded-full border-2 border-black cursor-pointer"
             />

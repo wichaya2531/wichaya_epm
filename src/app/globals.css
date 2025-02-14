@@ -13,3 +13,18 @@
     }
   }
   
+.panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+.panel.open {
+    max-height: 500px; /* กำหนดความสูงพอประมาณ */
+}
+.hidden {
+  display: none;
+}
+
+.show {
+  display: flex;
+}
