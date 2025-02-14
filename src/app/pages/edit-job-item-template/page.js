@@ -13,19 +13,17 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import ClearIcon from "@mui/icons-material/Clear";
 
 const Page = ({ searchParams }) => {
+  const [uploadMode, setUploadMode] = useState("resize");
   const jobTemplate_id = searchParams.jobTemplate_id;
   const jobItemTemplate_id = searchParams.jobItemTemplate_id;
   const [refresh, setRefresh] = useState(false);
   const { jobItemTemplate, isLoading: jobItemTemplateLoading } =
-  useFetchJobItemTemplate(jobItemTemplate_id, refresh);
+    useFetchJobItemTemplate(jobItemTemplate_id, refresh);
   const { user, isLoading: userLoading } = useFetchUser(refresh);
   const { locations, isLoading: locationsLoading } =
-  useFetchTestLocations(refresh);
+    useFetchTestLocations(refresh);
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
-
-
- 
 
   const handleToShowOnClick = (item) => {
     Swal.fire({
@@ -64,8 +62,14 @@ const Page = ({ searchParams }) => {
     formData.append("file", inputFile);
     formData.append("JOB_Template_ID", jobTemplate_id);
 
+    // เลือก URL ตามโหมดการอัปโหลด
+    const url =
+      uploadMode === "resize"
+        ? "/api/uploadPicture/Item-templateResize"
+        : "/api/uploadPicture/Item-template";
+
     try {
-      const res = await fetch("/api/uploadPicture/Item-template", {
+      const res = await fetch(url, {
         method: "POST",
         body: formData,
       });
@@ -105,9 +109,8 @@ const Page = ({ searchParams }) => {
       upper_spec: form.get("upper_spec"),
       lower_spec: form.get("lower_spec"),
       test_method: form.get("test_method"),
-      
-      test_location: '667b915a596b4d721ec60c40',  //TEST_LOCATION_ID: '667b915a596b4d721ec60c40'
-      
+
+      test_location: "667b915a596b4d721ec60c40", //TEST_LOCATION_ID: '667b915a596b4d721ec60c40'
     };
     // เพิ่มการจัดเก็บ filePath ที่ได้จากการอัปโหลด
     if (selectedFile) {
@@ -302,6 +305,34 @@ const Page = ({ searchParams }) => {
               >
                 Image
               </label>
+              <div className="flex justify-evenly space-x-4 mb-2">
+                <div>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg ${
+                      uploadMode === "resize"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => setUploadMode("resize")}
+                  >
+                    Resize
+                  </button>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg ${
+                      uploadMode === "default"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => setUploadMode("default")}
+                  >
+                    Default
+                  </button>
+                </div>
+              </div>
               <div className="flex justify-center mb-4">
                 <img
                   src={
