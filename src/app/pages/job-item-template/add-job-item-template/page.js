@@ -499,30 +499,32 @@ const Page = ({ searchParams }) => {
         <form onSubmit={HandleSubmit} className="flex flex-col justify-center ">
           <div className="grid gap-6 mb-6 md:grid-cols-3 row-span-4">
             <div className="flex flex-col gap-4 justify-center items-center w-full row-span-4">
-              <div className="flex justify-between mb-4">
+              <div className="flex justify-between space-x-4">
                 <div>
-                  <label>
-                    <input
-                      type="radio"
-                      name="uploadMode"
-                      value="default"
-                      checked={uploadMode === "default"}
-                      onChange={() => setUploadMode("default")}
-                    />
-                    <span>Default</span>
-                  </label>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg ${
+                      uploadMode === "resize"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => setUploadMode("resize")}
+                  >
+                    Resize
+                  </button>
                 </div>
                 <div>
-                  <label>
-                    <input
-                      type="radio"
-                      name="uploadMode"
-                      value="resize"
-                      checked={uploadMode === "resize"}
-                      onChange={() => setUploadMode("resize")}
-                    />
-                    <span>Resize</span>
-                  </label>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-lg ${
+                      uploadMode === "default"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => setUploadMode("default")}
+                  >
+                    Default
+                  </button>
                 </div>
               </div>
 
