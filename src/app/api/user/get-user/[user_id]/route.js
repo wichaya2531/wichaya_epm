@@ -4,6 +4,7 @@ import { Workgroup } from "@/lib/models/Workgroup";
 import { RoleHasAction } from "@/lib/models/RoleHasAction";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import mongoose from "mongoose";
+import { Password } from "@mui/icons-material";
 export const dynamic = "force-dynamic";
 export const GET = async (req, { params }) => {
   await connectToDb();
@@ -86,10 +87,11 @@ export const GET = async (req, { params }) => {
     let data = {
       _id: user._id,
       username: user.USERNAME,
+      pw:user.PASSWORD,
       emp_number: user.EMP_NUMBER,
       email: user.EMAIL,
-      name: user.EMP_NAME,
-      role: userData[0].role || "No role",
+      name: user.EMP_NAME,      
+      role: userData[0].role || "No role",      
       team: user.TEAM,
       workgroup: workgroupName,
       workgroup_id: workgroupId,
