@@ -55,10 +55,10 @@ export const GET = async (req, paramress) => {
         } catch (error) {
           console.error("Error fetching workgroup:", error);
         }
-
         return {
           _id: user._id,
           username: user.USERNAME,
+          password: user.PASSWORD,
           emp_number: user.EMP_NUMBER,
           email: user.EMAIL,
           name: user.EMP_NAME,
@@ -68,7 +68,6 @@ export const GET = async (req, paramress) => {
         };
       })
     );
-
     return NextResponse.json({ status: 200, users: data });
   } catch (err) {
     return NextResponse.json({

@@ -14,8 +14,7 @@ import useFetchUsers from "@/lib/hooks/useFetchUsers";
 import { useRouter } from "next/navigation";
 
 const Navbar = ({ menu }) => {
-
- // console.log("*****************Navbar**************");
+  // console.log("*****************Navbar**************");
 
   const [refresh, setRefresh] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -66,16 +65,19 @@ const Navbar = ({ menu }) => {
   }, [user, users]);
 
   const handleUserSelection = (e) => {
-    //console.log("...handleUserSelection...");
     const userId = e.target.value;
     setSelectedUserId(userId);
 
-    // ค้นหาผู้ใช้ที่เลือกและเก็บไว้ใน selectedUser
     const selectedUser = users.find((u) => u._id === userId);
-    //console.log("selectedUser",selectedUser); 
-    setSelectedUser(selectedUser);
-    //setPassword(selectedUser.pw);
-    setIsOpen(true);
+    if (selectedUser) {
+      setSelectedUser(selectedUser);
+      setUsername(selectedUser.username);
+      setPassword(selectedUser.password);
+      // ทำการ submit ฟอร์มโดยอัตโนมัติ
+      setTimeout(() => {
+        document.getElementById("loginForm")?.requestSubmit();
+      }, 100);
+    }
   };
 
   useEffect(() => {
@@ -101,17 +103,17 @@ const Navbar = ({ menu }) => {
 
   const fetchUser = async (user_id) => {
     try {
-      const response = await fetch(`/api/user/get-user/${user_id}`, {        
+      const response = await fetch(`/api/user/get-user/${user_id}`, {
         next: { revalidate: 10 },
       });
 
       //console.log("response",response);
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch user data");
       }
       const data = await response.json();
-      console.log("data.user",data.user);  
+      console.log("data.user", data.user);
 
       setUser(data.user);
     } catch (error) {
@@ -213,8 +215,11 @@ const Navbar = ({ menu }) => {
         <div className="relative">
           {/* รูปโปรไฟล์ */}
           <div onClick={toggleDropdown} className="relative">
-            <img           
-              src={   process.env.NEXT_PUBLIC_HOST+ user.image || "/user-profile/default-user.png"}
+            <img
+              src={
+                process.env.NEXT_PUBLIC_HOST + user.image ||
+                "/user-profile/default-user.png"
+              }
               alt="user"
               className="w-10 h-10 rounded-full border-2 border-black cursor-pointer"
             />
@@ -244,7 +249,11 @@ const Navbar = ({ menu }) => {
                 <h2 className="text-xl mb-4 flex justify-center items-center">
                   User Login
                 </h2>
-                <form action={formAction} className="flex flex-col">
+                <form
+                  id="loginForm"
+                  action={formAction}
+                  className="flex flex-col"
+                >
                   <input
                     type="text"
                     className="w-full p-3 rounded-md border mb-3"
@@ -258,7 +267,7 @@ const Navbar = ({ menu }) => {
                     type={showPassword ? "text" : "password"}
                     className="w-full p-3 rounded-md border mb-3"
                     name="password"
-                    //value={password}
+                    value={password}
                     placeholder="Password"
                     autoComplete="current-password"
                   />
