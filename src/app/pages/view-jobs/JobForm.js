@@ -5,8 +5,8 @@ import InfoIcon from "@mui/icons-material/Info";
 import Select from "react-select";
 import { useState } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import TripOriginIcon from "@mui/icons-material/TripOrigin";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { blue } from "@mui/material/colors";
@@ -54,24 +54,6 @@ const JobForm = ({
       fileInput.click();
     } catch (error) {}
   };
-
-  
-
-  
-const handleSwitchUploadImg = (item) => {
-    //console.log("item",item);
-    var tr=document.getElementById('panel-to-upload-img-'+item.JobItemID);
-
-    if (tr.style.display=='none') {
-            tr.style.display='block';
-            document.getElementById('control-switch-'+item.JobItemID).style.transform='scale(0.8)';
-    }else{
-        tr.style.display='none';            
-        document.getElementById('control-switch-'+item.JobItemID).style.transform='scale(1.0)';
-      }
-
-  };
-
 
   const handleUploadFileToJobItemResize = (item) => {
     jobItemSelected = item;
@@ -236,7 +218,6 @@ const handleSwitchUploadImg = (item) => {
   };
 
   return (
-    
     <form
       className="flex flex-col gap-8 p-4 bg-white rounded-xl"
       onSubmit={handleSubmit}
@@ -882,46 +863,32 @@ const handleSwitchUploadImg = (item) => {
                         alt="Preview"
                       />
                     </center>
-
-                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
                     {view === false && (
-
-                              <div className="flex flex-col items-center gap-4" >
-                              {/* แถวบน: ปุ่ม Resize และ Original Size */}
-                              <div className="flex items-center gap-4" id={"panel-to-upload-img-"+item.JobItemID} style={{display:'none',border:'1px solid none',width:'10em'}}>
-                                <div style={{display:'inline-block',width:'4em',border:'1px solid none'}}>
-                                    <CameraAltIcon
-                                      className="text-blue-600 size-10 cursor-pointer transform scale-120"
-                                      onClick={() => handleUploadFileToJobItemResize(item)}
-                                    />
-                                    <hr></hr>
-                                    <span className="text-sm text-gray-500">resize</span>
-                                </div>
-                                
-
-                                <div style={{display:'inline-block',width:'4em',border:'1px solid none'}}>
-                                    <CameraAltIcon
-                                        className="text-blue-600 size-10 cursor-pointer transform scale-120"
-                                        onClick={() => handleUploadFileToJobItem(item)}                                    
-                                      />
-                                    <hr></hr>
-                                    <span className="text-sm text-gray-500">original</span>
-                                </div>
-
-                                
-                              </div>
-
-                              {/* แถวล่าง: ปุ่ม Upload */}
-                              <div className="flex flex-col items-center" id={'control-switch-'+item.JobItemID}>
-                                <CloudUploadIcon
-                                  className="text-lime-600 size-10 cursor-pointer transform scale-150"
-                                  onClick={() => handleSwitchUploadImg(item)}
-                                />
-                                <></>
-                                <span className="text-sm text-gray-500">Upload Img*</span>
-                              </div>
-                              </div>
-                  
+                      <div className="relative">
+                        <div className="flex flex-grow justify-center items-center">
+                          <CameraAltIcon
+                            style={{
+                              width: "60px",
+                              height: "60px",
+                              color: "#1E40AF",
+                            }}
+                            className="cursor-pointer"
+                            onClick={() =>
+                              handleUploadFileToJobItemResize(item)
+                            }
+                          />
+                        </div>
+                        <div className="flex justify-end items-end w-full">
+                          <TripOriginIcon
+                            style={{
+                              width: "20px",
+                              height: "20px",
+                            }}
+                            className="cursor-pointer"
+                            onClick={() => handleUploadFileToJobItem(item)}
+                          />
+                        </div>
+                      </div>
                     )}
                   </td>
                 </tr>
