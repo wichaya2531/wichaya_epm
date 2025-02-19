@@ -12,6 +12,7 @@ const scheduleSchema = new mongoose.Schema(
     JOB_TEMPLATE_NAME: { type: String, required: true },
     ACTIVATE_DATE: { type: Date, required: true },
     // ACTIVATE_TIME: { type: String, required: false },
+    LINE_NAME: { type: String, required: true },
     DOC_NUMBER: { type: String, required: true },
     STATUS: { type: String, default: "plan" },
     WORKGROUP_ID: {

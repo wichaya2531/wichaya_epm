@@ -15,7 +15,7 @@
 // }, { timestamps: true });
 
 // export const JobTemplateActivate = mongoose.models?.JobTemplateActivate || mongoose.model("JobTemplateActivate", JobTemplateActivateSchema)
-import { NextResponse } from 'next/server.js';
+import { NextResponse } from "next/server.js";
 import { JobTemplateActivate } from "@/lib/models/AE/JobTemplateActivate";
 import { JobItemTemplateActivate } from "@/lib/models/AE/JobItemTemplateActivate.js";
 import { Approves } from "@/lib/models/Approves.js";
@@ -37,95 +37,130 @@ import { Schedule } from "@/lib/models/Schedule.js";
 // export const Schedule = mongoose.models?.Schedule || mongoose.model('Schedule', scheduleSchema);
 
 function formatDateToString(dateObj) {
-    if (!(dateObj instanceof Date) || isNaN(dateObj)) return "Invalid Date";
+  if (!(dateObj instanceof Date) || isNaN(dateObj)) return "Invalid Date";
 
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // เดือนเริ่มที่ 0 ต้องบวก 1
-    const day = String(dateObj.getDate()).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // เดือนเริ่มที่ 0 ต้องบวก 1
+  const day = String(dateObj.getDate()).padStart(2, "0");
 
-    return `${year}-${month}-${day}`;
+  return `${year}-${month}-${day}`;
 }
 
-
 export const POST = async (req, res) => {
+  console.log("************use job planning******************");
 
+  await connectToDb();
+  const body = await req.json();
 
-    console.log("************use job planning******************");
+  const {
+    activationDate,
+    activationTime,
+    recurrence,
+    jobTemplateID,
+    jobTemplateCreateID,
+    ACTIVATER_ID,
+    LINE_NAME,
+    endDate,
+  } = body;
 
-    await connectToDb();
-    const body = await req.json();
+  console.log("Extracted LINE_NAME:", LINE_NAME);
 
-    const {
-        activationDate,
-        activationTime,
-        recurrence,
-        jobTemplateID,
-        jobTemplateCreateID,
-        ACTIVATER_ID,
-        endDate,
-    } = body;
-
-    try {
-        const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
-        if (!jobTemplate) {
-            return NextResponse.json({ status: 404, file: __filename, error: "Job template not found" });
-        }
-
-        // Calculate the end date based on the recurrence type
-        
-        let startDateActive=new Date(formatDateToString(new Date())+"T"+activationTime);
-        startDateActive.setHours(startDateActive.getHours() + parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10) );
-        
-        if (recurrence==="weekly" || recurrence=="monthly" || recurrence === 'yearly') {
-            /*let*/
-            startDateActive=new Date(formatDateToString(new Date(activationDate))+"T"+activationTime);
-            startDateActive.setHours(startDateActive.getHours() + parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10));
-        }
-        let endDateActive=new Date( formatDateToString(new Date( endDate ))+"T"+activationTime );
-        endDateActive.setHours(endDateActive.getHours() + parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10));
-
-          //console.log("activationDate",activationDate);
-          //console.log("activationTime",activationTime);
-       
-          //console.log("startDateActive",startDateActive);
-          //console.log("endDateActive",endDateActive);        
-          //console.log("********************************");
-
-        let rolling_Datetime = startDateActive;
-        while (rolling_Datetime <= endDateActive) {
-            // Create a new job
-            //console.log("สร้าง  Schedual :",rolling_Datetime);
-            const AdvanceActivationDate = new Date(rolling_Datetime);
-            AdvanceActivationDate.setHours(AdvanceActivationDate.getHours() - parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10));
-            const schedule = new Schedule({
-                JOB_TEMPLATE_ID: jobTemplateID,
-                JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
-                JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
-                ACTIVATE_DATE: AdvanceActivationDate,
-                // ACTIVATE_TIME: activationTime,
-                DOC_NUMBER: jobTemplate.DOC_NUMBER,
-                WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
-            });
-            await schedule.save();
-
-            // Increment currentDate based on the recurrence type
-            if (recurrence === 'daily') {
-                rolling_Datetime.setDate(rolling_Datetime.getDate() + 1); // Add one day for daily recurrence
-            } else if (recurrence === 'weekly') {
-                rolling_Datetime.setDate(rolling_Datetime.getDate() + 7); // Add seven days for weekly recurrence
-            } else if (recurrence === 'monthly') {
-                rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 1); // Add one month for monthly recurrence
-            } else if (recurrence === 'yearly') {
-                rolling_Datetime.setFullYear(rolling_Datetime.getFullYear() + 1); // Add one year for yearly recurrence
-            } else {
-                break; // If recurrence type is not specified or invalid, exit the loop
-            }
-        }
-
-
-        return NextResponse.json({ status: 200, message: 'Jobs activated successfully' });
-    } catch (err) {
-        console.log("Error",err)
-        return NextResponse.json({ status: 500, file: __filename, error: err.message });
+  try {
+    const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
+    if (!jobTemplate) {
+      return NextResponse.json({
+        status: 404,
+        file: __filename,
+        error: "Job template not found",
+      });
     }
+
+    // Calculate the end date based on the recurrence type
+
+    let startDateActive = new Date(
+      formatDateToString(new Date()) + "T" + activationTime
+    );
+    startDateActive.setHours(
+      startDateActive.getHours() +
+        parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
+    );
+
+    if (
+      recurrence === "weekly" ||
+      recurrence == "monthly" ||
+      recurrence === "yearly"
+    ) {
+      /*let*/
+      startDateActive = new Date(
+        formatDateToString(new Date(activationDate)) + "T" + activationTime
+      );
+      startDateActive.setHours(
+        startDateActive.getHours() +
+          parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
+      );
+    }
+    let endDateActive = new Date(
+      formatDateToString(new Date(endDate)) + "T" + activationTime
+    );
+    endDateActive.setHours(
+      endDateActive.getHours() +
+        parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
+    );
+
+    //console.log("activationDate",activationDate);
+    //console.log("activationTime",activationTime);
+
+    //console.log("startDateActive",startDateActive);
+    //console.log("endDateActive",endDateActive);
+    //console.log("********************************");
+
+    let rolling_Datetime = startDateActive;
+    while (rolling_Datetime <= endDateActive) {
+      // Create a new job
+      //console.log("สร้าง  Schedual :",rolling_Datetime);
+      const AdvanceActivationDate = new Date(rolling_Datetime);
+      AdvanceActivationDate.setHours(
+        AdvanceActivationDate.getHours() -
+          parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
+      );
+      const schedule = new Schedule({
+        JOB_TEMPLATE_ID: jobTemplateID,
+        JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
+        JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
+        ACTIVATE_DATE: AdvanceActivationDate,
+        LINE_NAME: LINE_NAME,
+        // ACTIVATE_TIME: activationTime,
+        DOC_NUMBER: jobTemplate.DOC_NUMBER,
+        WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
+      });
+
+      console.log("Saving Schedule:", schedule);
+      await schedule.save();
+
+      // Increment currentDate based on the recurrence type
+      if (recurrence === "daily") {
+        rolling_Datetime.setDate(rolling_Datetime.getDate() + 1); // Add one day for daily recurrence
+      } else if (recurrence === "weekly") {
+        rolling_Datetime.setDate(rolling_Datetime.getDate() + 7); // Add seven days for weekly recurrence
+      } else if (recurrence === "monthly") {
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 1); // Add one month for monthly recurrence
+      } else if (recurrence === "yearly") {
+        rolling_Datetime.setFullYear(rolling_Datetime.getFullYear() + 1); // Add one year for yearly recurrence
+      } else {
+        break; // If recurrence type is not specified or invalid, exit the loop
+      }
+    }
+
+    return NextResponse.json({
+      status: 200,
+      message: "Jobs activated successfully",
+    });
+  } catch (err) {
+    console.log("Error", err);
+    return NextResponse.json({
+      status: 500,
+      file: __filename,
+      error: err.message,
+    });
+  }
 };

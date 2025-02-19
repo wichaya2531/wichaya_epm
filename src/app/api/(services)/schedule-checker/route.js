@@ -22,7 +22,6 @@ import { User } from "@/lib/models/User.js";
 import { sendEmailsOverdude } from "@/lib/utils/sendemailoverdude";
 //import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 
-
 async function getEmailfromUserID(userID) {
   try {
     const user = await User.findOne({ _id: new ObjectId(userID) });
@@ -32,7 +31,6 @@ async function getEmailfromUserID(userID) {
     return null;
   }
 }
-
 
 // async function getOverdueList(jobs) {
 //    console.log("jobs",jobs);
@@ -48,9 +46,6 @@ async function getEmailfromUserID(userID) {
 //     //console.log("Overdue Jobs Job",jobs);
 
 // }
-
-
-
 
 const convertTimeout = async (timeout, createdAt) => {
   const startDate = new Date(createdAt);
@@ -118,9 +113,9 @@ export const POST = async (req, res) => {
         if (job.LINE_NAME === undefined) {
           job.LINE_NAME = "Unknown";
         }
-        //    getOverdueList(job);       
+        //    getOverdueList(job);
         //console.log("Notify Overdue List : ",job.OVERDUE_NOTIFYS);
-        let overdueEmailList=[];
+        let overdueEmailList = [];
         if (job.OVERDUE_NOTIFYS && Array.isArray(job.OVERDUE_NOTIFYS)) {
           for (const overdueListId of job.OVERDUE_NOTIFYS) {
             const email = await getEmailfromUserID(overdueListId); // ใช้ getEmailfromUserID ดึงอีเมล
@@ -129,7 +124,7 @@ export const POST = async (req, res) => {
             }
           }
         }
-        
+
         //console.log("overdueEmailList",overdueEmailList);
 
         //return NextResponse.json({ status: 200 });
@@ -159,9 +154,9 @@ export const POST = async (req, res) => {
         // ตรวจสอบว่า emailList มีข้อมูลหรือไม่
         if (overdueEmailList.length > 0) {
           //emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
-            console.log("OVERDUE send emailList to=>", overdueEmailList); // แสดง emailList ที่จะส่ง
-             // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
-             await sendEmailsOverdude(overdueEmailList, job); // ฟังก์ชันการส่งอีเมล
+          console.log("OVERDUE send emailList to=>", overdueEmailList); // แสดง emailList ที่จะส่ง
+          // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
+          await sendEmailsOverdude(overdueEmailList, job); // ฟังก์ชันการส่งอีเมล
         } else {
           console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
         }
@@ -208,20 +203,19 @@ export const POST = async (req, res) => {
     const now = new Date(); // เวลาปัจจุบัน
     const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
     startTime.setMinutes(now.getMinutes() - 60); // ลบ 60 นาที
-    
+
     const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
     endTime.setMinutes(now.getMinutes() + 60); // เพิ่ม 60 นาที
-    
+
     const scheduler = await Schedule.find({
       ACTIVATE_DATE: {
         $gte: startTime, // เวลาที่มากกว่าหรือเท่ากับ startTime (60 นาทีก่อนหน้า)
-        $lte: endTime,   // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
+        $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
       },
     });
-    
-    //console.log("scheduler=>", scheduler);
-    //return NextResponse.json({ status: 200 });   
 
+    //console.log("scheduler=>", scheduler);
+    //return NextResponse.json({ status: 200 });
 
     scheduler.map(async (schedulers) => {
       //console.log("scheduler=>",scheduler);
@@ -274,8 +268,8 @@ export const POST = async (req, res) => {
           ACTIVATE_USER: schedulers._id,
           JOB_APPROVERS: approvers.map((approverss) => approverss.USER_ID),
           TIMEOUT: jobTemplate.TIMEOUT,
-          LINE_NAME: jobTemplate.LINE_NAME,
-          PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false
+          LINE_NAME: schedulers.LINE_NAME,
+          PICTURE_EVEDENT_REQUIRE: jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
         });
 
         await job.save();
