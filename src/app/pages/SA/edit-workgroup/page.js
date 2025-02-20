@@ -43,6 +43,7 @@ const Page = ({searchParams}) => {
       const response = await fetch(
         `/api/workgroup/get-users-from-workgroup/${workgroup_id}`, { next: { revalidate: 10 } }
       );
+      console.log("fetchUsersWorkgroup response",response); 
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -59,6 +60,9 @@ const Page = ({searchParams}) => {
       const response = await fetch(
         `/api/user/get-users`, { next: { revalidate: 10 } }
       );
+
+      console.log("fetchUsers response",response);  
+
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -102,27 +106,32 @@ const Page = ({searchParams}) => {
     setRefresh(!refresh);
   }
 
-  const dataUsersWorkgroup = usersWorkgroup.map((user, index) => ({
-    id: index + 1,
-    EMP_number: user.emp_number,
-    Email: user.email,
-    Name: user.name,
-    Role: user.role,
-    action: [
-      <span className="pl-4">
-        <button
-          onClick={() => handleDelete(user._id)}
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Remove
-        </button>
-      </span>,
-    ],
-  }));
+
+
+  const dataUsersWorkgroup = Array.isArray(usersWorkgroup)
+  ? usersWorkgroup.map((user, index) => ({
+      id: index + 1,
+      EMP_number: user.emp_number,
+      Email: user.email,
+      Name: user.name,
+      Role: user.role,
+      action: [
+        <span className="pl-4">
+          <button
+            onClick={() => handleDelete(user._id)}
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Remove
+          </button>
+        </span>,
+      ],
+    }))
+  : [];
+
 
   
-  const dataUsers = users
-  .filter(user => !usersWorkgroup.some(u => u._id === user._id)) // Filter out users already in the UsersWorkgroup
+  const dataUsers = (Array.isArray(users) ? users : [])
+  .filter(user => Array.isArray(usersWorkgroup) && !usersWorkgroup.some(u => u._id === user._id))
   .map((user, index) => ({
     id: index + 1,
     EMP_number: user.emp_number,
@@ -130,7 +139,7 @@ const Page = ({searchParams}) => {
     Name: user.name,
     Role: user.role,
     action: [
-      <span className="pl-4">
+      <span className="pl-4" key={user._id}>
         <button
           onClick={() => handleAdd(user._id)}
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
@@ -140,16 +149,7 @@ const Page = ({searchParams}) => {
       </span>,
     ],
   }));
-  
-  const nameEditField = edit ? (
-    <input
-      type="text"
-      value={workgroup.name}
-      onChange={(e) => setWorkgroup({ ...workgroup, name: e.target.value })}
-    />
-  ) : (
-    <span>{workgroup.name}</span>
-  );
+
 
   return (
     <SALayout className="w-full h-screen flex flex-col gap-4 items-center justify-start font-sans">

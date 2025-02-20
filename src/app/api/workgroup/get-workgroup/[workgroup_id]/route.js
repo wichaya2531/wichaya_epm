@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 import { connectToDb } from "@/app/api/mongo/index.js";
 export const dynamic = 'force-dynamic';
 export const GET = async (req, {params}) => {
+
+   //console.log("Get get-workgroup***");  
     await connectToDb();
     const { workgroup_id } = params;
     try {
@@ -17,6 +19,9 @@ export const GET = async (req, {params}) => {
             _id: workgroup._id,
             name: workgroup.WORKGROUP_NAME,
         }
+        
+       // console.log("data",data);
+
         return NextResponse.json({ status: 200, workgroup:data });
     } catch (err) {
         return NextResponse.json({ status: 500, file: __filename, error: err.message });

@@ -118,7 +118,7 @@ const JobsTable = ({ refresh }) => {
     }
   };
 
-   console.log("jobs.=>", jobs);
+   //console.log("jobs.=>", jobs);
   const filteredJobs =
     jobs &&
     jobs.filter((job) => {

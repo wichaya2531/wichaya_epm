@@ -21,7 +21,7 @@ const useFetchJobs = (refresh = null) => {
           { next: { revalidate: 10 } }
         );
         const data = await response.json();
-        console.log("/api/job/get-jobs-from-workgroup",data);
+       // console.log("/api/job/get-jobs-from-workgroup",data);
         //console.log("Data from await..");
         if (data.status === 200) {
           setJobs(data.jobs);

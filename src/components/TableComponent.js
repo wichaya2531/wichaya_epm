@@ -108,18 +108,30 @@ const TableComponent = ({
   };
 
   const setRowsVisible = (rows) => {
-    document.cookie = `rows=${rows}; path=/; max-age=31536000`; // 1 year
+      try{
+        document.cookie = `rows=${rows}; path=/; max-age=31536000`; // 1 year
+      }catch(err){} 
+       
+  
   };
 
   const getRowsVisible = () => {
-    const cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.startsWith("rows=")) {
-        return cookie.substring(5, cookie.length);
+    try {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith("rows=")) {
+          return cookie.substring(5, cookie.length);
+        }
       }
+    } catch (error) {
+      
     }
+      
+    
+    
     return 5;
+
   };
 
   return (
