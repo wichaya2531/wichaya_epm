@@ -4,6 +4,7 @@ import { config } from "@/config/config.js";
 import useFetchUser from "./useFetchUser";
 
 const useFetchJobs = (refresh = null) => {
+  //console.log("*****call useFetch job****");
   const { user, isLoading: userLoading, error: userError } = useFetchUser();
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +21,7 @@ const useFetchJobs = (refresh = null) => {
           { next: { revalidate: 10 } }
         );
         const data = await response.json();
-        //console.log(" ",data);
+        console.log("/api/job/get-jobs-from-workgroup",data);
         //console.log("Data from await..");
         if (data.status === 200) {
           setJobs(data.jobs);

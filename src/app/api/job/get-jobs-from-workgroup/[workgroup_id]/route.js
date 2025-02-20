@@ -40,19 +40,24 @@ export const GET = async (req, { params }) => {
     });
 
     const schedulePromises = schedules.map(async (schedule) => {
+      //console.log("schedule",schedule);
       const status = await Status.findOne({ status_name: schedule.STATUS });
       const statusColor = status?.color || "Unknown";
 
       const LineName = await JobTemplate.findOne({
         JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
       });
+
+    
+
       const Line_Name = LineName?.LINE_NAME || "Unknown";
+      //console.log("XXXX----XXXX",LineName);
       return {
         _id: schedule.JOB_TEMPLATE_ID,
         REVIEWS: "",
         WD_TAG: "",
         JOB_STATUS_ID: "",
-        LINE_NAME: Line_Name,
+        LINE_NAME: schedule.LINE_NAME,
         JOB_APPROVERS: [],
         JOB_NAME: schedule.JOB_TEMPLATE_NAME,
         DOC_NUMBER: schedule.DOC_NUMBER,

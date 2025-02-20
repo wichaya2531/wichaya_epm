@@ -113,7 +113,7 @@ const Navbar = ({ menu }) => {
         throw new Error("Failed to fetch user data");
       }
       const data = await response.json();
-      console.log("data.user", data.user);
+      //console.log("data.user", data.user);
 
       setUser(data.user);
     } catch (error) {

@@ -109,7 +109,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       LINE_NAME: selectedLineName,
     };
 
-    console.log("Request Data:", requestData);
+    //console.log("Request Data:", requestData);
 
     //if date not selected then return error
     if (!nextDate) {

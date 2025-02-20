@@ -112,7 +112,7 @@ export const POST = async (req, res) => {
 
     //console.log("startDateActive",startDateActive);
     //console.log("endDateActive",endDateActive);
-    //console.log("********************************");
+    //console.log("***********Active Job Template Plan********");
 
     let rolling_Datetime = startDateActive;
     while (rolling_Datetime <= endDateActive) {

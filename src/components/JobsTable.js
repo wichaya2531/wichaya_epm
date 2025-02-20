@@ -44,7 +44,7 @@ const statusOptions = [
 
 const JobsTable = ({ refresh }) => {
   const router = useRouter();
-  //console.log("use JibsTable");
+  //console.log("****use JibsTable****");
   //console.log("JobsTable=>",refresh);
   //console.log(refresh);
   const { user, isLoading: userLoading } = useFetchUser(refresh);
@@ -118,7 +118,7 @@ const JobsTable = ({ refresh }) => {
     }
   };
 
-  // console.log("jobs=>", jobs);
+   console.log("jobs.=>", jobs);
   const filteredJobs =
     jobs &&
     jobs.filter((job) => {
