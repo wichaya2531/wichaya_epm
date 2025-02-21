@@ -7,12 +7,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { config } from "@/config/config";
 import Image from "next/image";
+import useFetchWorkgroupss from "@/lib/hooks/useFetchWorkgroupss";
 
 export default function RegisterForm() {
-
-
   const router = useRouter();
-
+  const [selectedWorkgroup, setSelectedWorkgroup] = useState("");
+  const { workgroups, loading, error } = useFetchWorkgroupss();
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
   const handleSubmit = async (e) => {
@@ -24,6 +24,7 @@ export default function RegisterForm() {
     const username = e.target.username.value;
     const password = e.target.password.value;
     const confirmPassword = e.target.confirm_password.value;
+    const workgroup_id = e.target.workgroup.value;
 
     if (password !== confirmPassword) {
       Swal.fire({
@@ -47,6 +48,7 @@ export default function RegisterForm() {
         username: username,
         password: password,
         team: team,
+        workgroup_id: workgroup_id,
       }),
     });
 
@@ -147,7 +149,26 @@ export default function RegisterForm() {
               </select>
             </div>
           </div>
-
+          <div className="mb-4">
+            <label
+              htmlFor="workgroup"
+              className="block mb-1 text-sm font-medium text-black"
+            >
+              Workgroup
+            </label>
+            <select
+              name="workgroup"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              required
+            >
+              <option value="">Select a Workgroup</option>
+              {workgroups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="mb-4">
             <label
               htmlFor="full_name"
