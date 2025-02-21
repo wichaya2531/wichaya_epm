@@ -58,31 +58,48 @@ export const POST = async (req, res) => {
     workgroup.USER_LIST.push(new_user._id);
     await workgroup.save();
 
-    // ตรวจสอบว่ามีการเปิดการแจ้งเตือนหรือไม่
+    // ตรวจสอบว่าเปิดการแจ้งเตือนผู้ใช้ใหม่หรือไม่
     if (process.env.NEXT_PUBLIC_NOTIFY_NEW_USER === "true") {
-      // ค้นหาผู้ใช้ใน Workgroup เดียวกันที่มี ROLE เป็น Admin
+      // ค้นหาว่ามี workgroup_id นี้ในฐานข้อมูล Workgroup
+      console.log("Searching for workgroup with workgroup_id:", workgroup_id); // เพิ่มการตรวจสอบ workgroup_id
+      const workgroup = await Workgroup.findById(workgroup_id);
+
+      if (!workgroup) {
+        console.log("Workgroup not found");
+        return;
+      }
+
+      // ค้นหาผู้ใช้ที่มี workgroup_id เดียวกันจาก USER_LIST ของ Workgroup
+      const userIdsInWorkgroup = workgroup.USER_LIST;
+      console.log("Users in this workgroup:", userIdsInWorkgroup);
+
+      // ค้นหาผู้ใช้ที่มี ROLE เป็น Admin ใน Workgroup เดียวกัน
       const admins = await User.find({
-        workgroup_id,
+        _id: { $in: userIdsInWorkgroup }, // ค้นหาผู้ใช้ที่มี user_id ใน USER_LIST
         ROLE: "662884f794ded7042143d843", // Admin role
       });
 
-      // แสดงข้อมูล Admin ที่จะได้รับการแจ้งเตือน
-      console.log("Admin users found:", admins);
+      console.log("Admin users found:", admins); // ตรวจสอบข้อมูลผู้ใช้ Admin
 
-      // ส่งอีเมลให้กับ Admin ทุกคน
-      const adminEmails = admins.map((admin) => admin.EMAIL);
-      const subject = "New User Added";
-      const text = `A new user named ${new_user.EMP_NAME} has been added to the workgroup.`;
+      if (admins.length > 0) {
+        // ดึงอีเมลของผู้ใช้ Admin ที่พบ
+        const adminEmails = admins.map((admin) => admin.EMAIL);
 
-      console.log("Sending email to admins:", adminEmails); // แสดงรายชื่อผู้รับ
+        // แสดงอีเมลที่ได้รับการแจ้งเตือนใน console
+        console.log("Admin email addresses:", adminEmails); // แสดงรายชื่อผู้รับอีเมล
 
-      // ส่งอีเมลไปยัง Admin ทุกคน
-      if (adminEmails.length > 0) {
+        // สร้างหัวข้อและเนื้อหาของอีเมล
+        const subject = "New User Added";
+        const text = `A new user named ${new_user.EMP_NAME} has been added to the workgroup.`;
+
+        // ส่งอีเมลแจ้งเตือนไปยังผู้ใช้ Admin
         await sendEmail({
-          to: adminEmails.join(", "), // ส่งอีเมลไปยัง Admin ทุกคน
+          to: adminEmails.join(", "), // ส่งไปยังอีเมลทั้งหมด
           subject,
           text,
         });
+      } else {
+        console.log("No Admin users found in this workgroup.");
       }
     }
 
