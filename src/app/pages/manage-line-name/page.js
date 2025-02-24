@@ -233,9 +233,7 @@ const Page = () => {
             width={50}
             height={50}
           />
-          <h1 className="text-3xl font-bold text-slate-900">
-            Create Line Name
-          </h1>
+          <h1 className="text-3xl font-bold text-primary">Create Line Name</h1>
         </div>
         <h1 className="text-sm font-bold text-secondary flex  items-center">
           Manage Line names and their lists
@@ -245,7 +243,9 @@ const Page = () => {
         className="max-w-[98vw] mx-auto my-4 p-4 bg-white rounded-xl"
         style={{ width: "100%" }}
       >
-        <h2 className="text-xl font-bold mb-4">Create Select Line Name</h2>
+        <h2 className="text-primary text-xl font-bold mb-4">
+          Create Select Line Name
+        </h2>
         <div className="mb-4 max-w-[250px] inline-block">
           <label htmlFor="lineName" className="block text-sm font-medium mb-1">
             Line name:

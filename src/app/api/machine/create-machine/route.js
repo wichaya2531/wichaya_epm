@@ -1,6 +1,5 @@
-
 import { Machine } from "../../../../lib/models/Machine.js";
-import { NextResponse } from 'next/server.js';
+import { NextResponse } from "next/server.js";
 import { connectToDb } from "@/app/api/mongo/index.js";
 /**
  * @swagger
@@ -58,27 +57,29 @@ import { connectToDb } from "@/app/api/mongo/index.js";
  */
 
 export const POST = async (req, res) => {
+  //return NextResponse.json({ status: 200, message: 'Hello' });
 
-    //return NextResponse.json({ status: 200, message: 'Hello' });
+  await connectToDb();
+  const body = await req.json();
+  const { WD_TAG, MACHINE_NAME } = body;
+  try {
+    const machine = new Machine({
+      WD_TAG,
+      MACHINE_NAME,
+    });
+    await machine.save();
 
-    await connectToDb();
-    const body = await req.json();
-    const { WD_TAG, MACHINE_NAME } = body;
-    try {
-        const machine = new Machine({
-            WD_TAG,
-            MACHINE_NAME
-        });
-        await machine.save();
+    const data = {
+      wd_tag: machine.WD_TAG,
+      name: machine.MACHINE_NAME,
+    };
 
-        const data = {
-            "wd_tag": machine.WD_TAG,
-            "name": machine.MACHINE_NAME
-        }
-
-        return NextResponse.json({ status: 200, machine });
-    } catch (error) {
-        return NextResponse.json({ status: 500, file: __filename, error: error.message });
-    }
-}
-
+    return NextResponse.json({ status: 200, machine });
+  } catch (error) {
+    return NextResponse.json({
+      status: 500,
+      file: __filename,
+      error: error.message,
+    });
+  }
+};

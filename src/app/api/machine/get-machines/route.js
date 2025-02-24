@@ -1,6 +1,5 @@
-
 import { Machine } from "../../../../lib/models/Machine.js";
-import { NextResponse } from 'next/server.js';
+import { NextResponse } from "next/server.js";
 import { connectToDb } from "@/app/api/mongo/index.js";
 /**
  * @swagger
@@ -40,21 +39,25 @@ import { connectToDb } from "@/app/api/mongo/index.js";
  *                 error:
  *                   type: string
  */
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const GET = async (req, res) => {
-    await connectToDb();
-    try {
-        const machines = await Machine.find();
-        const data = machines.map(machine => {
-            return {
-                _id: machine._id,
-                wd_tag: machine.WD_TAG,
-                name: machine.MACHINE_NAME
-            };
-        });
-        return NextResponse.json({ status: 200, machines : data });
-    } catch (err) {
-        return NextResponse.json({ status: 500, file: __filename, error: err.message });
-    }
-}
-
+  await connectToDb();
+  try {
+    const machines = await Machine.find();
+    const data = machines.map((machine) => {
+      return {
+        _id: machine._id,
+        wd_tag: machine.WD_TAG,
+        name: machine.MACHINE_NAME,
+        createdAt: machine.createdAt,
+      };
+    });
+    return NextResponse.json({ status: 200, machines: data });
+  } catch (err) {
+    return NextResponse.json({
+      status: 500,
+      file: __filename,
+      error: err.message,
+    });
+  }
+};
