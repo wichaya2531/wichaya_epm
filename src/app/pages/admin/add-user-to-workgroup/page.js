@@ -8,8 +8,17 @@ import Swal from "sweetalert2";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link.js";
+import classNames from "classnames";
 
-const workgroupHeader = ["id", "EMP_number", "Email", "Name", "Role", "Action"];
+const workgroupHeader = [
+  "id",
+  "EMP_number",
+  "Email",
+  "Name",
+  "Role",
+  "Change Role",
+  "Action",
+];
 const userHeader = ["id", "EMP_number", "Email", "Name", "Role", "Action"];
 
 const enabledFunctoon = {
@@ -204,6 +213,32 @@ const Page = () => {
     }
   };
 
+  const handleChangeRole = async (user_id, role_id) => {
+    const workgroup_id = user.workgroup_id;
+    try {
+      // Update user role
+      const resUpdate = await fetch(`/api/user/update-user/${user_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ROLE: role_id,
+        }),
+        next: { revalidate: 10 },
+      });
+      if (!resUpdate.ok) {
+        throw new Error("Failed to update user role");
+      }
+      // รีเฟรชข้อมูล
+      setRefresh(!refresh);
+      return true; // เพิ่มผู้ใช้และอัปเดตสำเร็จ
+    } catch (error) {
+      console.error("Error:", error);
+      return false; // เกิดข้อผิดพลาด
+    }
+  };
+
   const handleRemove = async (user_id) => {
     const workgroup_id = user.workgroup_id;
 
@@ -272,6 +307,89 @@ const Page = () => {
       });
   };
 
+  const dataUsersWorkgroup = usersWorkgroup.map((user, index) => {
+    let disableRemoveButton = false;
+    disableRemoveButton = !userEnableFunctions.some(
+      (action) => action._id === enabledFunctoon["remove-user-from-workgroup"]
+    );
+    return {
+      id: index + 1,
+      EMP_number: user.emp_number,
+      Email: user.email,
+      Name: user.name,
+      Role: user.role,
+      ChangRole:
+        user.role !== "Admin Group"
+          ? [<RoleSelect user_id={user._id} />]
+          : [<span className="pl-4"> </span>],
+      action:
+        user.role !== "Admin Group"
+          ? [
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={async () => {
+                    const role_id = selectedRoles[user._id];
+
+                    if (role_id) {
+                      const success = await handleChangeRole(user._id, role_id);
+                      if (success) {
+                        Swal.fire({
+                          icon: "success",
+                          title: "Change Role Successfully",
+                          text: `${user.name} has been changed to the selected role.`,
+                          confirmButtonText: "OK",
+                        });
+
+                        // ล้างค่า role ที่เลือก
+                        setSelectedRoles((prev) => ({
+                          ...prev,
+                          [user._id]: "",
+                        }));
+                      } else {
+                        Swal.fire({
+                          icon: "error",
+                          title: "Error",
+                          text: "Failed to change role. Please try again.",
+                          confirmButtonText: "OK",
+                        });
+                      }
+                    } else {
+                      Swal.fire({
+                        icon: "warning",
+                        title: "Select a Role",
+                        text: "Please select a role before updating.",
+                        confirmButtonText: "OK",
+                      });
+                    }
+                  }}
+                  disabled={!selectedRoles[user._id]} // ปิดการใช้งานถ้าไม่มี role
+                  className={classNames(
+                    "flex items-center justify-center font-semibold py-2 px-3 rounded-lg transition-all duration-300",
+                    {
+                      "bg-green-500 hover:bg-green-700 text-white":
+                        selectedRoles[user._id], // ปุ่มสีเขียวเมื่อมี role
+                      "bg-gray-200 text-gray-600 cursor-not-allowed":
+                        !selectedRoles[user._id], // สีจางเมื่อไม่มี role
+                    }
+                  )}
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => handleRemove(user._id)}
+                  className={`flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg transition-all duration-300${
+                    disableRemoveButton ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={disableRemoveButton}
+                >
+                  Remove
+                </button>
+              </div>,
+            ]
+          : [<span className="pl-4"> </span>],
+    };
+  });
+
   const dataUsers = users
     .filter((user) => !usersWorkgroup.some((u) => u._id === user._id))
     .map((user, index) => {
@@ -327,36 +445,6 @@ const Page = () => {
         ],
       };
     });
-
-  const dataUsersWorkgroup = usersWorkgroup.map((user, index) => {
-    let disableRemoveButton = false;
-    disableRemoveButton = !userEnableFunctions.some(
-      (action) => action._id === enabledFunctoon["remove-user-from-workgroup"]
-    );
-    return {
-      id: index + 1,
-      EMP_number: user.emp_number,
-      Email: user.email,
-      Name: user.name,
-      Role: user.role,
-      action:
-        user.role !== "Admin Group"
-          ? [
-              <span className="pl-4">
-                <button
-                  onClick={() => handleRemove(user._id)}
-                  className={`bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ${
-                    disableRemoveButton ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  disabled={disableRemoveButton}
-                >
-                  Remove
-                </button>
-              </span>,
-            ]
-          : [<span className="pl-4"> </span>],
-    };
-  });
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto px-6 justify-start font-sans mt-2">
