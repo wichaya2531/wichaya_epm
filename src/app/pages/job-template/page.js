@@ -330,11 +330,9 @@ const Page = () => {
       (notifyOverdue) => notifyOverdue.user_id
     );
     const PICTURE_EVEDENT_REQUIRE = document.getElementById('picture-evident-require').checked?true:false;
+    const AGILE_SKIP_CHECK=document.getElementById('agile-skip-check').checked?true:false;
     
     //console.log("PICTURE_EVEDENT_REQUIRE",PICTURE_EVEDENT_REQUIRE);
-
-
-
 
     //console.log("APPROVERS_ID",APPROVERS_ID);  
     if (APPROVERS_ID.length==0) {
@@ -375,6 +373,7 @@ const Page = () => {
       NOTIFIES_ID,
       NOTIFIES_OVERDUE_ID,
       PICTURE_EVEDENT_REQUIRE,
+      AGILE_SKIP_CHECK,
     };
 
     try {
@@ -697,23 +696,28 @@ const Page = () => {
               </button>
             </div>
 
-            <div className="flex items-center space-x-2 border-red-300">
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              <input
-                type="checkbox"
-                id="picture-evident-require"  
-                //onChange={handleUpdatePictureEvidentRequire}
-                //checked={jobTemplate.PICTURE_EVEDENT_REQUIRE}
-                // checked={
-                //   selectedJobs.length === filteredJobs.length &&
-                //   filteredJobs.length > 0
-                // }
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-              />
-              <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
-                     Evident Picture Require
-              </label>
-            </div>     
+            <div className="flex flex-col items-start space-y-2 border-red-300" style={{ height:'auto', padding: '10px'}}>
+              <div id='1' style={{border:'1px solid none', padding: '5px'}}>
+                <input
+                  type="checkbox"
+                  id="picture-evident-require"                    
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                />
+                <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                    &nbsp;&nbsp;&nbsp;Evident Picture Require
+                </label>
+              </div>
+              <div id='2' style={{border:'1px solid none', padding: '5px'}}>
+                <input
+                    type="checkbox"
+                    id="agile-skip-check"                    
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                  />
+                <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                    &nbsp;&nbsp;&nbsp;Agile Skip Check
+                </label>
+              </div>
+            </div> 
 
 
           </div>

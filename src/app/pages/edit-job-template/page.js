@@ -41,6 +41,7 @@ const Page = ({ searchParams }) => {
   
 
   const [evidentImageReq, setEvidentImageReq] = useState([]);
+  const [agileSkipCheck, setAgileSkipCheck] = useState([]);
 
   const {
     user,
@@ -58,15 +59,24 @@ const Page = ({ searchParams }) => {
     if (!isJobTemplateLoading && jobTemplate) {
       //console.log("jobTemplate.PICTURE_EVEDENT_REQUIRE ",jobTemplate.PICTURE_EVEDENT_REQUIRE);
       setEvidentImageReq(jobTemplate.PICTURE_EVEDENT_REQUIRE);
+      setAgileSkipCheck(jobTemplate.AGILE_SKIP_CHECK);
       //console.log("evidentImageReq=",evidentImageReq);
 
       var timerID=setInterval(() => {
               try{
                 document.getElementById('picture-evident-require').checked=jobTemplate.PICTURE_EVEDENT_REQUIRE;
-                clearInterval(timerID);
+                //clearInterval(timerID);
               }catch(err){
                 console.log("error",err);
               }
+
+              try{
+                document.getElementById('agile-skip-check').checked=jobTemplate.AGILE_SKIP_CHECK;
+              }catch(err){
+                console.log("error",err);
+              }
+              clearInterval(timerID);
+               
       }, 2000);
       
           
@@ -507,6 +517,7 @@ const Page = ({ searchParams }) => {
 
 
     const PICTURE_EVEDENT_REQUIRE=document.getElementById('picture-evident-require').checked;
+    const AGILE_SKIP_CHECK=document.getElementById('agile-skip-check').checked;
 
 
     // รับ ID ที่ต้องการลบ
@@ -538,7 +549,8 @@ const Page = ({ searchParams }) => {
       removedApprovers,
       removedNotifies,
       removedNotifiesOverdue,
-      PICTURE_EVEDENT_REQUIRE
+      PICTURE_EVEDENT_REQUIRE,
+      AGILE_SKIP_CHECK
     };
 
     try {
@@ -849,21 +861,35 @@ const Page = ({ searchParams }) => {
               </div>
             </div> */}
 
-            <div className="flex items-center space-x-2 border-red-300">
+            <div className="flex flex-col items-start space-y-2 border-red-300" style={{ height:'auto', padding: '10px'}}>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              <input
-                type="checkbox"
-                id="picture-evident-require"  
-                //onClick={(e) =>handleUpdatePictureEvidentRequire(e.target.checked)}
-                defaultChecked={evidentImageReq}
-                //defaultValue={jobTemplate.CHECKLIST_VERSION}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-              />
-              <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
-                     Evident Picture Require
-              </label>
-              <hr></hr>
 
+              <div id='1' style={{border:'1px solid none', padding: '5px'}}>
+                  <input
+                    type="checkbox"
+                    id="picture-evident-require"  
+                    //onClick={(e) =>handleUpdatePictureEvidentRequire(e.target.checked)}
+                    defaultChecked={evidentImageReq}
+                    //defaultValue={jobTemplate.CHECKLIST_VERSION}
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                  />
+                  <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                  &nbsp;&nbsp;&nbsp; Evident Picture Require
+                  </label>
+              </div>
+              <div id='2' style={{border:'1px solid none', padding: '5px'}}>
+                <input
+                    defaultChecked={agileSkipCheck}
+                    type="checkbox"
+                    id="agile-skip-check"                    
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                  />
+                <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                    &nbsp;&nbsp;&nbsp;Agile Skip Check
+                </label>
+              </div>
+                        
+              
             </div>
 
 

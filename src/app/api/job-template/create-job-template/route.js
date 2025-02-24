@@ -23,6 +23,7 @@ export const POST = async (req, res) => {
     NOTIFIES_ID,
     NOTIFIES_OVERDUE_ID,
     PICTURE_EVEDENT_REQUIRE,
+    AGILE_SKIP_CHECK
   } = body;
   try {
     const jobTemplate = new JobTemplate({
@@ -36,6 +37,7 @@ export const POST = async (req, res) => {
       WORKGROUP_ID,
       JobTemplateCreateID,
       PICTURE_EVEDENT_REQUIRE,
+      AGILE_SKIP_CHECK,
     });
 
     await jobTemplate.save();

@@ -9,6 +9,7 @@ import {
   getRevisionNo,
   sendEmails,
 } from "@/lib/utils/utils";
+import { bool } from "sharp";
 //import fs from "fs";
 //import path from "path";
 
@@ -63,9 +64,11 @@ export const POST = async (req) => {
 
     // ค้นหาผู้ส่งข้อมูล
     const submittedUser = await User.findById(jobData.submittedBy);
-
-    if (process.env.WD_INTRANET_MODE === false) {
+    //console.log("job",job);   
+    //console.log("process.env.WD_INTRANET_MODE",process.env.WD_INTRANET_MODE);
+    if (process.env.WD_INTRANET_MODE === "true"  && job.AGILE_SKIP_CHECK===false) {
       const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
+      //console.log("latestDocNo=>",latestDocNo);   
       // ปิดไว้เมื่อต้องการทดสอบ local fee
       //console.log(" ตรวจสอบหมายเลขเอกสาร");
       if (latestDocNo.message) {
@@ -78,6 +81,8 @@ export const POST = async (req) => {
         });
       }
     }
+
+    //return NextResponse.json({ status: 455, message: "Tester..." });
 
     // อัปเดต job items
     await updateJobItems(jobItemsData); // ตรวจสอบที่นี่

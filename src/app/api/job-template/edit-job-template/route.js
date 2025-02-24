@@ -31,6 +31,7 @@ export const PUT = async (req, res) => {
     notifies_id,
     notifiesOverdue_id,
     PICTURE_EVEDENT_REQUIRE,
+    AGILE_SKIP_CHECK
   } = body;
 
   // console.log("body:", body);
@@ -49,7 +50,8 @@ export const PUT = async (req, res) => {
       CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       TIMEOUT: jobTemplate.TIMEOUT,
-      PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false
+      PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
+      AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false
     });
     //console.log("jobTemplateEdit", jobTemplateEdit)
     await jobTemplateEdit.save();
@@ -65,6 +67,7 @@ export const PUT = async (req, res) => {
     jobTemplate.TIMEOUT = timeout;
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
     jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
+    jobTemplate.AGILE_SKIP_CHECK=AGILE_SKIP_CHECK;
 
     await jobTemplate.save();
     const newApprovers = approvers_id.map((approver_id) => {

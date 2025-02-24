@@ -263,63 +263,71 @@ const Page = () => {
         <h2 className="text-primary flex justify-center items-center text-xl font-bold mb-4">
           Manage WD TAG and MACHINE NAME{" "}
         </h2>
-        <div className="mb-6 max-w-xs mx-auto space-y-4">
-          <div className="flex flex-col">
-            <label
-              htmlFor="wdTag"
-              className="text-sm font-medium mb-2 text-gray-700"
-            >
-              WD TAG
-            </label>
-            <input
-              type="text"
-              id="wdTag"
-              className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={wdTag}
-              onChange={(e) => setWdTag(e.target.value)}
-              placeholder="Enter WD_TAG"
-            />
+
+
+
+        {/*  -   */}
+        <div className="mb-6 max-w-lg mx-auto space-y-4 flex flex-col h-full">
+            <div className="flex flex-row space-x-4">
+              {/* WD TAG */}
+              <div className="flex flex-col w-1/2">
+                <label htmlFor="wdTag" className="text-sm font-medium mb-2 text-gray-700">
+                  WD TAG
+                </label>
+                <input
+                  type="text"
+                  id="wdTag"
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={wdTag}
+                  onChange={(e) => setWdTag(e.target.value)}
+                  placeholder="Enter WD_TAG"
+                />
+              </div>
+
+              {/* MACHINE NAME */}
+              <div className="flex flex-col w-1/2">
+                <label htmlFor="machineName" className="text-sm font-medium mb-2 text-gray-700">
+                  MACHINE NAME
+                </label>
+                <input
+                  type="text"
+                  id="machineName"
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={machineName}
+                  onChange={(e) => setMachineName(e.target.value)}
+                  placeholder="Enter MACHINE NAME"
+                />
+              </div>
+            </div>
+
+            {/* Button at the bottom left */}
+            <div className="flex justify-start mt-auto">
+              <button
+                className="bg-blue-600 text-white rounded-lg px-6 py-3 disabled:opacity-50 flex items-center justify-center transition-all duration-300 hover:bg-blue-700"
+                onClick={handleCreate}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="mr-3 animate-spin">
+                      <FaPlus /> {/* ไอคอนโหลด */}
+                    </div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <FaPlus className="mr-3" /> {/* ไอคอนบวก */}
+                    Create
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-col">
-            <label
-              htmlFor="machineName"
-              className="text-sm font-medium mb-2 text-gray-700"
-            >
-              MACHINE NAME
-            </label>
-            <input
-              type="text"
-              id="machineName"
-              className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={machineName}
-              onChange={(e) => setMachineName(e.target.value)}
-              placeholder="Enter MACHINE NAME"
-            />
-          </div>
 
-          <div className="flex justify-center">
-            <button
-              className="bg-blue-600 text-white rounded-lg px-6 py-3 disabled:opacity-50 flex items-center justify-center transition-all duration-300 hover:bg-blue-700"
-              onClick={handleCreate}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <div className="mr-3 animate-spin">
-                    <FaPlus /> {/* ไอคอนโหลด */}
-                  </div>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <FaPlus className="mr-3" /> {/* ไอคอนบวก */}
-                  Create
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+        {/*---- */}        
+
+
         <TableComponent
           headers={lineNameHeader}
           datas={machineTableBody}

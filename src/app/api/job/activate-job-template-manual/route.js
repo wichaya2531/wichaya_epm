@@ -94,6 +94,7 @@ export const POST = async (req, res) => {
       });
     }
     //1.3 create job
+    //console.log("use active job template****");
     //console.log("jobTemplate", jobTemplate);
     const job = new Job({
       JOB_NAME: jobTemplate.JOB_TEMPLATE_NAME,
@@ -108,9 +109,10 @@ export const POST = async (req, res) => {
       OVERDUE_ACK:"",
       TIMEOUT: jobTemplate.TIMEOUT,
       DISAPPROVE_REASON:"",
-      PICTURE_EVEDENT_REQUIRE : jobTemplate.PICTURE_EVEDENT_REQUIRE || false
+      PICTURE_EVEDENT_REQUIRE : jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
+      AGILE_SKIP_CHECK : jobTemplate.AGILE_SKIP_CHECK || false,
     });
-    //console.log("Job->", job);
+   // console.log("Job->", job);
     await job.save();
 
     //2 update to jobtemplateactivate

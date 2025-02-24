@@ -12,6 +12,7 @@ const jobTemplateSchema = new mongoose.Schema(
     WORKGROUP_ID: { type: String, required: true },
     TIMEOUT: { type: String, required: true },
     PICTURE_EVEDENT_REQUIRE: { type: Boolean, required: false },    
+    AGILE_SKIP_CHECK: { type: Boolean, required: false },    
   },
   { timestamps: true }
 );
