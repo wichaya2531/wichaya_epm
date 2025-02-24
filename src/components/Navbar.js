@@ -188,12 +188,12 @@ const Navbar = ({ menu }) => {
           <h1 className="text-2xl text-white">e - PM System</h1>
         </div>
 
-        <ul className="text-white font-semibold ml-2 space-y-4 p-4">
+        <ul className="font-semibold ml-2 space-y-4 p-4">
           {menu.map((item, index) => (
             <li key={index}>
               <Link
                 href={item.path}
-                className="block px-4 py-2 hover:bg-blue-600 hover:text-white rounded-md transition-all"
+                className="block px-4 py-2 hover:bg-white hover:text-blue-600 rounded-md transition-all"
               >
                 {item.name}
               </Link>

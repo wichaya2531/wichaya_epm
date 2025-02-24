@@ -5,7 +5,7 @@ import Image from "next/image";
 const Card = ({ title = "", detail = "", link = "#", logo_path }) => {
   return (
     <Link
-      className="size-52 bg-white drop-shadow-lg rounded-xl hover:shadow-2xl cursor-pointer flex flex-col gap-3 p-6 justify-center transition-transform duration-300 transform hover:scale-105"
+      className="size-52 bg-white drop-shadow-md rounded-xl hover:shadow-2xl cursor-pointer flex flex-col gap-3 p-6 justify-center transition-transform duration-300 transform hover:scale-105"
       href={link[0]}
     >
       <div className="flex justify-center items-center">

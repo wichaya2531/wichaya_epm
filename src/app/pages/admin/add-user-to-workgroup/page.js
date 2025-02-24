@@ -482,6 +482,7 @@ const Page = () => {
             datas={dataUsersWorkgroup}
             searchColumn={"Name"}
             TableName={"Members"}
+            filterColumn="Role"
           />
         </div>
         <hr className="w-full" />
