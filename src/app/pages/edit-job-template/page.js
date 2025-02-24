@@ -862,7 +862,12 @@ const Page = ({ searchParams }) => {
               <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
                      Evident Picture Require
               </label>
+              <hr></hr>
+
             </div>
+
+
+
 
 
 
