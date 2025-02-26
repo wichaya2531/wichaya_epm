@@ -36,23 +36,26 @@ const Page = () => {
       ? new Date(machine.createdAt).toLocaleString()
       : "Unknown",
     "Created by": machine.createdBy || "Unknown",
-    Action: (
-      <div className="flex gap-2 items-center justify-center">
-        <button
-          className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-3 rounded"
-          onClick={() => handleUpdate(machine)}
-        >
-          update
-        </button>
-        <button
-          className="bg-red-500 hover:bg-orange-700 text-white font-semibold py-1 px-2 rounded"
-          onClick={() => handleRemove(machine._id)}
-        >
-          remove
-        </button>
-      </div>
-    ),
+    // เพิ่มเงื่อนไขการแสดง Action ปุ่ม ถ้า workgroup ตรง
+    Action:
+      machine.workgroup === user.workgroup ? (
+        <div className="flex gap-2 items-center justify-center">
+          <button
+            className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-3 rounded"
+            onClick={() => handleUpdate(machine)}
+          >
+            update
+          </button>
+          <button
+            className="bg-red-500 hover:bg-orange-700 text-white font-semibold py-1 px-2 rounded"
+            onClick={() => handleRemove(machine._id)}
+          >
+            remove
+          </button>
+        </div>
+      ) : null,
   }));
+
   // ฟังก์ชันดึงข้อมูลผู้ใช้ปัจจุบัน
   const getCurrentUser = async () => {
     const session = await getSession();
