@@ -20,7 +20,6 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [wdTag, setWdTag] = useState("");
   const [machineName, setMachineName] = useState("");
-
   const lineNameHeader = [
     "ID",
     "WD_TAG",
@@ -36,7 +35,7 @@ const Page = () => {
     "Created At": machine.createdAt
       ? new Date(machine.createdAt).toLocaleString()
       : "Unknown",
-    "Created by": index + 1,
+    "Created by": machine.createdBy || "Unknown",
     Action: (
       <div className="flex gap-2 items-center justify-center">
         <button
@@ -73,13 +72,13 @@ const Page = () => {
       });
       return;
     }
-    // ตรวจสอบข้อมูลที่ส่งไปใน body
-    console.log("Data to be sent:", {
-      wd_tag: wdTag,
-      machine_name: machineName,
-      created_by: user.name, // ตรวจสอบข้อมูล created_by
-      workgroup: user.workgroup, // ตรวจสอบข้อมูล workgroup
-    });
+    // // ตรวจสอบข้อมูลที่ส่งไปใน body
+    // console.log("Data to be sent:", {
+    //   wd_tag: wdTag,
+    //   machine_name: machineName,
+    //   created_by: user.name, // ตรวจสอบข้อมูล created_by
+    //   workgroup: user.workgroup, // ตรวจสอบข้อมูล workgroup
+    // });
     setIsLoading(true);
     try {
       const response = await fetch(`/api/machine/create-machine-name`, {
@@ -236,8 +235,6 @@ const Page = () => {
   useEffect(() => {
     getCurrentUser();
   }, []);
-
-  console.log("user", user);
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-10">

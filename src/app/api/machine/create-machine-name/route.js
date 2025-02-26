@@ -7,9 +7,14 @@ export const POST = async (req) => {
 
   try {
     const body = await req.json(); // อ่าน JSON จาก request
-    const { wd_tag, machine_name } = body;
+    const { wd_tag, machine_name, created_by, workgroup } = body;
 
-    console.log("Received Data:", { wd_tag, machine_name });
+    console.log("Received Data:", {
+      wd_tag,
+      machine_name,
+      created_by,
+      workgroup,
+    });
 
     if (!wd_tag || !machine_name) {
       return NextResponse.json({
@@ -22,6 +27,8 @@ export const POST = async (req) => {
     const machine = new Machine({
       WD_TAG: wd_tag,
       MACHINE_NAME: machine_name,
+      created_by,
+      workgroup,
     });
 
     await machine.save();
@@ -34,6 +41,8 @@ export const POST = async (req) => {
         wd_tag: machine.WD_TAG,
         name: machine.MACHINE_NAME,
         createdAt: machine.createdAt,
+        createdBy: machine.created_by,
+        workgroup: machine.workgroup,
       },
     });
   } catch (error) {

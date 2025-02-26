@@ -50,6 +50,8 @@ export const GET = async (req, res) => {
         wd_tag: machine.WD_TAG,
         name: machine.MACHINE_NAME,
         createdAt: machine.createdAt,
+        createdBy: machine.created_by,
+        workgroup: machine.workgroup,
       };
     });
     return NextResponse.json({ status: 200, machines: data });
