@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useState, CSSProperties } from "react";
 import BeatLoader from "react-spinners/BeatLoader";
 
@@ -14,7 +14,6 @@ function LoadingComponent() {
 
   return (
     <div className="flex justify-center items-center w-screen h-screen">
-
       <BeatLoader
         color={"navy"}
         loading={loading}
@@ -23,8 +22,6 @@ function LoadingComponent() {
         aria-label="Loading Spinner"
         data-testid="loader"
       />
-
-
     </div>
   );
 }

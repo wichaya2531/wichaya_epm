@@ -55,17 +55,17 @@ const Page = () => {
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="z-50">
         {/* Header section */}
-        <div className="flex flex-col gap-4 bg-white rounded-xl p-4">
-          <div className="flex flex-col md:flex-row items-start lg:items-center gap-4">
+        <div className="flex justify-center items-center flex-col gap-4 bg-white rounded-xl p-4">
+          <div className="flex gap-4">
             <img
               src="/assets/card-logo/dashboard.png"
               alt="wd logo"
               width={50}
               height={50}
             />
-            <h1 className="text-3xl font-bold text-slate-900"> Home </h1>
-            <h1 className="text-2xl lg:text-3xl font-bold text-primary flex items-center break-words">
-              {">"} WorkGroup: {user.workgroup}
+            <h1 className="text-3xl font-bold text-slate-900 ">
+              {" "}
+              WorkGroup: <span className="text-primary">{user.workgroup}</span>
             </h1>
           </div>
           <h1 className="text-sm font-bold text-secondary flex items-center">

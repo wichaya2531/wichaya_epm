@@ -14,9 +14,19 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   const [refresh] = useState(false);
   const [session, setSession] = useState({});
   const [selectedLineName, setSelectedLineName] = useState("");
+  const [isOpen, setIsOpen] = useState(false); // สถานะการแสดงของเมนู
+  const [searchTerm, setSearchTerm] = useState(""); // ตัวกรองการค้นหา
 
-  const handleLineNameChange = (e) => {
-    setSelectedLineName(e.target.value);
+  const handleLineNameChange = (lineName) => {
+    setSelectedLineName((prevSelectedLineName) => {
+      if (prevSelectedLineName.includes(lineName)) {
+        // หากค่ามีอยู่แล้วให้ลบออก
+        return prevSelectedLineName.filter((name) => name !== lineName);
+      } else {
+        // หากค่ามิได้เลือก ให้เพิ่มเข้าไปใน array
+        return [...prevSelectedLineName, lineName];
+      }
+    });
   };
 
   useEffect(() => {
@@ -90,13 +100,11 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   const handleSubmit = async (e, checkListTemplate) => {
     e.preventDefault();
     let nextDate;
-
     if (dateType === "dayOfWeek") {
       nextDate = getNextDayOfWeek(selectedDayOfWeek);
     } else if (dateType === "dayOfMonth") {
       nextDate = getNextDayOfMonth(selectedDayOfMonth);
     }
-
     const requestData = {
       activationDate: nextDate,
       activationTime:
@@ -108,10 +116,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       ...data,
       LINE_NAME: selectedLineName,
     };
-
     //console.log("Request Data:", requestData);
-
-    //if date not selected then return error
     if (!nextDate) {
       Swal.fire({
         icon: "error",
@@ -120,8 +125,6 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       });
       return;
     }
-
-    //if recurring is selected then end date is required
     if (showRecurring && !endDate) {
       Swal.fire({
         icon: "error",
@@ -130,9 +133,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       });
       return;
     }
-
-    //console.log("requestData",requestData);
-
+    console.log("requestData", requestData);
     try {
       const response = await fetch("/api/job/activate-job-template-plan", {
         method: "POST",
@@ -145,9 +146,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
       if (!response.ok) {
       }
-
       const data = await response.json();
-
       Swal.fire({
         icon: "success",
         title: "Success",
@@ -216,31 +215,31 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
       <form
-        className="bg-white px-20 py-9 rounded-lg  flex flex-col gap-8 relative"
+        className="bg-white px-20 py-9 rounded-lg  flex flex-col gap-8 relative overflow-auto"
         onSubmit={handleSubmit}
       >
         <h1 className="text-2xl font-bold">Set Advance Activation Date</h1>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
-            <label className="text-sm font-semibold flex items-center gap-1">
+            <label className="text-md font-semibold flex items-center gap-1">
               <input
                 type="checkbox"
                 id="dayOfWeek"
                 name="dateType"
                 checked={dateType === "dayOfWeek"}
                 onChange={() => handleDateTypeChange("dayOfWeek")}
-                className="rounded-full border-gray-300 h-3 w-3 flex items-center justify-center"
+                className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
               />
               <span>Day of the Week</span>
             </label>
-            <label className="text-sm font-semibold flex items-center gap-1">
+            <label className="text-md font-semibold flex items-center gap-1">
               <input
                 type="checkbox"
                 id="dayOfMonth"
                 name="dateType"
                 checked={dateType === "dayOfMonth"}
                 onChange={() => handleDateTypeChange("dayOfMonth")}
-                className="rounded-full border-gray-300  h-3 w-3 flex items-center justify-center"
+                className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
               />
               <span>Day of the Month</span>
             </label>
@@ -274,7 +273,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
           {dateType === "dayOfMonth" && (
             <div className="flex flex-col gap-2">
-              <label htmlFor="date" className="text-sm font-semibold">
+              <label htmlFor="date" className="text-md font-semibold">
                 Select Day of the Month
               </label>
               <select
@@ -303,9 +302,9 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
               name="recurring"
               checked={showRecurring}
               onChange={handleRecurringChange}
-              className="rounded"
+              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
             />
-            <label htmlFor="recurring" className="text-sm font-semibold">
+            <label htmlFor="recurring" className="text-md font-semibold">
               Recurring
             </label>
           </div>
@@ -351,20 +350,65 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
               <label htmlFor="activate-time" className="text-sm font-semibold">
                 Select Line Name
               </label>
-              <div id={"allLinePanel-" + data.jobTemplateID}>
-                <select
-                  className="border border-gray-300 rounded-md p-2"
-                  value={selectedLineName} // ✅ กำหนดค่า
-                  onChange={handleLineNameChange} // ✅ อัปเดตค่าเมื่อเปลี่ยนแปลง
+              <div
+                id={"allLinePanel-" + data.jobTemplateID}
+                className="relative"
+              >
+                {/* ปุ่มที่แสดงสำหรับคลิกเปิดเมนู */}
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="border border-gray-300 rounded-md p-2 w-full text-left"
                 >
-                  <option value="">Select Line Name</option>{" "}
-                  {/* Option เริ่มต้น */}
-                  {allLineName.map((lineName) => (
-                    <option key={lineName} value={lineName}>
-                      {lineName}
-                    </option>
-                  ))}
-                </select>
+                  {selectedLineName.length > 0
+                    ? `${selectedLineName.length} item selected`
+                    : "Select Line Name"}
+                </button>
+
+                {/* เมนูที่สามารถเปิด/ปิดได้ */}
+                {isOpen && (
+                  <div className="absolute left-0 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10">
+                    {/* ช่องค้นหาหรือกรอง */}
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="border-b p-2 w-full"
+                    />
+                    <div className="max-h-60 overflow-auto">
+                      {/* แสดงรายการ checkbox */}
+                      {[
+                        ...new Set(allLineName), // ลบค่าซ้ำ
+                      ]
+                        .filter((lineName) =>
+                          lineName
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase())
+                        ) // ฟิลเตอร์ตามคำค้นหา
+                        .map(
+                          (
+                            lineName,
+                            index // แสดงผลโดยไม่มีค่าซ้ำ
+                          ) => (
+                            <label
+                              key={lineName} // ใช้ lineName เป็น key เพราะตอนนี้ไม่ซ้ำแล้ว
+                              className="flex items-center gap-2 p-2"
+                            >
+                              <input
+                                type="checkbox"
+                                value={lineName}
+                                checked={selectedLineName.includes(lineName)} // ตรวจสอบการเลือก
+                                onChange={() => handleLineNameChange(lineName)} // อัปเดตค่าเมื่อเลือก
+                                className="rounded-md"
+                              />
+                              {lineName}
+                            </label>
+                          )
+                        )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

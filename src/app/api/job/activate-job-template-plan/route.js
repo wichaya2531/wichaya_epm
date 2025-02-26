@@ -117,25 +117,39 @@ export const POST = async (req, res) => {
     let rolling_Datetime = startDateActive;
     while (rolling_Datetime <= endDateActive) {
       // Create a new job
-      //console.log("สร้าง  Schedual :",rolling_Datetime);
       const AdvanceActivationDate = new Date(rolling_Datetime);
       AdvanceActivationDate.setHours(
         AdvanceActivationDate.getHours() -
           parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
       );
-      const schedule = new Schedule({
-        JOB_TEMPLATE_ID: jobTemplateID,
-        JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
-        JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
-        ACTIVATE_DATE: AdvanceActivationDate,
-        LINE_NAME: LINE_NAME,
-        // ACTIVATE_TIME: activationTime,
-        DOC_NUMBER: jobTemplate.DOC_NUMBER,
-        WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
-      });
+      // const schedule = new Schedule({
+      //   JOB_TEMPLATE_ID: jobTemplateID,
+      //   JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
+      //   JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
+      //   ACTIVATE_DATE: AdvanceActivationDate,
+      //   LINE_NAME: LINE_NAME,
+      //   // ACTIVATE_TIME: activationTime,
+      //   DOC_NUMBER: jobTemplate.DOC_NUMBER,
+      //   WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
+      // });
+      // สร้าง array ของ Promise สำหรับการบันทึก Schedule
+      const schedulePromises = LINE_NAME.map(async (lineName) => {
+        const schedule = new Schedule({
+          JOB_TEMPLATE_ID: jobTemplateID,
+          JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
+          JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
+          ACTIVATE_DATE: AdvanceActivationDate,
+          // ACTIVATE_TIME: activationTime,
+          LINE_NAME: lineName, // ใช้ lineName จากการวนลูป
+          DOC_NUMBER: jobTemplate.DOC_NUMBER,
+          WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
+        });
 
-      console.log("Saving Schedule:", schedule);
-      await schedule.save();
+        console.log(`Saving Schedule for lineName: ${lineName}`, schedule);
+        await schedule.save();
+      });
+      // ใช้ Promise.all เพื่อรอให้ทุกคำขอทำงานพร้อมกัน
+      await Promise.all(schedulePromises);
 
       // Increment currentDate based on the recurrence type
       if (recurrence === "daily") {

@@ -60,7 +60,11 @@ const Layout = ({ children, className = "" }) => {
         {
           name: (
             <div className="flex justify-start items-center gap-2">
-              <HomeIcon className="size-6" />
+              <img
+                src="/assets/card-logo/dashboard.png"
+                alt="Home Icon"
+                className="w-5 h-5"
+              />
               <p className="text-xl">Home</p>
             </div>
           ),
