@@ -57,21 +57,23 @@ import { connectToDb } from "@/app/api/mongo/index.js";
  */
 
 export const POST = async (req, res) => {
-  //return NextResponse.json({ status: 200, message: 'Hello' });
-
   await connectToDb();
   const body = await req.json();
-  const { WD_TAG, MACHINE_NAME } = body;
+  const { WD_TAG, MACHINE_NAME, created_by, workgroup } = body;
   try {
     const machine = new Machine({
       WD_TAG,
       MACHINE_NAME,
+      created_by,
+      workgroup,
     });
     await machine.save();
 
     const data = {
       wd_tag: machine.WD_TAG,
       name: machine.MACHINE_NAME,
+      created_by: machine.created_by,
+      workgroup: machine.workgroup,
     };
 
     return NextResponse.json({ status: 200, machine });

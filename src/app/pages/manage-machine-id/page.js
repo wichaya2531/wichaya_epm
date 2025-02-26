@@ -1,9 +1,7 @@
 "use client";
 
 import Layout from "@/components/Layout.js";
-import Select from "react-select";
 import TableComponent from "@/components/TableComponent.js";
-import NextPlanIcon from "@mui/icons-material/NextPlan";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { config } from "../../../config/config.js";
@@ -13,11 +11,12 @@ import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { FaPlus } from "react-icons/fa";
 import useFetchMachines from "@/lib/hooks/useFetchMachines.js";
+import useFetchUser from "@/lib/hooks/useFetchUser.js";
 
 const Page = () => {
+  const { user } = useFetchUser();
   const { machines, loading, error, setMachines } = useFetchMachines();
   const [currentUser, setcurrentUser] = useState(false);
-  const [selectLineNames, setSelectLineNames] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [wdTag, setWdTag] = useState("");
   const [machineName, setMachineName] = useState("");
@@ -27,6 +26,7 @@ const Page = () => {
     "WD_TAG",
     "MACHINE NAME",
     "Created At",
+    "Created by",
     "Action",
   ];
   const machineTableBody = machines.map((machine, index) => ({
@@ -36,6 +36,7 @@ const Page = () => {
     "Created At": machine.createdAt
       ? new Date(machine.createdAt).toLocaleString()
       : "Unknown",
+    "Created by": index + 1,
     Action: (
       <div className="flex gap-2 items-center justify-center">
         <button
@@ -72,14 +73,15 @@ const Page = () => {
       });
       return;
     }
-
+    // ตรวจสอบข้อมูลที่ส่งไปใน body
+    console.log("Data to be sent:", {
+      wd_tag: wdTag,
+      machine_name: machineName,
+      created_by: user.name, // ตรวจสอบข้อมูล created_by
+      workgroup: user.workgroup, // ตรวจสอบข้อมูล workgroup
+    });
     setIsLoading(true);
     try {
-      // console.log("Sending Data:", {
-      //   wd_tag: wdTag,
-      //   machine_name: machineName,
-      // });
-
       const response = await fetch(`/api/machine/create-machine-name`, {
         method: "POST",
         headers: {
@@ -88,19 +90,17 @@ const Page = () => {
         body: JSON.stringify({
           wd_tag: wdTag,
           machine_name: machineName,
+          created_by: user.name,
+          workgroup: user.workgroup,
         }),
       });
-
       const data = await response.json();
-      // console.log("Response Data:", data); // ตรวจสอบค่าที่ได้จาก API
-
       if (response.ok && data.success) {
         Swal.fire({
           icon: "success",
           title: "Success",
           text: "Machine created successfully",
         });
-
         setMachines((prevMachines) => [...prevMachines, data.machine]);
         setWdTag("");
         setMachineName("");
@@ -237,6 +237,8 @@ const Page = () => {
     getCurrentUser();
   }, []);
 
+  console.log("user", user);
+
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-10">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
@@ -264,69 +266,71 @@ const Page = () => {
           Manage WD TAG and MACHINE NAME{" "}
         </h2>
 
-
-
         {/*  -   */}
         <div className="mb-6 max-w-lg mx-auto space-y-4 flex flex-col h-full">
-            <div className="flex flex-row space-x-4">
-              {/* WD TAG */}
-              <div className="flex flex-col w-1/2">
-                <label htmlFor="wdTag" className="text-sm font-medium mb-2 text-gray-700">
-                  WD TAG
-                </label>
-                <input
-                  type="text"
-                  id="wdTag"
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={wdTag}
-                  onChange={(e) => setWdTag(e.target.value)}
-                  placeholder="Enter WD_TAG"
-                />
-              </div>
-
-              {/* MACHINE NAME */}
-              <div className="flex flex-col w-1/2">
-                <label htmlFor="machineName" className="text-sm font-medium mb-2 text-gray-700">
-                  MACHINE NAME
-                </label>
-                <input
-                  type="text"
-                  id="machineName"
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={machineName}
-                  onChange={(e) => setMachineName(e.target.value)}
-                  placeholder="Enter MACHINE NAME"
-                />
-              </div>
+          <div className="flex flex-row space-x-4">
+            {/* WD TAG */}
+            <div className="flex flex-col w-1/2">
+              <label
+                htmlFor="wdTag"
+                className="text-sm font-medium mb-2 text-gray-700"
+              >
+                WD TAG
+              </label>
+              <input
+                type="text"
+                id="wdTag"
+                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={wdTag}
+                onChange={(e) => setWdTag(e.target.value)}
+                placeholder="Enter WD_TAG"
+              />
             </div>
 
-            {/* Button at the bottom left */}
-            <div className="flex justify-start mt-auto">
-              <button
-                className="bg-blue-600 text-white rounded-lg px-6 py-3 disabled:opacity-50 flex items-center justify-center transition-all duration-300 hover:bg-blue-700"
-                onClick={handleCreate}
-                disabled={isLoading}
+            {/* MACHINE NAME */}
+            <div className="flex flex-col w-1/2">
+              <label
+                htmlFor="machineName"
+                className="text-sm font-medium mb-2 text-gray-700"
               >
-                {isLoading ? (
-                  <>
-                    <div className="mr-3 animate-spin">
-                      <FaPlus /> {/* ไอคอนโหลด */}
-                    </div>
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <FaPlus className="mr-3" /> {/* ไอคอนบวก */}
-                    Create
-                  </>
-                )}
-              </button>
+                MACHINE NAME
+              </label>
+              <input
+                type="text"
+                id="machineName"
+                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={machineName}
+                onChange={(e) => setMachineName(e.target.value)}
+                placeholder="Enter MACHINE NAME"
+              />
             </div>
           </div>
 
+          {/* Button at the bottom left */}
+          <div className="flex justify-start mt-auto">
+            <button
+              className="bg-blue-600 text-white rounded-lg px-6 py-3 disabled:opacity-50 flex items-center justify-center transition-all duration-300 hover:bg-blue-700"
+              onClick={handleCreate}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <div className="mr-3 animate-spin">
+                    <FaPlus /> {/* ไอคอนโหลด */}
+                  </div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <FaPlus className="mr-3" /> {/* ไอคอนบวก */}
+                  Create
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
-        {/*---- */}        
-
+        {/*---- */}
 
         <TableComponent
           headers={lineNameHeader}
