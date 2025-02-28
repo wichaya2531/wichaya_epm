@@ -7,6 +7,7 @@ import { config } from "@/config/config.js";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import Image from "next/image";
 
 const jobItemTemplateHeader = [
   "ID",
@@ -134,12 +135,12 @@ const Page = () => {
   };
 
 
-  const handleInfo = async (job_template_id) => {
+  const handleInfo = async (job_template_id,LINE_NAME) => {
         Swal.fire({
           title: 'API Topic Key',
           html: `
               <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                  <p style="margin: 0;">Key: ${job_template_id}</p>
+                  <p style="margin: 0;font-size:14px;"> api :${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id} </p>
                   <button id="copy-btn" class="swal2-confirm swal2-styled" 
                       style="background-color: #3085d6; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">
                       Copy 
@@ -325,7 +326,7 @@ const Page = () => {
           </Link>
 
           <button
-            onClick={() => handleInfo(jobTemplate._id)}
+            onClick={() => handleInfo(jobTemplate._id,jobTemplate.LINE_NAME)}
             className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
           >
             Info
@@ -343,6 +344,12 @@ const Page = () => {
           <Link href="/pages/job-template">
             <ArrowBackIosNewIcon />
           </Link>
+          <Image
+                     src="/assets/card-logo/management.png"
+                     alt="wd logo"
+                     width={50}
+                     height={50}
+                   />
           WorkGroup: {user.workgroup}{" "}
         </h1>
         <h1 className="text-2xl font-bold">Checklist Templates</h1>{" "}

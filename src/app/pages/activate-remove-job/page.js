@@ -12,6 +12,7 @@ import JobPlan from "@/components/JobPlan";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
+import Image from "next/image";
 
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
@@ -777,6 +778,12 @@ const Page = () => {
         <Link href="/pages/job-manage">
           <ArrowBackIosNewIcon />
         </Link>
+        <Image
+            src="/assets/card-logo/management.png"
+            alt="wd logo"
+            width={50}
+            height={50}
+          />
         WorkGroup: {user?.workgroup}{" "}
       </h1>
       <div className="mb-4 p-4 bg-white rounded-xl">

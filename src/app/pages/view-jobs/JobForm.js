@@ -541,7 +541,11 @@ const JobForm = ({
           )}
         </div>
 
-        <div className="flex flex-col"></div>
+        <div className="flex flex-col">
+            <div className={`${isPictureRequired ? "" : "hidden"}`}>
+                  
+            </div> 
+        </div>
         <div className={`flex flex-col ${isPictureRequired ? "" : "hidden"}`}>
           {
             <label

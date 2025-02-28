@@ -16,12 +16,14 @@ import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { FaFileCsv, FaDownload } from "react-icons/fa";
 
+
 const jobItemTemplateHeader = [
   "Pos.",
   "Job Title",
   "Job Name",
   "Upper/Lower ",
   "Test Method",
+  "input type",
   "Create At",
   "Action",
 ];
@@ -344,6 +346,39 @@ const Page = ({ searchParams }) => {
     setSelectedFile(null);
   };
 
+  const handleTypeInputSelect = async (b, valueSelected) => {
+          //alert('****handleTypeInputSelect****',b);
+         // alert(valueSelected);
+         // return;
+          const formData = new FormData();
+          formData.append("jobItemTemplateID", b._id);
+          formData.append("input-type", valueSelected);
+      
+          try {
+            const res = await fetch(
+              "/api/job-item-template/edit-job-item-template/edit-job-item-template-input-type",
+              {
+                method: "POST",
+                body: formData,
+              }
+            );
+      
+            const data = await res.json();
+            console.log("data=>", data);
+      
+            //if (data.result) {
+            //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
+            //} else {
+            //alert("An error occurred while uploading the file.");
+            //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
+            //}
+          } catch (error) {
+            //console.error(error);
+            //alert("An error occurred while uploading the file.");
+            //return null; // คืนค่า null หากเกิดข้อผิดพลาด
+          }
+  }
+
   const handlePosSelect = async (b, valueSelected) => {
     //console.log("valueSelected=>"+valueSelected+" => "+b._id);
     //alert('use handlePosSelect ');
@@ -409,6 +444,26 @@ const Page = ({ searchParams }) => {
       Upper_Lower:
         jobItemTemplate.UPPER_SPEC + "/" + jobItemTemplate.LOWER_SPEC,
       Test_Method: jobItemTemplate.TEST_METHOD,
+      input_type : 
+      (<div className="flex items-center justify-center gap-2">
+          <select
+            className="p-2"
+           // onChange={(e) => handlePosSelect(jobItemTemplate, e.target.value)}
+           onChange={(e) => handleTypeInputSelect(jobItemTemplate, e.target.value)}
+          >
+            <option value={jobItemTemplate.INPUT_TYPE||""}>{jobItemTemplate.INPUT_TYPE}</option>
+            <option value="numeric">Numeric</option>
+            <option value="string">String</option>
+            {/* <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
+            {buffer_position_list.map((point, index) => (
+              <option key={point.id || index} value={point.name}>
+                {point.name}
+              </option>
+            ))} */}
+          </select>
+        </div>
+      )
+      ,
       "Create At": jobItemTemplate.createdAt,
       Action: (
         <div className="flex items-center justify-center gap-2">
@@ -489,6 +544,12 @@ const Page = ({ searchParams }) => {
           <Link href="/pages/job-item-template">
             <ArrowBackIosNewIcon />
           </Link>
+          <Image
+                               src="/assets/card-logo/management.png"
+                               alt="wd logo"
+                               width={50}
+                               height={50}
+                             />
           {jobTemplate.JOB_TEMPLATE_NAME}{" "}
         </h1>
         <h1 className="text-1 font-semibold">

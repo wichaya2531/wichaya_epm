@@ -10,7 +10,7 @@ export const DELETE = async (req) => {
   const body = await req.json();
   const { job_ids } = body; // เปลี่ยนเป็น job_ids เพื่อความชัดเจน
 
-  console.log("Job IDs to delete:", job_ids); // ตรวจสอบค่าที่ได้รับจาก frontend
+ // console.log("Job IDs to delete:", job_ids); // ตรวจสอบค่าที่ได้รับจาก frontend
 
   if (!Array.isArray(job_ids) || job_ids.length === 0) {
     return NextResponse.json({
@@ -22,7 +22,7 @@ export const DELETE = async (req) => {
   try {
     const jobsToDelete = await Job.find({ _id: { $in: job_ids } });
 
-    console.log("Jobs found for deletion:", jobsToDelete); // ตรวจสอบว่ามีข้อมูลที่ต้องลบจริงหรือไม่
+   // console.log("Jobs found for deletion:", jobsToDelete); // ตรวจสอบว่ามีข้อมูลที่ต้องลบจริงหรือไม่
 
     if (jobsToDelete.length === 0) {
       return NextResponse.json({
@@ -34,7 +34,7 @@ export const DELETE = async (req) => {
     // ลบไฟล์ภาพที่เกี่ยวข้อง (ถ้ามี)
     jobsToDelete.forEach((job) => {
       if (job.IMAGE_FILENAME) {
-        console.log(`Removing image file: ${job.IMAGE_FILENAME}`);
+       // console.log(`Removing image file: ${job.IMAGE_FILENAME}`);
         const imagePath = path.join(
           process.cwd(),
           "public",

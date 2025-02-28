@@ -63,7 +63,7 @@ export const GET = async (req, res) => {
       machineName = null;
     }
 
-    // console.log('job=>', job);
+     //console.log('job=>', job);
 
     const jobData = {
       JobID: JobID,
@@ -86,8 +86,9 @@ export const GET = async (req, res) => {
       SubmitedAt: job.SUBMITTED_DATE ? job.SUBMITTED_DATE.toLocaleString() : "",     
       Status: statusName,
       Approvers: job.JOB_APPROVERS,
-      PICTURE_EVEDENT_REQUIRE:job.PICTURE_EVEDENT_REQUIRE || false 
-    };
+      DISAPPROVE_REASON:job.DISAPPROVE_REASON||"",
+      PICTURE_EVEDENT_REQUIRE:job.PICTURE_EVEDENT_REQUIRE || false ,
+    };    
 
     const jobItemData = await Promise.all(
       jobItems.map(async (jobItem) => {

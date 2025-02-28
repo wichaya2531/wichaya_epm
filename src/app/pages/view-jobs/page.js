@@ -29,7 +29,7 @@ const options = {
 
 const Page = ({ searchParams }) => {
 
-  console.log("Page on view jobs");
+  //console.log("Page on view jobs");
   const router = useRouter();
   const job_id = searchParams.job_id;
   const [view, setView] = useState(false);
