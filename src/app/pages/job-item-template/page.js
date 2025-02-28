@@ -141,6 +141,7 @@ const Page = () => {
           html: `
               <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                   <p style="margin: 0;font-size:14px;"> api :${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id} </p>
+                  <p></p>
                   <button id="copy-btn" class="swal2-confirm swal2-styled" 
                       style="background-color: #3085d6; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">
                       Copy 
@@ -154,7 +155,7 @@ const Page = () => {
       document.addEventListener('click', (event) => {
         if (event.target.id === 'copy-btn') {
             const textArea = document.createElement('textarea');
-            textArea.value = job_template_id;
+            textArea.value = `${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id}`; //job_template_id`;
             document.body.appendChild(textArea);
             textArea.select();
             try {
