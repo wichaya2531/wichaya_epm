@@ -452,8 +452,8 @@ const Page = ({ searchParams }) => {
            onChange={(e) => handleTypeInputSelect(jobItemTemplate, e.target.value)}
           >
             <option value={jobItemTemplate.INPUT_TYPE||""}>{jobItemTemplate.INPUT_TYPE}</option>
-            <option value="numeric">Numeric</option>
-            <option value="string">String</option>
+            <option value="Numeric">Numeric</option>
+            <option value="String">String</option>
             {/* <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
             {buffer_position_list.map((point, index) => (
               <option key={point.id || index} value={point.name}>

@@ -8,11 +8,11 @@ export const POST = async (req, res) => {
     const form = await req.formData();
     const jobItemTemplateID = form.get("jobItemTemplateID");
     const input_type = form.get("input-type"); // รับค่าที่ต้องการอัปเดต pos ใหม่
-    console.log("jobItemTemplateID=>", jobItemTemplateID);
+    //console.log("jobItemTemplateID=>", jobItemTemplateID);
 
     try {
         // หาเอกสารที่ต้องการอัปเดต
-        const jobItemTemplate = await JobItemTemplate.findOne({ _id: jobItemTemplateID });
+        var jobItemTemplate = await JobItemTemplate.findOne({ _id: jobItemTemplateID });
 
         if (!jobItemTemplate) {
             return NextResponse.json({
@@ -22,15 +22,13 @@ export const POST = async (req, res) => {
         }
 
         //console.log("Before jobItemTemplate=>", jobItemTemplate);
-        
-        console.log("Before jobItemTemplate.INPUT_TYPE=>",jobItemTemplate.INPUT_TYPE);
-        // แก้ไขค่า pos
-        jobItemTemplate.INPUT_TYPE = "Test";
-        console.log("After jobItemTemplate.INPUT_TYPE=>",jobItemTemplate.INPUT_TYPE);
+        //console.log("Before jobItemTemplate.INPUT_TYPE=>",jobItemTemplate.INPUT_TYPE);
+        jobItemTemplate.INPUT_TYPE =input_type; 
+        //console.log("After jobItemTemplate.INPUT_TYPE=>",jobItemTemplate.INPUT_TYPE);
         // บันทึกการเปลี่ยนแปลงลง MongoDB
         await jobItemTemplate.save();
 
-       // console.log("After jobItemTemplate=>",jobItemTemplate);
+        //console.log("After jobItemTemplate=>",jobItemTemplate);
 
         return NextResponse.json({ 
             status: 200, 

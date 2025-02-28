@@ -24,6 +24,7 @@ const jobItemTemplateSchema = new mongoose.Schema(
     JobItemTemplateCreateID: { type: String, required: true },
     FILE: { type: String, default: null },
     pos: { type: Number, default: 0 },
+    INPUT_TYPE: { type: String,default:"All",required: false}
   },
   { timestamps: true }
 );

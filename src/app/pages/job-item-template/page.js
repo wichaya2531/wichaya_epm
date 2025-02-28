@@ -137,23 +137,38 @@ const Page = () => {
 
   const handleInfo = async (job_template_id,LINE_NAME) => {
         Swal.fire({
-          title: 'API Topic Key',
+          title: 'API Url',
           html: `
               <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                  <p style="margin: 0;font-size:14px;"> api :${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id} </p>
+                  <div style="width:100%;text-align:left;">
+                      <div style="border:1px solid none;width:100%;padding:5px;" >
+                        <p style="margin: 0;font-size:14px;"> Create :<a href='#'>${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id} </a>
+                         <button id="copy-btn-create" class="swal2-confirm swal2-styled" 
+                            style="background-color: #3085d6; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">
+                            Copy 
+                         </button>
+                        </p>
+                      </div>
+                      <div style="border:1px solid none;width:100%;padding:5px;">
+                        <p style="margin: 0;font-size:14px;"> Query :<a href='#'></a>
+                            <button id="copy-btn-view" class="swal2-confirm swal2-styled" 
+                              style="background-color: #3085d6; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">
+                              Copy 
+                            </button>
+                        </p>
+                      </div>
+                  </div>    
                   <p></p>
-                  <button id="copy-btn" class="swal2-confirm swal2-styled" 
-                      style="background-color: #3085d6; color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;">
-                      Copy 
-                  </button>
+                 
               </div>
           `,
           showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
+          width:'auto',
       });
       // เพิ่ม Event Listener ให้กับปุ่ม Copy
   
       document.addEventListener('click', (event) => {
-        if (event.target.id === 'copy-btn') {
+        if (event.target.id === 'copy-btn-create') {
             const textArea = document.createElement('textarea');
             textArea.value = `${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id}`; //job_template_id`;
             document.body.appendChild(textArea);
