@@ -27,6 +27,11 @@ const ReportDoc = ({ report, isLoading }) => {
   const [jobItemNames, setJobItemNames] = useState([]);
   const [workgroupNames, setWorkgroupNames] = useState([]);
   const [lineNames, setLineNames] = useState([]);
+  const [reportType, setReportType] = useState("month"); // เริ่มต้นเป็น 'month'
+  const getLastDayOfMonth = (date) => {
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDay;
+  };
   const pastelColors = {
     "9309A": "#FFB6C1",
     "9303A": "#ADD8E6",
@@ -64,32 +69,28 @@ const ReportDoc = ({ report, isLoading }) => {
       ["done", "rgba(221, 160, 221, 0.6)"],
       ["check", "rgba(255, 255, 204, 0.6)"],
     ]);
-    return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
+    return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)";
   };
   const groupedDataByLineNameAndWorkgroupAndJobItem = report
     .map((item) => {
-      const updatedAt = new Date(item.jobItemsUpdatedAt); // เปลี่ยนจาก jobItemsCreatedAt เป็น jobItemsUpdatedAt
+      const updatedAt = new Date(item.jobItemsUpdatedAt);
       if (isNaN(updatedAt.getTime())) {
         console.warn(
-          `Invalid date for jobItemsUpdatedAt: ${item.jobItemsUpdatedAt}` // เปลี่ยนจาก jobItemsCreatedAt เป็น jobItemsUpdatedAt
+          `Invalid date for jobItemsUpdatedAt: ${item.jobItemsUpdatedAt}`
         );
         return null;
       }
-      const yValue = isNaN(parseFloat(item.ACTUAL_VALUE))
-        ? 1
-        : parseFloat(item.ACTUAL_VALUE);
       return {
-        lineName: item.LINE_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
-        workgroupName: item.WORKGROUP_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
-        jobItemName: item.JOB_ITEM_NAME || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
-        jobItemTitle: item.JOB_ITEM_TITLE || "Unknown", // เพิ่ม jobItemTitle
-        x: updatedAt.toISOString(), // ใช้ updatedAt แทน createdAt
-        y: yValue,
-        actualValue: item.ACTUAL_VALUE || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
-        docNumber: item.DOC_NUMBER || "Unknown", // กำหนดค่าเริ่มต้น "Unknown" หากเป็นค่าว่าง
+        lineName: item.LINE_NAME || "Unknown",
+        workgroupName: item.WORKGROUP_NAME || "Unknown",
+        jobItemName: item.JOB_ITEM_NAME || "Unknown",
+        jobItemTitle: item.JOB_ITEM_TITLE || "Unknown",
+        x: updatedAt.toISOString(),
+        actualValue: item.ACTUAL_VALUE || "Unknown",
+        docNumber: item.DOC_NUMBER || "Unknown",
       };
     })
-    .filter(Boolean) // ลบ null หรือ undefined ออก
+    .filter(Boolean)
     .filter((item) => {
       const date = new Date(item.x);
       return date >= startDate && date <= endDate;
@@ -106,8 +107,8 @@ const ReportDoc = ({ report, isLoading }) => {
           y: curr.y,
           actualValue: curr.actualValue,
           docNumber: curr.docNumber,
-          jobItemName: curr.jobItemName, // เก็บ jobItemName ในแต่ละรายการ
-          jobItemTitle: curr.jobItemTitle, // เก็บ jobItemTitle
+          jobItemName: curr.jobItemName,
+          jobItemTitle: curr.jobItemTitle,
         });
       }
       acc[groupKey] = lineGroup;
@@ -133,7 +134,8 @@ const ReportDoc = ({ report, isLoading }) => {
     return acc;
   }, {});
 
-  const datasets = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
+  // ในการกรองข้อมูลใน groupedDataByLineNameAndWorkgroupAndJobItem
+  const filteredData = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
     .filter((groupKey) => {
       const [lineName, workgroupName, jobItemName] = groupKey.split("-");
       return (
@@ -150,12 +152,8 @@ const ReportDoc = ({ report, isLoading }) => {
     })
     .map((groupKey) => {
       const [lineName, workgroupName, jobItemName] = groupKey.split("-");
-      const color = pastelColors[lineName];
       return {
         label: `${lineName} - ${workgroupName} - ${jobItemName}`,
-        type: "line",
-        borderColor: color,
-        backgroundColor: color,
         data: sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]
           .filter(
             (item) =>
@@ -168,27 +166,16 @@ const ReportDoc = ({ report, isLoading }) => {
             actualValue: item.actualValue,
             docNumber: item.docNumber,
             jobItemName: item.jobItemName,
-            jobItemTitle: item.jobItemTitle, // เพิ่ม jobItemTitle
+            jobItemTitle: item.jobItemTitle,
           })),
-        tension: 0.4,
-        fill: true,
-        datalabels: {
-          display: true,
-          anchor: "end",
-          align: "top",
-          font: { size: 12, weight: "bold" },
-          color: "#000",
-          backgroundColor: (context) => {
-            const actualValue =
-              context.dataset.data[context.dataIndex].actualValue;
-            return getPastelColorForValue(actualValue);
-          },
-          formatter: (value) => value.actualValue || "N/A",
-        },
       };
     });
 
-  const data = { labels: [], datasets };
+  // เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
+  const filteredReportData = report.filter((item) => {
+    const updatedAt = new Date(item.jobItemsUpdatedAt);
+    return updatedAt >= startDate && updatedAt <= endDate;
+  });
 
   useEffect(() => {
     const uniqueValues = (key) => [
@@ -199,53 +186,36 @@ const ReportDoc = ({ report, isLoading }) => {
     setWorkgroupNames(uniqueValues("WORKGROUP_NAME"));
     setLineNames(uniqueValues("LINE_NAME"));
   }, [report]);
-  const handleSelectionChange = (name, selectedItems, setSelectedItems) => {
-    setSelectedItems((prev) =>
-      prev.includes(name)
-        ? prev.filter((item) => item !== name)
-        : [...prev, name]
-    );
-  };
   const handleWorkgroupChange = (workgroupName) => {
     // อัปเดต selectedWorkgroups
     setSelectedWorkgroups((prev) => {
       const updatedWorkgroups = prev.includes(workgroupName)
         ? prev.filter((item) => item !== workgroupName)
         : [...prev, workgroupName];
-
-      // ตั้งค่า LineNames เป็น "All LineNames" (ว่างเปล่า)
       setSelectedLineNames([]);
-
-      // รีเซ็ต DocNumbers และ JobItemNames
       setSelectedDocNumbers([]);
       setSelectedJobItemNames([]);
 
       return updatedWorkgroups;
     });
   };
-
   const handleLineNameChange = (lineName) => {
     setSelectedLineNames((prev) =>
       prev.includes(lineName)
         ? prev.filter((item) => item !== lineName)
         : [...prev, lineName]
     );
-
-    // รีเซ็ต DocNumbers และ JobItemNames
     setSelectedDocNumbers([]);
     setSelectedJobItemNames([]);
   };
-
   const handleDocNumberChange = (docNumber) => {
     setSelectedDocNumbers(docNumber);
     setSelectedJobItemNames([]);
   };
-
-  // ฟิลเตอร์เฉพาะรายการที่ไม่เป็น 'Unknown' หรือค่าว่าง
   const filteredValues = (items) =>
     items
       .filter((item) => item && item.trim() !== "" && item !== "Unknown") // กรองค่า
-      .sort((a, b) => a.localeCompare(b)); // เรียงลำดับตามตัวอักษ
+      .sort((a, b) => a.localeCompare(b));
   const availableLineNames = filteredValues(
     lineNames.filter((lineName) =>
       selectedWorkgroups.some((workgroup) =>
@@ -363,7 +333,6 @@ const ReportDoc = ({ report, isLoading }) => {
       alert("Unable to export PDF file: " + error.message);
     }
   };
-
   const exportToCSV = () => {
     // สร้างชื่อเดือนที่ใช้ในการ export
     const months = [
@@ -455,7 +424,6 @@ const ReportDoc = ({ report, isLoading }) => {
     // ดาวน์โหลดไฟล์
     FileSaver.saveAs(data, fileName);
   };
-
   const saveAsPNG = async () => {
     try {
       const table = document.querySelector(".min-w-full");
@@ -575,7 +543,6 @@ const ReportDoc = ({ report, isLoading }) => {
             </div>
           )}
         </div>
-
         {/* LineNames UI */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -618,6 +585,47 @@ const ReportDoc = ({ report, isLoading }) => {
             </div>
           )}
         </div>
+        <div className="relative mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Report Type
+          </label>
+          <select
+            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+            value={reportType}
+            onChange={(e) => {
+              const selectedReportType = e.target.value;
+              setReportType(selectedReportType);
+
+              // เปลี่ยนรูปแบบ startDate และ endDate ตามประเภทที่เลือก
+              if (
+                selectedReportType === "month" ||
+                selectedReportType === "week"
+              ) {
+                const currentMonthStart = new Date();
+                setStartDate(
+                  new Date(
+                    currentMonthStart.getFullYear(),
+                    currentMonthStart.getMonth(),
+                    1
+                  )
+                );
+                setEndDate(getLastDayOfMonth(currentMonthStart)); // สิ้นสุดที่วันสุดท้ายของเดือน
+              } else if (
+                selectedReportType === "date" ||
+                selectedReportType === "shift"
+              ) {
+                const currentDate = new Date();
+                setStartDate(currentDate);
+                setEndDate(currentDate); // ใช้วันที่เดียวกัน
+              }
+            }}
+          >
+            <option value="month">Month</option>
+            <option value="week">Week</option>
+            <option value="date">Date</option>
+            <option value="shift">Shift</option>
+          </select>
+        </div>
 
         <div className="relative">
           <label
@@ -630,21 +638,34 @@ const ReportDoc = ({ report, isLoading }) => {
             className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            type="month"
+            type={
+              reportType === "date" || reportType === "shift" ? "date" : "month"
+            }
             id="start-month"
             value={
               startDate && !isNaN(startDate.getTime())
-                ? format(startDate, "yyyy-MM")
+                ? format(
+                    startDate,
+                    reportType === "month" || reportType === "week"
+                      ? "yyyy-MM"
+                      : "yyyy-MM-dd"
+                  )
                 : ""
             }
-            onChange={(e) =>
-              e.target.value
-                ? setStartDate(new Date(e.target.value + "-01"))
-                : setStartDate(null)
-            }
+            onChange={(e) => {
+              const selectedStartDate = new Date(e.target.value);
+              setStartDate(selectedStartDate);
+
+              if (reportType === "date" || reportType === "shift") {
+                setEndDate(selectedStartDate); // สำหรับประเภท date หรือ shift ให้ endDate เท่ากับ startDate
+              } else {
+                setEndDate(getLastDayOfMonth(selectedStartDate)); // สำหรับประเภทเดือนหรือสัปดาห์
+              }
+            }}
             disabled={isLoading}
           />
         </div>
+
         <div className="relative">
           <label
             htmlFor="end-month"
@@ -656,21 +677,34 @@ const ReportDoc = ({ report, isLoading }) => {
             className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            type="month"
+            type={
+              reportType === "date" || reportType === "shift" ? "date" : "month"
+            }
             id="end-month"
             value={
               endDate && !isNaN(endDate.getTime())
-                ? format(endDate, "yyyy-MM")
+                ? format(
+                    endDate,
+                    reportType === "month" || reportType === "week"
+                      ? "yyyy-MM"
+                      : "yyyy-MM-dd"
+                  )
                 : ""
             }
-            onChange={(e) =>
-              e.target.value
-                ? setEndDate(new Date(e.target.value + "-01"))
-                : setEndDate(null)
-            }
+            onChange={(e) => {
+              const selectedEndDate = new Date(e.target.value);
+              setEndDate(selectedEndDate);
+
+              if (reportType === "date" || reportType === "shift") {
+                setEndDate(selectedEndDate); // สำหรับประเภท date หรือ shift ให้ endDate เท่ากับ startDate
+              } else {
+                setEndDate(getLastDayOfMonth(selectedEndDate)); // สำหรับประเภทเดือนหรือสัปดาห์
+              }
+            }}
             disabled={isLoading}
           />
         </div>
+
         <div className="flex flex-wrap gap-2 mt-4">
           {colorValues.map((value) => (
             <div key={value} className="flex items-center space-x-2">
@@ -693,10 +727,10 @@ const ReportDoc = ({ report, isLoading }) => {
               <label key={docNumber} className="block p-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="docNumber" // ใช้ name เดียวกันเพื่อให้ทำงานเป็น radio group
+                  name="docNumber"
                   value={docNumber}
-                  checked={selectedDocNumbers === docNumber} // เปรียบเทียบค่า
-                  onChange={() => handleDocNumberChange(docNumber)} // อัปเดตค่า
+                  checked={selectedDocNumbers === docNumber}
+                  onChange={() => handleDocNumberChange(docNumber)}
                 />
                 {docNumber}
               </label>
@@ -706,9 +740,10 @@ const ReportDoc = ({ report, isLoading }) => {
         {/* Section ตาราง */}
         <div className="overflow-x-auto w-full md:w-3/4 lg:w-full">
           <TableReportDoc
-            datasets={datasets}
+            filteredData={filteredData}
             startDate={startDate}
             endDate={endDate}
+            reportType={reportType}
           />
         </div>
       </div>
