@@ -19,7 +19,7 @@ const Page = () => {
   const { report, isLoading } = useFetchReport1(refresh);
   const [selectedChart, setSelectedChart] = useState("BarChart5");
   const chartButtons = [
-    { label: "Value in Item", value: "BarChart5" },
+    //{ label: "Value in Item", value: "BarChart5" },
     { label: "ReportDoc", value: "ReportDoc" },
     // { label: "Checklist Active By user", value: "BarChart" },
     // { label: "Template By Workgroups", value: "BarChart1" },

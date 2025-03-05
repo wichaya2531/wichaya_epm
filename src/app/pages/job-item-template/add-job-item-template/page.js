@@ -336,7 +336,7 @@ const Page = ({ searchParams }) => {
 
         setRefresh((prev) => !prev);
       } catch (err) {
-        console.log(err);
+        console.log("Error",err);
         Swal.fire("Error!", "Failed to delete the item.", "error");
       }
     }

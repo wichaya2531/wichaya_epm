@@ -66,21 +66,26 @@ export const POST = async (req) => {
     const submittedUser = await User.findById(jobData.submittedBy);
     //console.log("job",job);   
     //console.log("process.env.WD_INTRANET_MODE",process.env.WD_INTRANET_MODE);
-    if (process.env.WD_INTRANET_MODE === "true"  && job.AGILE_SKIP_CHECK===false) {
-      const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
-      //console.log("latestDocNo=>",latestDocNo);   
-      // ปิดไว้เมื่อต้องการทดสอบ local fee
-      //console.log(" ตรวจสอบหมายเลขเอกสาร");
-      if (latestDocNo.message) {
-        console.log("Doc number error");
-        return NextResponse.json({ status: 455, message: latestDocNo.message });
-      } else if (job.CHECKLIST_VERSION !== latestDocNo) {
-        return NextResponse.json({
-          status: 455,
-          message: "This Checklist does not have the latest revision",
-        });
+    if(process.env.NEXT_PUBLIC_AGILE_ACCESS==="true"){
+      if (process.env.WD_INTRANET_MODE === "true"  && job.AGILE_SKIP_CHECK===false) {
+        const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
+        console.log("Agile get result=>",latestDocNo);   
+        // ปิดไว้เมื่อต้องการทดสอบ local fee
+        //console.log(" ตรวจสอบหมายเลขเอกสาร");
+        if (latestDocNo.message) {
+          console.log("Doc number error");
+          return NextResponse.json({ status: 455, message: latestDocNo.message });
+        } else if (job.CHECKLIST_VERSION !== latestDocNo) {
+          return NextResponse.json({
+            status: 455,
+            message: "This Checklist does not have the latest revision",
+          });
+        }
       }
     }
+    
+
+            
 
     //return NextResponse.json({ status: 455, message: "Tester..." });
 

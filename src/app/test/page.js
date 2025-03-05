@@ -80,7 +80,7 @@ const postDataToCreateMachineName = async (t_wd_tag,t_mc_name) => {
     }
 
     const data = await response.json();
-    console.log(data);
+    console.log("data",data);
   } catch (error) {
     console.error('Error sending data:', error);
   }

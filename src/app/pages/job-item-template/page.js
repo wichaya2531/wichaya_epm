@@ -72,7 +72,7 @@ const Page = () => {
         setJobTemplates(data.jobTemplates);
       }
     } catch (err) {
-      console.log(err);
+      console.log("err",err);
     }
   };
 

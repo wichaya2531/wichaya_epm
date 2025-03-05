@@ -280,8 +280,7 @@ const Page = () => {
   };
 
   const handdleRemoveFromRole = async () => {
-    console.log("remove from role ")
-    console.log(selectedRoleActions)
+    console.log("remove from role ",selectedRoleActions)
     try {
       const response = await fetch(
         `/api/role/remove-action-from-role`,

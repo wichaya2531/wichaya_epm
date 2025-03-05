@@ -44,7 +44,7 @@ const statusOptions = [
 
 const JobsTable = ({ refresh }) => {
   const router = useRouter();
-  console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
+  //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
   //console.log("****use JibsTable****");
   //console.log("JobsTable=>",refresh);
   //console.log(refresh);

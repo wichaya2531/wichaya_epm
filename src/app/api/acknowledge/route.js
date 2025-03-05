@@ -34,7 +34,7 @@ export const POST = async (req, res) => {
 //   if (req.method === "POST") {
 //     try {
 //       const { taskID } = req.body; // รับข้อมูลจาก request body
-//       console.log(`Task ID received: ${taskID}`);
+//console.log(`Task ID received: ${taskID}`);
 
 //       // ตรวจสอบว่า jobID กับ taskID ตรงกันหรือไม่
 //       if (taskID !== jobID) {
@@ -44,7 +44,7 @@ export const POST = async (req, res) => {
 //       }
 
 //       // ตัวอย่าง: จำลองการบันทึกลงฐานข้อมูล
-//       console.log(`Acknowledging Task ID: ${taskID}`);
+//console.log(`Acknowledging Task ID: ${taskID}`);
 //       // e.g., await db.saveAcknowledgment(taskID);
 
 //       return res.status(200).json({

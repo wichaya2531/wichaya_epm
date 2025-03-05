@@ -77,7 +77,7 @@ const Page = ({ searchParams }) => {
               }
               clearInterval(timerID);
                
-      }, 2000);
+      }, 1000);
       
           
     }

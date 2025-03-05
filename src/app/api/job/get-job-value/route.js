@@ -94,6 +94,8 @@ export const GET = async (req, res) => {
       jobItems.map(async (jobItem) => {
         const location = await TestLocation.findById(jobItem.TEST_LOCATION_ID);
 
+       // console.log("jobItem=>",jobItem);
+
         return {
           JobItemID: jobItem._id,
           JobItemTitle: jobItem.JOB_ITEM_TITLE,
@@ -119,6 +121,7 @@ export const GET = async (req, res) => {
           guide_input: await getGuideInputByJobItem(
             jobItem.JOB_ITEM_TEMPLATE_ID
           ),
+          input_type:jobItem.INPUT_TYPE||"All"
         };
       })
     );

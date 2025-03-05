@@ -159,7 +159,7 @@ const Page = () => {
         setJobTemplates(data.jobTemplates);
       }
     } catch (err) {
-      console.log(err);
+      console.log("err",err);
     }
     //showInvalidLineNamePopup;
   };
@@ -452,7 +452,7 @@ const Page = () => {
         setJobs(data.jobs);
       }
     } catch (err) {
-      console.log(err);
+      console.log("err",err);
     }
   };
 

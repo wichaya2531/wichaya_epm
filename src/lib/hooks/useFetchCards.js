@@ -39,7 +39,7 @@ const useFetchCards = (refresh = null) => {
     }
 
     if (sessionError) {
-      console.log(sessionError);
+      console.log("sessionError",sessionError);
     }
   }, [session, refresh]);
 

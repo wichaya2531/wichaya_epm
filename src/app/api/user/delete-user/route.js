@@ -4,8 +4,12 @@ import { NextResponse } from 'next/server';
 import { connectToDb } from "@/app/api/mongo/index.js";
 
 export const DELETE = async (req, {params}) => {
+    
+    const {user_id} = await req.json();
+    //console.log(" use delete user!!",user_id); 
+    //return NextResponse.json({ message: "User not found", file: __filename });
     await connectToDb();
-    const { user_id } = params;
+    //const { user_id } = params;
     try {
         const user = await User.findByIdAndDelete(user_id);
         if (!user) {

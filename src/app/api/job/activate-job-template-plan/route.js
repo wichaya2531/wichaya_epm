@@ -68,7 +68,7 @@ export const POST = async (req, res) => {
 
 //   console.log("shift_date status",shift_date);
 //  if (shift_date) {
-//       console.log("A");
+//console.log("A");
 //  } else{
 //   console.log("B");
 //  }

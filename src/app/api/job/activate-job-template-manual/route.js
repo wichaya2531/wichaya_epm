@@ -151,6 +151,7 @@ export const POST = async (req, res) => {
           FILE: jobItemTemplate.FILE,
           createdAt: jobItemTemplate.createdAt,
           BEFORE_VALUE2: null,
+          INPUT_TYPE:jobItemTemplate.INPUT_TYPE||"All"
         });
         await jobItem.save();
 

@@ -5,7 +5,7 @@ import { Job } from "@/lib/models/Job.js";
 export const GET = async (req, res) => {
     await connectToDb();
 
-    console.log(new Date());
+    console.log("new Date",new Date());
     // ใช้ Aggregation Pipeline
     const qry_job = await Job.aggregate([
         {
@@ -53,7 +53,7 @@ export const GET = async (req, res) => {
     console.log("workgroups", workgroups);
 
     
-    console.log(new Date());
+    console.log("new Date",new Date());
 
     // ส่งผลลัพธ์กลับไป
     return NextResponse.json({ status: 200, data: workgroups });

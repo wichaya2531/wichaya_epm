@@ -4,7 +4,7 @@ const TestMethodDescriptionModal = ({ setTestMethodDescription, showDetail = {} 
     const { File, TestMethod } = showDetail;
 
     // Replace backslashes with forward slashes in the File path
-    console.log(File);
+    console.log("File",File);
     const imagePath = File ? File.replace(/\\/g, '/') : null;
 
     return (

@@ -76,9 +76,25 @@ const Page = ({searchParams}) => {
     }
   }
 
-  const handleDelete = async (user_id) => {
-    await fetch(`/api/workgroup/remove-user-from-workgroup`, {
+  const handleDeleteFromDB = async (user_id) => {
+    // alert('use handleDeleteFromDB '+user_id);
+    // return;
+    await fetch(`/api/user/delete-user/`, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id,
+      }),
+      next: { revalidate: 10 },
+    });
+    setRefresh(!refresh);
+  }
+
+  const handleAdd = async (user_id) => {
+    await fetch(`/api/workgroup/add-user-to-workgroup`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
@@ -91,7 +107,7 @@ const Page = ({searchParams}) => {
     setRefresh(!refresh);
   }
 
-  const handleAdd = async (user_id) => {
+  const handleDelete = async (user_id) => {
     await fetch(`/api/workgroup/add-user-to-workgroup`, {
       method: "POST",
       headers: {
@@ -147,6 +163,14 @@ const Page = ({searchParams}) => {
           Add
         </button>
       </span>,
+      <span className="pl-4" key={"delete-"+user._id}>
+      <button
+        onClick={() => handleDeleteFromDB(user._id)}
+        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Delete
+      </button>
+    </span>
     ],
   }));
 

@@ -35,7 +35,7 @@ const sendData = async () => {
     }
 
     const data = await response.json();
-    console.log(data);
+    console.log("data",data);
   } catch (error) {
     console.error("Error sending data:", error);
   }
