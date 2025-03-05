@@ -22,7 +22,7 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
 
   let datesToShow = []; // ประกาศตัวแปร datesToShow ให้ออกมานอกเงื่อนไข
 
-  if (reportType === "date") {
+  if (reportType === "date" || reportType === "shift") {
     // คำนวณวันที่ทั้งหมดในช่วงเวลาที่เลือก
     let currentDate = new Date(startDate);
     while (currentDate <= endDate) {
@@ -78,7 +78,7 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
     }
   } else if (reportType === "week") {
     // ใช้ weeksToShow สำหรับแสดงข้อมูลในรูปแบบสัปดาห์
-  } else if (reportType === "date") {
+  } else if (reportType === "date" || reportType === "shift") {
     // ตัวแปร datesToShow จะถูกใช้ในภายหลัง
   }
 
@@ -87,6 +87,8 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
     dataset.data
       .map((item) => {
         const itemDate = new Date(item.x);
+        const hours = itemDate.getHours();
+        const ampm = hours < 12 ? "AM" : "PM"; // แบ่ง AM/PM
         return {
           docNumber: item.docNumber,
           jobItemName: item.jobItemName,
@@ -96,6 +98,11 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
           actualValue: item.actualValue,
           date: itemDate, // ใช้ Date Object จริง
           dateStr: itemDate.toISOString().split("T")[0], // แปลงเป็น YYYY-MM-DD
+          time: itemDate.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }), // แปลงเป็นเวลาแบบ 'HH:MM'
+          ampm: ampm, // เก็บ AM หรือ PM
         };
       })
       .filter((item) => {
@@ -110,7 +117,7 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
           return weeksToShow.some(
             (week) => item.date >= week.start && item.date <= week.end
           );
-        } else if (reportType === "date") {
+        } else if (reportType === "date" || reportType === "shift") {
           return datesToShow.some(
             (date) =>
               date instanceof Date &&
@@ -158,14 +165,33 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
       if (index !== -1) {
         acc[key].weeks[index] = item.actualValue;
       }
-    } else if (reportType === "date" || reportType === "shift") {
+    } else if (reportType === "date") {
+      // สำหรับ reportType === "date"
       index = datesToShow.findIndex(
         (date) =>
           date instanceof Date &&
           date.toISOString().split("T")[0] === item.dateStr
       );
       if (index !== -1) {
-        acc[key].dates[index] = item.actualValue;
+        acc[key].dates[index] = {
+          date: item.dateStr, // เก็บแค่วันที่
+          actualValue: item.actualValue, // เก็บ actual value
+        };
+      }
+    } else if (reportType === "shift") {
+      // สำหรับ reportType === "shift"
+      index = datesToShow.findIndex(
+        (date) =>
+          date instanceof Date &&
+          date.toISOString().split("T")[0] === item.dateStr
+      );
+      if (index !== -1) {
+        acc[key].dates[index] = {
+          date: item.dateStr, // เก็บวันที่
+          time: item.time, // เก็บเวลา
+          ampm: item.ampm, // เก็บ AM/PM
+          actualValue: item.actualValue, // เก็บ actual value
+        };
       }
     }
 
@@ -191,27 +217,33 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
   console.log("monthsToShow: ", monthsToShow);
   console.log("datesToShow: ", datesToShow);
   console.log("formattedData: ", formattedData);
+  console.log("reportType: ", reportType);
 
   const getBackgroundColor = (actualValue) => {
-    switch (actualValue?.toLowerCase()) {
-      case "pass":
-        return "bg-green-200";
-      case "good":
-        return "bg-blue-200";
-      case "not change":
-        return "bg-gray-200";
-      case "fail":
-        return "bg-red-200";
-      case "change":
-        return "bg-yellow-200";
-      case "done":
-        return "bg-purple-200";
-      case "check":
-        return "bg-orange-200";
-      case "unknown":
-        return "bg-indigo-200";
-      default:
-        return "bg-white";
+    // ตรวจสอบว่า actualValue เป็น string หรือไม่
+    if (typeof actualValue === "string") {
+      switch (actualValue.toLowerCase()) {
+        case "pass":
+          return "bg-green-200";
+        case "good":
+          return "bg-blue-200";
+        case "not change":
+          return "bg-gray-200";
+        case "fail":
+          return "bg-red-200";
+        case "change":
+          return "bg-yellow-200";
+        case "done":
+          return "bg-purple-200";
+        case "check":
+          return "bg-orange-200";
+        case "unknown":
+          return "bg-indigo-200";
+        default:
+          return "bg-white";
+      }
+    } else {
+      return "bg-white"; // ถ้าไม่ใช่ string จะใช้พื้นหลังเป็นสีขาว
     }
   };
 
@@ -246,13 +278,22 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
       <table className="min-w-full border-collapse table-auto rounded-lg">
         <thead>
           <tr>
-            <th className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white">
+            <th
+              rowSpan={2}
+              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+            >
               Doc Number
             </th>
-            <th className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white">
+            <th
+              rowSpan={2}
+              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+            >
               Item Title
             </th>
-            <th className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white">
+            <th
+              rowSpan={2}
+              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+            >
               Item Name
             </th>
             {/* แสดงข้อมูลตามประเภท reportType */}
@@ -260,7 +301,7 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
               monthsToShow.map((monthDate, index) => (
                 <th
                   key={index}
-                  className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white"
+                  className="border px-4 py-2 text-left font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
                 >
                   {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
                 </th>
@@ -269,7 +310,7 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
               weeksToShow.map((week, index) => (
                 <th
                   key={index}
-                  className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white"
+                  className="border px-4 py-2 text-left font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
                 >
                   {week.label}
                 </th>
@@ -278,12 +319,38 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
               datesToShow.map((date, index) => (
                 <th
                   key={index}
-                  className="border px-4 py-2 text-left font-semibold bg-blue-600 text-white"
+                  // ใช้ colSpan 2 เพื่อรวม AM และ PM ในแถวบนสุด
+                  className="border px-4 py-2 text-center font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
+                >
+                  {date.toLocaleDateString()}
+                </th>
+              ))}
+            {reportType === "shift" &&
+              datesToShow.map((date, index) => (
+                <th
+                  key={index}
+                  colSpan={2} // ใช้ colSpan 2 เพื่อรวม AM และ PM ในแถวบนสุด
+                  className="border px-4 py-2 text-center font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
                 >
                   {date.toLocaleDateString()}
                 </th>
               ))}
           </tr>
+          {/* แสดง AM/PM เฉพาะแถวที่สอง */}
+          {reportType === "shift" && (
+            <tr>
+              {datesToShow.map((date, index) => (
+                <React.Fragment key={index}>
+                  <th className="border px-4 py-2 text-center font-semibold bg-gray-300">
+                    AM
+                  </th>
+                  <th className="border px-4 py-2 text-center font-semibold bg-gray-300">
+                    PM
+                  </th>
+                </React.Fragment>
+              ))}
+            </tr>
+          )}
         </thead>
         <tbody>
           {displayedData.length > 0 ? (
@@ -323,17 +390,47 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
                     </td>
                   ))}
                 {reportType === "date" &&
-                  row.dates.map((value, dateIndex) => (
-                    <td
-                      key={dateIndex}
-                      className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                        value
-                      )}`}
-                    >
-                      {value || "-"}{" "}
-                      {/* ถ้า value เป็น null หรือ undefined จะแสดงเป็น "-" */}
-                    </td>
-                  ))}
+                  row.dates.map((dateData, dateIndex) => {
+                    const value = dateData?.actualValue ?? "-"; // ใช้ค่าของ actualValue ถ้ามี ไม่งั้นใช้ "-"
+
+                    return (
+                      <td
+                        key={dateIndex}
+                        className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                          value
+                        )}`}
+                      >
+                        {value}
+                      </td>
+                    );
+                  })}
+                {reportType === "shift" &&
+                  datesToShow.map((date, dateIndex) => {
+                    const dateData = row.dates[dateIndex];
+
+                    const time = dateData ? dateData.time : "-";
+                    const ampm = dateData ? dateData.ampm : "-";
+                    const value = dateData ? dateData.actualValue : "-";
+
+                    return (
+                      <React.Fragment key={dateIndex}>
+                        <td
+                          key={`time-${dateIndex}`} // ใช้ backticks สำหรับ string interpolation
+                          className="border px-4 py-2 text-sm text-gray-700"
+                        >
+                          -
+                        </td>
+                        <td
+                          key={`value-${dateIndex}`} // ใช้ backticks สำหรับ string interpolation
+                          className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                            value
+                          )}`} // ใส่ getBackgroundColor(value) เพื่อกำหนดสีพื้นหลัง
+                        >
+                          {value}
+                        </td>
+                      </React.Fragment>
+                    );
+                  })}
               </tr>
             ))
           ) : (

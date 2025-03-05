@@ -17,7 +17,7 @@ import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const { report, isLoading } = useFetchReport1(refresh);
-  const [selectedChart, setSelectedChart] = useState("BarChart5");
+  const [selectedChart, setSelectedChart] = useState("ReportDoc");
   const chartButtons = [
     //{ label: "Value in Item", value: "BarChart5" },
     { label: "ReportDoc", value: "ReportDoc" },
@@ -70,9 +70,9 @@ const Page = () => {
         {selectedChart === "BarChart2" && <BarChart2 />}
         {selectedChart === "BarChart3" && <BarChart3 />}
         {selectedChart === "BarChart4" && <BarChart4 />} */}
-        {selectedChart === "BarChart5" && (
+        {/* {selectedChart === "BarChart5" && (
           <BarChart5 report={report} isLoading={isLoading} />
-        )}
+        )} */}
         {selectedChart === "ReportDoc" && (
           <ReportDoc report={report} isLoading={isLoading} />
         )}

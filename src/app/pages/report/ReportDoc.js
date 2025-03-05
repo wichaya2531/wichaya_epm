@@ -657,9 +657,9 @@ const ReportDoc = ({ report, isLoading }) => {
               setStartDate(selectedStartDate);
 
               if (reportType === "date" || reportType === "shift") {
-                setEndDate(selectedStartDate); // สำหรับประเภท date หรือ shift ให้ endDate เท่ากับ startDate
+                setEndDate(selectedStartDate);
               } else {
-                setEndDate(getLastDayOfMonth(selectedStartDate)); // สำหรับประเภทเดือนหรือสัปดาห์
+                setEndDate(getLastDayOfMonth(selectedStartDate));
               }
             }}
             disabled={isLoading}
@@ -696,9 +696,9 @@ const ReportDoc = ({ report, isLoading }) => {
               setEndDate(selectedEndDate);
 
               if (reportType === "date" || reportType === "shift") {
-                setEndDate(selectedEndDate); // สำหรับประเภท date หรือ shift ให้ endDate เท่ากับ startDate
+                setEndDate(selectedEndDate);
               } else {
-                setEndDate(getLastDayOfMonth(selectedEndDate)); // สำหรับประเภทเดือนหรือสัปดาห์
+                setEndDate(getLastDayOfMonth(selectedEndDate));
               }
             }}
             disabled={isLoading}
