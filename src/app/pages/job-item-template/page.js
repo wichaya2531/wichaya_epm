@@ -72,7 +72,7 @@ const Page = () => {
         setJobTemplates(data.jobTemplates);
       }
     } catch (err) {
-      console.log("err",err);
+      console.log("err", err);
     }
   };
 
@@ -134,11 +134,10 @@ const Page = () => {
       });
   };
 
-
-  const handleInfo = async (job_template_id,LINE_NAME) => {
-        Swal.fire({
-          title: 'API Url',
-          html: `
+  const handleInfo = async (job_template_id, LINE_NAME) => {
+    Swal.fire({
+      title: "API Url",
+      html: `
               <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                   <div style="width:100%;text-align:left;">
                       <div style="border:1px solid none;width:100%;padding:5px;" >
@@ -162,28 +161,27 @@ const Page = () => {
                  
               </div>
           `,
-          showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
-          width:'auto',
-      });
-      // เพิ่ม Event Listener ให้กับปุ่ม Copy
-  
-      document.addEventListener('click', (event) => {
-        if (event.target.id === 'copy-btn-create') {
-            const textArea = document.createElement('textarea');
-            textArea.value = `${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id}`; //job_template_id`;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                Swal.fire('Copied!', 'ID has been copied to clipboard.', 'success');
-            } catch (err) {
-                Swal.fire('Oops!', 'Failed to copy ID.', 'error');
-            }
-            document.body.removeChild(textArea);
-        }
+      showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
+      width: "auto",
     });
-          
-  }
+    // เพิ่ม Event Listener ให้กับปุ่ม Copy
+
+    document.addEventListener("click", (event) => {
+      if (event.target.id === "copy-btn-create") {
+        const textArea = document.createElement("textarea");
+        textArea.value = `${process.env.NEXT_PUBLIC_HOST_LINK}/api/job/activate-job-template-third-party/?job_key=${job_template_id}&line=${LINE_NAME}&user_id=${session.user_id}`; //job_template_id`;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand("copy");
+          Swal.fire("Copied!", "ID has been copied to clipboard.", "success");
+        } catch (err) {
+          Swal.fire("Oops!", "Failed to copy ID.", "error");
+        }
+        document.body.removeChild(textArea);
+      }
+    });
+  };
 
   const handleCopy = async (job_template_id) => {
     const swalWithBootstrapButtons = Swal.mixin({
@@ -342,12 +340,11 @@ const Page = () => {
           </Link>
 
           <button
-            onClick={() => handleInfo(jobTemplate._id,jobTemplate.LINE_NAME)}
+            onClick={() => handleInfo(jobTemplate._id, jobTemplate.LINE_NAME)}
             className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
           >
             Info
           </button>
-
         </div>
       ),
     };
@@ -361,11 +358,11 @@ const Page = () => {
             <ArrowBackIosNewIcon />
           </Link>
           <Image
-                     src="/assets/card-logo/management.png"
-                     alt="wd logo"
-                     width={50}
-                     height={50}
-                   />
+            src="/assets/card-logo/management.png"
+            alt="wd logo"
+            width={50}
+            height={50}
+          />
           WorkGroup: {user.workgroup}{" "}
         </h1>
         <h1 className="text-2xl font-bold">Checklist Templates</h1>{" "}

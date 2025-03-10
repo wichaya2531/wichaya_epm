@@ -325,7 +325,7 @@ const Page = () => {
       action:
         user.role !== "Admin Group"
           ? [
-              <div className="flex items-center space-x-4">
+              <div className="flex justify-center items-center space-x-4">
                 <button
                   onClick={async () => {
                     const role_id = selectedRoles[user._id];
