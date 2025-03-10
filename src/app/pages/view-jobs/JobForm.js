@@ -76,6 +76,11 @@ const JobForm = ({
   };
 
   const handleGuideItemSelected = (valueItem, item) => {
+
+        // console.log("valueItem",valueItem);
+        // console.log("item",item);
+
+
     try {
       document.getElementById(item.JobItemID).value = valueItem;
     } catch (error) {}
@@ -92,6 +97,7 @@ const JobForm = ({
   };
 
   const handleHiddenSelectGuideInput = (item) => {
+    //console.log("item",item);
     try {
       document.getElementById(
         "guide-input-panel-" + item.JobItemID
@@ -101,6 +107,9 @@ const JobForm = ({
 
   const handleOnFocusItemInput = (item) => {
     //console.log("handleOnFocus ->",item);
+    if (item.input_type==="Numeric") {
+          return;
+    }
     jobItems.forEach((element) => {
       if (element.JobItemID === item.JobItemID) {
         return;

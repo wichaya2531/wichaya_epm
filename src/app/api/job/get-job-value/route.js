@@ -20,14 +20,17 @@ const getGuideInputByJobItem = async (jobItemID) => {
 
   var guideInput = [];
   jobItem.map((item) => {
-    //console.log('item=>', ":"+item.ACTUAL_VALUE+":");
-    if (item.ACTUAL_VALUE !== null) {
+    if (
+      item.ACTUAL_VALUE !== null &&
+      !["pass", "fail"].includes(item.ACTUAL_VALUE.toLowerCase())
+    ) {
       guideInput.push(item.ACTUAL_VALUE);
     }
   });
   guideInput = [...new Set(guideInput)];
   return guideInput;
 };
+
 
 export const dynamic = "force-dynamic";
 export const GET = async (req, res) => {
