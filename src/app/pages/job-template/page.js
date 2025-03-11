@@ -39,6 +39,7 @@ const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [allOptions, setAllOptions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   //const [showPopup, setShowPopup] = useState(false);
   //const togglePopup = () => setShowPopup(!showPopup);
 
@@ -97,7 +98,7 @@ const Page = () => {
       const session = await getSession();
       await fetchUser(session.user_id);
     } catch (err) {
-      console.log("err",err);
+      console.log("err", err);
       //return { message: "Wrong credential Please try again" };
     }
   };
@@ -114,7 +115,7 @@ const Page = () => {
       setUser(() => data.user);
       setUserEnableFunctions(() => data.user.actions);
     } catch (err) {
-      console.log("err",err);
+      console.log("err", err);
     }
   };
 
@@ -136,7 +137,7 @@ const Page = () => {
       setOptions(userOptions);
       //fetchLineNames(data.users);
     } catch (err) {
-      console.log("err",err);
+      console.log("err", err);
     }
   };
 
@@ -222,7 +223,6 @@ const Page = () => {
     );
     setOptions(newOptions);
   };
-
 
   const handleRemoveApprover = (userId) => {
     const removedApprover = users.find((user) => user._id === userId);
@@ -329,36 +329,40 @@ const Page = () => {
     const NOTIFIES_OVERDUE_ID = notifiesOverdue.map(
       (notifyOverdue) => notifyOverdue.user_id
     );
-    const PICTURE_EVEDENT_REQUIRE = document.getElementById('picture-evident-require').checked?true:false;
-    const AGILE_SKIP_CHECK=document.getElementById('agile-skip-check').checked?true:false;
-    
+    const PICTURE_EVEDENT_REQUIRE = document.getElementById(
+      "picture-evident-require"
+    ).checked
+      ? true
+      : false;
+    const AGILE_SKIP_CHECK = document.getElementById("agile-skip-check").checked
+      ? true
+      : false;
+
     //console.log("PICTURE_EVEDENT_REQUIRE",PICTURE_EVEDENT_REQUIRE);
 
-    //console.log("APPROVERS_ID",APPROVERS_ID);  
-    if (APPROVERS_ID.length==0) {
-          const result = await Swal.fire({
-            title: 'Notifty',
-            text: "You have not specified the Approver List for this template. Do you want to confirm this action?",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Continue',
-            cancelButtonText: 'Back to Edit',
-          });
-        
-          if (result.isConfirmed) {
-            // หากกด Continue
-            //console.log('ดำเนินการต่อ');
-            // ทำงานที่ต้องการที่นี่ เช่น ส่งข้อมูลหรือไปยังหน้าถัดไป
-          } else {
-            // หากกด Cancel
-            return; 
-            //console.log('ยกเลิกการดำเนินการ');
-          }
-     }
+    //console.log("APPROVERS_ID",APPROVERS_ID);
+    if (APPROVERS_ID.length == 0) {
+      const result = await Swal.fire({
+        title: "Notifty",
+        text: "You have not specified the Approver List for this template. Do you want to confirm this action?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Continue",
+        cancelButtonText: "Back to Edit",
+      });
 
+      if (result.isConfirmed) {
+        // หากกด Continue
+        //console.log('ดำเนินการต่อ');
+        // ทำงานที่ต้องการที่นี่ เช่น ส่งข้อมูลหรือไปยังหน้าถัดไป
+      } else {
+        // หากกด Cancel
+        return;
+        //console.log('ยกเลิกการดำเนินการ');
+      }
+    }
 
-
-   // return;
+    // return;
 
     const data = {
       AUTHOR_ID,
@@ -433,9 +437,9 @@ const Page = () => {
               className="rounded-full"
             />
             <h1 className="text-3xl font-bold text-slate-900">
-               <p>Create</p> 
-               <hr></hr>
-               <p>Checklist Template</p>               
+              <p>Create</p>
+              <hr></hr>
+              <p>Checklist Template</p>
             </h1>
           </div>
           <p className="text-sm font-bold text-secondary flex items-center">
@@ -454,7 +458,9 @@ const Page = () => {
       }`}
         >
           <div className="flex gap-3 items-center ">
-            <p>View all<hr></hr> Checklist Templates</p>
+            <p>
+              View all<hr></hr> Checklist Templates
+            </p>
             {/* <PageviewIcon /> */}
           </div>
         </Link>
@@ -696,30 +702,31 @@ const Page = () => {
               </button>
             </div>
 
-            <div className="flex flex-col items-start space-y-2 border-red-300" style={{ height:'auto', padding: '10px'}}>
-              <div id='1' style={{border:'1px solid none', padding: '5px'}}>
+            <div
+              className="flex flex-col items-start space-y-2 border-red-300"
+              style={{ height: "auto", padding: "10px" }}
+            >
+              <div id="1" style={{ border: "1px solid none", padding: "5px" }}>
                 <input
                   type="checkbox"
-                  id="picture-evident-require"                    
+                  id="picture-evident-require"
                   className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
                 />
                 <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
-                    &nbsp;&nbsp;&nbsp;Evident Picture Require
+                  &nbsp;&nbsp;&nbsp;Evident Picture Require
                 </label>
               </div>
-              <div id='2' style={{border:'1px solid none', padding: '5px'}}>
+              <div id="2" style={{ border: "1px solid none", padding: "5px" }}>
                 <input
-                    type="checkbox"
-                    id="agile-skip-check"                    
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-                  />
+                  type="checkbox"
+                  id="agile-skip-check"
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                />
                 <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
-                    &nbsp;&nbsp;&nbsp;Agile Skip Check
+                  &nbsp;&nbsp;&nbsp;Agile Skip Check
                 </label>
               </div>
-            </div> 
-
-
+            </div>
           </div>
           {
             // check if user has permission to create Checklist template
@@ -733,7 +740,6 @@ const Page = () => {
                 <p>Create</p>
                 <hr></hr>
                 <p>Checklist Template.</p>
-               
               </button>
             ) : (
               <button
@@ -754,18 +760,24 @@ const Page = () => {
           datas={dataApprover}
           TableName="Approver List"
           searchColumn="Name"
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
         <TableComponent
           headers={notifyHeader}
           datas={dataNotify}
           TableName="Notify Active List"
           searchColumn="Name"
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
         <TableComponent
           headers={notifyOverdueHeader}
           datas={dataNotifyOverdue}
           TableName="Notify Overdue List"
           searchColumn="Name"
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
     </Layout>

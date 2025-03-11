@@ -36,6 +36,8 @@ const Page = () => {
   const [roles, setRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState({});
   const [userEnableFunctions, setUserEnableFunctions] = useState([]);
+  const [currentPageTable1, setCurrentPageTable1] = useState(1);
+  const [currentPageTable2, setCurrentPageTable2] = useState(1);
 
   useEffect(() => {
     fetchSession();
@@ -483,15 +485,21 @@ const Page = () => {
             searchColumn={"Name"}
             TableName={"Members"}
             filterColumn="Role"
+            currentPage={currentPageTable1} // ✅ ใช้ state ของตารางบน
+            onPageChange={(page) => setCurrentPageTable1(page)} // ✅ แยก setState
           />
         </div>
+
         <hr className="w-full" />
+
         <div className="">
           <TableComponent
             headers={userHeader}
             datas={dataUsers}
             searchColumn={"Name"}
             TableName={"All users"}
+            currentPage={currentPageTable2} // ✅ ใช้ state ของตารางล่าง
+            onPageChange={(page) => setCurrentPageTable2(page)} // ✅ แยก setState
           />
         </div>
       </div>

@@ -12,12 +12,11 @@ const TableComponentAdmin = ({
   PageSize,
   searchHidden = null,
   linenameOnSelect = null,
-  onPageChange,
   selectedJobs,
   handleDeleteSelected,
   filteredJobs,
   currentPage,
-  setCurrentPage,
+  onPageChange,
   setSelectedJobs,
 }) => {
   setTimeout(() => {
@@ -79,26 +78,62 @@ const TableComponentAdmin = ({
   );
 
   const goToPage = (page) => {
-    setCurrentPage(page);
-    try {
+    if (page >= 1 && page <= totalPages) {
       onPageChange(page);
-    } catch (error) {}
+    }
   };
+  const generatePageNumbers = (currentPage, totalPages, maxVisible = 5) => {
+    const pageNumbers = [];
+    const half = Math.floor(maxVisible / 2);
+
+    let start = Math.max(1, currentPage - half);
+    let end = Math.min(totalPages, currentPage + half);
+
+    // Case 1: หากอยู่ที่หน้าแรก
+    if (currentPage <= half) {
+      end = Math.min(totalPages, maxVisible);
+    }
+    // Case 2: หากอยู่ที่หน้าสุดท้าย
+    else if (currentPage + half >= totalPages) {
+      start = Math.max(1, totalPages - maxVisible + 1);
+    }
+
+    // เริ่มต้นการแสดงหมายเลขหน้า
+    if (start > 1) {
+      pageNumbers.push(1);
+      if (start > 2) pageNumbers.push("..."); // แสดง "..." เมื่อมีหน้าเยอะ
+    }
+
+    // เพิ่มหมายเลขหน้าที่แสดง
+    for (let i = start; i <= end; i++) {
+      pageNumbers.push(i);
+    }
+
+    // การแสดงหน้า 324 หรือหน้าอื่น ๆ
+    if (end < totalPages) {
+      if (end < totalPages - 1) pageNumbers.push("..."); // แสดง "..." หากมีหน้าหลาย
+      pageNumbers.push(totalPages);
+    }
+
+    return pageNumbers;
+  };
+
+  const pageNumbers = generatePageNumbers(currentPage, totalPages);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
+    onPageChange(1);
   };
 
   const handlePageSizeChange = (event) => {
     setPageSize(Number(event.target.value));
-    setCurrentPage(1);
+    onPageChange(1);
     setRowsVisible(event.target.value);
   };
 
   const handleFilterChange = (event) => {
     setSelectedFilter(event.target.value);
-    setCurrentPage(1);
+    onPageChange(1);
   };
 
   const handleSort = (key) => {
@@ -263,18 +298,49 @@ const TableComponentAdmin = ({
           </tbody>
         </table>
       </div>
-
-      <div className="mt-4">
+      <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+        {/* ปุ่ม Prev */}
         <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 cursor-pointer"
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded disabled:opacity-50 transition duration-300"
           disabled={currentPage === 1}
           onClick={() => goToPage(currentPage - 1)}
         >
           Prev
         </button>
-        <span className="p-5">{`Page ${currentPage} of ${totalPages}`}</span>
+
+        {/* หมายเลขหน้า (แสดงเฉพาะจอใหญ่) */}
+        <div className="hidden sm:flex gap-2">
+          {pageNumbers.map((page) => (
+            <button
+              key={page}
+              onClick={() => goToPage(page)}
+              className={`py-2 px-4 rounded-lg font-semibold transition duration-300 ${
+                currentPage === page
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 hover:bg-blue-200"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+
+        {/* Dropdown เปลี่ยนหน้า (แสดงบนมือถือ) */}
+        <select
+          className="sm:hidden border rounded px-3 py-2 bg-gray-200 hover:bg-gray-300 transition duration-300"
+          value={currentPage}
+          onChange={(e) => goToPage(Number(e.target.value))}
+        >
+          {pageNumbers.map((page) => (
+            <option key={page} value={page}>
+              Page {page}
+            </option>
+          ))}
+        </select>
+
+        {/* ปุ่ม Next */}
         <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded disabled:opacity-50 transition duration-300"
           disabled={currentPage === totalPages}
           onClick={() => goToPage(currentPage + 1)}
         >

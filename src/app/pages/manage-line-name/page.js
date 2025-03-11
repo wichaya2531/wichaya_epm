@@ -15,9 +15,9 @@ import { FaPlus } from "react-icons/fa";
 const lineNameHeader = ["ID", "Line Name", "Created At", "Action"];
 const Page = () => {
   const [currentUser, setcurrentUser] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectLineNames, setSelectLineNames] = useState([]);
-  const [selectLineName, setSelectLineName] = useState(""); // เก็บค่าที่ผู้ใช้กรอก
+  const [selectLineName, setSelectLineName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // แปลงข้อมูล selectLineNames ให้เข้ากับโครงสร้างของตาราง
@@ -287,6 +287,8 @@ const Page = () => {
           TableName="Line name list"
           searchColumn="Line Name"
           filterColumn="Line Name"
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
     </Layout>

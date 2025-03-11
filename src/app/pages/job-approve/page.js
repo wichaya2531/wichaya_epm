@@ -6,6 +6,7 @@ import useFetchUser from "@/lib/hooks/useFetchUser";
 import Link from "next/link";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import { useState } from "react";
 
 const jobApprovesHeader = [
   "ID",
@@ -18,6 +19,7 @@ const jobApprovesHeader = [
 ];
 //console.log("jobApprovesHeader_xxx..");
 const Page = () => {
+  const [currentPage, setCurrentPage] = useState(1);
   const { user, isLoading: userLoading, error: userError } = useFetchUser();
   const {
     jobApproves,
@@ -82,15 +84,18 @@ const Page = () => {
         </h1>
       </div>
       <div className="mb-4 p-4 bg-white rounded-xl">
-      <h1 className="text-md font-bold text-secondary flex items-center">
-        There are {Array.isArray(jobApproves) ? jobApproves.length : 0} submitted jobs, that you need to be reviewed.
-      </h1>
+        <h1 className="text-md font-bold text-secondary flex items-center">
+          There are {Array.isArray(jobApproves) ? jobApproves.length : 0}{" "}
+          submitted jobs, that you need to be reviewed.
+        </h1>
         <hr className="border-gray-300 mt-4" />
         <TableComponent
           headers={jobApprovesHeader}
           datas={jobApprovesBody}
           TableName="Active Jobs"
           PageSize={5}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
     </Layout>
