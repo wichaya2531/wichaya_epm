@@ -203,18 +203,21 @@ export const POST = async (req, res) => {
     const now = new Date(); // เวลาปัจจุบัน
     const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
     startTime.setMinutes(now.getMinutes() - 60); // ลบ 60 นาที
-
+    
     const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
     endTime.setMinutes(now.getMinutes() + 60); // เพิ่ม 60 นาที
-
+    //console.log("scheduler startTime:",startTime);  
+    //console.log("scheduler endTime:",endTime);  
+    
     const scheduler = await Schedule.find({
       ACTIVATE_DATE: {
         $gte: startTime, // เวลาที่มากกว่าหรือเท่ากับ startTime (60 นาทีก่อนหน้า)
         $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
       },
+      STATUS:"plan",
     });
 
-    //console.log("scheduler=>", scheduler);
+    //console.log("scheduler ที่ค้นหาเจอ=>", scheduler);
     //return NextResponse.json({ status: 200 });
 
     scheduler.map(async (schedulers) => {

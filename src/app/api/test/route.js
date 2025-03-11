@@ -1,60 +1,30 @@
 import { NextResponse } from 'next/server';
 import { connectToDb } from "@/app/api/mongo/index.js";
+import { Schedule } from "@/lib/models/Schedule";
 import { Job } from "@/lib/models/Job.js";
 
 export const GET = async (req, res) => {
     await connectToDb();
 
-    console.log("new Date",new Date());
-    // ใช้ Aggregation Pipeline
-    const qry_job = await Job.aggregate([
-        {
-            // แปลง WORKGROUP_ID ที่เป็น String ให้เป็น ObjectId
-            $addFields: {
-                WORKGROUP_ID_ObjectId: { $toObjectId: "$WORKGROUP_ID" }
-            }
-        },
-        {
-            $lookup: {
-                from: "workgroups", // ชื่อคอลเลกชันของ Workgroup
-                localField: "WORKGROUP_ID_ObjectId", // ฟิลด์ใน Job ที่แปลงเป็น ObjectId
-                foreignField: "_id", // ฟิลด์ใน Workgroup
-                as: "workgroupDetails" // ชื่อฟิลด์ที่รวมข้อมูล
-            }
-        }
-    ]);
-
-    // สร้างผลลัพธ์ที่รวม Workgroup Name และ _id
-    const result = qry_job.map(job => {
-        const workgroupName = job.workgroupDetails.length > 0 ? job.workgroupDetails[0].WORKGROUP_NAME : "No Workgroup";
-        const workgroupId = job.workgroupDetails.length > 0 ? job.workgroupDetails[0]._id : null;
-
-        return {
-            JOB_NAME: job.JOB_NAME,
-            WORKGROUP_NAME: workgroupName,
-            WORKGROUP_ID: workgroupId
-        };
-    });
-
-    // แสดงผลลัพธ์แต่ละรายการ
-    var workgroups = [];
-    result.forEach(element => {
-        if (element.WORKGROUP_NAME !== "No Workgroup") {
-            // ตรวจสอบว่า Workgroup นี้มีอยู่แล้วใน workgroups หรือไม่
-            if (!workgroups.some(group => group.WORKGROUP_NAME === element.WORKGROUP_NAME)) {
-                workgroups.push({
-                    _id: element.WORKGROUP_ID, // เก็บ _id จาก Workgroup
-                    WORKGROUP_NAME: element.WORKGROUP_NAME
-                });
-            }
-        }
-    });
-
-    console.log("workgroups", workgroups);
-
-    
-    console.log("new Date",new Date());
+    const now = new Date(); // เวลาปัจจุบัน
+       const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
+       startTime.setMinutes(now.getMinutes() - 800); // ลบ 60 นาที
+       
+       const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
+       endTime.setMinutes(now.getMinutes() + 800); // เพิ่ม 60 นาที
+       console.log("scheduler startTime:",startTime);  
+       console.log("scheduler endTime:",endTime);  
+       
+       const scheduler = await Schedule.find({
+         ACTIVATE_DATE: {
+           $gte: startTime, // เวลาที่มากกว่าหรือเท่ากับ startTime (60 นาทีก่อนหน้า)
+           $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
+         },
+         STATUS:"plan",
+       });
+   
+       console.log("scheduler ที่ค้นหาเจอ=>", scheduler);
 
     // ส่งผลลัพธ์กลับไป
-    return NextResponse.json({ status: 200, data: workgroups });
+    return NextResponse.json({ status: 200});
 };

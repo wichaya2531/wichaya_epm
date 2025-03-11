@@ -14,6 +14,7 @@ const jobItemTemplateHeader = [
   "LINE NAME",
   "Checklist Template Name",
   "Document no.",
+  "Version.",
   "Created At",
   "Action",
 ];
@@ -263,6 +264,7 @@ const Page = () => {
       "LINE NAME": jobTemplate.LINE_NAME || "N/A",
       "Checklist Template Name": jobTemplate.JOB_TEMPLATE_NAME,
       "Document no.": jobTemplate.DOC_NUMBER,
+      "Version.":jobTemplate.CHECKLIST_VERSION,
       "Create At": jobTemplate.createdAt,
       Action: (
         <div className="flex gap-2 items-center justify-center">
@@ -343,7 +345,7 @@ const Page = () => {
             onClick={() => handleInfo(jobTemplate._id, jobTemplate.LINE_NAME)}
             className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
           >
-            Info
+            API
           </button>
         </div>
       ),

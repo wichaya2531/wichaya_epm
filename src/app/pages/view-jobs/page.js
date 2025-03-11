@@ -151,7 +151,9 @@ const Page = ({ searchParams }) => {
 
       jobItems.forEach((item) => {
         //console.log("mqttClient item ",item);
-        mqttClient.subscribe(item.JobItemTemplateMqtt /*item.JobItemID*/, (err) => {
+        //console.log("Line name of this job", jobData.LINE_NAME);
+        //console.log("scribed ",item.JobItemTemplateMqtt+"/"+jobData.LINE_NAME);
+        mqttClient.subscribe(item.JobItemTemplateMqtt+"/"+jobData.LINE_NAME /*item.JobItemID*/, (err) => {
           if (!err) {
           } else {
             console.error("Subscription error: ", err);
@@ -177,12 +179,13 @@ const Page = ({ searchParams }) => {
   // }, [view]);
   
   mqttClient.on("message", (topic, message) => {
+    //console.log("message","topic="+topic+":message="+message);  
     jobItems.forEach(element => {
-          if (element.JobItemTemplateMqtt==topic) {
+          if ((element.JobItemTemplateMqtt+"/"+jobData.LINE_NAME)==topic) {
              try{
-                  document.getElementById(element.JobItemID.toString()).placeholder = message.toString();
+                  document.getElementById(element.JobItemID.toString()+"/"+jobData.LINE_NAME).placeholder = message.toString();
              }catch(err){
-             
+                 //console.log(err);
              } 
           
           }

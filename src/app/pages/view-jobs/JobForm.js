@@ -77,12 +77,12 @@ const JobForm = ({
 
   const handleGuideItemSelected = (valueItem, item) => {
 
-        // console.log("valueItem",valueItem);
+        // console.log("Line name ",jobData.LINE_NAME);
         // console.log("item",item);
 
 
     try {
-      document.getElementById(item.JobItemID).value = valueItem;
+      document.getElementById(item.JobItemID+"/"+jobData.LINE_NAME).value = valueItem;
     } catch (error) {}
 
     try {
@@ -753,7 +753,14 @@ const JobForm = ({
                           ),
                         }}
                       />
-                    ) : (
+                    ) : item.input_type==="Numeric" ? (<input
+                      type="number"
+                      id={`before_value_2${item.JobItemID}`}
+                      onChange={(e) => handleBeforeValue(e, item)}
+                      className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                      placeholder={item.BeforeValue || ""}
+                      title={"Lastest Update: " + item.LastestUpdate}
+                    />) : (
                       <input
                         type="text"
                         id={`before_value_2${item.JobItemID}`}
@@ -779,58 +786,71 @@ const JobForm = ({
                           ),
                         }}
                       />
-                    ) : (
-                      <div>
+                    ) : item.input_type=="Numeric" ? (
+                        <input
+                          type="number"
+                          id={item.JobItemID+"/"+jobData.LINE_NAME}
+                          defaultValue={item.ActualValue || ""}
+                          onChange={(e) => handleInputChange(e, item)}
+                          className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                          placeholder="Enter value"
+                          onFocus={() => handleOnFocusItemInput(item)}
+                          autoComplete="on"
+                        />
+                    ): (
                         <div>
-                          <input
-                            type="text"
-                            id={item.JobItemID}
-                            defaultValue={item.ActualValue || ""}
-                            onChange={(e) => handleInputChange(e, item)}
-                            className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                            placeholder="Enter value"
-                            onFocus={() => handleOnFocusItemInput(item)}
-                            autoComplete="on"
-                          />
-                        </div>
-                        <div
-                          id={"guide-input-panel-" + item.JobItemID}
-                          style={{ padding: "10px", display: "none" }}
-                        >
-                          <select
-                            className="mb-5"
-                            name="item-guide-select"
-                            style={{
-                              padding: "5px",
-                              border: "1px solid green",
-                              borderRadius: "5px",
-                            }}
-                            onChange={(e) =>
-                              handleGuideItemSelected(e.target.value, item)
-                            }
+                          <div>
+                            <input
+                              type="text"
+                              id={item.JobItemID+"/"+jobData.LINE_NAME}
+                              defaultValue={item.ActualValue || ""}
+                              onChange={(e) => handleInputChange(e, item)}
+                              className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                              placeholder="Enter value"
+                              onFocus={() => handleOnFocusItemInput(item)}
+                              autoComplete="on"
+                            />
+                          </div>
+                          <div
+                            id={"guide-input-panel-" + item.JobItemID}
+                            style={{ padding: "10px", display: "none" }}
                           >
-                            <option value="เพิ่มเติม">--Select--</option>
-                            <option value="Pass">Pass</option>
-                            <option value="Fail">Fail</option>
-                            {item.guide_input.map((item) => (
-                              <option key={item} value={item}>
-                                {item}
-                              </option>
-                            ))}
-                          </select>
-                          <span
-                            onClick={() => handleHiddenSelectGuideInput(item)}
-                            style={{
-                              paddingLeft: "10px",
-                              cursor: "default",
-                              color: "blue",
-                            }}
-                          >
-                            [hide]
-                          </span>
+                            <select
+                              className="mb-5"
+                              name="item-guide-select"
+                              style={{
+                                padding: "5px",
+                                border: "1px solid green",
+                                borderRadius: "5px",
+                              }}
+                              onChange={(e) =>
+                                handleGuideItemSelected(e.target.value, item)
+                              }
+                            >
+                              <option value="เพิ่มเติม">--Select--</option>
+                              <option value="Pass">Pass</option>
+                              <option value="Fail">Fail</option>
+                              {item.guide_input.map((item) => (
+                                <option key={item} value={item}>
+                                  {item}
+                                </option>
+                              ))}
+                            </select>
+                            <span
+                              onClick={() => handleHiddenSelectGuideInput(item)}
+                              style={{
+                                paddingLeft: "10px",
+                                cursor: "default",
+                                color: "blue",
+                              }}
+                            >
+                              [hide]
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )
+                    
+                    }
 
                     {view ? (
                       item.Comment !== null ? (
