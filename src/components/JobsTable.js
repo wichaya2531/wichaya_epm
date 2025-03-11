@@ -119,7 +119,7 @@ const JobsTable = ({ refresh }) => {
     }
   };
 
-   //console.log("jobs.=>", jobs);
+  //console.log("jobs.=>", jobs);
   const filteredJobs =
     jobs &&
     jobs.filter((job) => {
@@ -397,7 +397,7 @@ const JobsTable = ({ refresh }) => {
           selectedJobs={selectedJobs}
           handleDeleteSelected={handleDeleteSelected}
           currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
+          onPageChange={(page) => setCurrentPage(page)}
           setSelectedJobs={setSelectedJobs}
         />
       ) : (
@@ -408,6 +408,8 @@ const JobsTable = ({ refresh }) => {
           PageSize={5}
           searchColumn={"Checklist Name"}
           searchHidden={true}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       )}
     </div>

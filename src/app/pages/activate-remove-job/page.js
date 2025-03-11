@@ -60,12 +60,10 @@ const Page = () => {
   const [jobs, setJobs] = useState([]);
   const [isShowDetail, setIsShowDetail] = useState(false);
   const [detail, setDetail] = useState({});
-
   const [isShowPlan, setIsShowPlan] = useState(false);
   const [planData, setPlanData] = useState({});
-
   const [filterStatus, setFilterStatus] = useState("All");
-
+  const [currentPage, setCurrentPage] = useState(1);
   var [allLineName, setAllLineName] = useState(false);
 
   const filteredJobs =
@@ -159,7 +157,7 @@ const Page = () => {
         setJobTemplates(data.jobTemplates);
       }
     } catch (err) {
-      console.log("err",err);
+      console.log("err", err);
     }
     //showInvalidLineNamePopup;
   };
@@ -452,7 +450,7 @@ const Page = () => {
         setJobs(data.jobs);
       }
     } catch (err) {
-      console.log("err",err);
+      console.log("err", err);
     }
   };
 
@@ -779,11 +777,11 @@ const Page = () => {
           <ArrowBackIosNewIcon />
         </Link>
         <Image
-            src="/assets/card-logo/management.png"
-            alt="wd logo"
-            width={50}
-            height={50}
-          />
+          src="/assets/card-logo/management.png"
+          alt="wd logo"
+          width={50}
+          height={50}
+        />
         WorkGroup: {user?.workgroup}{" "}
       </h1>
       <div className="mb-4 p-4 bg-white rounded-xl">
@@ -795,6 +793,7 @@ const Page = () => {
           searchColumn="Checklist Template Name"
           filterColumn="Line Name"
           onPageChange={handleOnpageChange}
+          currentPage={currentPage}
         />
       </div>
 
@@ -825,6 +824,8 @@ const Page = () => {
           TableName="Active Checklist"
           searchColumn="Checklist Name"
           filterColumn="Line Name"
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
       {isShowDetail && <ShowDetailModal />}

@@ -27,7 +27,8 @@ const ReportDoc = ({ report, isLoading }) => {
   const [jobItemNames, setJobItemNames] = useState([]);
   const [workgroupNames, setWorkgroupNames] = useState([]);
   const [lineNames, setLineNames] = useState([]);
-  const [reportType, setReportType] = useState("month"); // เริ่มต้นเป็น 'month'
+  const [reportType, setReportType] = useState("month");
+  const [currentPage, setCurrentPage] = useState(1);
   const getLastDayOfMonth = (date) => {
     const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     return lastDay;
@@ -744,6 +745,8 @@ const ReportDoc = ({ report, isLoading }) => {
             startDate={startDate}
             endDate={endDate}
             reportType={reportType}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
           />
         </div>
       </div>

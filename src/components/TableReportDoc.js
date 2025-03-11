@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 
-const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
+const TableReportDoc = ({
+  filteredData,
+  startDate,
+  endDate,
+  reportType,
+  currentPage,
+  onPageChange,
+}) => {
   const monthNames = [
     "Jan",
     "Feb",
@@ -202,22 +209,63 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
 
   // Pagination
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [currentPage, setCurrentPage] = React.useState(1);
   const totalPages = Math.ceil(formattedData.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const displayedData = formattedData.slice(
     startIndex,
     startIndex + rowsPerPage
   );
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      onPageChange(page);
+    }
+  };
+  const generatePageNumbers = (currentPage, totalPages, maxVisible = 5) => {
+    const pageNumbers = [];
+    const half = Math.floor(maxVisible / 2);
+
+    let start = Math.max(1, currentPage - half);
+    let end = Math.min(totalPages, currentPage + half);
+
+    // Case 1: หากอยู่ที่หน้าแรก
+    if (currentPage <= half) {
+      end = Math.min(totalPages, maxVisible);
+    }
+    // Case 2: หากอยู่ที่หน้าสุดท้าย
+    else if (currentPage + half >= totalPages) {
+      start = Math.max(1, totalPages - maxVisible + 1);
+    }
+
+    // เริ่มต้นการแสดงหมายเลขหน้า
+    if (start > 1) {
+      pageNumbers.push(1);
+      if (start > 2) pageNumbers.push("..."); // แสดง "..." เมื่อมีหน้าเยอะ
+    }
+
+    // เพิ่มหมายเลขหน้าที่แสดง
+    for (let i = start; i <= end; i++) {
+      pageNumbers.push(i);
+    }
+
+    // การแสดงหน้า 324 หรือหน้าอื่น ๆ
+    if (end < totalPages) {
+      if (end < totalPages - 1) pageNumbers.push("..."); // แสดง "..." หากมีหน้าหลาย
+      pageNumbers.push(totalPages);
+    }
+
+    return pageNumbers;
+  };
+
+  const pageNumbers = generatePageNumbers(currentPage, totalPages);
 
   // เพิ่ม console.log เพื่อตรวจสอบวันที่
-  console.log("startDate: ", startDate);
-  console.log("endDate: ", endDate);
-  console.log("weeksToShow: ", weeksToShow);
-  console.log("monthsToShow: ", monthsToShow);
-  console.log("datesToShow: ", datesToShow);
-  console.log("formattedData: ", formattedData);
-  console.log("reportType: ", reportType);
+  // console.log("startDate: ", startDate);
+  // console.log("endDate: ", endDate);
+  // console.log("weeksToShow: ", weeksToShow);
+  // console.log("monthsToShow: ", monthsToShow);
+  // console.log("datesToShow: ", datesToShow);
+  // console.log("formattedData: ", formattedData);
+  // console.log("reportType: ", reportType);
 
   const getBackgroundColor = (actualValue) => {
     // ตรวจสอบว่า actualValue เป็น string หรือไม่
@@ -263,7 +311,7 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
             value={rowsPerPage}
             onChange={(e) => {
               setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
+              onPageChange(1);
             }}
           >
             {[5, 10, 15, 20, 25, 50, 100].map((num) => (
@@ -451,33 +499,51 @@ const TableReportDoc = ({ filteredData, startDate, endDate, reportType }) => {
           )}
         </tbody>
       </table>
-
-      {/* ปุ่มเปลี่ยนหน้า */}
-      <div className="flex justify-evenly items-center m-4">
+      <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+        {/* ปุ่ม Prev */}
         <button
-          className={`px-4 py-2 border rounded-lg font-medium transition-all duration-300 ${
-            currentPage === 1
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-md"
-          }`}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded disabled:opacity-50 transition duration-300"
           disabled={currentPage === 1}
-          onClick={() => setCurrentPage((prev) => prev - 1)}
+          onClick={() => goToPage(currentPage - 1)}
         >
           Prev
         </button>
-        {totalPages > 0 && (
-          <span className="text-sm font-semibold text-gray-700">
-            Page {currentPage} of {totalPages}
-          </span>
-        )}
+
+        {/* หมายเลขหน้า (แสดงเฉพาะจอใหญ่) */}
+        <div className="hidden sm:flex gap-2">
+          {pageNumbers.map((page) => (
+            <button
+              key={page}
+              onClick={() => goToPage(page)}
+              className={`py-2 px-4 rounded-lg font-semibold transition duration-300 ${
+                currentPage === page
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 hover:bg-blue-200"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+
+        {/* Dropdown เปลี่ยนหน้า (แสดงบนมือถือ) */}
+        <select
+          className="sm:hidden border rounded px-3 py-2 bg-gray-200 hover:bg-gray-300 transition duration-300"
+          value={currentPage}
+          onChange={(e) => goToPage(Number(e.target.value))}
+        >
+          {pageNumbers.map((page) => (
+            <option key={page} value={page}>
+              Page {page}
+            </option>
+          ))}
+        </select>
+
+        {/* ปุ่ม Next */}
         <button
-          className={`px-4 py-2 border rounded-lg font-medium transition-all duration-300 ${
-            currentPage === totalPages || totalPages === 0
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-md"
-          }`}
-          disabled={currentPage === totalPages || totalPages === 0}
-          onClick={() => setCurrentPage((prev) => prev + 1)}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded disabled:opacity-50 transition duration-300"
+          disabled={currentPage === totalPages}
+          onClick={() => goToPage(currentPage + 1)}
         >
           Next
         </button>

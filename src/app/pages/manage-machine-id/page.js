@@ -14,6 +14,7 @@ import useFetchMachines from "@/lib/hooks/useFetchMachines.js";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
 
 const Page = () => {
+  const [currentPage, setCurrentPage] = useState(1);
   const { user } = useFetchUser();
   const { machines, loading, error, setMachines } = useFetchMachines();
   const [currentUser, setcurrentUser] = useState(false);
@@ -329,15 +330,14 @@ const Page = () => {
             </button>
           </div>
         </div>
-
-        {/*---- */}
-
         <TableComponent
           headers={lineNameHeader}
           datas={machineTableBody}
           TableName="Machine list"
           searchColumn="WD_TAG"
           filterColumn="WD_TAG"
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
     </Layout>

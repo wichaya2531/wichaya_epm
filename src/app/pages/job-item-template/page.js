@@ -32,6 +32,7 @@ const Page = () => {
   const [userEnableFunctions, setUserEnableFunctions] = useState([]);
   const [selectedLineName, setSelectedLineName] = useState("");
   const [selectedTemplateName, setSelectedTemplateName] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     retrieveSession();
@@ -396,6 +397,8 @@ const Page = () => {
           TableName="Checklist Templates"
           filterColumn="LINE NAME"
           searchColumn="Checklist Template Name"
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
     </Layout>

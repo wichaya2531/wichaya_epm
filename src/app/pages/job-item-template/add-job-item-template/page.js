@@ -16,7 +16,6 @@ import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { FaFileCsv, FaDownload } from "react-icons/fa";
 
-
 const jobItemTemplateHeader = [
   "Pos.",
   "Job Title",
@@ -33,6 +32,7 @@ const enabledFunction = {
 };
 
 const Page = ({ searchParams }) => {
+  const [currentPage, setCurrentPage] = useState(1);
   const [itemPicture, setItemPicture] = useState(null);
   const [uploadMode, setUploadMode] = useState("resize");
   const jobTemplate_id = searchParams.jobTemplate_id;
@@ -336,7 +336,7 @@ const Page = ({ searchParams }) => {
 
         setRefresh((prev) => !prev);
       } catch (err) {
-        console.log("Error",err);
+        console.log("Error", err);
         Swal.fire("Error!", "Failed to delete the item.", "error");
       }
     }
@@ -347,37 +347,37 @@ const Page = ({ searchParams }) => {
   };
 
   const handleTypeInputSelect = async (b, valueSelected) => {
-          //alert('****handleTypeInputSelect****',b);
-         // alert(valueSelected);
-         // return;
-          const formData = new FormData();
-          formData.append("jobItemTemplateID", b._id);
-          formData.append("input-type", valueSelected);
-      
-          try {
-            const res = await fetch(
-              "/api/job-item-template/edit-job-item-template/edit-job-item-template-input-type",
-              {
-                method: "POST",
-                body: formData,
-              }
-            );
-      
-            const data = await res.json();
-            console.log("data=>", data);
-      
-            //if (data.result) {
-            //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
-            //} else {
-            //alert("An error occurred while uploading the file.");
-            //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
-            //}
-          } catch (error) {
-            //console.error(error);
-            //alert("An error occurred while uploading the file.");
-            //return null; // คืนค่า null หากเกิดข้อผิดพลาด
-          }
-  }
+    //alert('****handleTypeInputSelect****',b);
+    // alert(valueSelected);
+    // return;
+    const formData = new FormData();
+    formData.append("jobItemTemplateID", b._id);
+    formData.append("input-type", valueSelected);
+
+    try {
+      const res = await fetch(
+        "/api/job-item-template/edit-job-item-template/edit-job-item-template-input-type",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+      console.log("data=>", data);
+
+      //if (data.result) {
+      //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
+      //} else {
+      //alert("An error occurred while uploading the file.");
+      //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      //}
+    } catch (error) {
+      //console.error(error);
+      //alert("An error occurred while uploading the file.");
+      //return null; // คืนค่า null หากเกิดข้อผิดพลาด
+    }
+  };
 
   const handlePosSelect = async (b, valueSelected) => {
     //console.log("valueSelected=>"+valueSelected+" => "+b._id);
@@ -444,14 +444,18 @@ const Page = ({ searchParams }) => {
       Upper_Lower:
         jobItemTemplate.UPPER_SPEC + "/" + jobItemTemplate.LOWER_SPEC,
       Test_Method: jobItemTemplate.TEST_METHOD,
-      input_type : 
-      (<div className="flex items-center justify-center gap-2">
+      input_type: (
+        <div className="flex items-center justify-center gap-2">
           <select
             className="p-2"
-           // onChange={(e) => handlePosSelect(jobItemTemplate, e.target.value)}
-           onChange={(e) => handleTypeInputSelect(jobItemTemplate, e.target.value)}
+            // onChange={(e) => handlePosSelect(jobItemTemplate, e.target.value)}
+            onChange={(e) =>
+              handleTypeInputSelect(jobItemTemplate, e.target.value)
+            }
           >
-            <option value={jobItemTemplate.INPUT_TYPE||""}>{jobItemTemplate.INPUT_TYPE}</option>
+            <option value={jobItemTemplate.INPUT_TYPE || ""}>
+              {jobItemTemplate.INPUT_TYPE}
+            </option>
             <option value="Numeric">Numeric</option>
             <option value="String">String</option>
             {/* <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
@@ -462,8 +466,7 @@ const Page = ({ searchParams }) => {
             ))} */}
           </select>
         </div>
-      )
-      ,
+      ),
       "Create At": jobItemTemplate.createdAt,
       Action: (
         <div className="flex items-center justify-center gap-2">
@@ -545,11 +548,11 @@ const Page = ({ searchParams }) => {
             <ArrowBackIosNewIcon />
           </Link>
           <Image
-                               src="/assets/card-logo/management.png"
-                               alt="wd logo"
-                               width={50}
-                               height={50}
-                             />
+            src="/assets/card-logo/management.png"
+            alt="wd logo"
+            width={50}
+            height={50}
+          />
           {jobTemplate.JOB_TEMPLATE_NAME}{" "}
         </h1>
         <h1 className="text-1 font-semibold">
@@ -822,6 +825,8 @@ const Page = ({ searchParams }) => {
           TableName={"Checklist Item Templates"}
           filterColumn={"Title"}
           searchColumn={"Title"}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
         />
       </div>
     </Layout>
