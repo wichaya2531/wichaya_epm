@@ -11,6 +11,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState("");
   const [selectedDayOfMonth, setSelectedDayOfMonth] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState("");
   var [allLineName, setAllLineName] = useState(false);
   const [refresh] = useState(false);
   const [session, setSession] = useState({});
@@ -116,6 +117,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       recurrence: showRecurring ? recurrenceOption : null,
       endDate: endDate ? new Date(endDate).toISOString() : null,
       ...data,
+      startDate: startDate ? new Date(startDate).toISOString() : null,
       LINE_NAME: selectedLineName,
       shift_date:document.getElementById("shift-date").checked,   
     };
@@ -136,7 +138,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       });
       return;
     }
-    console.log("requestData", requestData);
+    //console.log("requestData", requestData);
     try {
       const response = await fetch("/api/job/activate-job-template-plan", {
         method: "POST",
@@ -342,6 +344,19 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>
+
+              <label htmlFor="end-date" className="text-sm font-semibold">
+                Start Date
+              </label>
+              
+              <input
+                type="date"
+                id="start-date"
+                name="start-date"
+                onChange={(e) => setStartDate(e.target.value)}
+                className="border border-gray-300 rounded-md p-2"
+              />
+
               <label htmlFor="end-date" className="text-sm font-semibold">
                 End Date
               </label>

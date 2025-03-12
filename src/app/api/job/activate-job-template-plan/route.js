@@ -61,12 +61,13 @@ export const POST = async (req, res) => {
     ACTIVATER_ID,
     LINE_NAME,
     endDate,
+    startDate,
     shift_date,
   } = body;
 
 
 
-//   console.log("shift_date status",shift_date);
+   console.log("startDate ====>",startDate);
 //  if (shift_date) {
 //console.log("A");
 //  } else{
@@ -94,7 +95,7 @@ export const POST = async (req, res) => {
     // Calculate the end date based on the recurrence type
 
     let startDateActive = new Date(
-      formatDateToString(new Date()) + "T" + activationTime
+      formatDateToString(new Date(startDate||null)) + "T" + activationTime
     );
     startDateActive.setHours(
       startDateActive.getHours() +
@@ -109,9 +110,8 @@ export const POST = async (req, res) => {
       /*let*/
 
 
-
       startDateActive = new Date(
-        formatDateToString(new Date(activationDate)) + "T" + activationTime
+        formatDateToString(new Date(startDate||activationDate)) + "T" + activationTime
       );
       startDateActive.setHours(
         startDateActive.getHours() +
@@ -129,7 +129,7 @@ export const POST = async (req, res) => {
     //console.log("activationDate",activationDate);
     //console.log("activationTime",activationTime);
 
-    //console.log("startDateActive",startDateActive);
+    //console.log("startDateActive===>>",startDateActive);
     //console.log("endDateActive",endDateActive);
     //console.log("***********Active Job Template Plan********");
 
