@@ -34,7 +34,7 @@ const jobsHeader = [
   "Status",
   "Active",
   "Activator",
-  // "Action",
+  "Action",
 ];
 
 const enabledFunction = {
@@ -472,6 +472,7 @@ const Page = () => {
       },
       buttonsStyling: true,
     });
+
     swalWithBootstrapButtons
       .fire({
         title: "Are you sure?",
@@ -490,25 +491,31 @@ const Page = () => {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ job_id }),
-              next: { revalidate: 10 },
+              body: JSON.stringify({ job_ids: [job_id] }), // ✅ ส่งเป็น array เสมอ
             });
-            swalWithBootstrapButtons.fire({
-              title: "Deleted!",
-              text: "Your file has been deleted.",
-              icon: "success",
-            });
+
             const data = await response.json();
             if (data.status === 200) {
+              swalWithBootstrapButtons.fire({
+                title: "Deleted!",
+                text: "Your job has been deleted.",
+                icon: "success",
+              });
               setRefresh((prev) => !prev);
+            } else {
+              swalWithBootstrapButtons.fire({
+                title: "Error!",
+                text: data.error || "Failed to delete job.",
+                icon: "error",
+              });
             }
           } catch (error) {
-            console.error("Error deleting workgroup:", error);
+            console.error("Error deleting job:", error);
           }
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           swalWithBootstrapButtons.fire({
             title: "Cancelled",
-            text: "Your imaginary file is safe :)",
+            text: "Your job is safe :)",
             icon: "error",
           });
         }
@@ -711,29 +718,29 @@ const Page = () => {
           ? new Date(job.createdAt).toLocaleString()
           : "Not Active",
         Activator: job.ACTIVATER_NAME,
-        // Action: (
-        //   //check permission
-        //   <div className="flex gap-2 items-center justify-center">
-        //     <button
-        //       className="bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-2 rounded"
-        //       onClick={() => handleRemove(job._id)}
-        //       disabled={
-        //         !userEnableFunctions.some(
-        //           (action) => action._id === enabledFunction["remove-job"]
-        //         )
-        //       }
-        //       style={{
-        //         cursor: !userEnableFunctions.some(
-        //           (action) => action._id === enabledFunction["remove-job"]
-        //         )
-        //           ? "not-allowed"
-        //           : "pointer",
-        //       }}
-        //     >
-        //       Remove
-        //     </button>
-        //   </div>
-        // ),
+        Action: (
+          //check permission
+          <div className="flex gap-2 items-center justify-center">
+            <button
+              className="bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-2 rounded"
+              onClick={() => handleRemove(job._id)}
+              disabled={
+                !userEnableFunctions.some(
+                  (action) => action._id === enabledFunction["remove-job"]
+                )
+              }
+              style={{
+                cursor: !userEnableFunctions.some(
+                  (action) => action._id === enabledFunction["remove-job"]
+                )
+                  ? "not-allowed"
+                  : "pointer",
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        ),
       };
     });
 

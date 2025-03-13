@@ -9,42 +9,61 @@ import { Schedule } from "@/lib/models/Schedule.js";
 export const DELETE = async (req, res) => {
   await connectToDb();
   const body = await req.json();
-  const { job_ids } = body; // รับเป็น array
-
-  if (!Array.isArray(job_ids) || job_ids.length === 0) {
+  // ✅ ตรวจสอบและแปลง job_ids ให้เป็น array เสมอ
+  let job_ids = body.job_ids;
+  if (!job_ids) {
+    console.log("❌ Missing job_ids");
+    return NextResponse.json({ status: 400, error: "Missing job_ids" });
+  }
+  if (!Array.isArray(job_ids)) {
+    job_ids = [job_ids]; // แปลง single id ให้เป็น array
+  }
+  if (job_ids.length === 0) {
+    console.log("❌ Invalid job_ids:", job_ids);
     return NextResponse.json({ status: 400, error: "Invalid job_ids" });
   }
-
+  console.log("✅ Received job_ids to delete:", job_ids);
   try {
     await Promise.all(
       job_ids.map(async (job_id) => {
-        // ตรวจสอบว่ามีอยู่ในตาราง Schedule หรือไม่
-        const schedules = await Schedule.find({ JOB_TEMPLATE_ID: job_id });
-        if (schedules.length > 0) {
-          await Schedule.deleteMany({ JOB_TEMPLATE_ID: job_id });
+        if (!job_id) {
+          console.log("⚠️ Skipping invalid job_id:", job_id);
+          return;
         }
-
+        console.log(`🗑️ Deleting job: ${job_id}`);
+        // ลบ schedule ที่เกี่ยวข้อง
+        await Schedule.deleteMany({ JOB_TEMPLATE_ID: job_id });
+        // ลบการ Activate ของ Job
         await JobTemplateActivate.findOneAndDelete({ JOB_ID: job_id });
-
+        // หา JobItem ที่เกี่ยวข้อง
         const jobItems = await JobItem.find({ JOB_ID: job_id });
-        await Promise.all(
-          jobItems.map((jobItem) =>
-            JobItemTemplateActivate.findOneAndDelete({
-              JOB_ITEM_ID: jobItem._id,
-            })
-          )
+        console.log(
+          `🔍 Found ${jobItems.length} job items for job_id: ${job_id}`
         );
-
+        // ลบ JobItemTemplateActivate ที่เกี่ยวข้อง
+        await Promise.all(
+          jobItems.map(async (jobItem) => {
+            console.log(
+              `🗑️ Deleting JobItemTemplateActivate for JOB_ITEM_ID: ${jobItem._id}`
+            );
+            await JobItemTemplateActivate.findOneAndDelete({
+              JOB_ITEM_ID: jobItem._id,
+            });
+          })
+        );
+        // ลบ JobItem ทั้งหมดที่เกี่ยวข้อง
         await JobItem.deleteMany({ JOB_ID: job_id });
+        // ลบ Job จริง ๆ
         await Job.findByIdAndDelete(job_id);
       })
     );
-
-    return NextResponse.json({ status: 200, message: "Jobs deleted" });
-  } catch (err) {
+    console.log("✅ Jobs deleted successfully:", job_ids);
     return NextResponse.json({
-      status: 500,
-      error: err.message,
+      status: 200,
+      message: "Jobs deleted successfully",
     });
+  } catch (err) {
+    console.log("❌ Error deleting jobs:", err);
+    return NextResponse.json({ status: 500, error: err.message });
   }
 };
