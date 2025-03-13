@@ -85,39 +85,28 @@ const TableComponentAdmin = ({
   const generatePageNumbers = (currentPage, totalPages, maxVisible = 5) => {
     const pageNumbers = [];
     const half = Math.floor(maxVisible / 2);
-
     let start = Math.max(1, currentPage - half);
     let end = Math.min(totalPages, currentPage + half);
-
-    // Case 1: หากอยู่ที่หน้าแรก
     if (currentPage <= half) {
       end = Math.min(totalPages, maxVisible);
-    }
-    // Case 2: หากอยู่ที่หน้าสุดท้าย
-    else if (currentPage + half >= totalPages) {
+    } else if (currentPage + half >= totalPages) {
       start = Math.max(1, totalPages - maxVisible + 1);
     }
-
-    // เริ่มต้นการแสดงหมายเลขหน้า
     if (start > 1) {
       pageNumbers.push(1);
       if (start > 2) pageNumbers.push("..."); // แสดง "..." เมื่อมีหน้าเยอะ
     }
-
     // เพิ่มหมายเลขหน้าที่แสดง
     for (let i = start; i <= end; i++) {
       pageNumbers.push(i);
     }
-
     // การแสดงหน้า 324 หรือหน้าอื่น ๆ
     if (end < totalPages) {
       if (end < totalPages - 1) pageNumbers.push("..."); // แสดง "..." หากมีหน้าหลาย
       pageNumbers.push(totalPages);
     }
-
     return pageNumbers;
   };
-
   const pageNumbers = generatePageNumbers(currentPage, totalPages);
 
   const handleSearch = (event) => {

@@ -40,7 +40,7 @@ function formatDateToString(dateObj) {
   if (!(dateObj instanceof Date) || isNaN(dateObj)) return "Invalid Date";
 
   const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // เดือนเริ่มที่ 0 ต้องบวก 1
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
   const day = String(dateObj.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
@@ -65,22 +65,7 @@ export const POST = async (req, res) => {
     shift_date,
   } = body;
 
-
-
-   console.log("startDate ====>",startDate);
-//  if (shift_date) {
-//console.log("A");
-//  } else{
-//   console.log("B");
-//  }
-
-
-//   return NextResponse.json({
-//     status: 200,
-//     message: "Jobs activated successfully",
-//   });
-
-  //console.log("Extracted LINE_NAME:", LINE_NAME);
+  console.log("startDate ====>", startDate);
 
   try {
     const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
@@ -95,7 +80,7 @@ export const POST = async (req, res) => {
     // Calculate the end date based on the recurrence type
 
     let startDateActive = new Date(
-      formatDateToString(new Date(startDate||null)) + "T" + activationTime
+      formatDateToString(new Date(startDate || null)) + "T" + activationTime
     );
     startDateActive.setHours(
       startDateActive.getHours() +
@@ -107,11 +92,10 @@ export const POST = async (req, res) => {
       recurrence == "monthly" ||
       recurrence === "yearly"
     ) {
-      /*let*/
-
-
       startDateActive = new Date(
-        formatDateToString(new Date(startDate||activationDate)) + "T" + activationTime
+        formatDateToString(new Date(startDate || activationDate)) +
+          "T" +
+          activationTime
       );
       startDateActive.setHours(
         startDateActive.getHours() +
@@ -125,14 +109,6 @@ export const POST = async (req, res) => {
       endDateActive.getHours() +
         parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
     );
-
-    //console.log("activationDate",activationDate);
-    //console.log("activationTime",activationTime);
-
-    //console.log("startDateActive===>>",startDateActive);
-    //console.log("endDateActive",endDateActive);
-    //console.log("***********Active Job Template Plan********");
-
     let rolling_Datetime = startDateActive;
     while (rolling_Datetime <= endDateActive) {
       // Create a new job
@@ -141,33 +117,6 @@ export const POST = async (req, res) => {
         AdvanceActivationDate.getHours() -
           parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
       );
-      // const schedule = new Schedule({
-      //   JOB_TEMPLATE_ID: jobTemplateID,
-      //   JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
-      //   JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
-      //   ACTIVATE_DATE: AdvanceActivationDate,
-      //   LINE_NAME: LINE_NAME,
-      //   // ACTIVATE_TIME: activationTime,
-      //   DOC_NUMBER: jobTemplate.DOC_NUMBER,
-      //   WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
-      // });
-      // สร้าง array ของ Promise สำหรับการบันทึก Schedule
-      // const schedulePromises = LINE_NAME.map(async (lineName) => {
-      //   const schedule = new Schedule({
-      //     JOB_TEMPLATE_ID: jobTemplateID,
-      //     JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
-      //     JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
-      //     ACTIVATE_DATE: AdvanceActivationDate,
-      //     // ACTIVATE_TIME: activationTime,
-      //     LINE_NAME: lineName, // ใช้ lineName จากการวนลูป
-      //     DOC_NUMBER: jobTemplate.DOC_NUMBER,
-      //     WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
-      //   });
-
-      //   console.log(`Saving Schedule for lineName: ${lineName}`, schedule);
-      //   await schedule.save();
-      // });
-
       const schedulePromises = LINE_NAME.map(async (lineName) => {
         const schedule1 = new Schedule({
           JOB_TEMPLATE_ID: jobTemplateID,
@@ -178,28 +127,27 @@ export const POST = async (req, res) => {
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
           WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
         });
-      
+        console.log(`Saving Schedule `, schedule1);
         //console.log(`Saving Schedule for lineName: ${lineName}`, schedule1);
         await schedule1.save();
-      
+
         // ถ้า shift_date เป็น true ให้สร้าง schedule ที่มีเวลาเพิ่มขึ้น 12 ชั่วโมง
-        if (shift_date===true) {
+        if (shift_date === true) {
           const schedule2 = new Schedule({
             ...schedule1.toObject(), // คัดลอกข้อมูลทั้งหมด
             _id: undefined, // ลบ _id ออกเพื่อให้ MongoDB สร้างใหม่
-            ACTIVATE_DATE: new Date(AdvanceActivationDate.getTime() + 12 * 60 * 60 * 1000), // เพิ่ม 12 ชั่วโมง
+            ACTIVATE_DATE: new Date(
+              AdvanceActivationDate.getTime() + 12 * 60 * 60 * 1000
+            ), // เพิ่ม 12 ชั่วโมง
           });
-      
-          console.log(`Saving Shifted Schedule for lineName: ${lineName}`, schedule2);
+
+          console.log(
+            `Saving Shifted Schedule for lineName: ${lineName}`,
+            schedule2
+          );
           await schedule2.save();
         }
       });
-
-
-
-
-
-
 
       // ใช้ Promise.all เพื่อรอให้ทุกคำขอทำงานพร้อมกัน
       await Promise.all(schedulePromises);

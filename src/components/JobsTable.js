@@ -74,47 +74,36 @@ const JobsTable = ({ refresh }) => {
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonText: "Yes, delete them!",
       cancelButtonText: "No, cancel!",
       reverseButtons: true,
     });
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(
-          `/api/job-item-template/remove-multi-job-item`,
-          {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ job_ids: selectedJobs }),
-          }
-        );
+        const response = await fetch(`/api/job/remove-job`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_ids: selectedJobs }), // ส่ง array
+        });
 
         const result = await response.json();
-
         if (response.ok) {
-          Swal.fire(
-            "Deleted!",
-            "The selected jobs have been deleted.",
-            "success"
-          );
-
-          // อัปเดต jobs ด้วยการกรองข้อมูลที่ถูกลบออก
+          Swal.fire("Deleted!", "Selected jobs have been deleted.", "success");
           setJobs((prevJobs) =>
             prevJobs.filter((job) => !selectedJobs.includes(job._id))
           );
-
-          setSelectedJobs([]); // เคลียร์การเลือก
+          setSelectedJobs([]);
         } else {
           Swal.fire(
             "Error!",
-            result.error || "Failed to delete the selected jobs.",
+            result.error || "Failed to delete jobs.",
             "error"
           );
         }
       } catch (err) {
         console.error(err);
-        Swal.fire("Error!", "Failed to delete the selected jobs.", "error");
+        Swal.fire("Error!", "Failed to delete jobs.", "error");
       }
     }
   };

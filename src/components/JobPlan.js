@@ -100,7 +100,6 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   };
 
   const handleSubmit = async (e, checkListTemplate) => {
-  
     e.preventDefault();
     let nextDate;
     if (dateType === "dayOfWeek") {
@@ -119,7 +118,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       ...data,
       startDate: startDate ? new Date(startDate).toISOString() : null,
       LINE_NAME: selectedLineName,
-      shift_date:document.getElementById("shift-date").checked,   
+      shift_date: document.getElementById("shift-date").checked,
     };
     //console.log("Request Data:", requestData);
     if (!nextDate) {
@@ -138,7 +137,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       });
       return;
     }
-    //console.log("requestData", requestData);
+    // console.log("requestData", requestData);
     try {
       const response = await fetch("/api/job/activate-job-template-plan", {
         method: "POST",
@@ -277,10 +276,9 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
           )}
 
           {dateType === "dayOfMonth" && (
-            
             <div className="flex flex-col gap-2">
-             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-               <label htmlFor="date" className="text-md font-semibold">
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <label htmlFor="date" className="text-md font-semibold">
                 Select Day of the Month
               </label>
               <select
@@ -321,9 +319,8 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
               name="shift-date"
               className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
             />
-           
             <label htmlFor="recurring" className="text-md font-semibold">
-             Shift Date
+              Shift Date
             </label>
           </div>
 
@@ -348,7 +345,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
               <label htmlFor="end-date" className="text-sm font-semibold">
                 Start Date
               </label>
-              
+
               <input
                 type="date"
                 id="start-date"
@@ -399,37 +396,39 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                 {/* เมนูที่สามารถเปิด/ปิดได้ */}
                 {isOpen && (
                   <div className="absolute left-0 bottom-full -translate-y-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10">
-                  {/* ช่องค้นหาหรือกรอง */}
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border-b p-2 w-full"
-                  />
-                  <div className="max-h-60 overflow-auto">
-                    {/* แสดงรายการ checkbox */}
-                    {[...new Set(allLineName)] // ลบค่าซ้ำ
-                      .filter((lineName) =>
-                        lineName.toLowerCase().includes(searchTerm.toLowerCase())
-                      ) // ฟิลเตอร์ตามคำค้นหา
-                      .map((lineName) => (
-                        <label
-                          key={lineName} // ใช้ lineName เป็น key เพราะตอนนี้ไม่ซ้ำแล้ว
-                          className="flex items-center gap-2 p-2"
-                        >
-                          <input
-                            type="checkbox"
-                            value={lineName}
-                            checked={selectedLineName.includes(lineName)} // ตรวจสอบการเลือก
-                            onChange={() => handleLineNameChange(lineName)} // อัปเดตค่าเมื่อเลือก
-                            className="rounded-md"
-                          />
-                          {lineName}
-                        </label>
-                      ))}
+                    {/* ช่องค้นหาหรือกรอง */}
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="border-b p-2 w-full"
+                    />
+                    <div className="max-h-60 overflow-auto">
+                      {/* แสดงรายการ checkbox */}
+                      {[...new Set(allLineName)] // ลบค่าซ้ำ
+                        .filter((lineName) =>
+                          lineName
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase())
+                        ) // ฟิลเตอร์ตามคำค้นหา
+                        .map((lineName) => (
+                          <label
+                            key={lineName} // ใช้ lineName เป็น key เพราะตอนนี้ไม่ซ้ำแล้ว
+                            className="flex items-center gap-2 p-2"
+                          >
+                            <input
+                              type="checkbox"
+                              value={lineName}
+                              checked={selectedLineName.includes(lineName)} // ตรวจสอบการเลือก
+                              onChange={() => handleLineNameChange(lineName)} // อัปเดตค่าเมื่อเลือก
+                              className="rounded-md"
+                            />
+                            {lineName}
+                          </label>
+                        ))}
+                    </div>
                   </div>
-                </div>
                 )}
               </div>
             </div>
@@ -449,9 +448,6 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
         >
           Save
         </button>
-       
-
-
       </form>
     </div>
   );

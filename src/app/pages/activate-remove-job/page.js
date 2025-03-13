@@ -13,6 +13,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import Image from "next/image";
+import TableComponentAdmin from "@/components/TableComponentAdmin";
 
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
@@ -26,13 +27,14 @@ const jobTemplatesHeader = [
 ];
 
 const jobsHeader = [
+  "",
   "ID",
   "Checklist Name",
-  "Line Name" /*"Document no."*/,
+  "Line Name",
   "Status",
   "Active",
   "Activator",
-  "Action",
+  // "Action",
 ];
 
 const enabledFunction = {
@@ -64,6 +66,14 @@ const Page = () => {
   const [planData, setPlanData] = useState({});
   const [filterStatus, setFilterStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedJobs, setSelectedJobs] = useState([]);
+  const handleSelectJob = (jobId) => {
+    setSelectedJobs((prevSelected) =>
+      prevSelected.includes(jobId)
+        ? prevSelected.filter((id) => id !== jobId)
+        : [...prevSelected, jobId]
+    );
+  };
   var [allLineName, setAllLineName] = useState(false);
 
   const filteredJobs =
@@ -462,7 +472,6 @@ const Page = () => {
       },
       buttonsStyling: true,
     });
-
     swalWithBootstrapButtons
       .fire({
         title: "Are you sure?",
@@ -504,6 +513,49 @@ const Page = () => {
           });
         }
       });
+  };
+
+  // ฟังก์ชันลบงานที่เลือก
+  const handleDeleteSelected = async () => {
+    if (selectedJobs.length === 0) return;
+
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete them!",
+      cancelButtonText: "No, cancel!",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`/api/job/remove-job`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_ids: selectedJobs }), // ส่ง array
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          Swal.fire("Deleted!", "Selected jobs have been deleted.", "success");
+          setJobs((prevJobs) =>
+            prevJobs.filter((job) => !selectedJobs.includes(job._id))
+          );
+          setSelectedJobs([]);
+        } else {
+          Swal.fire(
+            "Error!",
+            result.error || "Failed to delete jobs.",
+            "error"
+          );
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error!", "Failed to delete jobs.", "error");
+      }
+    }
   };
 
   const jobTemplatesBody = jobTemplates.map((jobTemplate, index) => {
@@ -636,6 +688,13 @@ const Page = () => {
     filteredJobs &&
     filteredJobs.map((job, index) => {
       return {
+        checkbox: (
+          <input
+            type="checkbox"
+            checked={selectedJobs.includes(job._id)}
+            onChange={() => handleSelectJob(job._id)}
+          />
+        ),
         ID: index + 1,
         "Checklist Name": job.JOB_NAME,
         "Line Name": job.LINE_NAME,
@@ -652,29 +711,29 @@ const Page = () => {
           ? new Date(job.createdAt).toLocaleString()
           : "Not Active",
         Activator: job.ACTIVATER_NAME,
-        Action: (
-          //check permission
-          <div className="flex gap-2 items-center justify-center">
-            <button
-              className="bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-2 rounded"
-              onClick={() => handleRemove(job._id)}
-              disabled={
-                !userEnableFunctions.some(
-                  (action) => action._id === enabledFunction["remove-job"]
-                )
-              }
-              style={{
-                cursor: !userEnableFunctions.some(
-                  (action) => action._id === enabledFunction["remove-job"]
-                )
-                  ? "not-allowed"
-                  : "pointer",
-              }}
-            >
-              Remove
-            </button>
-          </div>
-        ),
+        // Action: (
+        //   //check permission
+        //   <div className="flex gap-2 items-center justify-center">
+        //     <button
+        //       className="bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-2 rounded"
+        //       onClick={() => handleRemove(job._id)}
+        //       disabled={
+        //         !userEnableFunctions.some(
+        //           (action) => action._id === enabledFunction["remove-job"]
+        //         )
+        //       }
+        //       style={{
+        //         cursor: !userEnableFunctions.some(
+        //           (action) => action._id === enabledFunction["remove-job"]
+        //         )
+        //           ? "not-allowed"
+        //           : "pointer",
+        //       }}
+        //     >
+        //       Remove
+        //     </button>
+        //   </div>
+        // ),
       };
     });
 
@@ -817,8 +876,7 @@ const Page = () => {
             ))}
           </select>
         </div>
-
-        <TableComponent
+        {/* <TableComponent
           headers={jobsHeader}
           datas={jobsBody}
           TableName="Active Checklist"
@@ -826,6 +884,21 @@ const Page = () => {
           filterColumn="Line Name"
           currentPage={currentPage}
           onPageChange={(page) => setCurrentPage(page)}
+        /> */}
+        <TableComponentAdmin
+          headers={jobsHeader}
+          datas={jobsBody}
+          TableName="Active Checklist"
+          PageSize={5}
+          searchColumn={"Checklist Name"}
+          filterColumn="Line Name"
+          searchHidden={true}
+          filteredJobs={filteredJobs}
+          selectedJobs={selectedJobs}
+          handleDeleteSelected={handleDeleteSelected}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          setSelectedJobs={setSelectedJobs}
         />
       </div>
       {isShowDetail && <ShowDetailModal />}

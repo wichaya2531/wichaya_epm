@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { Time } from "rrule/dist/esm/datetime";
 
 const scheduleSchema = new mongoose.Schema(
   {
