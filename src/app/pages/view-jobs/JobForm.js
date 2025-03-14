@@ -755,6 +755,7 @@ const JobForm = ({
                       />
                     ) : item.input_type==="Numeric" ? (<input
                       type="number"
+                      step="0.01"
                       id={`before_value_2${item.JobItemID}`}
                       onChange={(e) => handleBeforeValue(e, item)}
                       className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
@@ -789,6 +790,7 @@ const JobForm = ({
                     ) : item.input_type=="Numeric" ? (
                         <input
                           type="number"
+                          step="0.01"
                           id={item.JobItemID+"/"+jobData.LINE_NAME}
                           defaultValue={item.ActualValue || ""}
                           onChange={(e) => handleInputChange(e, item)}

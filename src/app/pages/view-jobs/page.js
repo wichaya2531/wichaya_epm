@@ -318,160 +318,178 @@ const Page = ({ searchParams }) => {
   };
 
   const handleSubmit = async (e) => {
-    //alert('On Submit');
-    e.preventDefault();
+          //alert('On Submit');
+          e.preventDefault();
 
-    const wdTag = e.target.wd_tag.value.trim(); // ตัดช่องว่าง
+          const wdTag = e.target.wd_tag.value.trim(); // ตัดช่องว่าง
 
-    // ตรวจสอบว่า jobData มีข้อมูลหรือไม่
-    if (!jobData || !jobData.JobID) {
-      Swal.fire({
-        title: "Error!",
-        text: "Job data is missing or invalid.",
-        icon: "error",
-      });
-      return;
-    }
-
-    // ตรวจสอบว่า wd_tag ไม่ว่างเปล่า
-    if (!wdTag) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please fill in the "+process.env.NEXT_PUBLIC_LABEL_WD_TAG+".",
-        icon: "error",
-      });
-      return;
-    }
-
-
-    //console.log("wdtagImg_1",wdtagImg_1);
-    
-   if(jobData.IMAGE_FILENAME_2 && jobData.IMAGE_FILENAME){
-          // มี Attach ไฟล์ อยู่แล้ว  
-          //console.log("jobData.IMAGE_FILENAME 1,2 A");
-   }else{
-           // ไม่มี Attach ไฟล์ 
-          //console.log("jobData.IMAGE_FILENAME 1,2 B");
-          if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
+          // ตรวจสอบว่า jobData มีข้อมูลหรือไม่
+          if (!jobData || !jobData.JobID) {
             Swal.fire({
               title: "Error!",
-              text: "Please upload Evident picture.",
+              text: "Job data is missing or invalid.",
               icon: "error",
             });
             return;
           }
-   }   
 
-   var fillAllItems = true;
-   console.log("jobItems",jobItems);
-   for(var t in jobItems){
-           var item=jobItems[t];
-           console.log('item.ActualValue',item.ActualValue);
-           if (item.ActualValue === null || item.ActualValue === undefined) { 
-            fillAllItems = false;
-            break;
+          // ตรวจสอบว่า wd_tag ไม่ว่างเปล่า
+          if (!wdTag) {
+            Swal.fire({
+              title: "Error!",
+              text: "Please fill in the "+process.env.NEXT_PUBLIC_LABEL_WD_TAG+".",
+              icon: "error",
+            });
+            return;
           }
 
-   } 
-   
-   //   console.log("fillAllItems", fillAllItems);
-   if(fillAllItems==false){
-       // You have not entered all items completely.
-      Swal.fire({
-        title: "Error!",
-        text: "You have not entered all items completely.",
-        icon: "error",
-      });
-      return;
-   }
 
-    //console.log("jobItems=>",jobItems);
-    
+          //console.log("wdtagImg_1",wdtagImg_1);
+          
+        if(jobData.IMAGE_FILENAME_2 && jobData.IMAGE_FILENAME){
+                // มี Attach ไฟล์ อยู่แล้ว  
+                //console.log("jobData.IMAGE_FILENAME 1,2 A");
+                //wdtagImg_1=jobData.IMAGE_FILENAME;
+                //wdtagImg_2=jobData.IMAGE_FILENAME_2;
+                setWdtagImg_1(jobData.IMAGE_FILENAME);
+                setWdtagImg_2(jobData.IMAGE_FILENAME_2);
+
+        }else{
+                // ไม่มี Attach ไฟล์ 
+                //console.log("jobData.IMAGE_FILENAME 1,2 B");
+                if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
+                  Swal.fire({
+                    title: "Error!",
+                    text: "Please upload Evident picture.",
+                    icon: "error",
+                  });
+                  return;
+                }
+        }   
+
+        var fillAllItems = true;
+        //console.log("jobItems",jobItems);
+        for(var t in jobItems){
+                var item=jobItems[t];
+                // console.log('item.ActualValue',item.ActualValue);
+                if (item.ActualValue === null || item.ActualValue === undefined) { 
+                  fillAllItems = false;
+                  break;
+                }
+
+        } 
+       
+        
+        //console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);
+        //console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);
+        //alert('555++');  
+        //return;
+        
+        //   console.log("fillAllItems", fillAllItems);
+        if(fillAllItems==false){
+            // You have not entered all items completely.
+            Swal.fire({
+              title: "Error!",
+              text: "You have not entered all items completely.",
+              icon: "error",
+            });
+            return;
+        }
+
+          //console.log("jobItems=>",jobItems);
+          
 
 
-   // return ;
+        // return ;
 
-    //ตรวจสอบว่า inputValues มีข้อมูลหรือไม่
-    
-    // if (!Array.isArray(inputValues) || inputValues.length === 0) {
-    //   Swal.fire({
-    //     title: "Error!",
-    //     text: "Please add at least one job item.",
-    //     icon: "error",
-    //   });
-    //   return;
-    // }
-    // Swal.fire({
-    //   title: "Done!",
-    //   text: "มีข้อมูล.",
-    //   icon: "error",
-    // });
-    //return ;  
+          //ตรวจสอบว่า inputValues มีข้อมูลหรือไม่
+          
+          // if (!Array.isArray(inputValues) || inputValues.length === 0) {
+          //   Swal.fire({
+          //     title: "Error!",
+          //     text: "Please add at least one job item.",
+          //     icon: "error",
+          //   });
+          //   return;
+          // }
+          // Swal.fire({
+          //   title: "Done!",
+          //   text: "มีข้อมูล.",
+          //   icon: "error",
+          // });
+
+         
+
+
+          const jobInfo = {
+            JobID: jobData.JobID,
+            wd_tag: wdTag,
+            submittedBy: user._id,
+            wdtagImage_1: wdtagImg_1,
+            wdtagImage_2: wdtagImg_2,
+          };
+
+          //console.log('jobData',jobData);
+          //console.log('jobInfo',jobInfo);
+
+          //return ;  
 
 
 
-    const jobInfo = {
-      JobID: jobData.JobID,
-      wd_tag: wdTag,
-      submittedBy: user._id,
-      wdtagImage_1: wdtagImg_1,
-      wdtagImage_2: wdtagImg_2,
-    };
+          const formData = new FormData();
+          //formData.append("wdtagPictuer", selectedFile);
+          formData.append("jobData", JSON.stringify(jobInfo)); // ใช้ JSON.stringify
+          formData.append("jobItemsData", JSON.stringify(jobItems)); // ใช้ inputValues
 
-    const formData = new FormData();
-    //formData.append("wdtagPictuer", selectedFile);
-    formData.append("jobData", JSON.stringify(jobInfo)); // ใช้ JSON.stringify
-    formData.append("jobItemsData", JSON.stringify(jobItems)); // ใช้ inputValues
+          try {
+            const response = await fetch("/api/job/update-job", {
+              method: "POST",
+              body: formData, // ส่งข้อมูลในรูปแบบ FormData
+            });
 
-    try {
-      const response = await fetch("/api/job/update-job", {
-        method: "POST",
-        body: formData, // ส่งข้อมูลในรูปแบบ FormData
-      });
+            // เช็คสถานะการตอบกลับ
+            if (!response.ok) {
+              const errorData = await response.json();
+              Swal.fire({
+                title: "Error!",
+                text: errorData.message || "An error occurred.",
+                icon: "error",
+              });
+              return;
+            }
 
-      // เช็คสถานะการตอบกลับ
-      if (!response.ok) {
-        const errorData = await response.json();
-        Swal.fire({
-          title: "Error!",
-          text: errorData.message || "An error occurred.",
-          icon: "error",
-        });
-        return;
-      }
-
-      const data = await response.json();
-      if (data.status === 455) {
-        Swal.fire({
-          title: "Error!",
-          text: data.message,
-          icon: "error",
-        });
-      } else {
-        Swal.fire({
-          title: "Success!",
-          text: "Checklist updated successfully!",
-          icon: "success",
-        }).then(() => {
-          window.history.replaceState({}, "", "/pages/dashboard");
-          if (router) {
-            router.push("/pages/dashboard");
+            const data = await response.json();
+            if (data.status === 455) {
+              Swal.fire({
+                title: "Error!",
+                text: data.message,
+                icon: "error",
+              });
+            } else {
+              Swal.fire({
+                title: "Success!",
+                text: "Checklist updated successfully!",
+                icon: "success",
+              }).then(() => {
+                window.history.replaceState({}, "", "/pages/dashboard");
+                if (router) {
+                  router.push("/pages/dashboard");
+                }
+              });
+              e.target.reset();
+              //setRefresh((prev) => !prev);
+              setTimeout(() => {
+                router.push("/pages/dashboard");
+              }, 2000);
+            }
+          } catch (err) {
+            console.error("Error:", err);
+            Swal.fire({
+              title: "Error!",
+              text: "An error occurred while updating the checklist.",
+              icon: "error",
+            });
           }
-        });
-        e.target.reset();
-        //setRefresh((prev) => !prev);
-        setTimeout(() => {
-          router.push("/pages/dashboard");
-        }, 2000);
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      Swal.fire({
-        title: "Error!",
-        text: "An error occurred while updating the checklist.",
-        icon: "error",
-      });
-    }
   };
 
   const handleShowTestMethodDescription = (item) => {

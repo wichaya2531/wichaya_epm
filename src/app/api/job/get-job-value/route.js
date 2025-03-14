@@ -22,7 +22,8 @@ const getGuideInputByJobItem = async (jobItemID) => {
   jobItem.map((item) => {
     if (
       item.ACTUAL_VALUE !== null &&
-      !["pass", "fail"].includes(item.ACTUAL_VALUE.toLowerCase())
+      !["pass", "fail"].includes(item.ACTUAL_VALUE.toLowerCase()) &&
+      isNaN(item.ACTUAL_VALUE) // เพิ่มเงื่อนไขไม่เอาตัวเลข
     ) {
       guideInput.push(item.ACTUAL_VALUE);
     }
@@ -30,7 +31,6 @@ const getGuideInputByJobItem = async (jobItemID) => {
   guideInput = [...new Set(guideInput)];
   return guideInput;
 };
-
 
 export const dynamic = "force-dynamic";
 export const GET = async (req, res) => {

@@ -65,7 +65,7 @@ export const POST = async (req, res) => {
     shift_date,
   } = body;
 
-  console.log("startDate ====>", startDate);
+ // console.log("startDate ====>", startDate);
 
   try {
     const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
@@ -125,7 +125,7 @@ export const POST = async (req, res) => {
           ACTIVATE_DATE: AdvanceActivationDate,
           LINE_NAME: lineName,
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
-          WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
+          WORKGROUP_ID: jobTemplate.WORKGROUP_ID,          
         });
         console.log(`Saving Schedule `, schedule1);
         //console.log(`Saving Schedule for lineName: ${lineName}`, schedule1);

@@ -75,7 +75,7 @@ export const POST = async (req, res) => {
       });
     }
 
-    console.log("---------------------------");  
+    //console.log("---------------------------");  
     const notisOnOverdues = await NotifiesOverdue.find({
        JOB_TEMPLATE_ID: JobTemplateID
        //,

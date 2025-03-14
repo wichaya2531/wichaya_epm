@@ -270,7 +270,7 @@ const Page = ({ searchParams }) => {
     // ใช้ SweetAlert2 (swal)
     Swal.fire({
       title: "Mqtt Topic ID",
-      html: `<p>ID: <strong>${idToCopy}</strong></p>
+      html: `<p>ID: <strong>${idToCopy+"/{Line_name}"}</strong></p>
                <button id="copy-btn" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white;">
                    Copy to Clipboard
                </button>

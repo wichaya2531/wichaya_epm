@@ -317,6 +317,7 @@ export const POST = async (req, res) => {
               TEST_LOCATION_ID: jobItemTemplate.TEST_LOCATION_ID,
               JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
               BEFORE_VALUE2: null,
+              INPUT_TYPE:jobItemTemplate.INPUT_TYPE||"All",
             });
             //    console.log("jobItem=>",jobItem);
             await jobItem.save();
