@@ -26,7 +26,7 @@ import { JobTemplate } from "@/lib/models/JobTemplate.js";
 import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
-
+import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
 // import mongoose from 'mongoose';
 
 // const scheduleSchema = new mongoose.Schema({
@@ -119,7 +119,7 @@ export const POST = async (req, res) => {
       );
       const schedulePromises = LINE_NAME.map(async (lineName) => {
         const schedule1 = new Schedule({
-          JOB_TEMPLATE_ID: jobTemplateID,
+          JOB_TEMPLATE_ID: new ObjectId(),
           JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
           JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
           ACTIVATE_DATE: AdvanceActivationDate,

@@ -19,6 +19,8 @@ const TableComponentAdmin = ({
   onPageChange,
   setSelectedJobs,
 }) => {
+
+  //console.log("datas.",datas);
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
     try {
@@ -155,6 +157,9 @@ const TableComponentAdmin = ({
 
   // ✅ ฟังก์ชัน Select All: เลือกเฉพาะ jobs ในหน้าปัจจุบัน
   const handleSelectAllJobs = () => {
+
+    //console.log("use handleSelectAllJobs!!!");
+
     const allCurrentPageIds = jobsInCurrentPage.map((job) => job._id);
     if (selectedJobs.length === allCurrentPageIds.length) {
       setSelectedJobs([]); // ยกเลิกการเลือกทั้งหมด

@@ -3,9 +3,9 @@ import nodemailer from "nodemailer";
 
 export const sendEmail = async ({ to, subject, text }) => {
   try {
-    console.log("Sending email to:", to); // แสดงรายชื่อผู้รับ
-    console.log("Subject:", subject); // แสดงหัวข้ออีเมล
-    console.log("Text:", text); // แสดงเนื้อหาของอีเมล
+    //console.log("Sending email to:", to); // แสดงรายชื่อผู้รับ
+    //console.log("Subject:", subject); // แสดงหัวข้ออีเมล
+    //console.log("Text:", text); // แสดงเนื้อหาของอีเมล
 
     const transporter = nodemailer.createTransport({
       host: "mailrelay.wdc.com",
@@ -27,7 +27,7 @@ export const sendEmail = async ({ to, subject, text }) => {
       text, // ข้อความในอีเมล
     });
 
-    console.log("Email sent successfully:", info); // แสดงผลลัพธ์การส่งอีเมล
+    //console.log("Email sent successfully:", info); // แสดงผลลัพธ์การส่งอีเมล
 
     return NextResponse.json({ status: 200, message: "Email sent" });
   } catch (error) {

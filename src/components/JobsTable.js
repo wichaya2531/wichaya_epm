@@ -58,6 +58,7 @@ const JobsTable = ({ refresh }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleSelectJob = (jobId) => {
+    console.log("JobTable handleSelectJob");
     setSelectedJobs((prevSelected) =>
       prevSelected.includes(jobId)
         ? prevSelected.filter((id) => id !== jobId)

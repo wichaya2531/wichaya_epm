@@ -49,7 +49,7 @@ export const POST = async (req, res) => {
       ROLE: "662f6bc9b198fbd46d07b7cb", // กำหนด ROLE เป็น "Checker"
     });
 
-    console.log("username", ":" + a_username + ":");
+    //console.log("username", ":" + a_username + ":");
     //return NextResponse.json({ status: 500 })
 
     await new_user.save();

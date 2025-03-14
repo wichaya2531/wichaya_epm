@@ -12,7 +12,7 @@ export const POST = async (req, res) => {
   const { username, password } = body;
 
   try {
-    console.log("Request Body:", body); // ตรวจสอบค่า body ที่ได้รับจาก client
+    //console.log("Request Body:", body); // ตรวจสอบค่า body ที่ได้รับจาก client
 
     // Check for super admin login
     if (username === "SA" && password === "admin") {
@@ -30,7 +30,7 @@ export const POST = async (req, res) => {
       USERNAME: new RegExp(`^${username}$`, "i"),
     });
 
-    console.log("User found:", user); // ตรวจสอบผู้ใช้ที่ค้นพบในฐานข้อมูล
+    //console.log("User found:", user); // ตรวจสอบผู้ใช้ที่ค้นพบในฐานข้อมูล
 
     // Check if the user exists
     if (!user) {

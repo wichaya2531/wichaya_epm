@@ -21,7 +21,7 @@ export const POST = async (req, res) => {
         access_level: "SA",
         session,
       });
-      console.log(username);
+      //console.log(username);
     }
 
     // Find the user with a case-insensitive match

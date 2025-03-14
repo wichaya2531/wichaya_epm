@@ -68,10 +68,9 @@ const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedJobs, setSelectedJobs] = useState([]);
   const handleSelectJob = (jobId) => {
+    console.log("Page handleSelectJob");
     setSelectedJobs((prevSelected) =>
-      prevSelected.includes(jobId)
-        ? prevSelected.filter((id) => id !== jobId)
-        : [...prevSelected, jobId]
+          prevSelected.includes(jobId) ? prevSelected.filter((id) => id !== jobId): [...prevSelected, jobId]
     );
   };
   var [allLineName, setAllLineName] = useState(false);
@@ -173,6 +172,7 @@ const Page = () => {
   };
 
   const onLineNameSelected = async (linenameSelected, dataJobTemplate) => {
+     
     //console.log("before dataJobTemplate=>", dataJobTemplate);
     dataJobTemplate.LINE_NAME = linenameSelected;
     //console.log("after dataJobTemplate=>", dataJobTemplate);
@@ -690,10 +690,13 @@ const Page = () => {
       ),
     };
   });
-
+  //console.log("----------------------------------------------------------");
   const jobsBody =
     filteredJobs &&
     filteredJobs.map((job, index) => {
+
+     // console.log('job',job);  
+
       return {
         checkbox: (
           <input
