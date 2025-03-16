@@ -17,6 +17,8 @@ export const PUT = async (req, res) => {
   //console.log("<= use edit job template => ");
 
   const body = await req.json();
+
+ // console.log('body',body);
   const {
     jobTemplateID,
     author,
@@ -34,7 +36,7 @@ export const PUT = async (req, res) => {
     AGILE_SKIP_CHECK
   } = body;
 
-  // console.log("body:", body);
+  // console.log("timeout:", timeout);
 
   try {
     const JobTemplateCreateID = await generateUniqueKey();
@@ -64,7 +66,7 @@ export const PUT = async (req, res) => {
     jobTemplate.LINE_NAME = line_name;
     jobTemplate.CHECKLIST_VERSION = checklist_ver;
     jobTemplate.WORKGROUP_ID = workgroup;
-    jobTemplate.TIMEOUT = timeout;
+    jobTemplate.TIMEOUT = timeout.value;
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
     jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
     jobTemplate.AGILE_SKIP_CHECK=AGILE_SKIP_CHECK;

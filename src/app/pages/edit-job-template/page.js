@@ -17,9 +17,9 @@ import { getSession } from "@/lib/utils/utils.js";
 import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
 import { CheckBox } from "@mui/icons-material";
 
-const approverHeader = ["ID", "Name", "Action"];
-const notifyHeader = ["ID", "Name", "Action"];
-const notifyOverdueHeader = ["ID", "Name", "Action"];
+const approverHeader = [/* "ID",*/ "Name", "Action"];
+const notifyHeader = [/*"ID",*/ "Name", "Action"];
+const notifyOverdueHeader = [/*"ID",*/ "Name", "Action"];
 
 const Page = ({ searchParams }) => {
 
@@ -38,7 +38,9 @@ const Page = ({ searchParams }) => {
   const [refresh, setRefresh] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [allOptions, setAllOptions] = useState([]);
-  
+  const [currentPageTableApprove, setCurrentPageTableApprove] = useState(1);
+  const [currentPageTableNotify, setCurrentPageTableNotify] = useState(1);
+  const [currentPageTableOverdue, setCurrentPageTableOverdue] = useState(1);
 
   const [evidentImageReq, setEvidentImageReq] = useState([]);
   const [agileSkipCheck, setAgileSkipCheck] = useState([]);
@@ -145,6 +147,11 @@ const Page = ({ searchParams }) => {
         setFilteredOptions(filteredUsers);
       }
     }
+
+    //console.log('approvers',approvers);
+
+
+
   }, [approvers, notifies, users, workgroups, user]);
 
   useEffect(() => {
@@ -425,15 +432,16 @@ const Page = ({ searchParams }) => {
   };
 
   const dataApprover = approvers?.map((approver, index) => {
+    //console.log('approver.EMP_NAME',approver.EMP_NAME);
     return {
-      ID: index + 1,
+      //ID: index + 1,
       Name: approver.EMP_NAME,
       Action: (
         <button
           onClick={() => handleRemoveApprover(approver._id)}
-          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
         >
-          Remove
+          Del
         </button>
       ),
     };
@@ -441,14 +449,14 @@ const Page = ({ searchParams }) => {
 
   const dataNotify = notifies?.map((notify, index) => {
     return {
-      ID: index + 1,
+      //ID: index + 1,
       Name: notify.EMP_NAME,
       Action: (
         <button
           onClick={() => handleRemoveNotify(notify._id)} // ตรวจสอบให้แน่ใจว่าใช้ notify._id
-          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
         >
-          Remove
+          Del
         </button>
       ),
     };
@@ -456,14 +464,14 @@ const Page = ({ searchParams }) => {
 
   const dataNotifyOverdue = notifiesOverdue?.map((notifyOverdue, index) => {
     return {
-      ID: index + 1,
+      //ID: index + 1,
       Name: notifyOverdue.EMP_NAME,
       Action: (
         <button
           onClick={() => handleRemoveNotifyOverdue(notifyOverdue._id)} // ตรวจสอบให้แน่ใจว่าใช้ notifyOverdue._id
-          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+          className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
         >
-          Remove
+          Del
         </button>
       ),
     };
@@ -475,22 +483,32 @@ const Page = ({ searchParams }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
+    //const formData = new FormData(e.target);
+   // console.log('timeout=',timeout);  
+
+    //return;
+    //var c_timeout=timeout;
 
     const jobTemplateID = jobTemplate_id;
     const author = user._id;
     const workgroup = user.workgroup_id;
-    const due_date = formData.get("due_date");
-    const line_name = formData.get("line_name");
-    const job_template_name = formData.get("job_template_name");
-    const doc_num = formData.get("doc_num");
-    const checklist_ver = formData.get("checklist_ver");
-    const timeout = formData.get("timeout");
+    const due_date = document.getElementById('due_date').value  ;//formData.get("due_date");
+    const line_name = document.getElementById('line_name').value;//formData.get("line_name");
+    const job_template_name =  document.getElementById('job_template_name').value ;//formData.get("job_template_name");
+    const doc_num = document.getElementById('doc_num').value ;//formData.get("doc_num");
+    const checklist_ver = document.getElementById('checklist_ver').value ;//formData.get("checklist_ver");
+    //const timeout = timeout;//jobTemplate.TIMEOUT ;//formData.get("timeout");
     const approvers_id = approvers.map((approver) => approver._id);
     const notifies_id = notifies.map((notify) => notify._id);
     const notifiesOverdue_id = notifiesOverdue.map(
       (notifyOverdue) => notifyOverdue._id
     );
+     
+    //var timerout=document.getElementById('timeout-selecte').value;  
+   // timeout=timeout.value;
+    //console.log('timeout',timeout);
+    //  console.log('timeout_c=',timeout_c);
+    // return;
 
      if (approvers_id.length==0) {
               const result = await Swal.fire({
@@ -574,7 +592,7 @@ const Page = ({ searchParams }) => {
           text: "You have successfully edited a Checklist template!",
           icon: "success",
         });
-        e.target.reset();
+        //e.target.reset();
         setNotifies([]);
         setApprovers([]);
         setNotifiesOverdue([]);
@@ -589,10 +607,10 @@ const Page = ({ searchParams }) => {
     }
   };
 
-  var timeoutvalue = {
-    value: jobTemplate.TIMEOUT,
-    label: jobTemplate.TIMEOUT,
-  };
+  // var timeoutvalue = {
+  //   value: jobTemplate.TIMEOUT,
+  //   label: jobTemplate.TIMEOUT,
+  // };
 
   const calculateDueDate = () => {
     const currentDate = new Date();
@@ -611,7 +629,7 @@ const Page = ({ searchParams }) => {
       </h1>
 
       <div className="mb-4 p-4 bg-white rounded-xl">
-        <form onSubmit={handleSubmit}>
+        {/* <form  onSubmit={handleSubmit} > */}
           <div className="grid gap-6 mb-6 md:grid-cols-3">
             <div>
               <label
@@ -775,91 +793,8 @@ const Page = ({ searchParams }) => {
                 className="z-50"
               />
             </div>
-            <div className="flex gap-5 ">
-              <div className="flex flex-col w-full">
-                <label
-                  htmlFor="visitors"
-                  className="block mb-2 text-sm font-medium text-black"
-                >
-                  Add Approver
-                </label>
-                <Select
-                  options={filteredOptions}
-                  value={selectedApprover}
-                  onChange={setSelectedApprover}
-                  isSearchable={true}
-                  className="z-40"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleAddApprover}
-                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-              >
-                Add
-              </button>
-            </div>
-            <div className="flex gap-5 ">
-              <div className="flex flex-col w-full">
-                <label
-                  htmlFor="visitors"
-                  className="block mb-2 text-sm font-medium text-black"
-                >
-                  Add Notify Active
-                </label>
-                <Select
-                  options={filteredOptions}
-                  value={selectedNotify}
-                  onChange={setSelectedNotify}
-                  isSearchable={true}
-                  className="z-30"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleAddNotify}
-                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-              >
-                Add
-              </button>
-            </div>
-            
-            <div className="flex gap-5">
-              <div className="flex flex-col w-full">
-                <label
-                  htmlFor="visitors"
-                  className="block mb-2 text-sm font-medium text-black"
-                >
-                  Add Notify Overdue
-                </label>
-                <Select
-                  options={filteredOptions}
-                  value={selectedNotifyOverdue}
-                  onChange={setSelectedNotifyOverdue}
-                  isSearchable={true}
-                  className="z-20"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleAddNotifyOverdue}
-                className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-              >
-                Add
-              </button>
-            </div>
 
-            {/* <div className="flex gap-5">
-              <div className="flex flex-col w-full">
-                <label
-                  htmlFor="evident-checkbox"
-                  className="block mb-2 text-sm font-medium text-black"
-                >
-                  Evident Picture Require
-                </label>
-                <CheckBox id="evident-checkbox" />
-              </div>
-            </div> */}
+            
 
             <div className="flex flex-col items-start space-y-2 border-red-300" style={{ height:'auto', padding: '10px'}}>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -893,38 +828,153 @@ const Page = ({ searchParams }) => {
             </div>
 
 
+            <div className="flex flex-col gap-5 ">
+              <div className="flex gap-5 w-full"> 
+                  <div className="flex flex-col w-full">
+                  <label
+                    htmlFor="visitors"
+                    className="block mb-2 text-sm font-medium text-black"
+                  >
+                    Add Notify Active
+                  </label>
+                  <Select
+                    options={filteredOptions}
+                    value={selectedNotify}
+                    onChange={setSelectedNotify}
+                    isSearchable={true}
+                    className="z-30"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddNotify}
+                  className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                >
+                  Add
+                </button>
+              </div>    
+              <div className="flex gap-5 w-full border border-gray-500 p-5 rounded-lg">       
+                  <TableComponent
+                    headers={notifyHeader}
+                    datas={dataNotify}
+                    TableName="Notify Active List"
+                    searchColumn="Name"
+                    currentPage={currentPageTableNotify}                   
+                    disablePageSize={true}
+                    disableFilter={true}
+                    onPageChange={(page) => setCurrentPageTableNotify(page)}
+                  />
+              </div>  
 
+            </div>
+            
+            <div className="flex flex-col gap-5">
+              <div className="flex gap-5 w-full">  
+                  <div className="flex flex-col w-full">
+                    <label
+                      htmlFor="visitors"
+                      className="block mb-2 text-sm font-medium text-black"
+                    >
+                      Add Notify Overdue
+                    </label>
+                    <Select
+                      options={filteredOptions}
+                      value={selectedNotifyOverdue}
+                      onChange={setSelectedNotifyOverdue}
+                      isSearchable={true}
+                      className="z-20"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddNotifyOverdue}
+                    className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                  >
+                    Add
+                  </button>
+              </div>  
+              <div className="flex gap-5 w-full border border-gray-500 p-5 rounded-lg">  
+                  <TableComponent
+                      headers={notifyOverdueHeader}
+                      datas={dataNotifyOverdue}
+                      TableName="Notify Overdue List"
+                      searchColumn="Name"
+                      currentPage={currentPageTableOverdue}
+                      disablePageSize={true}
+                      disableFilter={true}
+                      onPageChange={(page) => setCurrentPageTableOverdue(page)}
+                    />
+              </div>    
+            </div>
 
+            {/* <div className="flex gap-5">
+              <div className="flex flex-col w-full">
+                <label
+                  htmlFor="evident-checkbox"
+                  className="block mb-2 text-sm font-medium text-black"
+                >
+                  Evident Picture Require
+                </label>
+                <CheckBox id="evident-checkbox" />
+              </div>
+            </div> */}
 
+            <div className="flex flex-col gap-5 ">
+                <div className="flex gap-5 w-full">
+                  <div className="flex flex-col w-full">
+                    <label
+                      htmlFor="visitors"
+                      className="block mb-2 text-sm font-medium text-black"
+                    >
+                      Add Approver
+                    </label>
+                    <Select
+                      options={filteredOptions}
+                      value={selectedApprover}
+                      onChange={setSelectedApprover}
+                      isSearchable={true}
+                      className="z-40"
+                    />
+
+                    
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddApprover}
+                    className="text-white translate-y-6 bg-green-700 hover:bg-green-800 focus:ring-4 font-bold focus:outline-none w-5 focus:ring-green-300 rounded-lg text-sm sm:w-auto px-5 py-1 h-10 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="flex gap-5 w-full border border-gray-500 p-5 rounded-lg">
+                    <TableComponent
+                      headers={approverHeader}
+                      datas={dataApprover}
+                      TableName="Approver List"
+                      //searchColumn="Name"
+                      //filterColumn ="Name"
+                      currentPage={currentPageTableApprove}
+                      disablePageSize={true}
+                      disableFilter={true}
+                      onPageChange={(page) => setCurrentPageTableApprove(page)}
+                    />
+                </div>
+
+            </div>
 
           </div>
-
           <button
             type="submit"
             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 "
+            onClick={handleSubmit}  
           >
             Save
           </button>
-        </form>
+        {/* </form> */}
         <hr className="mt-4" />
-        <TableComponent
-          headers={approverHeader}
-          datas={dataApprover}
-          TableName="Approver List"
-          searchColumn="Name"
-        />
-        <TableComponent
-          headers={notifyHeader}
-          datas={dataNotify}
-          TableName="Notify Active List"
-          searchColumn="Name"
-        />
-        <TableComponent
-          headers={notifyOverdueHeader}
-          datas={dataNotifyOverdue}
-          TableName="Notify Overdue List"
-          searchColumn="Name"
-        />
+
+
+
       </div>
     </Layout>
   );

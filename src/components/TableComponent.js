@@ -11,9 +11,24 @@ const TableComponent = ({
   PageSize,
   searchHidden = null,
   linenameOnSelect = null,
+  
   currentPage,
+  
   onPageChange,
+
+  disablePageSize,
+  disableFilter,
 }) => {
+  //console.log('disablePageSize',disablePageSize);
+  // console.log('headers',headers);
+  // console.log('datas',datas);
+  // console.log('searchColumn',searchColumn);
+  // console.log('filterColumn',filterColumn);
+  // console.log('PageSize',PageSize);
+  // console.log('currentPage',currentPage);
+  // console.log('onPageChange',onPageChange);
+  //console.log('TableName',TableName);
+
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
     try {
@@ -27,7 +42,7 @@ const TableComponent = ({
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }); // ใช้สำหรับเก็บสถานะการจัดเรียง
 
   const data = datas;
-
+ // console.log('data',data);
   // ฟังก์ชันสำหรับจัดเรียงข้อมูล
   const sortedData = React.useMemo(() => {
     if (!sortConfig.key) return data;
@@ -65,10 +80,15 @@ const TableComponent = ({
   }
 
   const totalPages = Math.ceil(finalFilteredData.length / pageSize);
-  const currentPageData = finalFilteredData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+ //const currentPageData=data;
+  
+    const currentPageData = finalFilteredData.slice(
+      (currentPage - 1) * pageSize,
+     currentPage * pageSize
+    );
+
+ // console.log("currentPageData.",currentPageData);
+
 
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -163,16 +183,20 @@ const TableComponent = ({
   };
 
   return (
-    <div className="flex flex-col justify-center gap-5 items-center relative">
-      <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left">
+    <div className="flex flex-col justify-center gap-5 items-center relative w-full">
+      <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left"
+      style={{display: (disableFilter & disablePageSize) ? 'none':''}}
+     >
+        
         <div className="flex flex-row gap-2 text-left max-w-full">
-          <div className="max-w-[20vw] inline-block">
+          <div className="max-w-[20vw] inline-block" style={{visibility:disablePageSize?'hidden':''}}>
             <span>Rows:</span>
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
               className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-[100%] inline-block"
               id="table-rows-num"
+              
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -200,7 +224,7 @@ const TableComponent = ({
             </div>
           )}
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto " style={{visibility:disableFilter?'hidden':''}} >
             <input
               className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
               type="text"
@@ -217,7 +241,7 @@ const TableComponent = ({
         <h1 className="p-2 text-sm text-secondary font-bold">
           {TableName || "Table Name"}
         </h1>
-        <table className="table-auto w-full text-[12px] ipadmini:text-sm">
+        <table className="table-auto w-full text-[12px] ipadmini:text-sm" >
           <thead className="bg-[#347EC2] text-white text-sm">
             <tr>
               {headers.map((header) => (
@@ -239,7 +263,7 @@ const TableComponent = ({
           <tbody className="text-center">
             {currentPageData.map((item) => (
               <tr
-                key={item.ID}
+                key={item.ID||"x"}
                 className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
                 {Object.keys(item).map((key) => (

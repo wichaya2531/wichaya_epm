@@ -345,16 +345,29 @@ const Page = ({ searchParams }) => {
 
 
           //console.log("wdtagImg_1",wdtagImg_1);
+
+       // console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);    
+        //console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);    
+        //await setWdtagImg_1(jobData.IMAGE_FILENAME);
+       // await setWdtagImg_2(jobData.IMAGE_FILENAME_2);
+        
           
         if(jobData.IMAGE_FILENAME_2 && jobData.IMAGE_FILENAME){
                 // มี Attach ไฟล์ อยู่แล้ว  
+                //console.log("มี Attach file อยู่แล้ว ");
+                // await setWdtagImg_1(jobData.IMAGE_FILENAME);
+                // await setWdtagImg_2(jobData.IMAGE_FILENAME_2);
+                // console.log('wdtagImg_1',wdtagImg_1);
+                // console.log('wdtagImg_2',wdtagImg_2);
+                // console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);
+                // console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);
                 //console.log("jobData.IMAGE_FILENAME 1,2 A");
                 //wdtagImg_1=jobData.IMAGE_FILENAME;
                 //wdtagImg_2=jobData.IMAGE_FILENAME_2;
-                setWdtagImg_1(jobData.IMAGE_FILENAME);
-                setWdtagImg_2(jobData.IMAGE_FILENAME_2);
+               
 
         }else{
+                 //console.log("ไม่มี Attach file  ");
                 // ไม่มี Attach ไฟล์ 
                 //console.log("jobData.IMAGE_FILENAME 1,2 B");
                 if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
@@ -425,12 +438,12 @@ const Page = ({ searchParams }) => {
             JobID: jobData.JobID,
             wd_tag: wdTag,
             submittedBy: user._id,
-            wdtagImage_1: wdtagImg_1,
-            wdtagImage_2: wdtagImg_2,
+            wdtagImage_1: wdtagImg_1||jobData.IMAGE_FILENAME,
+            wdtagImage_2: wdtagImg_2||jobData.IMAGE_FILENAME_2,
           };
-
-          //console.log('jobData',jobData);
-          //console.log('jobInfo',jobInfo);
+          // console.log("----------JobInfo----------");
+          // console.log('jobData',jobData);
+          // console.log('jobInfo',jobInfo);
 
           //return ;  
 
