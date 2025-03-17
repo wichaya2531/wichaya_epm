@@ -4,6 +4,12 @@ import nodemailer from "nodemailer";
 export const POST = async (req, res) => {
   try {
     const { to, subject, text } = await req.json();
+    
+   if(to.length<5){
+         return NextResponse.json({status: 200 , message: "test is OK" });
+   }
+
+
     const transporter = nodemailer.createTransport({
       host: "mailrelay.wdc.com",
       port: 25,

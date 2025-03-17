@@ -76,10 +76,10 @@ const convertTimeout = async (timeout, createdAt) => {
 const logText = async () => {
   const currentTime = new Date();
   const totalJobs = await Job.countDocuments();
-  console.log("-----------------------------------------------------------");
-  console.log("Checking for overdue jobs: ", currentTime.toLocaleString());
-  console.log("Total Jobs Today: ", totalJobs);
-  console.log("-----------------------------------------------------------");
+  // console.log("-----------------------------------------------------------");
+  // console.log("Checking for overdue jobs: ", currentTime.toLocaleString());
+  // console.log("Total Jobs Today: ", totalJobs);
+  // console.log("-----------------------------------------------------------");
 };
 
 export const POST = async (req, res) => {
@@ -91,7 +91,7 @@ export const POST = async (req, res) => {
   const now = new Date();
 
   try {
-    console.log("------Checking for Overdue Jobs--------");
+    //console.log("------Checking for Overdue Jobs--------");
     const overdueStatus = await Status.findOne({ status_name: "overdue" });
 
     // ทำการตรวจสอบและเปลี่ยนสถานะของงาน
@@ -154,7 +154,7 @@ export const POST = async (req, res) => {
         // ตรวจสอบว่า emailList มีข้อมูลหรือไม่
         if (overdueEmailList.length > 0) {
           //emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
-          console.log("OVERDUE send emailList to=>", overdueEmailList); // แสดง emailList ที่จะส่ง
+          //console.log("OVERDUE send emailList to=>", overdueEmailList); // แสดง emailList ที่จะส่ง
           // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
           await sendEmailsOverdude(overdueEmailList, job); // ฟังก์ชันการส่งอีเมล
         } else {
@@ -247,9 +247,9 @@ export const POST = async (req, res) => {
         });
         if (!approvers) {
           //   return NextResponse.json({ status: 404, file: __filename, error: "Approvers not found" });
-          console.log(
-            "Approvers not found :" + schedulers.JOB_TEMPLATE_CREATE_ID
-          );
+          // console.log(
+          //   "Approvers not found :" + schedulers.JOB_TEMPLATE_CREATE_ID
+          // );
           return;
         }
 
@@ -395,7 +395,7 @@ export const POST = async (req, res) => {
         await sendEmails(userEmails, jobData);
       }
     });
-    console.log("Success Auto Activated!!");
+    //console.log("Success Auto Activated!!");
     return NextResponse.json({ status: 200 });
   } catch (error) {
     console.error("Check schedual Error: ", error);

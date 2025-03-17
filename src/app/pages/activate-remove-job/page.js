@@ -65,7 +65,9 @@ const Page = () => {
   const [isShowPlan, setIsShowPlan] = useState(false);
   const [planData, setPlanData] = useState({});
   const [filterStatus, setFilterStatus] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageJob, setCurrentPageJob] = useState(1);
+  const [currentPageJobTemplate, setCurrentPageJobTemplate] = useState(1);
+
   const [selectedJobs, setSelectedJobs] = useState([]);
   const handleSelectJob = (jobId) => {
     console.log("Page handleSelectJob");
@@ -861,8 +863,9 @@ const Page = () => {
           TableName="Checklist Templates"
           searchColumn="Checklist Template Name"
           filterColumn="Line Name"
-          onPageChange={handleOnpageChange}
-          currentPage={currentPage}
+          //onPageChange={handleOnpageChange}
+          onPageChange={(page) => setCurrentPageJobTemplate(page)}
+          currentPage={currentPageJobTemplate}
         />
       </div>
 
@@ -906,8 +909,8 @@ const Page = () => {
           filteredJobs={filteredJobs}
           selectedJobs={selectedJobs}
           handleDeleteSelected={handleDeleteSelected}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
+          currentPage={currentPageJob}
+          onPageChange={(page) => setCurrentPageJob(page)}
           setSelectedJobs={setSelectedJobs}
         />
       </div>

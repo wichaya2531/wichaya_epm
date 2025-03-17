@@ -15,6 +15,12 @@ export const POST = async (req, res) => {
   
   return NextResponse.json({status: 200 , message: "Pending..." });
   */
+
+  if(data.email.length<5){
+      return NextResponse.json({status: 200 , message: "test is OK" });
+  }
+
+
   try {
     // ตั้งค่า SMTP Server
     const transporter = nodemailer.createTransport({

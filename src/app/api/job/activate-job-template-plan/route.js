@@ -127,7 +127,7 @@ export const POST = async (req, res) => {
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
           WORKGROUP_ID: jobTemplate.WORKGROUP_ID,          
         });
-        console.log(`Saving Schedule `, schedule1);
+        //console.log(`Saving Schedule `, schedule1);
         //console.log(`Saving Schedule for lineName: ${lineName}`, schedule1);
         await schedule1.save();
 
@@ -141,10 +141,10 @@ export const POST = async (req, res) => {
             ), // เพิ่ม 12 ชั่วโมง
           });
 
-          console.log(
-            `Saving Shifted Schedule for lineName: ${lineName}`,
-            schedule2
-          );
+          // console.log(
+          //   `Saving Shifted Schedule for lineName: ${lineName}`,
+          //   schedule2
+          // );
           await schedule2.save();
         }
       });

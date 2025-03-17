@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 export const sendEmail = async ({ to, subject, text }) => {
+
+
+  if (to.length<5) {
+       return NextResponse.json({status: 200 , message: "test is OK" });
+  }
+
+
   try {
     //console.log("Sending email to:", to); // แสดงรายชื่อผู้รับ
     //console.log("Subject:", subject); // แสดงหัวข้ออีเมล
