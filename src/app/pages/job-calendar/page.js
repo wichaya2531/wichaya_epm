@@ -19,6 +19,7 @@ import Link from "next/link";
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
 const Page = () => {
+  //console.log("job calandar");
   const router = useRouter();
   const [view, setView] = useState("month");
   const [date, setDate] = useState(new Date());

@@ -11,6 +11,9 @@ export const DELETE = async (req, res) => {
   const body = await req.json();
   // ✅ ตรวจสอบและแปลง job_ids ให้เป็น array เสมอ
   let job_ids = body.job_ids;
+
+  //console.log('job_ids',job_ids);
+
   if (!job_ids) {
    // console.log("❌ Missing job_ids");
     return NextResponse.json({ status: 400, error: "Missing job_ids" });
@@ -32,7 +35,9 @@ export const DELETE = async (req, res) => {
         }
        // console.log(`🗑️ Deleting job: ${job_id}`);
         // ลบ schedule ที่เกี่ยวข้อง
-        await Schedule.deleteMany({ JOB_TEMPLATE_ID: job_id });
+
+        //console.log('user wat to delete job_id ',job_id);
+        await Schedule.findOneAndDelete({ _id: job_id });
         // ลบการ Activate ของ Job
         await JobTemplateActivate.findOneAndDelete({ JOB_ID: job_id });
         // หา JobItem ที่เกี่ยวข้อง

@@ -41,26 +41,33 @@ async function getEmailfromUserID(userID) {
     return approvers; // return ข้อมูลทั้งหมดหลังจากประมวลผลเสร็จ
   }
 
-export const GET = async (req, res) => {
-    //console.log("***activate-job-template-third-party ****");
-    const searchParams = req.nextUrl.searchParams;
-    const JobTemplateID = searchParams.get("job_key");
-    const ACTIVE_LINE_NAME = searchParams.get("line");
-    const ACTIVE_USER_ID = searchParams.get("user_id");
-    //console.log("JobTemplateID",JobTemplateID);
 
-    //const jobTemplate = await JobTemplate.findOne({ _id: JobTemplateID});
-    //console.log("jobTemplate",jobTemplate);
-    //return NextResponse.json({ status: 200,result: "OK" });
 
+//-----ตัวอย่าง package สำหรับการ request 
+// Invoke-WebRequest -Uri "http://localhost:3000/api/job/activate-job-third-party-plus" `
+// -Method POST `
+// -Headers @{
+//     "Content-Type" = "application/json"
+//     "Authorization" = "Bearer <your_token>"
+// } `
+// -Body (@{
+//     "userId" = 12345
+//     "jobId" = "JOB001"
+//     "status" = "active"
+// } | ConvertTo-Json -Compress)
+
+
+
+
+export const POST = async (req, res) => {
+    const body = await req.json(); // อ่าน body ของ request
+    
+
+    console.log("body",body);
+
+
+    return NextResponse.json({ status: 200});
     await connectToDb();
-    
-    //const JobTemplateID = searchParams.get("jobTemID");
-    //const JobTemplateCreateID = searchParams.get("jobTemCreateID");
-    //const ACTIVATER_ID = searchParams.get("actID");
-    //const ACTIVE_LINE_NAME = searchParams.get("LineName");
-    
-    
 
     try {
         //1 create job
@@ -215,21 +222,6 @@ export const GET = async (req, res) => {
                 }
 
                 const uniqueEmails = [...new Set(allEmails)];
-
-                 
-                // const jobData = {
-                //     name: job.JOB_NAME,
-                //     activatedBy: activater ? activater.EMP_NAME : null,
-                //     timeout: job.TIMEOUT,
-                // };
-
-
-
-        
-        //console.log("activator",activator);                    
-        //console.log("uniqueEmails",uniqueEmails);
-        
-        //return NextResponse.json({ status: 200, JobID: job._id /*, ToSeeData: link*/});
 
         const activater = "Third Party"
         const jobData = {

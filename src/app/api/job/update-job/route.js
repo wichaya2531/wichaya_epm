@@ -69,7 +69,7 @@ export const POST = async (req) => {
     if(process.env.NEXT_PUBLIC_AGILE_ACCESS==="true"){
       if (process.env.WD_INTRANET_MODE === "true"  && job.AGILE_SKIP_CHECK===false) {
         const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
-        console.log("Agile get result=>",latestDocNo);   
+        //console.log("Agile get result=>",latestDocNo);   
         // ปิดไว้เมื่อต้องการทดสอบ local fee
         //console.log(" ตรวจสอบหมายเลขเอกสาร");
         if (latestDocNo.message) {

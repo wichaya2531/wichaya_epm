@@ -232,6 +232,8 @@ const TableComponentAdmin = ({
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
+                name="select-job-all"
+                id="select-job-all"
                 onChange={handleSelectAllJobs}
                 checked={
                   jobsInCurrentPage.length > 0 &&
@@ -241,7 +243,7 @@ const TableComponentAdmin = ({
                 }
                 className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
               />
-              <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+              <label htmlFor="select-job-all" className="text-gray-800 pr-2 font-medium text-sm md:text-base">
                 Select All
               </label>
             </div>

@@ -53,7 +53,7 @@ export const GET = async (req, { params }) => {
       const Line_Name = LineName?.LINE_NAME || "Unknown";
       //console.log("XXXX----XXXX",LineName);
       return {
-        _id: schedule.JOB_TEMPLATE_ID,
+        _id: schedule._id,//schedule.JOB_TEMPLATE_ID,
         REVIEWS: "",
         WD_TAG: "",
         JOB_STATUS_ID: "",

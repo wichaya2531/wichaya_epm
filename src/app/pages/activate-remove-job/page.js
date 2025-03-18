@@ -70,7 +70,7 @@ const Page = () => {
 
   const [selectedJobs, setSelectedJobs] = useState([]);
   const handleSelectJob = (jobId) => {
-    console.log("Page handleSelectJob");
+    //console.log("Page handleSelectJob");
     setSelectedJobs((prevSelected) =>
           prevSelected.includes(jobId) ? prevSelected.filter((id) => id !== jobId): [...prevSelected, jobId]
     );
@@ -457,7 +457,7 @@ const Page = () => {
       );
       //console.log("response=>",response);
       const data = await response.json();
-      //console.log("jobs data=>",data);
+      //console.log("jobs data xxxx=>",data);
       if (data.status === 200) {
         setJobs(data.jobs);
       }
@@ -467,6 +467,7 @@ const Page = () => {
   };
 
   const handleRemove = async (job_id) => {
+ 
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
         confirmButton: "btn btn-success",
@@ -526,6 +527,9 @@ const Page = () => {
 
   // ฟังก์ชันลบงานที่เลือก
   const handleDeleteSelected = async () => {
+    // alert('handleDeleteSelected');   
+
+
     if (selectedJobs.length === 0) return;
 
     const result = await Swal.fire({
@@ -538,6 +542,9 @@ const Page = () => {
       reverseButtons: true,
     });
 
+   //console.log("selectedJobs",selectedJobs);
+
+    //return;
     if (result.isConfirmed) {
       try {
         const response = await fetch(`/api/job/remove-job`, {
@@ -697,7 +704,7 @@ const Page = () => {
     filteredJobs &&
     filteredJobs.map((job, index) => {
 
-     // console.log('job',job);  
+      //console.log('job',job);  
 
       return {
         checkbox: (

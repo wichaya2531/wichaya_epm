@@ -319,7 +319,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
               name="shift-date"
               className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
             />
-            <label htmlFor="recurring" className="text-md font-semibold">
+            <label htmlFor="shift-date" className="text-md font-semibold">
               Shift Date
             </label>
           </div>

@@ -110,6 +110,19 @@ export const POST = async (req, res) => {
         parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
     );
     let rolling_Datetime = startDateActive;
+
+    // console.log("rolling_Datetime",rolling_Datetime);
+    // console.log("endDateActive",endDateActive);
+    // console.log("recurrence",recurrence);
+
+    // return NextResponse.json({
+    //   status: 200,
+    //   message: "Jobs activated successfully",
+    // });
+
+
+    // return ;
+
     while (rolling_Datetime <= endDateActive) {
       // Create a new job
       const AdvanceActivationDate = new Date(rolling_Datetime);
@@ -119,7 +132,7 @@ export const POST = async (req, res) => {
       );
       const schedulePromises = LINE_NAME.map(async (lineName) => {
         const schedule1 = new Schedule({
-          JOB_TEMPLATE_ID: new ObjectId(),
+          JOB_TEMPLATE_ID: jobTemplate._id,//new ObjectId(),
           JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
           JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
           ACTIVATE_DATE: AdvanceActivationDate,

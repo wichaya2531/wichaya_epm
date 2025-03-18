@@ -5,6 +5,7 @@ import { Job } from "@/lib/models/Job";
 import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
+import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
 
 export const dynamic = 'force-dynamic';
 export const GET = async (req, res) => {
@@ -20,6 +21,8 @@ export const GET = async (req, res) => {
         } else {
             jobTemplates = await JobTemplate.find({ WORKGROUP_ID: workgroup_id });
         }
+        
+        
 
         // Check if there are no job templates
         if (jobTemplates.length === 0) {
@@ -33,12 +36,22 @@ export const GET = async (req, res) => {
 
         // Flatten the activations array
         const flattenedActivates = jobTemplatesActivates.flat();
+        
 
+        //console.log('jobTemplates',jobTemplates);
+        
         // Fetch schedules
-        const schedules = await Promise.all(jobTemplates.map(async (jobTemplate) => {
-            return await Schedule.find({ JOB_TEMPLATE_ID: jobTemplate._id }).sort({ createdAt: -1 });
-        }));
+        
+        
 
+
+        const schedules = await Promise.all(jobTemplates.map(async (jobTemplate) => {
+            // console.log('jobTemplate._id',jobTemplate._id);   
+            //return await Schedule.find({ _id : jobTemplate._id}).sort({ createdAt: -1 });
+            return await Schedule.find({ JOB_TEMPLATE_ID: jobTemplate._id}).sort({ createdAt: -1 });
+        }));
+        
+        //console.log('schedules.',schedules);
         // Flatten the schedules array
         const flattenedSchedules = schedules.flat();
 
