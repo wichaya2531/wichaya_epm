@@ -77,7 +77,8 @@ export const GET = async (req, res) => {
                 color: statusColor,
             };
         }));
-
+        
+        //console.log('activationEvents',activationEvents);
         // Filter out null values from activationEvents
         const validActivationEvents = activationEvents.filter(event => event !== null);
 
@@ -91,8 +92,16 @@ export const GET = async (req, res) => {
             const Line_Name=LineName?.LINE_NAME || 'Unknown';
 
             //console.log("test->",schedule.LINE_NAME+" : "+schedule.JOB_TEMPLATE_NAME);    
+
+            const activateDate_s = new Date(schedule.ACTIVATE_DATE);
+
+            const hours = activateDate_s.getHours().toString().padStart(2, '0');  // แปลงให้เป็น 2 หลัก
+            const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
+            
+            const activationTime = `${hours}:${minutes}`;
+
             return {
-                title: Line_Name+" : "+schedule.JOB_TEMPLATE_NAME,
+                title: schedule.LINE_NAME+" : "+schedule.JOB_TEMPLATE_NAME+"   :  "+activationTime,
                 job_id: schedule.JOB_TEMPLATE_ID,
                 status_name: schedule.STATUS,
                 //line_name: schedule.LINE_NAME,

@@ -65,7 +65,6 @@ export const POST = async (req, res) => {
     shift_date,
   } = body;
 
- // console.log("startDate ====>", startDate);
 
   try {
     const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
@@ -78,10 +77,15 @@ export const POST = async (req, res) => {
     }
 
     // Calculate the end date based on the recurrence type
-
-    let startDateActive = new Date(
-      formatDateToString(new Date(startDate || null)) + "T" + activationTime
-    );
+    var pre_startDate = startDate;
+    if (!pre_startDate) {
+      pre_startDate = new Date();
+    }
+    
+    
+    let startDateStr = formatDateToString(pre_startDate); 
+    let startDateActive = new Date(`${startDateStr}T${activationTime}`);
+   
     startDateActive.setHours(
       startDateActive.getHours() +
         parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
@@ -123,7 +127,18 @@ export const POST = async (req, res) => {
 
     // return ;
 
+
+
+    var counter=0; 
+
     while (rolling_Datetime <= endDateActive) {
+      counter++;
+
+      if(counter>512){
+              console.log("Break over!!");
+              break;
+      }
+
       // Create a new job
       const AdvanceActivationDate = new Date(rolling_Datetime);
       AdvanceActivationDate.setHours(

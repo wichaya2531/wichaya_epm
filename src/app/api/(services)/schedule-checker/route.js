@@ -198,7 +198,7 @@ export const POST = async (req, res) => {
 
     // console.log("scheduler=>",scheduler);
 
-    console.log("-------Checking for active by schedule (±60 minutes)--------");
+    //console.log("-------Checking for active by schedule (±60 minutes)--------");
 
     const now = new Date(); // เวลาปัจจุบัน
     const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
