@@ -81,11 +81,16 @@ export const POST = async (req, res) => {
     if (!pre_startDate) {
       pre_startDate = new Date();
     }
-    
-    
-    let startDateStr = formatDateToString(pre_startDate); 
-    let startDateActive = new Date(`${startDateStr}T${activationTime}`);
+    pre_startDate=pre_startDate.split("T")[0];
+    //console.log('pre_startDate',pre_startDate);
+    //let startDateStr = formatDateToString(pre_startDate); 
+    //console.log("startDateStr",startDateStr);  
+
+    let startDateActive = new Date(`${pre_startDate}T${activationTime}`);
    
+   // console.log('startDateActive',startDateActive);  
+
+
     startDateActive.setHours(
       startDateActive.getHours() +
         parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
@@ -124,8 +129,6 @@ export const POST = async (req, res) => {
     //   message: "Jobs activated successfully",
     // });
 
-
-    // return ;
 
 
 

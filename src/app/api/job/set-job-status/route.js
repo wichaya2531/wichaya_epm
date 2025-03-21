@@ -14,6 +14,7 @@ export const GET = async (req, res) => {
   await connectToDb();
   const searchParams = req.nextUrl.searchParams;
   const JobId = searchParams.get("job_id");
+  const userId=searchParams.get("user_id");
   //const JobItemvalue = searchParams.get("value");
 
   //const JobTemplateID = searchParams.get("job_key");
@@ -30,9 +31,10 @@ export const GET = async (req, res) => {
              status_name: "complete",
       });  
       
-      const submittedUser = await User.findById("67ce53c078f9a087fb30c7d9");
+      const submittedUser = await User.findById(userId);
+      console.log('statusAssigned',statusAssigned);
 
-      job.JOB_STATUS_ID = statusAssigned._id;
+      job.JOB_STATUS_ID =  statusAssigned._id;
       job.SUBMITTED_BY = submittedUser;
       job.SUBMITTED_DATE = new Date();
      // job.IMAGE_FILENAME = jobData.wdtagImage_1;
