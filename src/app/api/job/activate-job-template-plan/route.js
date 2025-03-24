@@ -65,6 +65,8 @@ export const POST = async (req, res) => {
     shift_date,
   } = body;
 
+ // console.log('body',body);  
+
 
   try {
     const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
@@ -76,19 +78,20 @@ export const POST = async (req, res) => {
       });
     }
 
-    // Calculate the end date based on the recurrence type
-    var pre_startDate = startDate;
+    //console.log("activationDate:", activationDate);
+    //console.log("startDate:", startDate);
+    
+    var pre_startDate = activationDate || startDate;
     if (!pre_startDate) {
       pre_startDate = new Date();
     }
-    pre_startDate=pre_startDate.split("T")[0];
-    //console.log('pre_startDate',pre_startDate);
-    //let startDateStr = formatDateToString(pre_startDate); 
-    //console.log("startDateStr",startDateStr);  
-
+    //console.log("pre_startDate (before split):", pre_startDate);
+    
+    pre_startDate = pre_startDate.split("T")[0];
+    //console.log("pre_startDate (after split):", pre_startDate);
+    
     let startDateActive = new Date(`${pre_startDate}T${activationTime}`);
-   
-   // console.log('startDateActive',startDateActive);  
+    //console.log("startDateActive:", startDateActive);
 
 
     startDateActive.setHours(
@@ -102,7 +105,7 @@ export const POST = async (req, res) => {
       recurrence === "yearly"
     ) {
       startDateActive = new Date(
-        formatDateToString(new Date(startDate || activationDate)) +
+        formatDateToString(new Date(activationDate)) +
           "T" +
           activationTime
       );
@@ -120,6 +123,8 @@ export const POST = async (req, res) => {
     );
     let rolling_Datetime = startDateActive;
 
+    
+    // console.log("startDateActive",startDateActive);
     // console.log("rolling_Datetime",rolling_Datetime);
     // console.log("endDateActive",endDateActive);
     // console.log("recurrence",recurrence);
@@ -134,9 +139,10 @@ export const POST = async (req, res) => {
 
     var counter=0; 
 
-    while (rolling_Datetime <= endDateActive) {
+    while (rolling_Datetime < endDateActive) {
+      
+      //console.log('rolling_Datetime',rolling_Datetime);
       counter++;
-
       if(counter>512){
               console.log("Break over!!");
               break;

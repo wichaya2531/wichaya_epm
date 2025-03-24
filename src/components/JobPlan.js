@@ -88,25 +88,60 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
   const handleDateTypeChange = (type) => {
     setDateType(type);
+    
+   
+     
   };
 
   const handleRecurringChange = () => {
+    //onsole.log('BBBB',dateType);
+
     setShowRecurring(!showRecurring);
     if (!showRecurring) {
-      setRecurrenceOption("daily");
+      if (dateType=='dayOfWeek') {
+        setRecurrenceOption("weekly");        
+      }else{
+        setRecurrenceOption("daily");
+      }
+    
+    
     } else {
       setRecurrenceOption("");
     }
+   
+   /* setTimeout(function(){
+      try {
+        setRecurrenceOption("weekly");
+        //document.getElementById('recurrence').value="Weekly";
+      } catch (error) {
+          console.log(error);
+      }
+    },1000);*/
+    
+    
   };
 
   const handleSubmit = async (e, checkListTemplate) => {
     e.preventDefault();
     let nextDate;
+
+    //console.log('selectedDayOfWeek',selectedDayOfWeek);
+
+    
+
+
     if (dateType === "dayOfWeek") {
       nextDate = getNextDayOfWeek(selectedDayOfWeek);
     } else if (dateType === "dayOfMonth") {
       nextDate = getNextDayOfMonth(selectedDayOfMonth);
+    }else{
+          nextDate=document.getElementById('start-date').value;
     }
+
+     
+
+
+      
     const requestData = {
       activationDate: nextDate,
       activationTime:
@@ -121,6 +156,8 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       shift_date: document.getElementById("shift-date").checked,
     };
     //console.log("Request Data:", requestData);
+    //return;
+    
     if (!nextDate) {
       Swal.fire({
         icon: "error",
@@ -137,8 +174,20 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       });
       return;
     }
-    // console.log("requestData", requestData);
-    try {
+
+    if (showRecurring && !startDate) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please select an start date",
+      });
+      return;
+    }
+
+     //console.log("requestData", requestData);
+    
+    
+     try {
       const response = await fetch("/api/job/activate-job-template-plan", {
         method: "POST",
         headers: {
@@ -169,6 +218,34 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   };
 
   const getNextDayOfWeek = (dayOfWeek) => {
+
+    var start_date = document.getElementById('start-date').value; // รูปแบบ "yyyy-mm-dd"
+
+    // ตรวจสอบว่า start_date มีค่าหรือไม่
+    if (!start_date) {
+        console.error("start_date is empty.");
+        return null;
+    }
+
+    if (!start_date) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please select an start date",
+      });
+      return null;
+    }
+    // แปลง start_date เป็นวันในสัปดาห์
+    const startDateObj = new Date(start_date);
+    const startDayOfWeek = startDateObj.toLocaleString('en-us', { weekday: 'long' }).toLowerCase();
+
+    ///console.log('startDayOfWeek',startDayOfWeek);
+    if(dayOfWeek){
+
+    }else{
+     dayOfWeek=startDayOfWeek;
+    }  
+    
     const daysOfWeek = [
       "sunday",
       "monday",
