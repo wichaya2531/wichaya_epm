@@ -27,7 +27,7 @@ const TableReportDoc = ({
   const endMonth = endDate ? endDate.getMonth() : 11;
   const endYear = endDate ? endDate.getFullYear() : 9999;
 
-  let datesToShow = []; // ประกาศตัวแปร datesToShow ให้ออกมานอกเงื่อนไข
+  let datesToShow = [];
 
   if (reportType === "date" || reportType === "shift") {
     // คำนวณวันที่ทั้งหมดในช่วงเวลาที่เลือก
@@ -43,25 +43,37 @@ const TableReportDoc = ({
     const weeks = [];
     let currentDate = new Date(startDate);
 
-    // เริ่มต้นที่วันแรกของเดือนที่ระบุ
     while (currentDate <= endDate) {
-      // หาวันเริ่มต้นของสัปดาห์ (วันจันทร์)
       let startOfWeek = new Date(currentDate);
-      startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1); // set ให้เป็นวันจันทร์
 
-      // หาวันสิ้นสุดของสัปดาห์ (วันอาทิตย์)
+      // ถ้าเป็น Week 1 ให้เริ่มจาก startDate
+      if (weeks.length === 0) {
+        startOfWeek = new Date(startDate);
+      } else {
+        startOfWeek.setDate(currentDate.getDate());
+      }
+
       let endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6); // เพิ่ม 6 วันให้เป็นวันอาทิตย์
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-      // เพิ่มสัปดาห์นี้เข้าไป
+      // ป้องกันไม่ให้ endOfWeek เกิน endDate
+      if (endOfWeek > endDate) {
+        endOfWeek = new Date(endDate);
+      }
+
+      // ดึงแค่วันที่
+      const startLabel = startOfWeek.getDate();
+      const endLabel = endOfWeek.getDate();
+
       weeks.push({
         start: startOfWeek,
         end: endOfWeek,
-        label: `Week ${weeks.length + 1}`, // เพิ่ม label สำหรับสัปดาห์
+        label: `${startLabel}-${endLabel} / Week ${weeks.length + 1}`,
       });
 
-      // ไปยังสัปดาห์ถัดไป
-      currentDate.setDate(currentDate.getDate() + 7); // ไปวันถัดไป
+      // ขยับไปวันถัดไปของ endOfWeek
+      currentDate = new Date(endOfWeek);
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return weeks;

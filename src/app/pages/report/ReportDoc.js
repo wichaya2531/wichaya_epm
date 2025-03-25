@@ -477,6 +477,83 @@ const ReportDoc = ({ report, isLoading }) => {
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
         <div className="relative">
+          <label
+            htmlFor="start-month"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Start Date
+          </label>
+          <input
+            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
+            type={
+              reportType === "date" || reportType === "shift" ? "date" : "month"
+            }
+            id="start-month"
+            value={
+              startDate && !isNaN(startDate.getTime())
+                ? format(
+                    startDate,
+                    reportType === "month" || reportType === "week"
+                      ? "yyyy-MM"
+                      : "yyyy-MM-dd"
+                  )
+                : ""
+            }
+            onChange={(e) => {
+              const selectedStartDate = new Date(e.target.value);
+              setStartDate(selectedStartDate);
+
+              if (reportType === "date" || reportType === "shift") {
+                setEndDate(selectedStartDate);
+              } else {
+                setEndDate(getLastDayOfMonth(selectedStartDate));
+              }
+            }}
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="relative">
+          <label
+            htmlFor="end-month"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            End Date
+          </label>
+          <input
+            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
+            type={
+              reportType === "date" || reportType === "shift" ? "date" : "month"
+            }
+            id="end-month"
+            value={
+              endDate && !isNaN(endDate.getTime())
+                ? format(
+                    endDate,
+                    reportType === "month" || reportType === "week"
+                      ? "yyyy-MM"
+                      : "yyyy-MM-dd"
+                  )
+                : ""
+            }
+            onChange={(e) => {
+              const selectedEndDate = new Date(e.target.value);
+              setEndDate(selectedEndDate);
+
+              if (reportType === "date" || reportType === "shift") {
+                setEndDate(selectedEndDate);
+              } else {
+                setEndDate(getLastDayOfMonth(selectedEndDate));
+              }
+            }}
+            disabled={isLoading}
+          />
+        </div>
+        <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Workgroups
           </label>
@@ -627,85 +704,6 @@ const ReportDoc = ({ report, isLoading }) => {
             <option value="shift">Shift</option>
           </select>
         </div>
-
-        <div className="relative">
-          <label
-            htmlFor="start-month"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Start Date
-          </label>
-          <input
-            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
-              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
-            }`}
-            type={
-              reportType === "date" || reportType === "shift" ? "date" : "month"
-            }
-            id="start-month"
-            value={
-              startDate && !isNaN(startDate.getTime())
-                ? format(
-                    startDate,
-                    reportType === "month" || reportType === "week"
-                      ? "yyyy-MM"
-                      : "yyyy-MM-dd"
-                  )
-                : ""
-            }
-            onChange={(e) => {
-              const selectedStartDate = new Date(e.target.value);
-              setStartDate(selectedStartDate);
-
-              if (reportType === "date" || reportType === "shift") {
-                setEndDate(selectedStartDate);
-              } else {
-                setEndDate(getLastDayOfMonth(selectedStartDate));
-              }
-            }}
-            disabled={isLoading}
-          />
-        </div>
-
-        <div className="relative">
-          <label
-            htmlFor="end-month"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            End Date
-          </label>
-          <input
-            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
-              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
-            }`}
-            type={
-              reportType === "date" || reportType === "shift" ? "date" : "month"
-            }
-            id="end-month"
-            value={
-              endDate && !isNaN(endDate.getTime())
-                ? format(
-                    endDate,
-                    reportType === "month" || reportType === "week"
-                      ? "yyyy-MM"
-                      : "yyyy-MM-dd"
-                  )
-                : ""
-            }
-            onChange={(e) => {
-              const selectedEndDate = new Date(e.target.value);
-              setEndDate(selectedEndDate);
-
-              if (reportType === "date" || reportType === "shift") {
-                setEndDate(selectedEndDate);
-              } else {
-                setEndDate(getLastDayOfMonth(selectedEndDate));
-              }
-            }}
-            disabled={isLoading}
-          />
-        </div>
-
         <div className="flex flex-wrap gap-2 mt-4">
           {colorValues.map((value) => (
             <div key={value} className="flex items-center space-x-2">
