@@ -183,7 +183,7 @@ const Page = ({ searchParams }) => {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
       if (jsonData.length === 0) {
-        Swal.fire("Error", "ไฟล์ไม่มีข้อมูล", "error");
+        Swal.fire("Error", "The file has no data.", "error");
         return;
       }
 
@@ -229,13 +229,17 @@ const Page = ({ searchParams }) => {
 
         const result = await response.json();
         if (response.ok) {
-          Swal.fire("Success", "ข้อมูลถูกอัปโหลดสำเร็จ", "success");
+          Swal.fire("Success", "Data was uploaded successfully.", "success");
         } else {
-          Swal.fire("Error", result.message || "เกิดข้อผิดพลาด", "error");
+          Swal.fire("Error", result.message || "An error occurred.", "error");
         }
       } catch (error) {
         console.error(error);
-        Swal.fire("Error", "เกิดข้อผิดพลาดในการส่งข้อมูล", "error");
+        Swal.fire(
+          "Error",
+          "An error occurred while sending the data.",
+          "error"
+        );
       }
     };
 
@@ -270,7 +274,7 @@ const Page = ({ searchParams }) => {
     // ใช้ SweetAlert2 (swal)
     Swal.fire({
       title: "Mqtt Topic ID",
-      html: `<p>ID: <strong>${idToCopy+"/{Line_name}"}</strong></p>
+      html: `<p>ID: <strong>${idToCopy + "/{Line_name}"}</strong></p>
                <button id="copy-btn" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white;">
                    Copy to Clipboard
                </button>
@@ -278,10 +282,18 @@ const Page = ({ searchParams }) => {
               <div style="border:1px solid none;width:450px;text-align:left;padding:15px;">
                 <p style="padding-left:45px;"><strong>[--------Setting Info-------]</strong></p>
                 
-                <p style="padding-left:50px;">Broker IP&nbsp;&nbsp;: &nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQTT_BROKER_IP}</strong></p>
-                <p style="padding-left:50px;">Broker Port&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQTT_BROKER_PORT}</strong></p>
-                <p style="padding-left:50px;">User&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQT_USERNAME}</strong></p>
-                <p style="padding-left:50px;">Pass&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${process.env.NEXT_PUBLIC_MQT_PASSWORD}</strong></p>
+                <p style="padding-left:50px;">Broker IP&nbsp;&nbsp;: &nbsp;&nbsp;<strong>${
+                  process.env.NEXT_PUBLIC_MQTT_BROKER_IP
+                }</strong></p>
+                <p style="padding-left:50px;">Broker Port&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${
+                  process.env.NEXT_PUBLIC_MQTT_BROKER_PORT
+                }</strong></p>
+                <p style="padding-left:50px;">User&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${
+                  process.env.NEXT_PUBLIC_MQT_USERNAME
+                }</strong></p>
+                <p style="padding-left:50px;">Pass&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${
+                  process.env.NEXT_PUBLIC_MQT_PASSWORD
+                }</strong></p>
               </div>  
                `,
       showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
