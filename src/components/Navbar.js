@@ -92,6 +92,11 @@ const Navbar = ({ menu }) => {
     setUsername(e.target.value);
   };
 
+  const handlePasswordChange = (e) => {
+    //console.log("...handlePasswordChange");
+    setPassword(e.target.value);
+  };
+
   useEffect(() => {
     getUser();
   }, []);
@@ -268,6 +273,7 @@ const Navbar = ({ menu }) => {
                     className="w-full p-3 rounded-md border mb-3"
                     name="password"
                     value={password}
+                    onChange={handlePasswordChange}
                     placeholder="Password"
                     autoComplete="current-password"
                   />

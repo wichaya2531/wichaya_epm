@@ -130,12 +130,18 @@ const Page = () => {
     const { value: inputs } = await Swal.fire({
       title: "Update Machine",
       html: `
-        <input id="wdTag" class="swal2-input" placeholder="Enter new WD_TAG" value="${
-          machine.wd_tag || ""
-        }">
-        <input id="machineName" class="swal2-input" placeholder="Enter new Machine Name" value="${
-          machine.name || ""
-        }">
+<div style="display: flex; flex-direction: column;">
+    <label for="wdTag">WD TAG</label>
+    <input id="wdTag" class="swal2-input" placeholder="Enter new WD_TAG" value="${
+      machine.wd_tag || ""
+    }">
+
+    <label for="machineName" style="margin-top: 10px;">MACHINE NAME</label>
+    <input id="machineName" class="swal2-input" placeholder="Enter new Machine Name" value="${
+      machine.name || ""
+    }">
+</div>
+
       `,
       focusConfirm: false,
       showCancelButton: true,
@@ -263,14 +269,11 @@ const Page = () => {
         className="max-w-[98vw] mx-auto my-4 p-4 bg-white rounded-xl"
         style={{ width: "100%" }}
       >
-        <h2 className="text-primary flex justify-center items-center text-xl font-bold mb-4">
+        <h2 className="text-primary text-xl font-bold mb-4">
           Manage WD TAG and MACHINE NAME{" "}
         </h2>
-
-        {/*  -   */}
-        <div className="mb-6 max-w-lg mx-auto space-y-4 flex flex-col h-full">
-          <div className="flex flex-row space-x-4">
-            {/* WD TAG */}
+        <div className="mb-6 max-w-lg space-y-4 flex flex-col h-full">
+          <div className="flex flex-row gap-4">
             <div className="flex flex-col w-1/2">
               <label
                 htmlFor="wdTag"
@@ -287,7 +290,6 @@ const Page = () => {
                 placeholder="Enter WD_TAG"
               />
             </div>
-
             {/* MACHINE NAME */}
             <div className="flex flex-col w-1/2">
               <label
@@ -305,29 +307,27 @@ const Page = () => {
                 placeholder="Enter MACHINE NAME"
               />
             </div>
-          </div>
-
-          {/* Button at the bottom left */}
-          <div className="flex justify-start mt-auto">
-            <button
-              className="bg-blue-600 text-white rounded-lg px-6 py-3 disabled:opacity-50 flex items-center justify-center transition-all duration-300 hover:bg-blue-700"
-              onClick={handleCreate}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <div className="mr-3 animate-spin">
-                    <FaPlus /> {/* ไอคอนโหลด */}
-                  </div>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <FaPlus className="mr-3" /> {/* ไอคอนบวก */}
-                  Create
-                </>
-              )}
-            </button>
+            <div className="flex justify-start mt-auto">
+              <button
+                className="bg-blue-600 text-white rounded-lg px-6 py-3 disabled:opacity-50 flex items-center justify-center transition-all duration-300 hover:bg-blue-700"
+                onClick={handleCreate}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="mr-3 animate-spin">
+                      <FaPlus /> {/* ไอคอนโหลด */}
+                    </div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <FaPlus className="mr-3" /> {/* ไอคอนบวก */}
+                    Create
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
         <TableComponent
