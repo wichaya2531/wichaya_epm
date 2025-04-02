@@ -17,6 +17,10 @@ const Page = ({searchParams}) => {
   const [users, setUsers] = useState([]);
   const [edit, setEdit] = useState(false);
 
+
+  const [currentPageMember, setCurrentPageMember] = useState(1);
+  const [currentPageAllUser, setCurrentPageAllUser] = useState(1);
+
   useEffect(() => {
     fetchWorkgroup();
     fetchUsersWorkgroup();
@@ -179,9 +183,22 @@ const Page = ({searchParams}) => {
     <SALayout className="w-full h-screen flex flex-col gap-4 items-center justify-start font-sans">
       <div className="w-full h-full bg-white container px-8 rounded-lg flex flex-col gap-8">
       <h1 className="text-2xl font-bold text-primary flex items-center"> Edit {">"} {workgroup.name} </h1>
-        <TableComponent headers={workgroupHeader} datas={dataUsersWorkgroup} searchColumn={"Name"} TableName="Members."/>
+        <TableComponent 
+        headers={workgroupHeader}
+         datas={dataUsersWorkgroup} 
+         searchColumn={"Name"} TableName="Members."
+         currentPage={currentPageMember}
+         onPageChange={(page) => setCurrentPageMember(page)}
+         />
         <hr className="w-full" />
-        <TableComponent headers={userHeader} datas={dataUsers} searchColumn={"Name"} TableName="All users"/>
+        <TableComponent
+         headers={userHeader} 
+         datas={dataUsers}
+          searchColumn={"Name"} 
+          TableName="All users"
+          currentPage={currentPageAllUser}
+          onPageChange={(page) => setCurrentPageAllUser(page)}
+          />
       </div>
     </SALayout>
   );

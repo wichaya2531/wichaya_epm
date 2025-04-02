@@ -25,7 +25,7 @@ const useFetchUser = (refresh = null) => {
           throw new Error("Failed to fetch user");
         }
         const data = await response.json();
-
+        //console.log('data from query',data);
         setUser(data.user);
         //console.log("data :", data);
       } catch (error) {

@@ -140,6 +140,7 @@ const Page = () => {
               datas={data}
               searchColumn={"Role"}
               TableName="All Roles"
+              currentPage={1}
             />
           )}
         </div>

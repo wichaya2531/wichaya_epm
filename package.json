@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next export"
   },
   "dependencies": {
     "@chakra-ui/next-js": "^2.2.0",
@@ -68,6 +69,7 @@
     "styled-components": "^6.1.11",
     "swagger-ui-react": "^5.17.2",
     "sweetalert2": "^11.6.13",
+    "swiper": "^11.2.6",
     "tls": "^0.0.1",
     "xlsx": "^0.18.5"
   },

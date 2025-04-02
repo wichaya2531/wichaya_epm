@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import Swal from "sweetalert2";
 import { getSession } from "@/lib/utils/utils";
+import HelpIcon from "@mui/icons-material/Help";
+import ChatIcon from "@mui/icons-material/Chat";
 
 const JobPlan = ({ data, onClose, setRefresh }) => {
   const [dateType, setDateType] = useState("");
@@ -30,6 +32,13 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       }
     });
   };
+
+  const handleHelpButton = () => {
+        //alert('Help Icon');  
+        window.open("./help?filter=open_job_by_planning", "_blank");
+  }
+    
+
 
   useEffect(() => {
     setAllLineName([]);
@@ -87,10 +96,8 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   }, []);
 
   const handleDateTypeChange = (type) => {
-    setDateType(type);
-    
-   
-     
+
+      setDateType(type);
   };
 
   const handleRecurringChange = () => {
@@ -98,7 +105,9 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
     setShowRecurring(!showRecurring);
     if (!showRecurring) {
-      if (dateType=='dayOfWeek') {
+      if (dateType=='dayOfMonth') {
+        setRecurrenceOption("monthly");        
+      }else if (dateType=='dayOfWeek') {
         setRecurrenceOption("weekly");        
       }else{
         setRecurrenceOption("daily");
@@ -127,9 +136,6 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
     //console.log('selectedDayOfWeek',selectedDayOfWeek);
 
-    
-
-
     if (dateType === "dayOfWeek") {
       nextDate = getNextDayOfWeek(selectedDayOfWeek);
     } else if (dateType === "dayOfMonth") {
@@ -137,10 +143,6 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
     }else{
           nextDate=document.getElementById('start-date').value;
     }
-
-     
-
-
       
     const requestData = {
       activationDate: nextDate,
@@ -154,6 +156,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       startDate: startDate ? new Date(startDate).toISOString() : null,
       LINE_NAME: selectedLineName,
       shift_date: document.getElementById("shift-date").checked,
+      weekend_skip:document.getElementById("weekend-skip").checked,
     };
     //console.log("Request Data:", requestData);
     //return;
@@ -296,10 +299,17 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
       <form
-        className="bg-white px-20 py-9 rounded-lg  flex flex-col gap-8 relative overflow-auto"
+        className="bg-white px-20 py-9 rounded-lg w-600  flex flex-col gap-8 relative overflow-auto"
         onSubmit={handleSubmit}
       >
-        <h1 className="text-2xl font-bold">Set Advance Activation Date</h1>
+      
+        <h1 className="text-2xl font-bold">Set Advance Activation Date  
+        <HelpIcon
+                    className="text-blue-600"
+                    onClick={() => handleHelpButton()}
+        />
+        
+        </h1>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
             <label className="text-md font-semibold flex items-center gap-1">
@@ -312,6 +322,8 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                 className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
               />
               <span>Day of the Week</span>
+              
+
             </label>
             <label className="text-md font-semibold flex items-center gap-1">
               <input
@@ -399,7 +411,20 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
             <label htmlFor="shift-date" className="text-md font-semibold">
               Shift Date
             </label>
+
+            &nbsp;&nbsp;&nbsp;
+            <input
+              type="checkbox"
+              id="weekend-skip"
+              name="weekend-skip"
+              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
+            />
+            <label htmlFor="weekend-skip" className="text-md font-semibold">
+              Weekend Skip
+            </label>
+
           </div>
+
 
           {showRecurring && (
             <div className="flex flex-col gap-2">
@@ -525,6 +550,8 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
         >
           Save
         </button>
+
+
       </form>
     </div>
   );

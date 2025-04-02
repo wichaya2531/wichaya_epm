@@ -10,7 +10,12 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import TableReportDoc from "@/components/TableReportDoc";
 
-const ReportDoc = ({ report, isLoading }) => {
+
+const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterChange,onPullData,onWorkgroupSelect,workgroupSelect}) => {
+
+
+
+  const [workgroups, setWorkgroups] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -178,7 +183,32 @@ const ReportDoc = ({ report, isLoading }) => {
     return updatedAt >= startDate && updatedAt <= endDate;
   });
 
+
+
+  const fetchWorkgroups = async () => {
+    try {
+      const response = await fetch(
+        `/api/workgroup/get-workgroups`, { next: { revalidate: 10 } }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch roles");
+      }
+      const data = await response.json();
+      
+      //console.log('data workgroup',data);
+
+      setWorkgroups(data.workgroups);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
+    fetchWorkgroups();
+  },"");
+
+  useEffect(() => {
+    
     const uniqueValues = (key) => [
       ...new Set(report.map((item) => item[key]).filter(Boolean)),
     ];
@@ -487,21 +517,25 @@ const ReportDoc = ({ report, isLoading }) => {
             className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            type={
+            
+            type={"date"}
+            /*type={
               reportType === "date" || reportType === "shift" ? "date" : "month"
-            }
+            }*/
             id="start-month"
-            value={
-              startDate && !isNaN(startDate.getTime())
-                ? format(
-                    startDate,
-                    reportType === "month" || reportType === "week"
-                      ? "yyyy-MM"
-                      : "yyyy-MM-dd"
-                  )
-                : ""
-            }
+            value={format(startDate,"yyyy-MM-dd")}
+            // value={
+            //   startDate && !isNaN(startDate.getTime())
+            //     ? format(
+            //         startDate,
+            //         reportType === "month" || reportType === "week"
+            //           ? "yyyy-MM"
+            //           : "yyyy-MM-dd"
+            //       )
+            //     : "" 
+            // }
             onChange={(e) => {
+              onDateStartFilterChange(e.target.value);
               const selectedStartDate = new Date(e.target.value);
               setStartDate(selectedStartDate);
 
@@ -510,6 +544,7 @@ const ReportDoc = ({ report, isLoading }) => {
               } else {
                 setEndDate(getLastDayOfMonth(selectedStartDate));
               }
+
             }}
             disabled={isLoading}
           />
@@ -526,11 +561,14 @@ const ReportDoc = ({ report, isLoading }) => {
             className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            type={
-              reportType === "date" || reportType === "shift" ? "date" : "month"
-            }
+            type={"date"}
+            // type={
+            //   reportType === "date" || reportType === "shift" ? "date" : "month"
+            // }
             id="end-month"
-            value={
+            value={format(endDate,"yyyy-MM-dd")}
+
+            /*value={
               endDate && !isNaN(endDate.getTime())
                 ? format(
                     endDate,
@@ -539,8 +577,9 @@ const ReportDoc = ({ report, isLoading }) => {
                       : "yyyy-MM-dd"
                   )
                 : ""
-            }
+            }*/
             onChange={(e) => {
+              onDateEndFilterChange(e.target.value);
               const selectedEndDate = new Date(e.target.value);
               setEndDate(selectedEndDate);
 
@@ -553,74 +592,56 @@ const ReportDoc = ({ report, isLoading }) => {
             disabled={isLoading}
           />
         </div>
-        <div className="relative">
+
+        <div className="relative" style={{ width: '300px' }}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Workgroups
+            Workgroup
           </label>
-          <button
-            onClick={() => !isLoading && setIsOpen((prevOpen) => !prevOpen)}
-            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
-              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
-            }`}
-            disabled={isLoading}
+
+          <select
+            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-white hover:bg-gray-50 focus:outline-none"
+            onChange={(e) => {
+              const selectedValue = e.target.value;
+              // if (selectedValue === "All Workgroups") {
+              //   setSelectedWorkgroups([]);
+              //   setSelectedLineNames([]);
+              // } else {
+                
+              // }
+              handleWorkgroupChange(selectedValue);
+              onWorkgroupSelect(e.target.value);
+            }}
+            //value={selectedWorkgroups.length === 0 ? "All Workgroups" : selectedWorkgroups[0]}
+            //value={workgroupSelect}
           >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <svg
-                  className="animate-spin h-5 w-5 mr-2 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
-                Loading...
-              </div>
-            ) : selectedWorkgroups.length > 0 ? (
-              `Selected ${selectedWorkgroups.length} Workgroups`
-            ) : (
-              "Select Workgroups"
-            )}
-          </button>
-          {isOpen && !isLoading && (
-            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
-              <label className="block p-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  onChange={() => {
-                    setSelectedWorkgroups([]);
-                    setSelectedLineNames([]); // รีเซ็ต LineNames เมื่อเลือก "All Workgroups"
-                  }}
-                  checked={selectedWorkgroups.length === 0}
-                />
-                All Workgroups
-              </label>
-              {availableWorkgroups.map((workgroupName) => (
-                <label key={workgroupName} className="block p-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value={workgroupName}
-                    checked={selectedWorkgroups.includes(workgroupName)}
-                    onChange={() => handleWorkgroupChange(workgroupName)}
-                  />
-                  {workgroupName}
-                </label>
-              ))}
-            </div>
-          )}
+            <option value="----Select------">----Select------</option>
+            {workgroups.map((workgroupName) => (
+              <option
+                key={workgroupName.WORKGROUP_NAME}
+                value={workgroupName.WORKGROUP_NAME}
+                
+              >
+                {workgroupName.WORKGROUP_NAME}
+              </option>
+            ))}
+          </select>
         </div>
+      
+
+        <div className="relative">
+          <label
+            htmlFor="end-month"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            &nbsp;
+          </label>
+          <button className="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-md"
+                onClick={onPullData}
+          >
+            Pull Data
+          </button>
+        </div>
+
         {/* LineNames UI */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -665,7 +686,7 @@ const ReportDoc = ({ report, isLoading }) => {
         </div>
         <div className="relative mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Report Type
+            Report View Type
           </label>
           <select
             className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"

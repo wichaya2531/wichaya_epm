@@ -11,13 +11,28 @@ import BarChart4 from "./BarChart4";
 import BarChart5 from "./BarChart5";
 import BarChart1 from "./BarChart1";
 import ReportDoc from "./ReportDoc";
-import { useState } from "react";
+import { use, useState } from "react";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 
+import useFetchUsers from "@/lib/hooks/useFetchUser";
+import {  useEffect } from "react";
 const Page = () => {
   const [refresh, setRefresh] = useState(false);
-  const { report, isLoading } = useFetchReport1(refresh);
+  const currentDate = new Date();
+
+  const { user, isLoading: usersloading } = useFetchUsers(refresh);
+  // เวลาปัจจุบัน - 3 วัน
+  const pastDate = new Date(currentDate);
+  pastDate.setDate(currentDate.getDate() - 3);
+  const formattedStartDate = pastDate.toISOString().split('T')[0];
+  const [startDate, setStartDate] = useState( formattedStartDate);
+  const pastDate_a = new Date(currentDate);
+  const formattedStartDate_a = pastDate_a.toISOString().split('T')[0];
+  const [endDate, setEndDate] = useState(formattedStartDate_a);
+  const [workgroupSelect, setWorkgroupSelect] = useState(user.workgroup);
+  const { report, isLoading } = useFetchReport1(refresh,startDate,endDate,workgroupSelect);
   const [selectedChart, setSelectedChart] = useState("ReportDoc");
+
   const chartButtons = [
     //{ label: "Value in Item", value: "BarChart5" },
     { label: "ReportDoc", value: "ReportDoc" },
@@ -27,6 +42,40 @@ const Page = () => {
     // { label: "Members in workgroup", value: "BarChart3" },
     // { label: "By activate name", value: "BarChart4" },
   ];
+
+  const handleDateStartFilterChange = ( start ) => {
+      //alert('OK');
+      setStartDate(start);
+      //setEndDate(end);
+      console.log('Filtered Start Date:', start);
+      //console.log('Filtered End Date:', end);
+  };
+
+  const handleDateEndFilterChange = ( end ) => {
+    //alert('OK');
+    //setStartDate(start);
+    setEndDate(end);
+    //console.log('Filtered Start Date:', start);
+    console.log('Filtered End Date:', end);
+};
+const handlePullData = (  ) => {
+
+  //alert(workgroupSelect);
+  //alert('OK');
+  //setStartDate(start);
+  //setEndDate(end);
+  //console.log('Filtered Start Date:', start);
+  //console.log('Filtered End Date:', end);
+  setRefresh(!refresh);  // Trigger refresh to refetch data
+  console.log(`Fetching data from ${startDate} to ${endDate}`);
+};
+
+const handleWorkgroupSelect = ( workgroup_name ) => {
+      setWorkgroupSelect(workgroup_name);
+      //alert('workgroup selected '+workgroup_name);
+}
+
+
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
@@ -74,7 +123,16 @@ const Page = () => {
           <BarChart5 report={report} isLoading={isLoading} />
         )} */}
         {selectedChart === "ReportDoc" && (
-          <ReportDoc report={report} isLoading={isLoading} />
+          <ReportDoc 
+          report={report} 
+          isLoading={isLoading}
+          onDateStartFilterChange={handleDateStartFilterChange}
+          onDateEndFilterChange={handleDateEndFilterChange}
+          onPullData={handlePullData}
+          onWorkgroupSelect={handleWorkgroupSelect}  
+          workgroupSelect={workgroupSelect}
+
+          />
         )}
       </div>
     </Layout>

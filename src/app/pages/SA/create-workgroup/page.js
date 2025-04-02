@@ -16,6 +16,7 @@ const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const newWorkgroupInput = useRef(null);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [currentPageWorkgroup, setCurrentPageWorkgroup] = useState(1);
 
   useEffect(() => {
     fetchWorkgroups();
@@ -38,6 +39,9 @@ const Page = () => {
         throw new Error("Failed to fetch roles");
       }
       const data = await response.json();
+      
+      //console.log('data workgroup',data);
+
       setWorkgroups(data.workgroups);
     } catch (error) {
       console.error(error);
@@ -179,6 +183,8 @@ const Page = () => {
               datas={data}
               searchColumn={"Workgroup"}
               TableName={"All Workgroups"}
+              currentPage={currentPageWorkgroup}
+              onPageChange={(page) => setCurrentPageWorkgroup(page)}
             />
           )}
         </div>

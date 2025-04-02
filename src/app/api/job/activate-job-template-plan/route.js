@@ -36,6 +36,13 @@ import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mon
 
 // export const Schedule = mongoose.models?.Schedule || mongoose.model('Schedule', scheduleSchema);
 
+function isWeekend(today) {
+ // const today = new Date();
+  const day = today.getDay(); // 0 = Sunday, 6 = Saturday
+  return day === 0 || day === 6;
+}
+
+
 function formatDateToString(dateObj) {
   if (!(dateObj instanceof Date) || isNaN(dateObj)) return "Invalid Date";
 
@@ -63,9 +70,11 @@ export const POST = async (req, res) => {
     endDate,
     startDate,
     shift_date,
+    weekend_skip,
   } = body;
 
  // console.log('body',body);  
+ // console.log('holiday_skip',holiday_skip);  
 
 
   try {
@@ -147,6 +156,10 @@ export const POST = async (req, res) => {
               console.log("Break over!!");
               break;
       }
+      
+      
+      
+
 
       // Create a new job
       const AdvanceActivationDate = new Date(rolling_Datetime);
@@ -166,7 +179,12 @@ export const POST = async (req, res) => {
         });
         //console.log(`Saving Schedule `, schedule1);
         //console.log(`Saving Schedule for lineName: ${lineName}`, schedule1);
-        await schedule1.save();
+        if(weekend_skip==true && isWeekend(AdvanceActivationDate)){
+          // เช็คว่า เป็นวันหยุด เสาร์ - อาทิตย์หรือไม่
+          // หากว่าใช่ ให้ ไม่ต้องทำการ Active Schedual    
+        }else{
+          await schedule1.save();
+        }
 
         // ถ้า shift_date เป็น true ให้สร้าง schedule ที่มีเวลาเพิ่มขึ้น 12 ชั่วโมง
         if (shift_date === true) {
@@ -182,7 +200,14 @@ export const POST = async (req, res) => {
           //   `Saving Shifted Schedule for lineName: ${lineName}`,
           //   schedule2
           // );
-          await schedule2.save();
+          if(weekend_skip==true && isWeekend(AdvanceActivationDate)){
+            // เช็คว่า เป็นวันหยุด เสาร์ - อาทิตย์หรือไม่
+            // หากว่าใช่ ให้ ไม่ต้องทำการ Active Schedual    
+          }else{
+               await schedule2.save();
+          }
+  
+         
         }
       });
 

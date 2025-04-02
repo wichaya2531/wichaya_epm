@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import { config } from "@/config/config.js";
-const useFetchReport1 = (refresh) => {
+const useFetchReport1 = (refresh,start, end,workgroupSelect) => {
+  console.log('workgroupSelect',workgroupSelect);
+  //console.log('User',user);
+
+
+  
   const [report, setReport] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-
+  useEffect(() => {      
     const fetchReport = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/job/job-report1`, {
+        const response = await fetch(`/api/job/job-report1?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&workgroup=${encodeURIComponent(workgroupSelect)}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
