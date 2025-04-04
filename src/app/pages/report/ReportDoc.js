@@ -102,7 +102,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
       return date >= startDate && date <= endDate;
     })
     .reduce((acc, curr) => {
-      const groupKey = `${curr.lineName}-${curr.workgroupName}-${curr.jobItemName}`;
+      const groupKey = `${curr.lineName}|${curr.workgroupName}|${curr.jobItemName}`;
       const lineGroup = acc[groupKey] || [];
       const existing = lineGroup.find((item) => item.x === curr.x);
       if (existing) {
@@ -141,9 +141,10 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
   }, {});
 
   // ในการกรองข้อมูลใน groupedDataByLineNameAndWorkgroupAndJobItem
+  //console.log('sortedDataByLineNameAndWorkgroupAndJobItem',sortedDataByLineNameAndWorkgroupAndJobItem);
   const filteredData = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
     .filter((groupKey) => {
-      const [lineName, workgroupName, jobItemName] = groupKey.split("-");
+      const [lineName, workgroupName, jobItemName] = groupKey.split("|"); 
       return (
         lineName !== "unknown" &&
         workgroupName !== "unknown" &&
@@ -156,6 +157,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
           selectedJobItemNames.includes(jobItemName))
       );
     })
+    
     .map((groupKey) => {
       const [lineName, workgroupName, jobItemName] = groupKey.split("-");
       return {
@@ -176,7 +178,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
           })),
       };
     });
-
+  //console.log('after filter ',filteredData);  
   // เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
   const filteredReportData = report.filter((item) => {
     const updatedAt = new Date(item.jobItemsUpdatedAt);
@@ -307,7 +309,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
 
       // ดึงข้อมูลในรูปแบบเดียวกับ CSV
       const exportedData = datasets.flatMap((dataset) => {
-        const [lineName, workgroupName] = dataset.label.split(" - ");
+        const [lineName, workgroupName] = dataset.label.split(" | ");
         return dataset.data.map((item) => ({
           LINE_NAME: lineName,
           WORKGROUP_NAME: workgroupName,
@@ -407,30 +409,34 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
         ?.toISOString()
         .split("T")[0];
     }
+   
 
+  
     // แปลงข้อมูล datasets ให้เป็นรูปแบบตามที่ต้องการ
-    const formattedData = Object.values(datasets)
-      .flatMap((dataset) =>
-        dataset.data.map((item) => ({
-          docNumber: item.docNumber,
-          jobItemName: item.jobItemName,
-          month: new Date(item.x).getMonth(),
-          actualValue: item.actualValue,
-        }))
-      )
-      .reduce((acc, item) => {
-        const key = `${item.docNumber}-${item.jobItemName}`;
-        if (!acc[key]) {
-          acc[key] = {
-            docNumber: item.docNumber,
-            jobItemName: item.jobItemName,
-            months: Array(12).fill("-"),
-          };
-        }
-        acc[key].months[item.month] = item.actualValue || "-";
-        return acc;
-      }, {});
-
+    const formattedData = Object.values(datasets);
+    console.log('formattedData',formattedData);  
+      // .flatMap((dataset) =>
+      //   dataset.data.map((item) => ({
+      //     docNumber: item.docNumber,
+      //     jobItemName: item.jobItemName,
+      //     month: new Date(item.x).getMonth(),
+      //     actualValue: item.actualValue,
+      //   }))
+      // )
+      // .reduce((acc, item) => {
+      //   const key = `${item.docNumber}-${item.jobItemName}`;
+      //   if (!acc[key]) {
+      //     acc[key] = {
+      //       docNumber: item.docNumber,
+      //       jobItemName: item.jobItemName,
+      //       months: Array(12).fill("-"),
+      //     };
+      //   }
+      //   acc[key].months[item.month] = item.actualValue || "-";
+      //   return acc;
+      // }, {});
+      // console.log('ZZZZZZ');
+      return;
     // แปลงข้อมูลที่จัดกลุ่มแล้วให้เป็น array พร้อมคอลัมน์เดือน
     const exportData = Object.values(formattedData).map((item) => ({
       DOC_NUMBER: item.docNumber,
@@ -441,6 +447,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
       }, {}),
     }));
 
+   
     // สร้างแผ่นงาน Excel จากข้อมูลที่ดึงมา
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
@@ -700,22 +707,22 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
                 selectedReportType === "month" ||
                 selectedReportType === "week"
               ) {
-                const currentMonthStart = new Date();
-                setStartDate(
-                  new Date(
-                    currentMonthStart.getFullYear(),
-                    currentMonthStart.getMonth(),
-                    1
-                  )
-                );
-                setEndDate(getLastDayOfMonth(currentMonthStart)); // สิ้นสุดที่วันสุดท้ายของเดือน
+                // const currentMonthStart = new Date();
+                // setStartDate(
+                //   new Date(
+                //     currentMonthStart.getFullYear(),
+                //     currentMonthStart.getMonth(),
+                //     1
+                //   )
+                // );
+                // setEndDate(getLastDayOfMonth(currentMonthStart)); // สิ้นสุดที่วันสุดท้ายของเดือน  
               } else if (
                 selectedReportType === "date" ||
                 selectedReportType === "shift"
               ) {
-                const currentDate = new Date();
+                /*const currentDate = new Date();
                 setStartDate(currentDate);
-                setEndDate(currentDate); // ใช้วันที่เดียวกัน
+                setEndDate(currentDate); // ใช้วันที่เดียวกัน*/
               }
             }}
           >

@@ -27,6 +27,22 @@ const TableReportDoc = ({
   const endMonth = endDate ? endDate.getMonth() : 11;
   const endYear = endDate ? endDate.getFullYear() : 9999;
 
+  // filteredData,
+  // startDate,
+  // endDate,
+  // reportType,
+  // currentPage,
+  // onPageChange,
+  //console.log('filteredData',filteredData);
+  // console.log('startDate',startDate);
+  // console.log('endDate',endDate);
+  // console.log('reportType',reportType);
+  // console.log('currentPage',currentPage);
+  // console.log('onPageChange',onPageChange);
+
+   //console.log('data transfer is OK');
+
+
   let datesToShow = [];
 
   if (reportType === "date" || reportType === "shift") {

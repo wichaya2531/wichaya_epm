@@ -7,13 +7,13 @@ import { Workgroup } from "@/lib/models/Workgroup.js";
 
 
 export const GET = async (req, res) => {
-  console.time("Query Execution Time"); // เริ่มจับเวลา
+  //console.time("Query Execution Time"); // เริ่มจับเวลา
   //console.log("get report start ",new Date());
   const searchParams = req.nextUrl.searchParams;
   //console.log('searchParams',searchParams); 
 
-  const startDate =  new Date( '2025-04-01' /*searchParams.get('start')*/); // วันที่เริ่มต้น
-  const endDate = new Date(  '2025-04-03'/*searchParams.get('end')*/);   // วันที่สิ้นสุด
+  const startDate =  new Date(searchParams.get('start')); // วันที่เริ่มต้น
+  const endDate = new Date(searchParams.get('end'));   // วันที่สิ้นสุด
   const workgroup_name =searchParams.get('workgroup');   // กลุ่มงาน
 
   //console.log('workgroup_name',workgroup_name);
@@ -152,9 +152,12 @@ export const GET = async (req, res) => {
     if (cleanedJobValues.length === 0) {
       console.log("No data found for the given filters.");
     }
+
+    // console.log('cleanedJobValues',cleanedJobValues); 
+
     //console.log("get report end ",new Date());
   
-    console.timeEnd("Query Execution Time"); // แสดงเวลาที่ใช้ในการ query    
+    //console.timeEnd("Query Execution Time"); // แสดงเวลาที่ใช้ในการ query    
     //  return NextResponse.json({ 
     //         status: 200
     //       });
