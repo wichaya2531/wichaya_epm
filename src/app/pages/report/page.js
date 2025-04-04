@@ -15,7 +15,7 @@ import { use, useState } from "react";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 
 import useFetchUsers from "@/lib/hooks/useFetchUser";
-import {  useEffect } from "react";
+import { useEffect } from "react";
 const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const currentDate = new Date();
@@ -24,13 +24,18 @@ const Page = () => {
   // เวลาปัจจุบัน - 3 วัน
   const pastDate = new Date(currentDate);
   pastDate.setDate(currentDate.getDate() - 3);
-  const formattedStartDate = pastDate.toISOString().split('T')[0];
-  const [startDate, setStartDate] = useState( formattedStartDate);
+  const formattedStartDate = pastDate.toISOString().split("T")[0];
+  const [startDate, setStartDate] = useState(formattedStartDate);
   const pastDate_a = new Date(currentDate);
-  const formattedStartDate_a = pastDate_a.toISOString().split('T')[0];
+  const formattedStartDate_a = pastDate_a.toISOString().split("T")[0];
   const [endDate, setEndDate] = useState(formattedStartDate_a);
   const [workgroupSelect, setWorkgroupSelect] = useState(user.workgroup);
-  const { report, isLoading } = useFetchReport1(refresh,startDate,endDate,workgroupSelect);
+  const { report, isLoading } = useFetchReport1(
+    refresh,
+    startDate,
+    endDate,
+    workgroupSelect
+  );
   const [selectedChart, setSelectedChart] = useState("ReportDoc");
 
   const chartButtons = [
@@ -43,38 +48,36 @@ const Page = () => {
     // { label: "By activate name", value: "BarChart4" },
   ];
 
-  const handleDateStartFilterChange = ( start ) => {
-      //alert('OK');
-      setStartDate(start);
-      //setEndDate(end);
-      console.log('Filtered Start Date:', start);
-      //console.log('Filtered End Date:', end);
+  const handleDateStartFilterChange = (start) => {
+    //alert('OK');
+    setStartDate(start);
+    //setEndDate(end);
+    console.log("Filtered Start Date:", start);
+    //console.log('Filtered End Date:', end);
   };
 
-  const handleDateEndFilterChange = ( end ) => {
+  const handleDateEndFilterChange = (end) => {
     //alert('OK');
     //setStartDate(start);
     setEndDate(end);
     //console.log('Filtered Start Date:', start);
-    console.log('Filtered End Date:', end);
-};
-const handlePullData = (  ) => {
+    console.log("Filtered End Date:", end);
+  };
+  const handlePullData = () => {
+    //alert(workgroupSelect);
+    //alert('OK');
+    //setStartDate(start);
+    //setEndDate(end);
+    //console.log('Filtered Start Date:', start);
+    //console.log('Filtered End Date:', end);
+    setRefresh(!refresh); // Trigger refresh to refetch data
+    console.log(`Fetching data from ${startDate} to ${endDate}`);
+  };
 
-  //alert(workgroupSelect);
-  //alert('OK');
-  //setStartDate(start);
-  //setEndDate(end);
-  //console.log('Filtered Start Date:', start);
-  //console.log('Filtered End Date:', end);
-  setRefresh(!refresh);  // Trigger refresh to refetch data
-  console.log(`Fetching data from ${startDate} to ${endDate}`);
-};
-
-const handleWorkgroupSelect = ( workgroup_name ) => {
-      setWorkgroupSelect(workgroup_name);
-      //alert('workgroup selected '+workgroup_name);
-}
-
+  const handleWorkgroupSelect = (workgroup_name) => {
+    setWorkgroupSelect(workgroup_name);
+    //alert('workgroup selected '+workgroup_name);
+  };
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
@@ -123,15 +126,14 @@ const handleWorkgroupSelect = ( workgroup_name ) => {
           <BarChart5 report={report} isLoading={isLoading} />
         )} */}
         {selectedChart === "ReportDoc" && (
-          <ReportDoc 
-          report={report} 
-          isLoading={isLoading}
-          onDateStartFilterChange={handleDateStartFilterChange}
-          onDateEndFilterChange={handleDateEndFilterChange}
-          onPullData={handlePullData}
-          onWorkgroupSelect={handleWorkgroupSelect}  
-          workgroupSelect={workgroupSelect}
-
+          <ReportDoc
+            report={report}
+            isLoading={isLoading}
+            onDateStartFilterChange={handleDateStartFilterChange}
+            onDateEndFilterChange={handleDateEndFilterChange}
+            onPullData={handlePullData}
+            onWorkgroupSelect={handleWorkgroupSelect}
+            workgroupSelect={workgroupSelect}
           />
         )}
       </div>

@@ -40,8 +40,7 @@ const TableReportDoc = ({
   // console.log('currentPage',currentPage);
   // console.log('onPageChange',onPageChange);
 
-   //console.log('data transfer is OK');
-
+  //console.log('data transfer is OK');
 
   let datesToShow = [];
 

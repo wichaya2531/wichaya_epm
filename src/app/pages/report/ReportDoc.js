@@ -7,14 +7,19 @@ import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 import ExportButtons from "@/components/ExportButtons";
 import jsPDF from "jspdf";
+import "jspdf-autotable";
 import html2canvas from "html2canvas";
 import TableReportDoc from "@/components/TableReportDoc";
 
-
-const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterChange,onPullData,onWorkgroupSelect,workgroupSelect}) => {
-
-
-
+const ReportDoc = ({
+  report,
+  isLoading,
+  onDateStartFilterChange,
+  onDateEndFilterChange,
+  onPullData,
+  onWorkgroupSelect,
+  workgroupSelect,
+}) => {
   const [workgroups, setWorkgroups] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
@@ -144,7 +149,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
   //console.log('sortedDataByLineNameAndWorkgroupAndJobItem',sortedDataByLineNameAndWorkgroupAndJobItem);
   const filteredData = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
     .filter((groupKey) => {
-      const [lineName, workgroupName, jobItemName] = groupKey.split("|"); 
+      const [lineName, workgroupName, jobItemName] = groupKey.split("|");
       return (
         lineName !== "unknown" &&
         workgroupName !== "unknown" &&
@@ -157,7 +162,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
           selectedJobItemNames.includes(jobItemName))
       );
     })
-    
+
     .map((groupKey) => {
       const [lineName, workgroupName, jobItemName] = groupKey.split("-");
       return {
@@ -178,25 +183,23 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
           })),
       };
     });
-  //console.log('after filter ',filteredData);  
+  //console.log('after filter ',filteredData);
   // เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
   const filteredReportData = report.filter((item) => {
     const updatedAt = new Date(item.jobItemsUpdatedAt);
     return updatedAt >= startDate && updatedAt <= endDate;
   });
 
-
-
   const fetchWorkgroups = async () => {
     try {
-      const response = await fetch(
-        `/api/workgroup/get-workgroups`, { next: { revalidate: 10 } }
-      );
+      const response = await fetch(`/api/workgroup/get-workgroups`, {
+        next: { revalidate: 10 },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch roles");
       }
       const data = await response.json();
-      
+
       //console.log('data workgroup',data);
 
       setWorkgroups(data.workgroups);
@@ -207,10 +210,9 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
 
   useEffect(() => {
     fetchWorkgroups();
-  },"");
+  }, "");
 
   useEffect(() => {
-    
     const uniqueValues = (key) => [
       ...new Set(report.map((item) => item[key]).filter(Boolean)),
     ];
@@ -271,103 +273,98 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
   const availableWorkgroups = filteredValues(workgroupNames);
   const exportToPDF = async () => {
     try {
-      const table = document.querySelector(".min-w-full"); // เลือกตารางจาก class ที่ใช้
-      if (!table) throw new Error("Table not found");
-
-      const canvas = await html2canvas(table); // ใช้ html2canvas กับตารางแทน chart
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF();
       const pageHeight = pdf.internal.pageSize.height;
-      const imgWidth = 190;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      // ใช้วันที่ที่เลือกจากฟอร์ม
-      const formattedStartDate = startDate
-        ? format(startDate, "dd-MM-yyyy")
-        : "";
-      const formattedEndDate = endDate ? format(endDate, "dd-MM-yyyy") : "";
+      // ใช้ข้อมูลจาก filteredData เพื่อสร้างข้อมูล
+      const tableHeaders = [
+        "DocNumber",
+        "JobItemTitle",
+        "JobItemName",
+        "Month",
+        "Date",
+        "Time",
+        "Shift",
+        "ActualValue",
+      ];
 
-      // ถ้าไม่มีวันที่เริ่มต้นหรือสิ้นสุดจากฟอร์ม ใช้วันที่จากข้อมูลในตาราง
-      let startDateFormatted = formattedStartDate;
-      let endDateFormatted = formattedEndDate;
+      const tableRows = filteredData.flatMap((dataset) =>
+        dataset.data.map((item) => {
+          const dateObj = new Date(item.x);
+          const date = dateObj.toLocaleDateString("en-GB").replace(/\//g, "-"); // dd-MM-yyyy
+          const time = dateObj.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }); // HH:mm
+          const shift = dateObj.getHours() < 12 ? "AM" : "PM";
+          const month = dateObj.toLocaleString("default", { month: "long" });
 
-      if (!startDateFormatted || !endDateFormatted) {
-        const tableData = Object.values(datasets).flatMap((dataset) =>
-          dataset.data.map((item) => ({
-            date: new Date(item.x),
-          }))
-        );
+          return [
+            item.docNumber || "Unknown",
+            item.jobItemTitle || "Unknown",
+            item.jobItemName || "Unknown",
+            month,
+            date,
+            time,
+            shift,
+            item.actualValue ?? "-",
+          ];
+        })
+      );
 
-        const sortedDates = tableData
-          .map((item) => item.date)
-          .sort((a, b) => a - b);
-        startDateFormatted = sortedDates[0]?.toISOString().split("T")[0];
-        endDateFormatted = sortedDates[sortedDates.length - 1]
-          ?.toISOString()
-          .split("T")[0];
+      if (tableRows.length === 0) {
+        alert("ไม่มีข้อมูลสำหรับส่งออก");
+        return;
       }
 
-      // ดึงข้อมูลในรูปแบบเดียวกับ CSV
-      const exportedData = datasets.flatMap((dataset) => {
-        const [lineName, workgroupName] = dataset.label.split(" | ");
-        return dataset.data.map((item) => ({
-          LINE_NAME: lineName,
-          WORKGROUP_NAME: workgroupName,
-          Date: new Date(item.x).toISOString().split("T")[0], // แปลงวันที่ให้อยู่ในรูปแบบ YYYY-MM-DD
-          ACTUAL_VALUE: item.actualValue,
-          DOC_NUMBER: item.docNumber,
-          JOB_ITEM_NAME: item.jobItemName,
-        }));
-      });
+      // กำหนดค่าพื้นฐาน
+      const startX = 10;
+      let startY = 20;
+      const lineHeight = 10;
+      const fontSize = 10;
 
-      let yPosition = 20;
-      const lineHeight = 5; // ระยะห่างระหว่างบรรทัด
-      const columnSpacing = 10; // ระยะห่างระหว่างคอลัมน์
-      const fontSize = 10; // ขนาดฟอนต์
+      // วาดข้อมูลทีละบรรทัด
+      pdf.setFontSize(fontSize);
+      pdf.setFont("helvetica", "normal");
 
-      // วาดข้อมูลใน PDF
-      exportedData.forEach((data) => {
-        if (yPosition + lineHeight > pageHeight) {
+      // แสดงหัวตาราง
+      tableHeaders.forEach((header, index) => {
+        const lineText = `${header}: ${tableRows[index]?.[index] || "N/A"}`;
+        pdf.text(lineText, startX, startY);
+        startY += lineHeight;
+
+        // ถ้ามีข้อมูลเกินขนาดหน้า PDF ให้เพิ่มหน้าใหม่
+        if (startY > pageHeight - lineHeight) {
           pdf.addPage();
-          yPosition = 20;
+          startY = 20; // รีเซ็ตตำแหน่ง Y
         }
-
-        // สร้างข้อความในรูปแบบที่จัดระเบียบ
-        const dataText = `
-          LINE_NAME: ${data.LINE_NAME}
-          WORKGROUP_NAME: ${data.WORKGROUP_NAME}
-          Date: ${data.Date}
-          ACTUAL_VALUE: ${data.ACTUAL_VALUE}
-          DOC_NUMBER: ${data.DOC_NUMBER}
-          JOB_ITEM_NAME: ${data.JOB_ITEM_NAME}
-        `.trim();
-
-        // ใช้ splitTextToSize เพื่อแบ่งข้อความให้พอดีกับความกว้าง
-        const dataLines = pdf.splitTextToSize(dataText, 180);
-
-        // วาดข้อความใน PDF
-        pdf.setFontSize(fontSize);
-        pdf.text(dataLines, 10, yPosition);
-
-        // เพิ่มระยะห่างระหว่างบรรทัด
-        yPosition += dataLines.length * lineHeight;
       });
 
-      if (yPosition + imgHeight + 10 > pageHeight)
-        pdf.addPage(), (yPosition = 20);
-      pdf.addImage(imgData, "PNG", 10, yPosition + 10, imgWidth, imgHeight);
+      // แสดงข้อมูลบรรทัดต่อไป
+      tableRows.forEach((row) => {
+        row.forEach((value, i) => {
+          const lineText = `${tableHeaders[i]}: ${value || "N/A"}`;
+          pdf.text(lineText, startX, startY);
+          startY += lineHeight;
 
-      // สร้างชื่อไฟล์ที่มีวันที่เริ่มต้นถึงวันที่สิ้นสุด
-      const fileName = `TableReportDoc_${startDateFormatted}_to_${endDateFormatted}.pdf`;
+          // ถ้ามีข้อมูลเกินขนาดหน้า PDF ให้เพิ่มหน้าใหม่
+          if (startY > pageHeight - lineHeight) {
+            pdf.addPage();
+            startY = 20; // รีเซ็ตตำแหน่ง Y
+          }
+        });
+      });
 
-      pdf.save(fileName);
+      // บันทึก PDF
+      pdf.save("ExportedReport.pdf");
     } catch (error) {
       console.error("Error exporting to PDF:", error);
-      alert("Unable to export PDF file: " + error.message);
+      alert("ไม่สามารถส่งออกไฟล์ PDF ได้: " + error.message);
     }
   };
+
   const exportToCSV = () => {
-    // สร้างชื่อเดือนที่ใช้ในการ export
     const months = [
       "January",
       "February",
@@ -383,88 +380,62 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
       "December",
     ];
 
-    // ใช้วันที่ที่เลือกจากฟอร์ม
-    const formattedStartDate = startDate ? format(startDate, "dd-MM-yyyy") : "";
-    const formattedEndDate = endDate ? format(endDate, "dd-MM-yyyy") : "";
+    const tableData = filteredData.flatMap((dataset) =>
+      dataset.data.map((item) => {
+        const dateObj = new Date(item.x);
+        const formattedDate = dateObj
+          .toLocaleDateString("en-GB")
+          .replace(/\//g, "-"); // 07-01-2025
+        const formattedTime = dateObj.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false, // ใช้เวลาแบบ 24 ชั่วโมง
+        }); // เช่น 08:30
 
-    // ถ้าไม่มีวันที่เริ่มต้นหรือสิ้นสุดจากฟอร์ม ใช้วันที่จากข้อมูลในตาราง
-    let startDateFormatted = formattedStartDate;
-    let endDateFormatted = formattedEndDate;
+        // สร้าง Shift ตามช่วงเวลา
+        const hour = dateObj.getHours();
+        const shift = hour < 12 ? "AM" : "PM";
 
-    if (!startDateFormatted || !endDateFormatted) {
-      const tableData = Object.values(datasets).flatMap((dataset) =>
-        dataset.data.map((item) => ({
-          docNumber: item.docNumber,
-          jobItemName: item.jobItemName,
-          month: new Date(item.x).getMonth(),
-          actualValue: item.actualValue,
-        }))
-      );
+        return {
+          DocNumber: item.docNumber || "Unknown",
+          JobItemTitle: item.jobItemTitle || "Unknown",
+          JobItemName: item.jobItemName || "Unknown",
+          Month: months[dateObj.getMonth()],
+          Date: formattedDate,
+          Time: formattedTime,
+          Shift: shift,
+          ActualValue: item.actualValue ?? "-",
+        };
+      })
+    );
 
-      const sortedDates = tableData
-        .map((item) => new Date(item.x))
-        .sort((a, b) => a - b);
-      startDateFormatted = sortedDates[0]?.toISOString().split("T")[0];
-      endDateFormatted = sortedDates[sortedDates.length - 1]
-        ?.toISOString()
-        .split("T")[0];
-    }
-   
-
-  
-    // แปลงข้อมูล datasets ให้เป็นรูปแบบตามที่ต้องการ
-    const formattedData = Object.values(datasets);
-    console.log('formattedData',formattedData);  
-      // .flatMap((dataset) =>
-      //   dataset.data.map((item) => ({
-      //     docNumber: item.docNumber,
-      //     jobItemName: item.jobItemName,
-      //     month: new Date(item.x).getMonth(),
-      //     actualValue: item.actualValue,
-      //   }))
-      // )
-      // .reduce((acc, item) => {
-      //   const key = `${item.docNumber}-${item.jobItemName}`;
-      //   if (!acc[key]) {
-      //     acc[key] = {
-      //       docNumber: item.docNumber,
-      //       jobItemName: item.jobItemName,
-      //       months: Array(12).fill("-"),
-      //     };
-      //   }
-      //   acc[key].months[item.month] = item.actualValue || "-";
-      //   return acc;
-      // }, {});
-      // console.log('ZZZZZZ');
+    if (tableData.length === 0) {
+      alert("ไม่มีข้อมูลสำหรับส่งออก");
       return;
-    // แปลงข้อมูลที่จัดกลุ่มแล้วให้เป็น array พร้อมคอลัมน์เดือน
-    const exportData = Object.values(formattedData).map((item) => ({
-      DOC_NUMBER: item.docNumber,
-      JOB_ITEM_NAME: item.jobItemName,
-      ...months.reduce((acc, month, index) => {
-        acc[month] = item.months[index];
-        return acc;
-      }, {}),
-    }));
+    }
 
-   
-    // สร้างแผ่นงาน Excel จากข้อมูลที่ดึงมา
-    const ws = XLSX.utils.json_to_sheet(exportData);
+    const sortedDates = tableData
+      .map((item) => new Date(item.Date.split("-").reverse().join("-")))
+      .sort((a, b) => a - b);
+
+    const startDateFormatted = sortedDates[0]?.toISOString().split("T")[0];
+    const endDateFormatted = sortedDates[sortedDates.length - 1]
+      ?.toISOString()
+      .split("T")[0];
+
+    const ws = XLSX.utils.json_to_sheet(tableData);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
 
-    // แปลงข้อมูลเป็นไฟล์ Excel
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
 
-    // สร้างชื่อไฟล์ที่มีวันที่เริ่มต้นถึงวันที่สิ้นสุด
-    const fileName = `TableReportDoc_${startDateFormatted}_to_${endDateFormatted}.xlsx`;
-
-    // ดาวน์โหลดไฟล์
+    const fileName = `FilteredData_${startDateFormatted}_to_${endDateFormatted}.xlsx`;
     FileSaver.saveAs(data, fileName);
   };
+
   const saveAsPNG = async () => {
     try {
-      const table = document.querySelector(".min-w-full");
+      const table = document.querySelector(".min-w-full"); // เลือกตารางจาก class
       if (!table) throw new Error("Table not found");
 
       // ใช้วันที่ที่เลือกจากฟอร์ม
@@ -474,7 +445,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
       const endDateFormatted = endDate ? format(endDate, "dd-MM-yyyy") : "";
 
       // ถ้าไม่มีวันที่จากฟอร์ม ใช้วันที่จากข้อมูลในตาราง
-      const tableData = Object.values(datasets).flatMap((dataset) =>
+      const tableData = filteredData.flatMap((dataset) =>
         dataset.data.map((item) => new Date(item.x))
       );
       const sortedDates = tableData.sort((a, b) => a - b);
@@ -487,12 +458,70 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
       // สร้างชื่อไฟล์ที่มีวันที่เริ่มต้นถึงวันที่สิ้นสุด
       const fileName = `TableReportDoc_${startDateFinal}_to_${endDateFinal}.png`;
 
+      // ดึงข้อมูลในรูปแบบที่ต้องการเหมือนกับใน exportToCSV
+      const exportedData = filteredData.flatMap((dataset) =>
+        dataset.data.map((item) => {
+          const dateObj = new Date(item.x);
+          const date = dateObj.toLocaleDateString("en-GB").replace(/\//g, "-"); // dd-MM-yyyy
+          const time = dateObj.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }); // HH:mm
+          const shift = dateObj.getHours() < 12 ? "AM" : "PM";
+          const month = dateObj.toLocaleString("default", { month: "long" });
+
+          return {
+            DocNumber: item.docNumber || "Unknown",
+            JobItemTitle: item.jobItemTitle || "Unknown",
+            JobItemName: item.jobItemName || "Unknown",
+            Month: month,
+            Date: date,
+            Time: time,
+            Shift: shift,
+            ActualValue: item.actualValue ?? "-",
+          };
+        })
+      );
+
+      if (exportedData.length === 0) {
+        alert("ไม่มีข้อมูลสำหรับบันทึก PNG");
+        return;
+      }
+
+      // สร้างตารางข้อมูลที่ต้องการแสดง
+      const tableHeaders = [
+        "DocNumber",
+        "JobItemTitle",
+        "JobItemName",
+        "Month",
+        "Date",
+        "Time",
+        "Shift",
+        "ActualValue",
+      ];
+
+      const tableRows = exportedData.map((data) => [
+        data.DocNumber,
+        data.JobItemTitle,
+        data.JobItemName,
+        data.Month,
+        data.Date,
+        data.Time,
+        data.Shift,
+        data.ActualValue,
+      ]);
+
+      // สร้าง canvas และแคปภาพจากตาราง
       const canvas = await html2canvas(table);
       const imgData = canvas.toDataURL("image/png");
 
+      // สร้างลิงก์สำหรับดาวน์โหลดไฟล์ PNG
       const link = document.createElement("a");
       link.href = imgData;
       link.download = fileName;
+
+      // เพิ่มลิงก์ลงในเอกสารแล้วคลิกเพื่อดาวน์โหลด
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -501,6 +530,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
       alert("ไม่สามารถบันทึกไฟล์ PNG ได้: " + error.message);
     }
   };
+
   const handleExport = (option) => {
     if (option === "csv") {
       exportToCSV();
@@ -524,13 +554,12 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
             className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
-            
             type={"date"}
             /*type={
               reportType === "date" || reportType === "shift" ? "date" : "month"
             }*/
             id="start-month"
-            value={format(startDate,"yyyy-MM-dd")}
+            value={format(startDate, "yyyy-MM-dd")}
             // value={
             //   startDate && !isNaN(startDate.getTime())
             //     ? format(
@@ -539,7 +568,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
             //           ? "yyyy-MM"
             //           : "yyyy-MM-dd"
             //       )
-            //     : "" 
+            //     : ""
             // }
             onChange={(e) => {
               onDateStartFilterChange(e.target.value);
@@ -551,7 +580,6 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
               } else {
                 setEndDate(getLastDayOfMonth(selectedStartDate));
               }
-
             }}
             disabled={isLoading}
           />
@@ -573,8 +601,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
             //   reportType === "date" || reportType === "shift" ? "date" : "month"
             // }
             id="end-month"
-            value={format(endDate,"yyyy-MM-dd")}
-
+            value={format(endDate, "yyyy-MM-dd")}
             /*value={
               endDate && !isNaN(endDate.getTime())
                 ? format(
@@ -600,7 +627,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
           />
         </div>
 
-        <div className="relative" style={{ width: '300px' }}>
+        <div className="relative" style={{ width: "300px" }}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Workgroup
           </label>
@@ -613,7 +640,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
               //   setSelectedWorkgroups([]);
               //   setSelectedLineNames([]);
               // } else {
-                
+
               // }
               handleWorkgroupChange(selectedValue);
               onWorkgroupSelect(e.target.value);
@@ -626,14 +653,12 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
               <option
                 key={workgroupName.WORKGROUP_NAME}
                 value={workgroupName.WORKGROUP_NAME}
-                
               >
                 {workgroupName.WORKGROUP_NAME}
               </option>
             ))}
           </select>
         </div>
-      
 
         <div className="relative">
           <label
@@ -642,8 +667,9 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
           >
             &nbsp;
           </label>
-          <button className="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-md"
-                onClick={onPullData}
+          <button
+            className="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-md"
+            onClick={onPullData}
           >
             Pull Data
           </button>
@@ -715,7 +741,7 @@ const ReportDoc = ({ report, isLoading ,onDateStartFilterChange,onDateEndFilterC
                 //     1
                 //   )
                 // );
-                // setEndDate(getLastDayOfMonth(currentMonthStart)); // สิ้นสุดที่วันสุดท้ายของเดือน  
+                // setEndDate(getLastDayOfMonth(currentMonthStart)); // สิ้นสุดที่วันสุดท้ายของเดือน
               } else if (
                 selectedReportType === "date" ||
                 selectedReportType === "shift"
