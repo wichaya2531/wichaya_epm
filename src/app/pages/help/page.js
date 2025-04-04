@@ -6,10 +6,10 @@ import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Plan_job_guide from "@/components/Plan_job_guide";
 
-const Page = (searchParams ) => {  
+const Page = (searchParams) => {
   //const searchParams = req.nextUrl.searchParams;
-  console.log('searchParams',searchParams);
-  console.log('keyFilter',searchParams.searchParams.filter)
+  console.log("searchParams", searchParams);
+  console.log("keyFilter", searchParams.searchParams.filter);
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white ">
@@ -28,7 +28,7 @@ const Page = (searchParams ) => {
           </h1>
         </div>
         <h1 className="text-sm font-bold text-secondary flex  items-center">
-         { /* 'Contact admin, need help.'*/ }
+          {/* 'Contact admin, need help.'*/}
         </h1>
         <Plan_job_guide />
       </div>
