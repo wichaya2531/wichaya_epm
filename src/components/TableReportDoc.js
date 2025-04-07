@@ -121,8 +121,9 @@ const TableReportDoc = ({
     dataset.data
       .map((item) => {
         const itemDate = new Date(item.x);
+        console.log("item.x (raw):", item.x);
         const hours = itemDate.getHours();
-        const ampm = hours < 12 ? "AM" : "PM"; // แบ่ง AM/PM
+        const ampm = hours < 12 ? "AM" : "PM";
         return {
           docNumber: item.docNumber,
           jobItemName: item.jobItemName,
@@ -130,13 +131,13 @@ const TableReportDoc = ({
           month: itemDate.getMonth(),
           year: itemDate.getFullYear(),
           actualValue: item.actualValue,
-          date: itemDate, // ใช้ Date Object จริง
-          dateStr: itemDate.toISOString().split("T")[0], // แปลงเป็น YYYY-MM-DD
+          date: itemDate,
+          dateStr: itemDate.toISOString().split("T")[0],
           time: itemDate.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
-          }), // แปลงเป็นเวลาแบบ 'HH:MM'
-          ampm: ampm, // เก็บ AM หรือ PM
+          }),
+          ampm: ampm,
         };
       })
       .filter((item) => {
@@ -221,14 +222,15 @@ const TableReportDoc = ({
       );
       if (index !== -1) {
         acc[key].dates[index] = {
-          date: item.dateStr, // เก็บวันที่
-          time: item.time, // เก็บเวลา
-          ampm: item.ampm, // เก็บ AM/PM
-          actualValue: item.actualValue, // เก็บ actual value
+          date: item.dateStr,
+          time: item.time,
+          ampm: item.ampm,
+          actualValue: item.actualValue,
         };
       }
     }
-
+    console.log("item.x (raw):", item.time);
+    console.log("item.x (raw):", item.ampm);
     return acc;
   }, {});
 
@@ -411,7 +413,6 @@ const TableReportDoc = ({
                 </th>
               ))}
           </tr>
-          {/* แสดง AM/PM เฉพาะแถวที่สอง */}
           {reportType === "shift" && (
             <tr>
               {datesToShow.map((date, index) => (
@@ -449,7 +450,6 @@ const TableReportDoc = ({
                       )}`}
                     >
                       {value || "-"}{" "}
-                      {/* ถ้า value เป็น null หรือ undefined จะแสดงเป็น "-" */}
                     </td>
                   ))}
                 {reportType === "week" &&
@@ -487,21 +487,25 @@ const TableReportDoc = ({
                     const ampm = dateData ? dateData.ampm : "-";
                     const value = dateData ? dateData.actualValue : "-";
 
+                    // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
+                    const ampmValue = ampm !== "-" ? value : ampm;
+
                     return (
                       <React.Fragment key={dateIndex}>
                         <td
-                          key={`time-${dateIndex}`} // ใช้ backticks สำหรับ string interpolation
-                          className="border px-4 py-2 text-sm text-gray-700"
+                          key={`time-${dateIndex}`}
+                          className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                            ampmValue
+                          )}`}
                         >
-                          -
+                          {ampmValue}{" "}
+                          {/* แสดงค่า ampm ที่ถูกแปลงเป็นค่า value หากมีค่า AM หรือ PM */}
                         </td>
                         <td
-                          key={`value-${dateIndex}`} // ใช้ backticks สำหรับ string interpolation
-                          className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                            value
-                          )}`} // ใส่ getBackgroundColor(value) เพื่อกำหนดสีพื้นหลัง
+                          key={`value-${dateIndex}`}
+                          className={`border px-4 py-2 text-sm text-gray-700 text-center align-middle`}
                         >
-                          {value}
+                          -
                         </td>
                       </React.Fragment>
                     );

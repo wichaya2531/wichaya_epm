@@ -272,11 +272,52 @@ const ReportDoc = ({
   );
   const availableWorkgroups = filteredValues(workgroupNames);
   const exportToPDF = async () => {
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    // ฟังก์ชันในการแบ่งข้อความเป็นหลายบรรทัด
+    const splitTextToLines = (text, maxWidth, pdf, fontSize) => {
+      const words = text.split(" ");
+      let lines = [];
+      let currentLine = "";
+
+      words.forEach((word) => {
+        const testLine = currentLine ? currentLine + " " + word : word;
+        const width = pdf.getTextWidth(testLine);
+
+        if (width < maxWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) {
+            lines.push(currentLine);
+          }
+          currentLine = word;
+        }
+      });
+
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+
+      return lines;
+    };
+
     try {
       const pdf = new jsPDF();
       const pageHeight = pdf.internal.pageSize.height;
-
-      // ใช้ข้อมูลจาก filteredData เพื่อสร้างข้อมูล
+      const pageWidth = pdf.internal.pageSize.width;
       const tableHeaders = [
         "DocNumber",
         "JobItemTitle",
@@ -298,13 +339,13 @@ const ReportDoc = ({
             hour12: false,
           }); // HH:mm
           const shift = dateObj.getHours() < 12 ? "AM" : "PM";
-          const month = dateObj.toLocaleString("default", { month: "long" });
+          const month = months[dateObj.getMonth()]; // ใช้ months array เพื่อแปลงหมายเลขเดือนเป็นชื่อเดือน
 
           return [
             item.docNumber || "Unknown",
             item.jobItemTitle || "Unknown",
             item.jobItemName || "Unknown",
-            month,
+            month, // ชื่อเดือนที่ถูกต้อง
             date,
             time,
             shift,
@@ -323,6 +364,7 @@ const ReportDoc = ({
       let startY = 20;
       const lineHeight = 10;
       const fontSize = 10;
+      const maxWidth = pageWidth - 20; // ความกว้างสูงสุดของข้อความ
 
       // วาดข้อมูลทีละบรรทัด
       pdf.setFontSize(fontSize);
@@ -344,15 +386,30 @@ const ReportDoc = ({
       // แสดงข้อมูลบรรทัดต่อไป
       tableRows.forEach((row) => {
         row.forEach((value, i) => {
-          const lineText = `${tableHeaders[i]}: ${value || "N/A"}`;
-          pdf.text(lineText, startX, startY);
-          startY += lineHeight;
+          let lines = [];
 
-          // ถ้ามีข้อมูลเกินขนาดหน้า PDF ให้เพิ่มหน้าใหม่
-          if (startY > pageHeight - lineHeight) {
-            pdf.addPage();
-            startY = 20; // รีเซ็ตตำแหน่ง Y
+          if (i === 1 || i === 2) {
+            // ถ้าเป็น JobItemTitle หรือ JobItemName ให้แสดงหัวข้อด้วย
+            const header = tableHeaders[i];
+            const lineText = `${header}: ${value || "N/A"}`;
+            lines = splitTextToLines(lineText, maxWidth, pdf, fontSize);
+          } else {
+            // ข้อมูลที่ไม่ใช่ JobItemTitle หรือ JobItemName
+            const lineText = `${tableHeaders[i]}: ${value || "N/A"}`;
+            lines = splitTextToLines(lineText, maxWidth, pdf, fontSize);
           }
+
+          // พิมพ์แต่ละบรรทัด
+          lines.forEach((line, index) => {
+            pdf.text(line, startX, startY);
+            startY += lineHeight; // เพิ่มบรรทัดใหม่
+
+            // ถ้ามีข้อมูลเกินขนาดหน้า PDF ให้เพิ่มหน้าใหม่
+            if (startY > pageHeight - lineHeight) {
+              pdf.addPage();
+              startY = 20; // รีเซ็ตตำแหน่ง Y
+            }
+          });
         });
       });
 
@@ -382,25 +439,32 @@ const ReportDoc = ({
 
     const tableData = filteredData.flatMap((dataset) =>
       dataset.data.map((item) => {
-        const dateObj = new Date(item.x);
-        const formattedDate = dateObj
+        const itemDate = new Date(item.x); // แปลงเป็น Date โดยใช้ UTC time (จาก item.x)
+
+        // แปลงเวลาเป็น Local Time
+        const localDate = new Date(
+          itemDate.toLocaleString("en-US", { timeZone: "Asia/Bangkok" })
+        );
+
+        // ฟอร์แมตวันที่และเวลาในรูปแบบ Local Time
+        const formattedDate = localDate
           .toLocaleDateString("en-GB")
           .replace(/\//g, "-"); // 07-01-2025
-        const formattedTime = dateObj.toLocaleTimeString("en-GB", {
+        const formattedTime = localDate.toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false, // ใช้เวลาแบบ 24 ชั่วโมง
         }); // เช่น 08:30
 
         // สร้าง Shift ตามช่วงเวลา
-        const hour = dateObj.getHours();
-        const shift = hour < 12 ? "AM" : "PM";
+        const hour = localDate.getHours(); // ใช้ Local Time เพื่อคำนวณ
+        const shift = hour < 12 ? "AM" : "PM"; // ใช้เวลา Local ในการคำนวณ Shift
 
         return {
           DocNumber: item.docNumber || "Unknown",
           JobItemTitle: item.jobItemTitle || "Unknown",
           JobItemName: item.jobItemName || "Unknown",
-          Month: months[dateObj.getMonth()],
+          Month: months[localDate.getMonth()],
           Date: formattedDate,
           Time: formattedTime,
           Shift: shift,
