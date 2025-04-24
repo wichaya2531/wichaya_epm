@@ -87,8 +87,19 @@ export const POST = async (req, res) => {
   // console.log("Checking for overdue jobs");
   // return NextResponse.json({ status: 200, file: "", error: "Job item templates not found" });
 
-  const jobs = await Job.find();
+  const lrv_Date = new Date();
+  lrv_Date.setDate(lrv_Date.getDate() - 3);
+  
+  const jobs = await Job.find({
+    updatedAt: { $gte: lrv_Date }
+  })
+
+  jobs.forEach(job => {
+    console.log(job.updatedAt);
+  });
+
   const now = new Date();
+  return NextResponse.json({ status: 200 });
 
   try {
     //console.log("------Checking for Overdue Jobs--------");
@@ -158,7 +169,7 @@ export const POST = async (req, res) => {
           // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
           await sendEmailsOverdude(overdueEmailList, job); // ฟังก์ชันการส่งอีเมล
         } else {
-          console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
+              //console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
         }
       }
 

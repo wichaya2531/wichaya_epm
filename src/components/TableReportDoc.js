@@ -121,7 +121,7 @@ const TableReportDoc = ({
     dataset.data
       .map((item) => {
         const itemDate = new Date(item.x);
-        console.log("item.x (raw):", item.x);
+        //console.log("item.x (raw):", item.x);
         const hours = itemDate.getHours();
         const ampm = hours < 12 ? "AM" : "PM";
         return {
@@ -229,8 +229,8 @@ const TableReportDoc = ({
         };
       }
     }
-    console.log("item.x (raw):", item.time);
-    console.log("item.x (raw):", item.ampm);
+    //console.log("item.x (raw):", item.time);
+    //console.log("item.x (raw):", item.ampm);
     return acc;
   }, {});
 

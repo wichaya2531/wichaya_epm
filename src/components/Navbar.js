@@ -57,9 +57,21 @@ const Navbar = ({ menu }) => {
   useEffect(() => {
     if (user && users) {
       // กรองผู้ใช้ที่มี emp_number เหมือนกัน
+      // console.log('users',users);
+      // users.forEach(element => {
+      //         if(element.emp_number=="7126421"){
+      //               console.log(element);
+      //         }
+      // });
+
+
       const matchedUsers = users.filter(
         (u) => u.emp_number === user.emp_number
       );
+
+    //  console.log('matchedUsers',matchedUsers);  
+
+
       setFilteredUsers(matchedUsers);
     }
   }, [user, users]);

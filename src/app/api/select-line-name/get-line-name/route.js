@@ -15,8 +15,12 @@ export const POST = async (req) => {
   const workgroups = await Workgroup.findOne({
     USER_LIST: new ObjectId(user_id) // ใช้ new ObjectId เพื่อค้นหาด้วย ObjectId
   });
+
+  //console.log('user_id',user_id);
+  //console.log('workgroup_id',workgroups);
+  
   const workgroup_id = workgroups._id;
- // console.log("workgroup_id =>", workgroup_id);
+  //console.log("workgroup_id =>", workgroup_id);
 
   try {
     const selectLineNames = await SelectLineName.find({ WORKGROUP_ID: workgroup_id });

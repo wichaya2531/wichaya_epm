@@ -112,8 +112,23 @@ const Page = ({searchParams}) => {
   }
 
   const handleDelete = async (user_id) => {
-    await fetch(`/api/workgroup/add-user-to-workgroup`, {
-      method: "POST",
+    //alert('req to delete '+user_id)  
+    //return;
+
+    // await fetch(`/api/workgroup/add-user-to-workgroup`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     user_id,
+    //     workgroup_id,
+    //   }),
+    //   next: { revalidate: 10 },
+    // });
+
+    await fetch(`/api/workgroup/remove-user-from-workgroup`, {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
@@ -123,6 +138,9 @@ const Page = ({searchParams}) => {
       }),
       next: { revalidate: 10 },
     });
+
+
+
     setRefresh(!refresh);
   }
 
