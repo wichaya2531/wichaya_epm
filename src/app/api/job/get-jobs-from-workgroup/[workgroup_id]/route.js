@@ -25,7 +25,7 @@ export const GET = async (req, { params }) => {
   const stream = new ReadableStream({
     async start(controller) {
       
-      var gap=500;    
+      var gap=500;       // maximum record for query per round 
       
       for (let i = 1; i <= 100; i++) {        
               var jobs,schedules;

@@ -10,8 +10,7 @@ export async function GET() {
     const stream = new ReadableStream({
       async start(controller) {
 
-        const gap=1000;    
-
+        const gap=1000;// defined gap for query    
         for (let i = 1; i <= 10; i++) {
           const jobs = await Job.find().skip((i - 1) * gap).limit(gap); // ✅
           

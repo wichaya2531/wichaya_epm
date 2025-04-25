@@ -70,7 +70,7 @@ useEffect(() => {
         if (chunk) {
           try {
             const data = JSON.parse(chunk);
-            console.log('📦 ได้ข้อมูล:', data.length);
+           // console.log('📦 ได้ข้อมูล:', data.length);
 
             if (Array.isArray(data)) {
               setJobs(prev => [...prev, ...data]);
@@ -84,9 +84,10 @@ useEffect(() => {
     }
   };
 
+
   if (user?.workgroup_id && !hasRun.current) {
     hasRun.current = true;
-    console.log("✅ เรียก fetchStream ครั้งเดียว ด้วย workgroup_id =", user.workgroup_id);
+    //console.log("✅ เรียก fetchStream ครั้งเดียว ด้วย workgroup_id =", user.workgroup_id);
     fetchStream(user.workgroup_id);
   }
 }, [user]);

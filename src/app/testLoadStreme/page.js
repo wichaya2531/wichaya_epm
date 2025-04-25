@@ -7,7 +7,8 @@ const YourComponent = () => {
   useEffect(() => {
     const fetchStream = async () => {
       //const res = await fetch('/api/job/get-jobs-all');
-      const res = await fetch('/api/job/get-jobs-from-workgroup/6698b0acfe8c7ef010d214de');
+      //const res = await fetch('/api/job/get-jobs-from-workgroup/6698b0acfe8c7ef010d214de');
+      const res = await fetch('/api/job/get-job-events/?workgroup_id=679987c578c9f93fbc00eb7a');
       //679987c578c9f93fbc00eb7a
       //6698b0acfe8c7ef010d214de
       const reader = res.body?.getReader();
@@ -56,7 +57,7 @@ const YourComponent = () => {
       <h2>รวมข้อมูลจาก Stream</h2>
       <p>จำนวนทั้งหมด: {jobs.length} รายการ</p>
   
-      <table border="1" cellPadding="6" style={{ borderCollapse: 'collapse', width: '100%' }}>
+      {/* <table border="1" cellPadding="6" style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
           <tr>
             <th>Job Name</th>
@@ -85,7 +86,7 @@ const YourComponent = () => {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table> */}
     </div>
   );
 };

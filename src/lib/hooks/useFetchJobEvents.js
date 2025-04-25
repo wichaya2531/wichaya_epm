@@ -9,23 +9,26 @@ const useFetchJobEvents = (workgroup_id, refresh = null) => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchJobEvents = async () => {
-            setLoading(true);
-            setError(null);
 
-            try {
-                const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}`, { next: { revalidate: 10 } });
-                const data = await res.json();
-                console.log("data5 -> ", data);
-                setEvents(data.events);
-                setLoading(false);
-            } catch (error) {
-                setError(error);
-                setLoading(false);
-            }
-        };
+                    const fetchJobEvents = async () => {
+                        setLoading(true);
+                        setError(null);
+                        try {
+                            const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}`, { next: { revalidate: 10 } });
+                            const data = await res.json();
+                            console.log("data5 -> ", data);
+                            setEvents(data.events);
+                            setLoading(false);
+                        } catch (error) {
+                            setError(error);
+                            setLoading(false);
+                        }
+                    };
+        if(workgroup_id){
+            fetchJobEvents();
+        }                
+                   
 
-        fetchJobEvents();
     }, [workgroup_id, refresh]);
 
     return { events, loading, error };

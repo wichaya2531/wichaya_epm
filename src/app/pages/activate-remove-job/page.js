@@ -449,21 +449,60 @@ const Page = () => {
   };
 
   const fetchJobs = async (workgroup_id) => {
-    try {
-      //console.log("workgroup_id....=>", workgroup_id);
-      const response = await fetch(
-        `/api/job/get-jobs-from-workgroup/${workgroup_id}`,
-        { next: { revalidate: 10 } }
-      );
-      //console.log("response=>",response);
-      const data = await response.json();
-      //console.log("jobs data xxxx=>",data);
-      if (data.status === 200) {
-        setJobs(data.jobs);
-      }
-    } catch (err) {
-      console.log("err", err);
-    }
+            /*try {
+              //console.log("workgroup_id....=>", workgroup_id);
+              const response = await fetch(
+                `/api/job/get-jobs-from-workgroup/${workgroup_id}`,
+                { next: { revalidate: 10 } }
+              );
+              //console.log("response=>",response);
+              const data = await response.json();
+              //console.log("jobs data xxxx=>",data);
+              if (data.status === 200) {
+                setJobs(data.jobs);
+              }
+            } catch (err) {
+              console.log("err", err);
+            }*/
+
+              const fetchStream = async (workgroup_id) => {
+                const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
+                const reader = res.body?.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+            
+                if (!reader) return;
+            
+                while (true) {
+                  const { value, done } = await reader.read();
+                  if (done) break;
+            
+                  buffer += decoder.decode(value, { stream: true });
+            
+                  let boundary;
+                  while ((boundary = buffer.indexOf('\n')) >= 0) {
+                    const chunk = buffer.slice(0, boundary).trim();
+                    buffer = buffer.slice(boundary + 1);
+            
+                    if (chunk) {
+                      try {
+                        const data = JSON.parse(chunk);
+                        //console.log('📦 ได้ข้อมูล:', data.length);
+            
+                        if (Array.isArray(data)) {
+                          setJobs(prev => [...prev, ...data]);
+                        }
+            
+                      } catch (err) {
+                        //console.error('❌ JSON parse error:', err, chunk);
+                      }
+                    }
+                  }
+                }
+              };
+             
+              fetchStream(workgroup_id);
+
   };
 
   const handleRemove = async (job_id) => {
