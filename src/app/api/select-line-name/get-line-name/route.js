@@ -23,7 +23,7 @@ export const POST = async (req) => {
   //console.log("workgroup_id =>", workgroup_id);
 
   try {
-    const selectLineNames = await SelectLineName.find({ WORKGROUP_ID: workgroup_id });
+    const selectLineNames = await SelectLineName.find({ WORKGROUP_ID: workgroup_id }).sort({ createdAt: -1 });
     //console.log("selectLineNames =>", selectLineNames);
     return NextResponse.json({ status: 200, selectLineNames });
   } catch (err) {

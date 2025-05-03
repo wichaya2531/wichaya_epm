@@ -99,6 +99,7 @@ const ReportDoc = ({
         x: updatedAt.toISOString(),
         actualValue: item.ACTUAL_VALUE || "Unknown",
         docNumber: item.DOC_NUMBER || "Unknown",
+        
       };
     })
     .filter(Boolean)
@@ -120,6 +121,7 @@ const ReportDoc = ({
           docNumber: curr.docNumber,
           jobItemName: curr.jobItemName,
           jobItemTitle: curr.jobItemTitle,
+          lineName:curr.lineName,
         });
       }
       acc[groupKey] = lineGroup;
@@ -180,10 +182,11 @@ const ReportDoc = ({
             docNumber: item.docNumber,
             jobItemName: item.jobItemName,
             jobItemTitle: item.jobItemTitle,
+            lineName:item.lineName,
           })),
       };
     });
-  //console.log('after filter ',filteredData);
+ // console.log('after filteredData ',filteredData);
   // เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
   const filteredReportData = report.filter((item) => {
     const updatedAt = new Date(item.jobItemsUpdatedAt);

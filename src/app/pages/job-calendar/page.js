@@ -25,6 +25,7 @@ const Page = () => {
   const [date, setDate] = useState(new Date());
   const [refresh, setRefresh] = useState(false);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState("");
+  const [selectedType, setSelectedType] = useState("");
   const { user, isLoading: userLoading, error: userError } = useFetchUser();
   const {
     workgroups,
@@ -33,10 +34,14 @@ const Page = () => {
   } = useFetchWorkgroups();
   const { events, loading, error } = useFetchJobEvents(
     selectedWorkgroup,
+    selectedType,
     refresh
   );
+
   const [open, setOpen] = useState(false);
   const [eventData, setEventData] = useState({});
+
+
 
   useEffect(() => {
     //console.log(" use fetch");
@@ -139,6 +144,25 @@ const Page = () => {
     setRefresh(!refresh);
   };
 
+
+  const handleChangeType = (selectedType) => {
+      //console.log("setEvents");
+      setSelectedType(selectedType);
+      setRefresh(!refresh);
+    /* if (selectedType === "all") {
+      setEvents(allEvents);
+    } else {
+      const filtered = allEvents.filter(
+        (event) => event.status_name.toLowerCase() === selectedType.toLowerCase()
+      );
+      setEvents(filtered);
+    }*/
+  };
+
+
+  
+
+
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
@@ -193,6 +217,36 @@ const Page = () => {
                 ))}
               </select>
             </label>
+
+            <label className="md:ml-4">
+              Type :
+              { <select
+                className="text-sm border border-gray-300 rounded-md p-1 ml-2"
+                onChange={(e) => handleChangeType(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Type
+                </option>
+                <option value="all">All</option>
+                <option value="new">New</option>
+                <option value="ongoing">ongoing</option>
+                <option value="plan">Plan</option>
+                <option value="overdue">Overdue</option>
+                <option value="waiting for approval">Waiting for approval</option>
+                <option value="complete">Complete</option>
+                <option value="renew">Renew</option>
+                {/* {workgroups.map((workgroup) => (
+                  <option
+                    key={workgroup._id}
+                    value={workgroup._id}
+                    selected={user.workgroup_id === workgroup._id}
+                  >
+                    {workgroup.WORKGROUP_NAME}
+                  </option>
+                ))} */}
+              </select> }
+            </label>
+
           </div>
         </div>
         <div className="mb-4">

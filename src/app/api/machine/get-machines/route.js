@@ -1,6 +1,7 @@
 import { Machine } from "../../../../lib/models/Machine.js";
 import { NextResponse } from "next/server.js";
 import { connectToDb } from "@/app/api/mongo/index.js";
+import { ObjectId } from "bson";
 /**
  * @swagger
  * /api/machine/get-machines:
@@ -41,9 +42,15 @@ import { connectToDb } from "@/app/api/mongo/index.js";
  */
 export const dynamic = "force-dynamic";
 export const GET = async (req, res) => {
+
+  const searchParams = req.nextUrl.searchParams;
+  //const JobItemID = searchParams.get("checklist_item_id")?.trim(); // Trim any whitespace
+  const workgroup_id = searchParams.get("workgroup_id");
+
+  //console.log('workgroup_id',workgroup_id);
   await connectToDb();
   try {
-    const machines = await Machine.find();
+    const machines = await Machine.find({workgroup_id:workgroup_id}).sort({ createdAt: -1 });;
     const data = machines.map((machine) => {
       return {
         _id: machine._id,

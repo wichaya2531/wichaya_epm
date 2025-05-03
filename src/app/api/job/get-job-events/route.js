@@ -24,7 +24,12 @@ export const GET = async (req, res) => {
     await connectToDb();
     const searchParams = req.nextUrl.searchParams;
     const workgroup_id = searchParams.get("workgroup_id");
+    let selectedType = searchParams.get("type");
+    if (selectedType.length<3) {
+        selectedType="all";
+    }
     console.log('workgroup_id',workgroup_id);
+    console.log('selectedType',selectedType);
     
    // return NextResponse.json({ status: 200, events: "test" });
 
@@ -32,8 +37,6 @@ export const GET = async (req, res) => {
     try {
         let sw_type=true;
         if (sw_type) {
-            
-               
                     console.time("fetch-jobs");         
                     let arr_status=new Array();
                     const status=await Status.find();
@@ -48,21 +51,28 @@ export const GET = async (req, res) => {
 
                     // Fetch job templates based on workgroup_id
                     const jobs=await Job.find();//.limit(1);
-                // console.log('jobs',jobs);
+                    //console.log('jobs count=',jobs.length);
+                    var n=false;    
 
                     const dataInJobs = await Promise.all(jobs.map(async (element) => {
-                                    //console.log(element);
+                                    const activateDate_s = new Date(element.createdAt);
+                                    const hours = activateDate_s.getHours().toString().padStart(2, '0');  // แปลงให้เป็น 2 หลัก
+                                    const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
+                                    const activationTime = `${hours}:${minutes}`;
                                     return{
-                                    // element  
-                                    title:element.LINE_NAME+" : "+element.JOB_NAME,
-                                    job_id:element._id,
-                                    status_name:arr_status[element.JOB_STATUS_ID.toString()].status_name,
-                                    start:element.SUBMITTED_BY.createdAt,
-                                    end:element.SUBMITTED_BY.updatedAt,
-                                    color:arr_status[element.JOB_STATUS_ID.toString()].color
-                                    }
+                                       
+                                            title:element.LINE_NAME+" : "+element.JOB_NAME+" : "+activationTime,
+                                            job_id:element._id,
+                                            status_name:arr_status[element.JOB_STATUS_ID.toString()].status_name,
+                                            start:element.createdAt,
+                                            end:element.updatedAt,
+                                            color:arr_status[element.JOB_STATUS_ID.toString()].color
+                                        }
+                               
+                                   
                     }));
-
+                    
+                   // console.log('dataInJobs count',dataInJobs.length);
 
 
                     const scheduals=await Schedule.find() ;//.limit(1);
@@ -86,6 +96,23 @@ export const GET = async (req, res) => {
                 //console.log('dataInJobs end proc',dataInJobs); 
                 //console.log('dataInScheduals end proc',dataInScheduals); 
                 const allData = [...dataInJobs, ...dataInScheduals];
+                if (n==false) {
+                        n=true;
+                        console.log('allData',allData);
+                }
+                 
+                var afterFilter=new Array();
+                allData.forEach(element => {
+                            if (selectedType!='all') {
+                                if(element.status_name==selectedType){
+                                    afterFilter.push(element);       
+                                }
+                            }else{
+                                afterFilter.push(element);
+                            }
+                }); 
+
+
                 // allData.forEach(element => {
                 //                 if( element.start>new Date('2025-04-25') /*element.status_name!='complete' && element.status_name != 'waiting for approval' */ ){
                 //                             console.log(element);
@@ -93,7 +120,7 @@ export const GET = async (req, res) => {
                 // });            
                 // console.log('allData',allData);
                 console.timeEnd("fetch-jobs");
-            return NextResponse.json({ status: 200 ,events: allData}); 
+            return NextResponse.json({ status: 200 ,events: afterFilter}); 
         }else{
             console.time("fetch-jobs");
             let jobTemplates;

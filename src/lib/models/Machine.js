@@ -6,6 +6,7 @@ const machineSchema = new mongoose.Schema(
     MACHINE_NAME: { type: String, required: true },
     created_by: { type: String, required: true },
     workgroup: { type: String, required: true },
+    workgroup_id:{type: mongoose.Schema.Types.ObjectId,required: true}
   },
   { timestamps: true }
 );

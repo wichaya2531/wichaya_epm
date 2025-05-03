@@ -27,6 +27,8 @@ const TableReportDoc = ({
   const endMonth = endDate ? endDate.getMonth() : 11;
   const endYear = endDate ? endDate.getFullYear() : 9999;
 
+  console.log('in TableReportDoc filteredData.',filteredData)
+
   // filteredData,
   // startDate,
   // endDate,
@@ -235,7 +237,7 @@ const TableReportDoc = ({
   }, {});
 
   const formattedData = Object.values(groupedData);
-
+  //console.log('formattedData.',formattedData);
   // Pagination
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const totalPages = Math.ceil(formattedData.length / rowsPerPage);
@@ -361,6 +363,12 @@ const TableReportDoc = ({
             >
               Doc Number
             </th>
+            {/* <th
+              rowSpan={2}
+              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+            >
+              LINE NAME
+            </th>             */}
             <th
               rowSpan={2}
               className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
@@ -431,10 +439,16 @@ const TableReportDoc = ({
         <tbody>
           {displayedData.length > 0 ? (
             displayedData.map((row, index) => (
+              
               <tr key={index} className="hover:bg-gray-50">
                 <td className="border px-4 py-2 text-sm text-gray-700">
                   {row.docNumber}
                 </td>
+                {
+                  //<td className="border px-4 py-2 text-sm text-gray-700">
+                  //{row.lineName}
+                  //</td>
+                }
                 <td className="border px-4 py-2 text-sm text-gray-700">
                   {row.jobItemTitle}
                 </td>

@@ -7,13 +7,14 @@ export const POST = async (req) => {
 
   try {
     const body = await req.json(); // อ่าน JSON จาก request
-    const { wd_tag, machine_name, created_by, workgroup } = body;
+    const { wd_tag, machine_name, created_by, workgroup,workgroup_id } = body;
 
     console.log("Received Data:", {
       wd_tag,
       machine_name,
       created_by,
       workgroup,
+      workgroup_id,
     });
 
     if (!wd_tag || !machine_name) {
@@ -29,6 +30,7 @@ export const POST = async (req) => {
       MACHINE_NAME: machine_name,
       created_by,
       workgroup,
+      workgroup_id,
     });
 
     await machine.save();
@@ -43,6 +45,7 @@ export const POST = async (req) => {
         createdAt: machine.createdAt,
         createdBy: machine.created_by,
         workgroup: machine.workgroup,
+        workgroup_id:machine.workgroup_id,
       },
     });
   } catch (error) {

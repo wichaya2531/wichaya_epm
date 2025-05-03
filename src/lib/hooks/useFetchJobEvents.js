@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { config } from "@/config/config.js";
 
 
-const useFetchJobEvents = (workgroup_id, refresh = null) => {
+const useFetchJobEvents = (workgroup_id,selectedType,refresh = null) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,9 +14,9 @@ const useFetchJobEvents = (workgroup_id, refresh = null) => {
                         setLoading(true);
                         setError(null);
                         try {
-                            const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}`, { next: { revalidate: 10 } });
+                            const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}&type=${selectedType}`, { next: { revalidate: 10 } });
                             const data = await res.json();
-                            console.log("data5 -> ", data);
+                            //console.log("data5 -> ", data);
                             setEvents(data.events);
                             setLoading(false);
                         } catch (error) {
@@ -29,7 +29,7 @@ const useFetchJobEvents = (workgroup_id, refresh = null) => {
         }                
                    
 
-    }, [workgroup_id, refresh]);
+    }, [workgroup_id,selectedType, refresh]);
 
     return { events, loading, error };
 };

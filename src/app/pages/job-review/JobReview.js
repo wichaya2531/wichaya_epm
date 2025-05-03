@@ -410,12 +410,12 @@ const JobForm = ({
           <table className="table-auto border-collapse w-full text-sm">
             <thead className="text-center">
               <tr className="bg-gray-200">
-                <th className="w-[50px]">Item Title </th>
-                <th className="w-[50px]">Item Name </th>
+              <th className="w-[50px]">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE} </th>
+              <th className="w-[50px]">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME} </th>
                 {/* <th className="w-[50px] px-4 py-2">
                                     Test Method
                                 </th> */}
-                <th className="w-[50px] px-4 py-2">Lower/Upper</th>
+                <th className="w-[50px] px-4 py-2">{process.env.NEXT_PUBLIC_UPPER_SPEC+"/"+  process.env.NEXT_PUBLIC_LOWER_SPEC}</th>
                 <th className="w-[50px] px-4 py-2">Before Value</th>
                 <th className="w-[150px] py-2">Actual Value</th>
                 <th className="w-[150px] px-4 py-2">Attach</th>

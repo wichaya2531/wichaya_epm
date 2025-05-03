@@ -18,10 +18,14 @@ import { FaFileCsv, FaDownload } from "react-icons/fa";
 
 const jobItemTemplateHeader = [
   "Pos.",
-  "Job Title",
-  "Job Name",
-  "Upper/Lower ",
-  "Test Method",
+  // "Job Title"
+  process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE,
+  //"Job Name",
+  process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME,
+  //"Upper/Lower ",
+  process.env.NEXT_PUBLIC_UPPER_SPEC+"/"+  process.env.NEXT_PUBLIC_LOWER_SPEC,
+  //"Test Method",
+  process.env.NEXT_PUBLIC_TEST_METHODE,
   "input type",
   "Create At",
   "Action",
@@ -681,13 +685,14 @@ const Page = ({ searchParams }) => {
                 htmlFor="job_item_template_title"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
               >
-                Checklist Item Template Title
+              {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE}
+              
               </label>
               <input
                 type="text"
                 id="job_item_template_title"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Item Title"
+                //placeholder="Item Title"
                 name="job_item_template_title"
                 required
               />
@@ -697,13 +702,13 @@ const Page = ({ searchParams }) => {
                 htmlFor="job_item_template_name"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
               >
-                Checklist Item Template Name
+                 {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME}
               </label>
               <input
                 type="text"
                 id="job_item_template_name"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Item Name"
+                //placeholder="Item Name"
                 name="job_item_template_name"
                 required
               />
@@ -713,13 +718,13 @@ const Page = ({ searchParams }) => {
                 htmlFor="upper_spec"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
               >
-                Upper Spec
+                {process.env.NEXT_PUBLIC_UPPER_SPEC}
               </label>
               <input
                 type="text"
                 id="upper_spec"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Upper Spec"
+                //placeholder="Upper Spec"
                 name="upper_spec"
                 required
               />
@@ -729,13 +734,13 @@ const Page = ({ searchParams }) => {
                 htmlFor="lower_spec"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
               >
-                Lower Spec
+                {process.env.NEXT_PUBLIC_LOWER_SPEC}
               </label>
               <input
                 type="text"
                 id="lower_spec"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Lower Spec"
+                //placeholder="Lower Spec"
                 name="lower_spec"
                 required
               />
@@ -745,13 +750,13 @@ const Page = ({ searchParams }) => {
                 htmlFor="test_method"
                 className="block mb-2 text-sm font-medium text-gray-900 text-black"
               >
-                Test Method
+                {process.env.NEXT_PUBLIC_TEST_METHODE}
               </label>
               <input
                 type="text"
                 id="test_method"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="test method"
+                //placeholder="test method"
                 name="test_method"
                 required
               />

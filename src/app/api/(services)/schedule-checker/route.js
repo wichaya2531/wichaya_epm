@@ -98,8 +98,8 @@ export const POST = async (req, res) => {
     console.log(job.updatedAt);
   });
 
-  const now = new Date();
-  return NextResponse.json({ status: 200 });
+  //const now = new Date();
+  //return NextResponse.json({ status: 200 });
 
   try {
     //console.log("------Checking for Overdue Jobs--------");

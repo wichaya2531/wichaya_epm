@@ -16,7 +16,7 @@ import useFetchUser from "@/lib/hooks/useFetchUser.js";
 const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useFetchUser();
-  const { machines, loading, error, setMachines } = useFetchMachines();
+  const { machines, loading, error, setMachines } = useFetchMachines(user);
   const [currentUser, setcurrentUser] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [wdTag, setWdTag] = useState("");
@@ -83,7 +83,13 @@ const Page = () => {
     //   created_by: user.name, // ตรวจสอบข้อมูล created_by
     //   workgroup: user.workgroup, // ตรวจสอบข้อมูล workgroup
     // });
+
+      //console.log('user workgroup ',user);
+
     setIsLoading(true);
+
+    //setIsLoading(false);
+    //return;
     try {
       const response = await fetch(`/api/machine/create-machine-name`, {
         method: "POST",
@@ -95,6 +101,7 @@ const Page = () => {
           machine_name: machineName,
           created_by: user.name,
           workgroup: user.workgroup,
+          workgroup_id:user.workgroup_id
         }),
       });
       const data = await response.json();
