@@ -99,7 +99,6 @@ const ReportDoc = ({
         x: updatedAt.toISOString(),
         actualValue: item.ACTUAL_VALUE || "Unknown",
         docNumber: item.DOC_NUMBER || "Unknown",
-        
       };
     })
     .filter(Boolean)
@@ -121,7 +120,7 @@ const ReportDoc = ({
           docNumber: curr.docNumber,
           jobItemName: curr.jobItemName,
           jobItemTitle: curr.jobItemTitle,
-          lineName:curr.lineName,
+          lineName: curr.lineName,
         });
       }
       acc[groupKey] = lineGroup;
@@ -182,11 +181,11 @@ const ReportDoc = ({
             docNumber: item.docNumber,
             jobItemName: item.jobItemName,
             jobItemTitle: item.jobItemTitle,
-            lineName:item.lineName,
+            lineName: item.lineName,
           })),
       };
     });
- // console.log('after filteredData ',filteredData);
+  // console.log('after filteredData ',filteredData);
   // เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
   const filteredReportData = report.filter((item) => {
     const updatedAt = new Date(item.jobItemsUpdatedAt);
@@ -858,7 +857,7 @@ const ReportDoc = ({
           </div>
         </div>
         {/* Section ตาราง */}
-        <div className="overflow-x-auto w-full md:w-3/4 lg:w-full">
+        <div className="w-full md:w-3/4 lg:w-full">
           <TableReportDoc
             filteredData={filteredData}
             startDate={startDate}
