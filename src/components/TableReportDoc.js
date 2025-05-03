@@ -351,185 +351,185 @@ const TableReportDoc = ({
           </select>
         </div>
       </div>
-
-      <table className="min-w-full border-collapse table-auto rounded-lg">
-        <thead>
-          <tr>
-            <th
-              rowSpan={2}
-              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
-            >
-              Doc Number
-            </th>
-            <th
-              rowSpan={2}
-              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
-            >
-              Item Title
-            </th>
-            <th
-              rowSpan={2}
-              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
-            >
-              Item Name
-            </th>
-            {/* แสดงข้อมูลตามประเภท reportType */}
-            {reportType === "month" &&
-              monthsToShow.map((monthDate, index) => (
-                <th
-                  key={index}
-                  className="border px-4 py-2 text-left font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
-                >
-                  {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
-                </th>
-              ))}
-            {reportType === "week" &&
-              weeksToShow.map((week, index) => (
-                <th
-                  key={index}
-                  className="border px-4 py-2 text-left font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
-                >
-                  {week.label}
-                </th>
-              ))}
-            {reportType === "date" &&
-              datesToShow.map((date, index) => (
-                <th
-                  key={index}
-                  // ใช้ colSpan 2 เพื่อรวม AM และ PM ในแถวบนสุด
-                  className="border px-4 py-2 text-center font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
-                >
-                  {date.toLocaleDateString()}
-                </th>
-              ))}
-            {reportType === "shift" &&
-              datesToShow.map((date, index) => (
-                <th
-                  key={index}
-                  colSpan={2} // ใช้ colSpan 2 เพื่อรวม AM และ PM ในแถวบนสุด
-                  className="border px-4 py-2 text-center font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
-                >
-                  {date.toLocaleDateString()}
-                </th>
-              ))}
-          </tr>
-          {reportType === "shift" && (
+      <div className="overflow-x-auto relative">
+        <table className="min-w-full border-collapse table-auto rounded-lg">
+          <thead>
             <tr>
-              {datesToShow.map((date, index) => (
-                <React.Fragment key={index}>
-                  <th className="border px-4 py-2 text-center font-semibold bg-gray-300">
-                    AM
+              <th
+                rowSpan={2}
+                className="sticky left-0 z-20 bg-gradient-to-r from-blue-600 to-blue-500 text-white border px-4 py-3 text-left font-bold uppercase"
+              >
+                Doc Number
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky left-[100px] z-20 bg-gradient-to-r from-blue-600 to-blue-500 text-white border px-4 py-3 text-left font-bold uppercase"
+              >
+                Item Title
+              </th>
+              <th
+                rowSpan={2}
+                className="sticky left-[220px] z-20 bg-gradient-to-r from-blue-600 to-blue-500 text-white border px-4 py-3 text-left font-bold uppercase"
+              >
+                Item Name
+              </th>
+              {/* แสดงข้อมูลตามประเภท reportType */}
+              {reportType === "month" &&
+                monthsToShow.map((monthDate, index) => (
+                  <th
+                    key={index}
+                    className="border px-4 py-2 text-left font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
+                  >
+                    {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
                   </th>
-                  <th className="border px-4 py-2 text-center font-semibold bg-gray-300">
-                    PM
+                ))}
+              {reportType === "week" &&
+                weeksToShow.map((week, index) => (
+                  <th
+                    key={index}
+                    className="border px-4 py-2 text-left font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
+                  >
+                    {week.label}
                   </th>
-                </React.Fragment>
-              ))}
+                ))}
+              {reportType === "date" &&
+                datesToShow.map((date, index) => (
+                  <th
+                    key={index}
+                    // ใช้ colSpan 2 เพื่อรวม AM และ PM ในแถวบนสุด
+                    className="border px-4 py-2 text-center font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
+                  >
+                    {date.toLocaleDateString()}
+                  </th>
+                ))}
+              {reportType === "shift" &&
+                datesToShow.map((date, index) => (
+                  <th
+                    key={index}
+                    colSpan={2} // ใช้ colSpan 2 เพื่อรวม AM และ PM ในแถวบนสุด
+                    className="border px-4 py-2 text-center font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white"
+                  >
+                    {date.toLocaleDateString()}
+                  </th>
+                ))}
             </tr>
-          )}
-        </thead>
-        <tbody>
-          {displayedData.length > 0 ? (
-            displayedData.map((row, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="border px-4 py-2 text-sm text-gray-700">
-                  {row.docNumber}
-                </td>
-                <td className="border px-4 py-2 text-sm text-gray-700">
-                  {row.jobItemTitle}
-                </td>
-                <td className="border px-4 py-2 text-sm text-gray-700">
-                  {row.jobItemName}
-                </td>
-                {reportType === "month" &&
-                  row.months.map((value, monthIndex) => (
-                    <td
-                      key={monthIndex}
-                      className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                        value
-                      )}`}
-                    >
-                      {value || "-"}{" "}
-                    </td>
-                  ))}
-                {reportType === "week" &&
-                  row.weeks.map((value, weekIndex) => (
-                    <td
-                      key={weekIndex}
-                      className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                        value
-                      )}`}
-                    >
-                      {value !== null && value !== undefined ? value : "-"}{" "}
-                      {/* แสดง "-" ถ้าค่าเป็น null หรือ undefined */}
-                    </td>
-                  ))}
-                {reportType === "date" &&
-                  row.dates.map((dateData, dateIndex) => {
-                    const value = dateData?.actualValue ?? "-"; // ใช้ค่าของ actualValue ถ้ามี ไม่งั้นใช้ "-"
-
-                    return (
+            {reportType === "shift" && (
+              <tr>
+                {datesToShow.map((date, index) => (
+                  <React.Fragment key={index}>
+                    <th className="border px-4 py-2 text-center font-semibold bg-gray-300">
+                      AM
+                    </th>
+                    <th className="border px-4 py-2 text-center font-semibold bg-gray-300">
+                      PM
+                    </th>
+                  </React.Fragment>
+                ))}
+              </tr>
+            )}
+          </thead>
+          <tbody>
+            {displayedData.length > 0 ? (
+              displayedData.map((row, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="sticky left-0 bg-white border px-4 py-2 text-sm text-gray-700 z-10">
+                    {row.docNumber}
+                  </td>
+                  <td className="sticky left-[100px] bg-white border px-4 py-2 text-sm text-gray-700 z-10">
+                    {row.jobItemTitle}
+                  </td>
+                  <td className="sticky left-[220px] bg-white border px-4 py-2 text-sm text-gray-700 z-10">
+                    {row.jobItemName}
+                  </td>
+                  {reportType === "month" &&
+                    row.months.map((value, monthIndex) => (
                       <td
-                        key={dateIndex}
+                        key={monthIndex}
                         className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
                           value
                         )}`}
                       >
-                        {value}
+                        {value || "-"}{" "}
                       </td>
-                    );
-                  })}
-                {reportType === "shift" &&
-                  datesToShow.map((date, dateIndex) => {
-                    const dateData = row.dates[dateIndex];
-
-                    const time = dateData ? dateData.time : "-";
-                    const ampm = dateData ? dateData.ampm : "-";
-                    const value = dateData ? dateData.actualValue : "-";
-
-                    // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
-                    const ampmValue = ampm !== "-" ? value : ampm;
-
-                    return (
-                      <React.Fragment key={dateIndex}>
+                    ))}
+                  {reportType === "week" &&
+                    row.weeks.map((value, weekIndex) => (
+                      <td
+                        key={weekIndex}
+                        className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                          value
+                        )}`}
+                      >
+                        {value !== null && value !== undefined ? value : "-"}{" "}
+                        {/* แสดง "-" ถ้าค่าเป็น null หรือ undefined */}
+                      </td>
+                    ))}
+                  {reportType === "date" &&
+                    row.dates.map((dateData, dateIndex) => {
+                      const value = dateData?.actualValue ?? "-"; // ใช้ค่าของ actualValue ถ้ามี ไม่งั้นใช้ "-"
+                      return (
                         <td
-                          key={`time-${dateIndex}`}
+                          key={dateIndex}
                           className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                            ampmValue
+                            value
                           )}`}
                         >
-                          {ampmValue}{" "}
-                          {/* แสดงค่า ampm ที่ถูกแปลงเป็นค่า value หากมีค่า AM หรือ PM */}
+                          {value}
                         </td>
-                        <td
-                          key={`value-${dateIndex}`}
-                          className={`border px-4 py-2 text-sm text-gray-700 text-center align-middle`}
-                        >
-                          -
-                        </td>
-                      </React.Fragment>
-                    );
-                  })}
+                      );
+                    })}
+                  {reportType === "shift" &&
+                    datesToShow.map((date, dateIndex) => {
+                      const dateData = row.dates[dateIndex];
+
+                      const time = dateData ? dateData.time : "-";
+                      const ampm = dateData ? dateData.ampm : "-";
+                      const value = dateData ? dateData.actualValue : "-";
+
+                      // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
+                      const ampmValue = ampm !== "-" ? value : ampm;
+
+                      return (
+                        <React.Fragment key={dateIndex}>
+                          <td
+                            key={`time-${dateIndex}`}
+                            className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                              ampmValue
+                            )}`}
+                          >
+                            {ampmValue}{" "}
+                            {/* แสดงค่า ampm ที่ถูกแปลงเป็นค่า value หากมีค่า AM หรือ PM */}
+                          </td>
+                          <td
+                            key={`value-${dateIndex}`}
+                            className={`border px-4 py-2 text-sm text-gray-700 text-center align-middle`}
+                          >
+                            -
+                          </td>
+                        </React.Fragment>
+                      );
+                    })}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={
+                    reportType === "month"
+                      ? monthsToShow.length + 3
+                      : reportType === "week"
+                      ? weeksToShow.length + 3
+                      : datesToShow.length + 3
+                  }
+                  className="border px-4 py-6 text-center text-gray-500 text-sm"
+                >
+                  Please select an option above to display data.
+                </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan={
-                  reportType === "month"
-                    ? monthsToShow.length + 3
-                    : reportType === "week"
-                    ? weeksToShow.length + 3
-                    : datesToShow.length + 3
-                }
-                className="border px-4 py-6 text-center text-gray-500 text-sm"
-              >
-                Please select an option above to display data.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
       <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
         {/* ปุ่ม Prev */}
         <button
