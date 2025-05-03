@@ -363,12 +363,6 @@ const TableReportDoc = ({
             >
               Doc Number
             </th>
-            {/* <th
-              rowSpan={2}
-              className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
-            >
-              LINE NAME
-            </th>             */}
             <th
               rowSpan={2}
               className="border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
@@ -439,16 +433,10 @@ const TableReportDoc = ({
         <tbody>
           {displayedData.length > 0 ? (
             displayedData.map((row, index) => (
-              
               <tr key={index} className="hover:bg-gray-50">
                 <td className="border px-4 py-2 text-sm text-gray-700">
                   {row.docNumber}
                 </td>
-                {
-                  //<td className="border px-4 py-2 text-sm text-gray-700">
-                  //{row.lineName}
-                  //</td>
-                }
                 <td className="border px-4 py-2 text-sm text-gray-700">
                   {row.jobItemTitle}
                 </td>
@@ -497,53 +485,54 @@ const TableReportDoc = ({
                   datesToShow.map((date, dateIndex) => {
                     const dateData = row.dates[dateIndex];
 
-                    const time = dateData ? dateData.time : "-";
-                    const ampm = dateData ? dateData.ampm : "-";
-                    const value = dateData ? dateData.actualValue : "-";
+                      const time = dateData ? dateData.time : "-";
+                      const ampm = dateData ? dateData.ampm : "-";
+                      const value = dateData ? dateData.actualValue : "-";
 
-                    // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
-                    const ampmValue = ampm !== "-" ? value : ampm;
+                      // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
+                      const ampmValue = ampm !== "-" ? value : ampm;
 
-                    return (
-                      <React.Fragment key={dateIndex}>
-                        <td
-                          key={`time-${dateIndex}`}
-                          className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                            ampmValue
-                          )}`}
-                        >
-                          {ampmValue}{" "}
-                          {/* แสดงค่า ampm ที่ถูกแปลงเป็นค่า value หากมีค่า AM หรือ PM */}
-                        </td>
-                        <td
-                          key={`value-${dateIndex}`}
-                          className={`border px-4 py-2 text-sm text-gray-700 text-center align-middle`}
-                        >
-                          -
-                        </td>
-                      </React.Fragment>
-                    );
-                  })}
+                      return (
+                        <React.Fragment key={dateIndex}>
+                          <td
+                            key={`time-${dateIndex}`}
+                            className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                              ampmValue
+                            )}`}
+                          >
+                            {ampmValue}{" "}
+                            {/* แสดงค่า ampm ที่ถูกแปลงเป็นค่า value หากมีค่า AM หรือ PM */}
+                          </td>
+                          <td
+                            key={`value-${dateIndex}`}
+                            className={`border px-4 py-2 text-sm text-gray-700 text-center align-middle`}
+                          >
+                            -
+                          </td>
+                        </React.Fragment>
+                      );
+                    })}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={
+                    reportType === "month"
+                      ? monthsToShow.length + 3
+                      : reportType === "week"
+                      ? weeksToShow.length + 3
+                      : datesToShow.length + 3
+                  }
+                  className="border px-4 py-6 text-center text-gray-500 text-sm"
+                >
+                  Please select an option above to display data.
+                </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan={
-                  reportType === "month"
-                    ? monthsToShow.length + 3
-                    : reportType === "week"
-                    ? weeksToShow.length + 3
-                    : datesToShow.length + 3
-                }
-                className="border px-4 py-6 text-center text-gray-500 text-sm"
-              >
-                Please select an option above to display data.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
       <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
         {/* ปุ่ม Prev */}
         <button
