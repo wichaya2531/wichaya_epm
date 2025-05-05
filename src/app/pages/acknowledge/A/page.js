@@ -4,7 +4,7 @@ import { config } from "@/config/config.js";
 
 export default function Page({ params }) {
   
-  console.log("test xxxx");
+  //console.log("test xxxx");
   //console.log(config);  
   
   const handleActivateClick = async () => {

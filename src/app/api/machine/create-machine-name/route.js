@@ -9,13 +9,13 @@ export const POST = async (req) => {
     const body = await req.json(); // อ่าน JSON จาก request
     const { wd_tag, machine_name, created_by, workgroup,workgroup_id } = body;
 
-    console.log("Received Data:", {
-      wd_tag,
-      machine_name,
-      created_by,
-      workgroup,
-      workgroup_id,
-    });
+    // console.log("Received Data:", {
+    //   wd_tag,
+    //   machine_name,
+    //   created_by,
+    //   workgroup,
+    //   workgroup_id,
+    // });
 
     if (!wd_tag || !machine_name) {
       return NextResponse.json({

@@ -42,15 +42,20 @@ import { ObjectId } from "bson";
  */
 export const dynamic = "force-dynamic";
 export const GET = async (req, res) => {
-
+  //console.log('get machinezzzz');
   const searchParams = req.nextUrl.searchParams;
-  //const JobItemID = searchParams.get("checklist_item_id")?.trim(); // Trim any whitespace
+  //console.log('searchParams',searchParams);
   const workgroup_id = searchParams.get("workgroup_id");
 
   //console.log('workgroup_id',workgroup_id);
   await connectToDb();
   try {
-    const machines = await Machine.find({workgroup_id:workgroup_id}).sort({ createdAt: -1 });;
+    let machines;
+    if (workgroup_id==0) {    
+      machines= await Machine.find().sort({ createdAt: -1 });;
+    }else{    
+      machines= await Machine.find({workgroup_id:workgroup_id}).sort({ createdAt: -1 });;
+    }
     const data = machines.map((machine) => {
       return {
         _id: machine._id,

@@ -11,14 +11,14 @@ import "jspdf-autotable";
 import html2canvas from "html2canvas";
 import TableReportDoc from "@/components/TableReportDoc";
 
-const ReportDoc = ({
+const ReportDoc = ({  
   report,
   isLoading,
   onDateStartFilterChange,
   onDateEndFilterChange,
   onPullData,
   onWorkgroupSelect,
-  workgroupSelect,
+  workgroupOfUser,
 }) => {
   const [workgroups, setWorkgroups] = useState([]);
   const [refresh, setRefresh] = useState(false);
@@ -36,6 +36,7 @@ const ReportDoc = ({
   const [docNumbers, setDocNumbers] = useState([]);
   const [jobItemNames, setJobItemNames] = useState([]);
   const [workgroupNames, setWorkgroupNames] = useState([]);
+
   const [lineNames, setLineNames] = useState([]);
   const [reportType, setReportType] = useState("month");
   const [currentPage, setCurrentPage] = useState(1);
@@ -223,18 +224,20 @@ const ReportDoc = ({
     setWorkgroupNames(uniqueValues("WORKGROUP_NAME"));
     setLineNames(uniqueValues("LINE_NAME"));
   }, [report]);
+
   const handleWorkgroupChange = (workgroupName) => {
     // อัปเดต selectedWorkgroups
-    setSelectedWorkgroups((prev) => {
-      const updatedWorkgroups = prev.includes(workgroupName)
-        ? prev.filter((item) => item !== workgroupName)
-        : [...prev, workgroupName];
-      setSelectedLineNames([]);
-      setSelectedDocNumbers([]);
-      setSelectedJobItemNames([]);
 
-      return updatedWorkgroups;
-    });
+
+        setSelectedWorkgroups((prev) => {
+          const updatedWorkgroups = prev.includes(workgroupName)
+            ? prev.filter((item) => item !== workgroupName)
+            : [...prev, workgroupName];
+          setSelectedLineNames([]);
+          setSelectedDocNumbers([]);
+          setSelectedJobItemNames([]);
+          return updatedWorkgroups;
+        });
   };
   const handleLineNameChange = (lineName) => {
     setSelectedLineNames((prev) =>
@@ -711,10 +714,12 @@ const ReportDoc = ({
               handleWorkgroupChange(selectedValue);
               onWorkgroupSelect(e.target.value);
             }}
+            
+            // value={workgroupOfUser.workgroup}
             //value={selectedWorkgroups.length === 0 ? "All Workgroups" : selectedWorkgroups[0]}
-            //value={workgroupSelect}
+            //value={selectedWorkgroups==""?workgroupOfUser.workgroup:selectedWorkgroups}
           >
-            <option value="----Select------">----Select------</option>
+            <option value={workgroupOfUser.workgroup}>{workgroupOfUser.workgroup}</option>
             {workgroups.map((workgroupName) => (
               <option
                 key={workgroupName.WORKGROUP_NAME}
@@ -757,10 +762,10 @@ const ReportDoc = ({
               ? `Selected ${selectedLineNames.length} LineNames`
               : selectedWorkgroups.length > 0
               ? "Select LineNames"
-              : "Please select Workgroups first"}
+              : "Select Workgroups first"}
           </button>
           {isOpen1 && selectedWorkgroups.length > 0 && (
-            <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
+            <div className="absolute bottom-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
                 <input
                   type="checkbox"

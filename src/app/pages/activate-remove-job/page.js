@@ -464,6 +464,7 @@ const Page = () => {
             } catch (err) {
               console.log("err", err);
             }*/
+             
 
               const fetchStream = async (workgroup_id) => {
                 const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
@@ -490,6 +491,7 @@ const Page = () => {
                         //console.log('📦 ได้ข้อมูล:', data.length);
             
                         if (Array.isArray(data)) {
+                          setJobs([]);  
                           setJobs(prev => [...prev, ...data]);
                         }
             

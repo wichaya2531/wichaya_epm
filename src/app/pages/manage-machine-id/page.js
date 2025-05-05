@@ -10,13 +10,19 @@ import Swal from "sweetalert2";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { FaPlus } from "react-icons/fa";
-import useFetchMachines from "@/lib/hooks/useFetchMachines.js";
+//import useFetchMachines from "@/lib/hooks/useFetchMachines.js";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
 
 const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useFetchUser();
-  const { machines, loading, error, setMachines } = useFetchMachines(user);
+  const [machines, setMachines] = useState([]);
+  
+  //const [loading, error,setLoading ] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  //const { machines, loading, error, setMachines }=useFetchMachines(user);
+
   const [currentUser, setcurrentUser] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [wdTag, setWdTag] = useState("");
@@ -29,7 +35,30 @@ const Page = () => {
     "Created by",
     "Action",
   ];
-  const machineTableBody = machines.map((machine, index) => ({
+
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchMachines = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/machine/get-machines?workgroup_id=${user.workgroup_id}`);
+        const data = await res.json();
+        setMachines(data.machines);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMachines();
+  }, [user]);
+
+
+  
+  const machineTableBody = machines?.map((machine, index) => ({
     ID: index + 1,
     WD_TAG: machine.wd_tag || "Unknown",
     "MACHINE NAME": machine.name || "Unknown",
@@ -266,10 +295,10 @@ const Page = () => {
             width={50}
             height={50}
           />
-          <h1 className="text-3xl font-bold text-primary">Create WD TAG</h1>
+          <h1 className="text-3xl font-bold text-primary">Manage Machine ID Tag</h1>
         </div>
         <h1 className="text-sm font-bold text-secondary flex  items-center">
-          Manage WD TAG and MACHINE NAME
+          Manage Machine Id Tag
         </h1>
       </div>
       <div
@@ -277,7 +306,7 @@ const Page = () => {
         style={{ width: "100%" }}
       >
         <h2 className="text-primary text-xl font-bold mb-4">
-          Manage WD TAG and MACHINE NAME{" "}
+          Manage Machine Id Tag{" "}  
         </h2>
         <div className="mb-6 max-w-lg space-y-4 flex flex-col h-full">
           <div className="flex flex-row gap-4">

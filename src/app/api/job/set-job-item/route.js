@@ -20,8 +20,8 @@ export const GET = async (req, res) => {
   //const ACTIVE_LINE_NAME = searchParams.get("line");
   //const ACTIVE_USER_ID = searchParams.get("user_id");
 
-  console.log('JobItemID',JobItemID);
-  console.log('JobItemValue',JobItemvalue);  
+  //console.log('JobItemID',JobItemID);
+  //console.log('JobItemValue',JobItemvalue);  
 
    try {  
      const jobItem = await JobItem.findOne({ _id: JobItemID });

@@ -36,8 +36,11 @@ const Page = () => {
     endDate,
     workgroupSelect
   );
+
   const [selectedChart, setSelectedChart] = useState("ReportDoc");
 
+
+  const [workgroupOfUser, setWorkgroupOfUser] = useState([]);
   const chartButtons = [
     //{ label: "Value in Item", value: "BarChart5" },
     { label: "ReportDoc", value: "ReportDoc" },
@@ -52,16 +55,30 @@ const Page = () => {
     //alert('OK');
     setStartDate(start);
     //setEndDate(end);
-    console.log("Filtered Start Date:", start);
+    //console.log("Filtered Start Date:", start);
     //console.log('Filtered End Date:', end);
   };
+
+  useEffect(() => {
+        //setAllLineName([]);
+        /// retrieveSession();
+        if (user) {
+             //console.log('user in report page', user);
+             setWorkgroupOfUser({
+              workgroup:user.workgroup,
+              workgroup_id:user.workgroup_id
+             }); 
+        }
+
+  }, [user]);
+
 
   const handleDateEndFilterChange = (end) => {
     //alert('OK');
     //setStartDate(start);
     setEndDate(end);
     //console.log('Filtered Start Date:', start);
-    console.log("Filtered End Date:", end);
+   // console.log("Filtered End Date:", end);
   };
   const handlePullData = () => {
     //alert(workgroupSelect);
@@ -71,7 +88,7 @@ const Page = () => {
     //console.log('Filtered Start Date:', start);
     //console.log('Filtered End Date:', end);
     setRefresh(!refresh); // Trigger refresh to refetch data
-    console.log(`Fetching data from ${startDate} to ${endDate}`);
+     //console.log(`Fetching data from ${startDate} to ${endDate}`);
   };
 
   const handleWorkgroupSelect = (workgroup_name) => {
@@ -133,7 +150,7 @@ const Page = () => {
             onDateEndFilterChange={handleDateEndFilterChange}
             onPullData={handlePullData}
             onWorkgroupSelect={handleWorkgroupSelect}
-            workgroupSelect={workgroupSelect}
+            workgroupOfUser={workgroupOfUser}
           />
         )}
       </div>

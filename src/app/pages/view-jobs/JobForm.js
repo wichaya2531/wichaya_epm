@@ -36,9 +36,23 @@ const JobForm = ({
   preview_1,
   preview_2,
   onclicktoShow,
+  machineAsLinename
 }) => {
   //view=false;
-  //console.log("jobData",jobData);
+//  console.log("jobData",jobData);
+//  console.log("machines",machines);
+  const existsLinenameInMachine = machines.some(machine => machine.wd_tag === jobData.LINE_NAME);
+  machines.forEach(element => {
+          if (element.wd_tag===jobData.LINE_NAME) {
+                  //console.log('element',element);
+                  machineAsLinename={
+                    value:element.wd_tag,
+                    label:element.wd_tag
+                  }
+                  machineName=element.name;
+          }
+  });
+
   const isPictureRequired = jobData.PICTURE_EVEDENT_REQUIRE;
 
   const [showWebcam, setShowWebcam] = useState(false);
@@ -506,6 +520,12 @@ const JobForm = ({
                 value: item.wd_tag,
                 label: item.wd_tag,
               }))}
+
+               value={{
+                 value: machineAsLinename.value, // นี่คือค่าที่คุณ set (string หรือ object)
+                 label: machineAsLinename.label,
+               }}
+
               onChange={(selectedOption) => handleWdChange(selectedOption)}
               name="wd_tag"
             />

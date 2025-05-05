@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { config } from "@/config/config.js";
 const useFetchReport1 = (refresh,start, end,workgroupSelect) => {
-  console.log('workgroupSelect',workgroupSelect);
+  //console.log('workgroupSelect',workgroupSelect);
   //console.log('User',user);
 
 
@@ -20,7 +20,7 @@ const useFetchReport1 = (refresh,start, end,workgroupSelect) => {
           next: { revalidate: 10 },
         });
         const data = await response.json();
-        console.log("data from useFetchReport1 ",data);
+        //console.log("data from useFetchReport1 ",data);
         setReport(data);
       } catch (error) {
         console.error("Error:", error);

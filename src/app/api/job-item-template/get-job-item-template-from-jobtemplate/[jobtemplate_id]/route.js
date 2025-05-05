@@ -9,7 +9,7 @@ export const GET = async (req, { params }) => {
     const { jobtemplate_id } = params;
     try {
 
-        const jobItemTemplates = await JobItemTemplate.find({ JOB_TEMPLATE_ID: jobtemplate_id })
+        const jobItemTemplates = await JobItemTemplate.find({ JOB_TEMPLATE_ID: jobtemplate_id });
         const data = await Promise.all(jobItemTemplates.map(async jobItemTemplate => {
             const user = await User.findById(jobItemTemplate.AUTHOR_ID);
             const location = await TestLocation.findById(jobItemTemplate.TEST_LOCATION_ID);
@@ -31,9 +31,14 @@ export const GET = async (req, { params }) => {
             };
         }
         ));
+        const data1 = data.sort((a, b) =>a.pos- b.pos);
+        // data1.forEach(element => {
+        //                 console.log(element.pos);
+        // });
 
         return NextResponse.json({ status: 200, jobItemTemplates: data });
     } catch (err) {
+        console.log(err);
         return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
 };

@@ -2,7 +2,7 @@ import { set } from "mongoose";
 
 const AddCommentModal = ({toggleAddComment, handleSubmitComment, JobItem }) => {
 
-    console.log("JobItem=>",JobItem);
+    //console.log("JobItem=>",JobItem);
 
     const handlePreSubmitComment = (e) => {
                 //console.log("e=>",e);

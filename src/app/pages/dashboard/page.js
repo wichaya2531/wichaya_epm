@@ -42,6 +42,7 @@ const sendData = async () => {
 };
 
 const Page = () => {
+  //console.log('flush from Page dashboard');
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: userloading } = useFetchUser(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);

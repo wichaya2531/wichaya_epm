@@ -46,7 +46,7 @@ const Page = ({ searchParams }) => {
     machines,
     isLoading: machinesLoading,
     error: machinesError,
-  } = useFetchMachines();
+  } = useFetchMachines({workgroup_id:"0"});
   const { user } = useFetchUser(refresh);
   const [isShowJobInfo, setIsShowJobInfo] = useState(true);
   const [isShowJobItem, setIsShowJobItem] = useState(true);
@@ -64,6 +64,12 @@ const Page = ({ searchParams }) => {
   const [wdtagImg_2, setWdtagImg_2] = useState(null);
   const [preview_1, setPreview_1] = useState(null);
   const [preview_2, setPreview_2] = useState(null);
+
+  const [machineAsLinename, setMachineAsLinename] = useState({
+    value:'....',
+    label:'Select...'
+});
+
 
   //const [message, setMessage] = useState("");....
 
@@ -109,12 +115,40 @@ const Page = ({ searchParams }) => {
       console.error("Error:", err);
     }
   };
+  
+
+  // useEffect(() => {
+  //   var recheckLoop_count=0;
+  //   var recheckLoop=setInterval(function(){
+  //             console.log('recheckLoop_count ',recheckLoop_count);
+  //             if ( recheckLoop_count>5) {
+  //                     //  setMachineAsLinename({
+  //                     //        value:'machine-1',
+  //                     //        label:'machine-1'
+  //                     //  });
+  //                   //  clearInterval(recheckLoop);
+  //                   console.log('machines',machines);  
+  //             }
+              
+  //              if (machines) {
+  //                  // console.log('machines',machines);  
+  //                   //console.log('jobData',jobData);  
+  //                  // clearInterval(recheckLoop);
+  //              }
+
+
+
+
+  //             recheckLoop_count++;
+  //   },1000 );
+  // },[]);
+
 
   useEffect(() => {
     const asyncEffect = async () => {
       // console.log("jobData", jobData);
-
       if (user && jobData) {
+        //console.log("page view-jobs");  
         // Ensure both user.workgroup_id and jobData.WorkGroupID are defined
         if (user.workgroup_id && jobData.WorkGroupID) {
           //console.log("searchParams.view=="+searchParams.view);
@@ -538,6 +572,10 @@ const Page = ({ searchParams }) => {
     machines.forEach((machine) => {
       if (machine.wd_tag === wd_tag) {
         setMachineName(machine.name);
+        setMachineAsLinename({
+              value:selectedOption.value,
+              label:selectedOption.value
+        });
       }
     });
   };
@@ -573,8 +611,8 @@ const Page = ({ searchParams }) => {
         onItemImgChange={handleIMGItemChange}
         preview_1={preview_1}
         preview_2={preview_2}
-
         onclicktoShow={handleToShowOnClick}
+        machineAsLinename={machineAsLinename}  
       />
 
       {testMethodDescription && (

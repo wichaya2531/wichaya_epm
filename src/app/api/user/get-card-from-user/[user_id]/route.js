@@ -11,8 +11,6 @@ export const GET = async (req, { params }) => {
     //console.log("WD_INTRANET_MODE :", process.env.WD_INTRANET_MODE);  
     const { user_id } = params;
     try {
-
-
         //return NextResponse.json({ status: 200, cards: null });
         //console.log(user_id)
         // Fetch user's actions
@@ -50,8 +48,6 @@ export const GET = async (req, { params }) => {
                 return userActions.some(userAction => userAction._id.toString() === actionId.toString());
             });
         });
-
-
         return NextResponse.json({ status: 200, cards: matchedCards });
     } catch (err) {
         return NextResponse.json({ status: 500, file: __filename, error: err.message });

@@ -94,9 +94,9 @@ export const POST = async (req, res) => {
     updatedAt: { $gte: lrv_Date }
   })
 
-  jobs.forEach(job => {
-    console.log(job.updatedAt);
-  });
+  // jobs.forEach(job => {
+  //       console.log(job.updatedAt);
+  // });
 
   //const now = new Date();
   //return NextResponse.json({ status: 200 });

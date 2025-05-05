@@ -5,8 +5,10 @@ import { useFormState } from "react-dom";
 import { useState, useEffect } from "react"; // Import useState hook
 import KeyIcon from "@mui/icons-material/Key";
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
+  const router = useRouter();
   //const [host, setHost]=useState("default");
   const [state, formAction] = useFormState(login, undefined);
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
@@ -15,6 +17,33 @@ export default function LoginForm() {
     console.log("use togglePasswordVisibility");
     setShowPassword(!showPassword); // Toggle password visibility
   };
+  
+  const handleClick = () => {
+    //C:\Users\1000222790\Documents\GitHub\e_pm\src\app\pages\dashboard
+    //alert(process.env.NEXT_PUBLIC_HOST_LINK +'/pages/dashboard');
+    //router.push(process.env.NEXT_PUBLIC_HOST_LINK +'/pages/dashboard'); // ไปที่หน้าปลายทาง
+        try {
+                document.getElementById('input-user').value="Guest";
+        } catch (error) {
+          
+        } 
+        try {
+              document.getElementById('input-password').value="Guest";
+        } catch (error) {
+
+        } 
+
+        setTimeout(function(){
+                  try {
+                          document.getElementById('btn-login').click();
+                  } catch (error) {
+                    
+                  }
+        },500);  
+
+  };
+
+
 
   return (
     <div
@@ -45,12 +74,34 @@ export default function LoginForm() {
           e - PM System
         </h1>
         <div className="flex flex-col items-center gap-10 bg-white p-10 w-full relative pb-24 rounded-b-lg">
-          <Image
-            src="/assets/images/login-logo.png"
-            alt="person"
-            width={100}
-            height={100}
-          />
+
+          <div style={{border:'1px solid none',width:'100%',textAlign:'center'}}>
+          <div className="inline-block  ">
+                  <Image
+                      src="/assets/images/login-logo.png"
+                      alt="person"
+                      width={100}
+                      height={100}
+                    />
+              </div>     
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;         
+              <div className="inline-block border border-gray-400 w-auto cursor-pointer hover:scale-110 transition-transform duration-300 rounded-md">
+             
+                <Image
+                  src="/assets/images/login-dashboard.png"
+                  alt="person"
+                  title="Guest Login "
+                  width={100}
+                  height={100}
+                  onClick={handleClick}
+                />
+              
+              </div>
+          </div>
+
+
+        
+        
           <form
             className="flex flex-col items-center gap-5 w-full"
             action={formAction}
@@ -69,7 +120,7 @@ export default function LoginForm() {
               </span>
               <input
                 type="text"
-                id="website-admin"
+                id='input-user'
                 className="w-full rounded-none rounded-e-lg bg-gray-50 border text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 text-sm border-gray-300 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="username"
                 placeholder="Username"
@@ -84,6 +135,7 @@ export default function LoginForm() {
                 className="w-full rounded-none rounded-e-lg bg-gray-50 border text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 text-sm border-gray-300 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="password"
                 placeholder="Password"
+                id='input-password'
               />
             </div>
             <div className="flex items-center self-start -translate-y-1">
@@ -101,7 +153,7 @@ export default function LoginForm() {
                 Show Password
               </label>
             </div>
-            <button className="bg-blue-600 text-white py-3 w-full max-w-xs rounded-md hover:bg-blue-500 font-bold mt-3 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+            <button id='btn-login' className="bg-blue-600 text-white py-3 w-full max-w-xs rounded-md hover:bg-blue-500 font-bold mt-3 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
               Login
             </button>
             {state?.message && <p className="text-red-500">{state.message}</p>}

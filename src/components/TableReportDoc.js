@@ -27,7 +27,7 @@ const TableReportDoc = ({
   const endMonth = endDate ? endDate.getMonth() : 11;
   const endYear = endDate ? endDate.getFullYear() : 9999;
 
-  console.log("in TableReportDoc filteredData.", filteredData);
+  //console.log("in TableReportDoc filteredData.", filteredData);
 
   // filteredData,
   // startDate,
