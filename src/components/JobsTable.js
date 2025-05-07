@@ -377,7 +377,7 @@ const JobsTable = ({ refresh }) => {
           />
         </div>
       </div>
-      {user.role === "Admin Group" ? (
+      {user.role === "Admin Group" || user.role === "Owner" ? (
         <TableComponentAdmin
           headers={jobsActiveHeaderAdmin}
           datas={jobsActiveBody}

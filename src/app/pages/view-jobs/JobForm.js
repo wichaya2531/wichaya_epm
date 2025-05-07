@@ -780,6 +780,7 @@ const JobForm = ({
                       onChange={(e) => handleBeforeValue(e, item)}
                       className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                       placeholder={item.BeforeValue || ""}
+                      disabled
                       title={"Lastest Update: " + item.LastestUpdate}
                     />) : (
                       <input
@@ -788,6 +789,7 @@ const JobForm = ({
                         onChange={(e) => handleBeforeValue(e, item)}
                         className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                         placeholder={item.BeforeValue || ""}
+                        disabled
                         title={"Lastest Update: " + item.LastestUpdate}
                       />
                     )}

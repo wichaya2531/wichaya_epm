@@ -449,6 +449,7 @@ const Page = () => {
   };
 
   const fetchJobs = async (workgroup_id) => {
+            setJobs([]);  
             /*try {
               //console.log("workgroup_id....=>", workgroup_id);
               const response = await fetch(
@@ -489,9 +490,8 @@ const Page = () => {
                       try {
                         const data = JSON.parse(chunk);
                         //console.log('📦 ได้ข้อมูล:', data.length);
-            
                         if (Array.isArray(data)) {
-                          setJobs([]);  
+                          
                           setJobs(prev => [...prev, ...data]);
                         }
             
@@ -937,30 +937,36 @@ const Page = () => {
             ))}
           </select>
         </div>
-        {/* <TableComponent
-          headers={jobsHeader}
-          datas={jobsBody}
-          TableName="Active Checklist"
-          searchColumn="Checklist Name"
-          filterColumn="Line Name"
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-        /> */}
-        <TableComponentAdmin
-          headers={jobsHeader}
-          datas={jobsBody}
-          TableName="Active Checklist"
-          PageSize={5}
-          searchColumn={"Checklist Name"}
-          filterColumn="Line Name"
-          searchHidden={true}
-          filteredJobs={filteredJobs}
-          selectedJobs={selectedJobs}
-          handleDeleteSelected={handleDeleteSelected}
-          currentPage={currentPageJob}
-          onPageChange={(page) => setCurrentPageJob(page)}
-          setSelectedJobs={setSelectedJobs}
-        />
+        { user.role==="Admin Group" || user.role === "Owner" ? (
+                 <TableComponentAdmin
+                 headers={jobsHeader}
+                 datas={jobsBody}
+                 TableName="Active Checklist"
+                 PageSize={5}
+                 searchColumn={"Checklist Name"}
+                 filterColumn="Line Name"
+                 searchHidden={true}
+                 filteredJobs={filteredJobs}
+                 selectedJobs={selectedJobs}
+                 handleDeleteSelected={handleDeleteSelected}
+                 currentPage={currentPageJob}
+                 onPageChange={(page) => setCurrentPageJob(page)}
+                 setSelectedJobs={setSelectedJobs}
+               />
+              ) : (
+                <TableComponent
+                    headers={jobsHeader}
+                    datas={jobsBody}
+                    TableName="Active Checklist"
+                    searchColumn="Checklist Name"
+                    filterColumn="Line Name"
+                    currentPage={currentPageJob}
+                    onPageChange={(page) => setCurrentPageJob(page)}
+                  />
+              )
+
+        }
+
       </div>
       {isShowDetail && <ShowDetailModal />}
       {isShowPlan && (

@@ -77,7 +77,7 @@ export default function LoginForm() {
 
           <div style={{border:'1px solid none',width:'100%',textAlign:'center'}}>
           <div className="inline-block  ">
-                  <Image
+                  <img
                       src="/assets/images/login-logo.png"
                       alt="person"
                       width={100}
@@ -87,8 +87,8 @@ export default function LoginForm() {
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;         
               <div className="inline-block border border-gray-400 w-auto cursor-pointer hover:scale-110 transition-transform duration-300 rounded-md">
              
-                <Image
-                  src="/assets/images/login-dashboard.png"
+                <img
+                  src= "/assets/images/login-dashboard.png"
                   alt="person"
                   title="Guest Login "
                   width={100}
