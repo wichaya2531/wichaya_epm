@@ -32,7 +32,9 @@ const Page = () => {
     isLoading: workgroupLoading,
     error: workgroupError,
   } = useFetchWorkgroups();
-  const { events, loading, error } = useFetchJobEvents(
+
+  
+  const { events, eventLoading, error } = useFetchJobEvents(
     selectedWorkgroup,
     selectedType,
     refresh
@@ -40,8 +42,6 @@ const Page = () => {
 
   const [open, setOpen] = useState(false);
   const [eventData, setEventData] = useState({});
-
-
 
   useEffect(() => {
     //console.log(" use fetch");
@@ -191,16 +191,18 @@ const Page = () => {
               Date:
               <input
                 type="date"
-                className="text-sm border border-gray-300 rounded-md p-1 ml-2"
+                className="text-sm border border-gray-300 rounded-md p-1 ml-2 "
                 value={moment(date).format("YYYY-MM-DD")}
                 onChange={handleDateChange}
+                disabled={eventLoading}
               />
             </label>
             <label className="md:ml-4">
               Workgroup:
               <select
-                className="text-sm border border-gray-300 rounded-md p-1 ml-2"
+                className={`text-sm border border-gray-300 rounded-md p-1 ml-2 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
                 onChange={(e) => handleChangeWorkgroup(e.target.value)}
+                disabled={eventLoading}
               >
                 <option value="" disabled>
                   Select workgroups
@@ -221,8 +223,9 @@ const Page = () => {
             <label className="md:ml-4">
               Type :
               { <select
-                className="text-sm border border-gray-300 rounded-md p-1 ml-2"
+                className={`text-sm border border-gray-300 rounded-md p-1 ml-2 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
                 onChange={(e) => handleChangeType(e.target.value)}
+                disabled={eventLoading}
               >
                 <option value="" disabled>
                   Select Type

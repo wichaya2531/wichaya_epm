@@ -85,11 +85,11 @@ export const POST = async (req) => {
       jobItemTemplates.push(jobItemTemplate); // Add the saved jobItemTemplate to the response array
     }
 
-    console.log("jobItemTemplates saved successfully");
+    //console.log("jobItemTemplates saved successfully");
 
     return NextResponse.json({ status: 200, jobItemTemplates });
   } catch (err) {
-    console.error("jobItemTemplate save Error : " + err.message);
+    //console.error("jobItemTemplate save Error : " + err.message);
 
     return NextResponse.json({
       status: 500,

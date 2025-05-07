@@ -338,6 +338,10 @@ const Page = () => {
       ? true
       : false;
 
+      const SORT_ITEM_BY_POSITION = document.getElementById("sort-item-by-position").checked
+      ? true
+      : false;
+
     //console.log("PICTURE_EVEDENT_REQUIRE",PICTURE_EVEDENT_REQUIRE);
 
     //console.log("APPROVERS_ID",APPROVERS_ID);
@@ -378,6 +382,7 @@ const Page = () => {
       NOTIFIES_OVERDUE_ID,
       PICTURE_EVEDENT_REQUIRE,
       AGILE_SKIP_CHECK,
+      SORT_ITEM_BY_POSITION,
     };
 
     try {
@@ -726,6 +731,17 @@ const Page = () => {
                   &nbsp;&nbsp;&nbsp;Agile Skip Check
                 </label>
               </div>
+
+              <div id="2" style={{ border: "1px solid none", padding: "5px" }}>
+                <input
+                  type="checkbox"
+                  id="sort-item-by-position"
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                />
+                <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                  &nbsp;&nbsp;&nbsp;Sort Item By Position
+                </label>
+              </div>              
             </div>
           </div>
           {

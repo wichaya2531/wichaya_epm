@@ -111,6 +111,8 @@ export const POST = async (req, res) => {
       DISAPPROVE_REASON:"",
       PICTURE_EVEDENT_REQUIRE : jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
       AGILE_SKIP_CHECK : jobTemplate.AGILE_SKIP_CHECK || false,
+      SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
+
     });
    // console.log("Job->", job);
     await job.save();
@@ -151,8 +153,12 @@ export const POST = async (req, res) => {
           FILE: jobItemTemplate.FILE,
           createdAt: jobItemTemplate.createdAt,
           BEFORE_VALUE2: null,
-          INPUT_TYPE:jobItemTemplate.INPUT_TYPE||"All"
+          INPUT_TYPE:jobItemTemplate.INPUT_TYPE||"All",
+          POS:jobItemTemplate.pos||0,
         });
+
+        //console.log('jobItem from Active by Manual',jobItem);
+
         await jobItem.save();
 
         const currentJobItems = await JobItem.find({

@@ -33,7 +33,8 @@ export const PUT = async (req, res) => {
     notifies_id,
     notifiesOverdue_id,
     PICTURE_EVEDENT_REQUIRE,
-    AGILE_SKIP_CHECK
+    AGILE_SKIP_CHECK,
+    SORT_ITEM_BY_POSITION
   } = body;
 
   // console.log("timeout:", timeout);
@@ -53,10 +54,15 @@ export const PUT = async (req, res) => {
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       TIMEOUT: jobTemplate.TIMEOUT,
       PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
-      AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false
+      AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false,
+      SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION|| false
     });
     //console.log("jobTemplateEdit", jobTemplateEdit)
     await jobTemplateEdit.save();
+
+
+    //console.log('jobTemplate before',jobTemplate);
+
 
     //update job template
     jobTemplate.JOB_TEMPLATE_NAME = job_template_name;
@@ -70,8 +76,13 @@ export const PUT = async (req, res) => {
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
     jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
     jobTemplate.AGILE_SKIP_CHECK=AGILE_SKIP_CHECK;
+    jobTemplate.SORT_ITEM_BY_POSITION=SORT_ITEM_BY_POSITION
+
+    //console.log('jobTemplate after',jobTemplate);
 
     await jobTemplate.save();
+
+
     const newApprovers = approvers_id.map((approver_id) => {
       return new Approves({
         JOB_TEMPLATE_ID: jobTemplate._id,
@@ -144,7 +155,7 @@ export const PUT = async (req, res) => {
       });
 
       await Promise.all(updatePromises);
-      console.log("JobItemTemplates updated successfully.");
+      //console.log("JobItemTemplates updated successfully.");
     } else {
       console.log(
         "No JobItemTemplates found with the specified JOB_TEMPLATE_ID."

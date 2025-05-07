@@ -8,7 +8,7 @@ export const POST = async (req, res) => {
     const form = await req.formData();
     const jobItemTemplateID = form.get("jobItemTemplateID");
     const newPos = form.get("pos"); // รับค่าที่ต้องการอัปเดต pos ใหม่
-    console.log("jobItemTemplateID=>", jobItemTemplateID);
+    //console.log("jobItemTemplateID=>", jobItemTemplateID);
 
     try {
         // หาเอกสารที่ต้องการอัปเดต
@@ -21,16 +21,16 @@ export const POST = async (req, res) => {
             });
         }
 
-        console.log("Before jobItemTemplate=>", jobItemTemplate);
+        //console.log("Before jobItemTemplate=>", jobItemTemplate);
         
-        console.log("Before jobItemTemplate.pos=>",jobItemTemplate.pos);
+        //console.log("Before jobItemTemplate.pos=>",jobItemTemplate.pos);
         // แก้ไขค่า pos
         jobItemTemplate.pos = newPos;
-        console.log("After jobItemTemplate.pos=>",jobItemTemplate.pos);
+        //console.log("After jobItemTemplate.pos=>",jobItemTemplate.pos);
         // บันทึกการเปลี่ยนแปลงลง MongoDB
         await jobItemTemplate.save();
 
-        console.log("After jobItemTemplate=>",jobItemTemplate);
+        //console.log("After jobItemTemplate=>",jobItemTemplate);
 
         return NextResponse.json({ 
             status: 200, 

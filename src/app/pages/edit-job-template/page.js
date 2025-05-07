@@ -44,6 +44,7 @@ const Page = ({ searchParams }) => {
 
   const [evidentImageReq, setEvidentImageReq] = useState([]);
   const [agileSkipCheck, setAgileSkipCheck] = useState([]);
+  const [sortItemByPosition, setSortItemByPosition] = useState([]);
 
   const {
     user,
@@ -62,7 +63,10 @@ const Page = ({ searchParams }) => {
       //console.log("jobTemplate.PICTURE_EVEDENT_REQUIRE ",jobTemplate.PICTURE_EVEDENT_REQUIRE);
       setEvidentImageReq(jobTemplate.PICTURE_EVEDENT_REQUIRE);
       setAgileSkipCheck(jobTemplate.AGILE_SKIP_CHECK);
-      //console.log("evidentImageReq=",evidentImageReq);
+      setSortItemByPosition(jobTemplate.SORT_ITEM_BY_POSITION);
+      
+      
+      console.log("jobTemplate in useEffect=",jobTemplate.SORT_ITEM_BY_POSITION);
 
       var timerID=setInterval(() => {
               try{
@@ -74,6 +78,12 @@ const Page = ({ searchParams }) => {
 
               try{
                 document.getElementById('agile-skip-check').checked=jobTemplate.AGILE_SKIP_CHECK;
+              }catch(err){
+                console.log("error",err);
+              }
+
+              try{
+                document.getElementById('sort-item-by-position').checked=jobTemplate.SORT_ITEM_BY_POSITION;
               }catch(err){
                 console.log("error",err);
               }
@@ -536,6 +546,7 @@ const Page = ({ searchParams }) => {
 
     const PICTURE_EVEDENT_REQUIRE=document.getElementById('picture-evident-require').checked;
     const AGILE_SKIP_CHECK=document.getElementById('agile-skip-check').checked;
+    const SORT_ITEM_BY_POSITION=document.getElementById('sort-item-by-position').checked;
 
 
     // รับ ID ที่ต้องการลบ
@@ -568,7 +579,8 @@ const Page = ({ searchParams }) => {
       removedNotifies,
       removedNotifiesOverdue,
       PICTURE_EVEDENT_REQUIRE,
-      AGILE_SKIP_CHECK
+      AGILE_SKIP_CHECK,
+      SORT_ITEM_BY_POSITION
     };
 
     try {
@@ -823,7 +835,16 @@ const Page = ({ searchParams }) => {
                     &nbsp;&nbsp;&nbsp;Agile Skip Check
                 </label>
               </div>
-                        
+              <div id="2" style={{ border: "1px solid none", padding: "5px" }}>
+                <input
+                  type="checkbox"
+                  id="sort-item-by-position"
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                />
+                <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                  &nbsp;&nbsp;&nbsp;Sort Item By Position
+                </label>
+              </div>                             
               
             </div>
 

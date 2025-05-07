@@ -5,33 +5,34 @@ import { config } from "@/config/config.js";
 
 const useFetchJobEvents = (workgroup_id,selectedType,refresh = null) => {
     const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [eventLoading, setEventLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
 
                     const fetchJobEvents = async () => {
-                        setLoading(true);
+                        setEventLoading(true);
                         setError(null);
                         try {
                             const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}&type=${selectedType}`, { next: { revalidate: 10 } });
                             const data = await res.json();
                             //console.log("data5 -> ", data);
                             setEvents(data.events);
-                            setLoading(false);
+                            setEventLoading(false);
                         } catch (error) {
                             setError(error);
-                            setLoading(false);
+                            setEventLoading(false);
                         }
                     };
         if(workgroup_id){
+            setEventLoading(true);
             fetchJobEvents();
         }                
                    
 
     }, [workgroup_id,selectedType, refresh]);
 
-    return { events, loading, error };
+    return { events, eventLoading, error };
 };
 
 export default useFetchJobEvents;

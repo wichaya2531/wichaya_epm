@@ -37,6 +37,9 @@ export const GET = async (req, res) => {
   await connectToDb();
   const searchParams = req.nextUrl.searchParams;
   const JobID = searchParams.get("job_id");
+  
+  
+
 
   //console.log('JobID=>', JobID);
 
@@ -48,6 +51,9 @@ export const GET = async (req, res) => {
         status: 404,
         message: "Checklist has been deleted already, or wrong ChecklistID",
       });
+   
+
+
     //sort lastest come last
     const jobItems = await JobItem.find({ JOB_ID: JobID }).sort({
       createdAt: -1,
@@ -124,17 +130,34 @@ export const GET = async (req, res) => {
           guide_input: await getGuideInputByJobItem(
             jobItem.JOB_ITEM_TEMPLATE_ID
           ),
-          input_type:jobItem.INPUT_TYPE||"All"
+          input_type:jobItem.INPUT_TYPE||"All",
+          pos:jobItem.POS||0
         };
       })
     );
 
-    jobItemData.sort((a, b) => {
-      return (
-        new Date(a.createAtTemplate).getTime() -
-        new Date(b.createAtTemplate).getTime()
-      );
-    });
+
+
+    if (job.SORT_ITEM_BY_POSITION) {
+      jobItemData.sort((a, b) => {
+        return  a.pos-b.pos;
+      });
+    }else{
+          jobItemData.sort((a, b) => {
+            return (
+              new Date(a.createAtTemplate).getTime() -
+              new Date(b.createAtTemplate).getTime()
+            );
+          });
+    }
+
+   // console.log('job sort by pos',job);
+   // console.log('jobItem sort by pos',jobItemData);
+
+  //  jobItemData.forEach(element => {
+  //         console.log(element.pos);
+  //  });   
+
 
     if (statusName === "renew") {
       const jobApprove = await JobApproves.find({ "JOB._id": JobID })

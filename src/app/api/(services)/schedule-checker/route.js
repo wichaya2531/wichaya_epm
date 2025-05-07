@@ -98,7 +98,7 @@ export const POST = async (req, res) => {
   //       console.log(job.updatedAt);
   // });
 
-  //const now = new Date();
+  const now = new Date();
   //return NextResponse.json({ status: 200 });
 
   try {
@@ -284,6 +284,8 @@ export const POST = async (req, res) => {
           TIMEOUT: jobTemplate.TIMEOUT,
           LINE_NAME: schedulers.LINE_NAME,
           PICTURE_EVEDENT_REQUIRE: jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
+          AGILE_SKIP_CHECK : jobTemplate.AGILE_SKIP_CHECK || false,
+          SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
         });
 
         await job.save();
@@ -317,7 +319,7 @@ export const POST = async (req, res) => {
         //3.2 create job item
         await Promise.all(
           jobItemTemplates.map(async (jobItemTemplate) => {
-            //console.log("jobItemTemplate=>",jobItemTemplate);
+           // console.log("jobItemTemplate=>",jobItemTemplate);
             const jobItem = new JobItem({
               JOB_ID: job._id,
               JOB_ITEM_TITLE: jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE,
@@ -329,8 +331,9 @@ export const POST = async (req, res) => {
               JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
               BEFORE_VALUE2: null,
               INPUT_TYPE:jobItemTemplate.INPUT_TYPE||"All",
+              POS:jobItemTemplate.pos||0,
             });
-            //    console.log("jobItem=>",jobItem);
+           // console.log("jobItem=>",jobItem);
             await jobItem.save();
 
             const currentJobItems = await JobItem.find({

@@ -28,9 +28,17 @@ export const GET = async (req, {params}) => {
                 MACHINE_NAME: machineName,
                 WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
                 createdAt: createdAt,
+                createdAtSort:jobTemplate.createdAt,
 
             };
         }));
+
+
+        // Sort by createdAt: newest to oldest
+        data.sort((a, b) =>b.createdAtSort - a.createdAtSort);
+        // data.forEach(element => {
+        //                 console.log(element._id+":"+element.createdAt);
+        // });
         return NextResponse.json({ status: 200, jobTemplates: data });
     }
     catch (err) {

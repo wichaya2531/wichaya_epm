@@ -20,6 +20,7 @@ const ReportDoc = ({
   onWorkgroupSelect,
   workgroupOfUser,
 }) => {
+    
   const [workgroups, setWorkgroups] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
@@ -609,6 +610,10 @@ const ReportDoc = ({
       exportToPDF();
     }
   };
+
+
+  //handleWorkgroupChange(workgroupOfUser.workgroup);
+
   return (
     <div>
       <div className="flex flex-wrap gap-4 bg-white rounded-lg">
@@ -702,7 +707,9 @@ const ReportDoc = ({
           </label>
 
           <select
-            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-white hover:bg-gray-50 focus:outline-none"
+            className={`w-full border border-gray-300 rounded-md py-2 px-3 bg-white hover:bg-gray-50 focus:outline-none ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
             onChange={(e) => {
               const selectedValue = e.target.value;
               // if (selectedValue === "All Workgroups") {
@@ -715,19 +722,21 @@ const ReportDoc = ({
               onWorkgroupSelect(e.target.value);
             }}
             
-            // value={workgroupOfUser.workgroup}
+            //value={workgroupOfUser.workgroup}
             //value={selectedWorkgroups.length === 0 ? "All Workgroups" : selectedWorkgroups[0]}
             //value={selectedWorkgroups==""?workgroupOfUser.workgroup:selectedWorkgroups}
           >
-            <option value={workgroupOfUser.workgroup}>{workgroupOfUser.workgroup}</option>
-            {workgroups.map((workgroupName) => (
-              <option
-                key={workgroupName.WORKGROUP_NAME}
-                value={workgroupName.WORKGROUP_NAME}
-              >
-                {workgroupName.WORKGROUP_NAME}
-              </option>
-            ))}
+             <option value={workgroupOfUser.workgroup}>{workgroupOfUser.workgroup}</option>
+              {workgroups
+                .filter((workgroupName) => workgroupName.WORKGROUP_NAME !== workgroupOfUser.workgroup)
+                .map((workgroupName) => (
+                  <option
+                    key={workgroupName.WORKGROUP_NAME}
+                    value={workgroupName.WORKGROUP_NAME}
+                  >
+                    {workgroupName.WORKGROUP_NAME}
+                  </option>
+                ))}
           </select>
         </div>
 
@@ -739,7 +748,9 @@ const ReportDoc = ({
             &nbsp;
           </label>
           <button
-            className="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-md"
+            className={`bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-md ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
             onClick={onPullData}
           >
             Pull Data
@@ -793,7 +804,9 @@ const ReportDoc = ({
             Report View Type
           </label>
           <select
-            className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
+              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+            }`}
             value={reportType}
             onChange={(e) => {
               const selectedReportType = e.target.value;

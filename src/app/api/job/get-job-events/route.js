@@ -23,13 +23,22 @@ function getColorByStatusName(statusName, statusMap) {
 export const GET = async (req, res) => {
     await connectToDb();
     const searchParams = req.nextUrl.searchParams;
-    const workgroup_id = searchParams.get("workgroup_id");
+
+    //console.log('searchParams',searchParams);
+
+    let workgroup_id = searchParams.get("workgroup_id");
     let selectedType = searchParams.get("type");
     if (selectedType.length<3) {
         selectedType="all";
     }
-    console.log('workgroup_id',workgroup_id);
-    console.log('selectedType',selectedType);
+
+    if (workgroup_id=="No workgroup") {
+        workgroup_id="all";
+    }
+   
+
+   // console.log('workgroup_id',workgroup_id);
+   // console.log('selectedType',selectedType);
     
    // return NextResponse.json({ status: 200, events: "test" });
 
@@ -37,7 +46,7 @@ export const GET = async (req, res) => {
     try {
         let sw_type=true;
         if (sw_type) {
-                    console.time("fetch-jobs");         
+                    //console.time("fetch-jobs");         
                     let arr_status=new Array();
                     const status=await Status.find();
                     status.forEach(element => {
@@ -50,7 +59,13 @@ export const GET = async (req, res) => {
 
 
                     // Fetch job templates based on workgroup_id
-                    const jobs=await Job.find();//.limit(1);
+                    let jobs;
+                    if(workgroup_id=='all'){
+                        jobs=await Job.find();//.limit(1);
+                    }else{
+                        jobs=await Job.find({WORKGROUP_ID:workgroup_id});//.limit(1);
+                    }
+                            
                     //console.log('jobs count=',jobs.length);
                     var n=false;    
 
@@ -75,7 +90,13 @@ export const GET = async (req, res) => {
                    // console.log('dataInJobs count',dataInJobs.length);
 
 
-                    const scheduals=await Schedule.find() ;//.limit(1);
+                    let scheduals;
+                    if(workgroup_id=='all'){
+                        scheduals=await Schedule.find() ;//.limit(1);
+                    }else{
+                        scheduals=await Schedule.find({WORKGROUP_ID: new ObjectId(workgroup_id)}) ;//.limit(1);
+                    }
+                   
                     const dataInScheduals = await Promise.all(scheduals.map(async (element) => {
                         //console.log(element);
                         const activateDate_s = new Date(element.ACTIVATE_DATE);
@@ -98,7 +119,7 @@ export const GET = async (req, res) => {
                 const allData = [...dataInJobs, ...dataInScheduals];
                 if (n==false) {
                         n=true;
-                        console.log('allData',allData);
+                        //console.log('allData',allData);
                 }
                  
                 var afterFilter=new Array();
@@ -119,10 +140,10 @@ export const GET = async (req, res) => {
                 //                 }
                 // });            
                 // console.log('allData',allData);
-                console.timeEnd("fetch-jobs");
+                //console.timeEnd("fetch-jobs");
             return NextResponse.json({ status: 200 ,events: afterFilter}); 
         }else{
-            console.time("fetch-jobs");
+           // console.time("fetch-jobs");
             let jobTemplates;
             if (workgroup_id === "all") {
                 jobTemplates = await JobTemplate.find();
@@ -213,7 +234,7 @@ export const GET = async (req, res) => {
             //                             console.log(element);
             //                 }
             // });        
-            console.timeEnd("fetch-jobs");  // จะแสดงเวลาใน milliseconds
+            //console.timeEnd("fetch-jobs");  // จะแสดงเวลาใน milliseconds
             return NextResponse.json({ status: 200, events: resolvedEvents });
         }  
     } catch (error) {

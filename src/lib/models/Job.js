@@ -39,7 +39,8 @@ const jobSchema = new mongoose.Schema(
     OVERDUE_ACK:{ type: String, required: false },
     IMAGE_FILENAME_2: { type: String, default: null }, //// image for evident after
     PICTURE_EVEDENT_REQUIRE:{ type: Boolean, default: false },
-    AGILE_SKIP_CHECK:{ type: Boolean, default: false }
+    AGILE_SKIP_CHECK:{ type: Boolean, default: false },
+    SORT_ITEM_BY_POSITION:{ type: Boolean, default: false }
   },
   { timestamps: true }
 );

@@ -17,19 +17,11 @@ export const GET = async (req, res) => {
   const endDate = new Date(searchParams.get('end'));   // วันที่สิ้นสุด
   const workgroup_name =searchParams.get('workgroup');   // กลุ่มงาน
 
+ 
+
   //console.log('workgroup_name',workgroup_name);
-  const workgroupID = await Workgroup.findOne({WORKGROUP_NAME:workgroup_name});
-  //console.log('workgroupID',workgroupID);
-  /*try {
-      
-        //console.log('workgroupID',workgroupID._id);
-  } catch (error) {
-      //console.log(error);
-  }*/
-      
+  const workgroupID = await Workgroup.findOne({WORKGROUP_NAME:workgroup_name})||{_id:0};  
 
-
-  //return NextResponse.json({ status: 400, message: "Invalid Workgroup" });
 
   try {
    // console.time("Query Execution Time"); // เริ่มจับเวลา
@@ -42,7 +34,7 @@ export const GET = async (req, res) => {
                       $gte: startDate,
                       $lte: endDate
                     },
-                    WORKGROUP_ID: workgroupID._id.toString() // หรือ workgroupID._id ถ้าใน DB เก็บเป็น ObjectId
+                    WORKGROUP_ID:workgroupID._id.toString() // หรือ workgroupID._id ถ้าใน DB เก็บเป็น ObjectId
                   }
                 },
                 {
@@ -210,7 +202,7 @@ export const GET = async (req, res) => {
 
     // console.log("Job values after aggregation:", cleanedJobValues);
     if (cleanedJobValues.length === 0) {
-      console.log("No data found for the given filters.");
+          //console.log("No data found for the given filters.");
     }
 
     // console.log('cleanedJobValues',cleanedJobValues); 
@@ -230,6 +222,6 @@ export const GET = async (req, res) => {
     return NextResponse.json(cleanedJobValues);
   } catch (error) {
     console.error("Error fetching job values:", error);
-    return NextResponse.error(error);
+    return NextResponse.error([]);
   }
 };

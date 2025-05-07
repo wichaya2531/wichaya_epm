@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { config } from "@/config/config.js";
+import { FadeLoader } from "react-spinners";
 const useFetchReport1 = (refresh,start, end,workgroupSelect) => {
-  //console.log('workgroupSelect',workgroupSelect);
+  //console.log('workgroupSelect in useFetchReport',workgroupSelect);
   //console.log('User',user);
 
-
-  
   const [report, setReport] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {      
@@ -28,7 +27,18 @@ const useFetchReport1 = (refresh,start, end,workgroupSelect) => {
         setIsLoading(false);
       }
     };
-    fetchReport();
+  
+    //console.log('workgroupSelect in useFetchReport1',workgroupSelect);
+   // if(workgroupSelect!==undefined){
+      fetchReport();
+
+    //}else{
+      //setIsLoading(false);
+   // }
+       
+     //console.log('isLoading',isLoading)
+    
+  
   }, [refresh]);
   return { report, isLoading };
 };

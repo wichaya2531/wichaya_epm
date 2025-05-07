@@ -99,7 +99,8 @@ export const GET = async (req, { params }) => {
       NotifyList: usersNotifier,
       NotifyOverdueList: usersNotifierOverdue,
       PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
-      AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false
+      AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false,
+      SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION || false
     };
 
     return NextResponse.json({ status: 200, jobTemplate: data });

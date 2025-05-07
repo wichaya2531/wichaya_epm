@@ -81,7 +81,12 @@ const Page = () => {
    // console.log("Filtered End Date:", end);
   };
   const handlePullData = () => {
-    //alert(workgroupSelect);
+    //console.log(workgroupOfUser);
+    //alert(workgroupOfUser.workgroup);
+
+    if (workgroupSelect===undefined) {
+      setWorkgroupSelect(workgroupOfUser.workgroup);
+    }
     //alert('OK');
     //setStartDate(start);
     //setEndDate(end);

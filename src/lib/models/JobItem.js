@@ -42,6 +42,7 @@ const JobItemSchema = new mongoose.Schema(
     FILE: { type: String, default: null },
     IMG_ATTACH: { type: String, default: null },
     INPUT_TYPE: { type: String,required: false},
+    POS: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
