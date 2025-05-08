@@ -235,6 +235,94 @@ const Page = () => {
     });
   };
 
+
+  
+  const fetchWorkgroups = async () => {
+    try {
+      const response = await fetch(`/api/workgroup/get-workgroups`, {
+        next: { revalidate: 10 },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch roles");
+      }
+      const data = await response.json();
+      return data;  
+      //console.log('data all workgroups',data);
+         
+      //setWorkgroups(data.workgroups);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
+  const handleCopyToWorkgroup = async (job_template_id) => {
+    let allWorkgroup= await fetchWorkgroups();
+    const workgroups=allWorkgroup.workgroups;
+    //console.log('allWorkgroup',allWorkgroup.workgroups);
+
+          const selectOptions = workgroups.map(wg => 
+            `<option value="${wg._id}">${wg.WORKGROUP_NAME}</option>`
+          ).join('');
+        
+            // เรียก Swal
+            Swal.fire({
+                title: 'Select Workgroup',
+                html:
+                    `<select id="swal-workgroup" class="swal2-input">
+                        <option value="" disabled selected>Select a workgroup</option>
+                        ${selectOptions}
+                    </select>`,
+                showCancelButton: true,
+                confirmButtonText: 'OK',
+                showCloseButton: true,  // << เพิ่มปุ่ม Close (X) ตรงนี้
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    const selectedValue = document.getElementById('swal-workgroup').value;
+                    if (!selectedValue) {
+                        Swal.showValidationMessage('Please select a workgroup');
+                        return false;  // << เพิ่มบรรทัดนี้ เพื่อไม่ให้ Swal ปิด
+                    }
+                    return selectedValue;
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    console.log('Selected Workgroup ID:', result.value);
+                    // ทำงานต่อได้เลย เช่น ส่งค่าไปใช้ต่อ
+                    const res = await fetch(
+                      `/api/job-template/copy-job-template?job_template_id=${job_template_id}&workgroup_id=${result.value}`
+                    );
+                    //console.log(res);
+                    if (res.ok) {
+                      const result = await res.json();
+                      //console.log(result.message); // แสดงข้อความตอบกลับจากเซิร์ฟเวอร์
+                      setRefresh((prev) => !prev);
+                        // ✅ แจ้ง Swal เมื่อสำเร็จ
+                        Swal.fire({
+                          icon: 'success',
+                          title: 'Copy Success',
+                          text: 'The job template was copied successfully.'
+                        });
+                    } else {
+                      console.error("Error:", res.statusText);
+                      // ❌ แจ้ง Swal เมื่อ Error
+                      Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to copy the job template.'
+                      });
+
+                    }
+
+                } else {
+                    console.log('Cancelled');
+                }
+            });
+  }
+
+
+  
+
   const handleCopy = async (job_template_id) => {
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
@@ -261,7 +349,7 @@ const Page = () => {
           };
 
           const res = await fetch(
-            `/api/job-template/copy-job-template/${job_template_id}`
+            `/api/job-template/copy-job-template?job_template_id=${job_template_id}`
           );
           //console.log(res);
           if (res.ok) {
@@ -344,8 +432,16 @@ const Page = () => {
             onClick={() => handleCopy(jobTemplate._id)}
             className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
           >
-            Copy
+            Duplicate
           </button>
+
+          <button
+            onClick={() => handleCopyToWorkgroup(jobTemplate._id)}
+            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold text-xs py-2 px-2 rounded"
+          >
+            Copy to workgroup.
+          </button>
+
           <button
             className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-2 rounded"
             onClick={() =>
@@ -369,7 +465,7 @@ const Page = () => {
             Remove
           </button>
           <Link
-            className="bg-teal-500 hover:bg-teal-700 text-white font-semibold py-2 px-2 rounded"
+            className="bg-teal-500 hover:bg-teal-700 text-white font-semibold text-xs py-2 px-2 rounded"
             href={{
               pathname: "/pages/job-item-template/add-job-item-template",
               query: { jobTemplate_id: jobTemplate._id },
