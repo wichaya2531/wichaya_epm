@@ -21,7 +21,7 @@ const useFetchMachines = (user) => {
         });
         const data = await res.json();
 
-        console.log("data from usefetch machine",data);
+        //console.log("data from usefetch machine",data);
         setMachines(data.machines);
         setLoading(false);
       } catch (error) {

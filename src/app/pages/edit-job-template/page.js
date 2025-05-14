@@ -66,26 +66,26 @@ const Page = ({ searchParams }) => {
       setSortItemByPosition(jobTemplate.SORT_ITEM_BY_POSITION);
       
       
-      console.log("jobTemplate in useEffect=",jobTemplate.SORT_ITEM_BY_POSITION);
+      //console.log("jobTemplate in useEffect=",jobTemplate.SORT_ITEM_BY_POSITION);
 
       var timerID=setInterval(() => {
               try{
                 document.getElementById('picture-evident-require').checked=jobTemplate.PICTURE_EVEDENT_REQUIRE;
                 //clearInterval(timerID);
               }catch(err){
-                console.log("error",err);
+                //console.log("error",err);
               }
 
               try{
                 document.getElementById('agile-skip-check').checked=jobTemplate.AGILE_SKIP_CHECK;
               }catch(err){
-                console.log("error",err);
+                //console.log("error",err);
               }
 
               try{
                 document.getElementById('sort-item-by-position').checked=jobTemplate.SORT_ITEM_BY_POSITION;
               }catch(err){
-                console.log("error",err);
+                //console.log("error",err);
               }
               clearInterval(timerID);
                
@@ -544,7 +544,7 @@ const Page = ({ searchParams }) => {
 
 
 
-    const PICTURE_EVEDENT_REQUIRE=document.getElementById('picture-evident-require').checked;
+    const PICTURE_EVEDENT_REQUIRE=false;//document.getElementById('picture-evident-require').checked;
     const AGILE_SKIP_CHECK=document.getElementById('agile-skip-check').checked;
     const SORT_ITEM_BY_POSITION=document.getElementById('sort-item-by-position').checked;
 
@@ -811,7 +811,7 @@ const Page = ({ searchParams }) => {
             <div className="flex flex-col items-start space-y-2 border-red-300" style={{ height:'auto', padding: '10px'}}>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-              <div id='1' style={{border:'1px solid none', padding: '5px'}}>
+              <div id='1' style={{border:'1px solid none', padding: '5px',display:'none'}}>
                   <input
                     type="checkbox"
                     id="picture-evident-require"  

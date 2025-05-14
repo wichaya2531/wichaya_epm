@@ -286,7 +286,7 @@ const Page = ({ searchParams }) => {
   };
 
   const handleUploadFileToJob = (files,event) => {
-   console.log("event",event);
+   //console.log("event",event);
 
     const file =files ;//event.target.files[0];
     //setSelectedFile(file);
@@ -303,6 +303,7 @@ const Page = ({ searchParams }) => {
   };
 
   const uploadJobPictureToServer = async (inputFile,selector) => {
+    
     if (!inputFile) {
       alert("Please select a file first.");
       return;
@@ -310,7 +311,9 @@ const Page = ({ searchParams }) => {
     const formData = new FormData();
     formData.append("file", inputFile);
     formData.append("job_id", jobData.JobID);
-
+    formData.append("selector", selector);
+    
+    //console.log("task uploadJobPictureToServer..");
     try {
       const res = await fetch("/api/uploadPicture", {
         method: "POST",
@@ -386,7 +389,7 @@ const Page = ({ searchParams }) => {
        // await setWdtagImg_2(jobData.IMAGE_FILENAME_2);
         
           
-        if(jobData.IMAGE_FILENAME_2 && jobData.IMAGE_FILENAME){
+       // if(jobData.IMAGE_FILENAME_2 && jobData.IMAGE_FILENAME){
                 // มี Attach ไฟล์ อยู่แล้ว  
                 //console.log("มี Attach file อยู่แล้ว ");
                 // await setWdtagImg_1(jobData.IMAGE_FILENAME);
@@ -400,19 +403,20 @@ const Page = ({ searchParams }) => {
                 //wdtagImg_2=jobData.IMAGE_FILENAME_2;
                
 
-        }else{
+      //  }else{
                  //console.log("ไม่มี Attach file  ");
                 // ไม่มี Attach ไฟล์ 
                 //console.log("jobData.IMAGE_FILENAME 1,2 B");
-                if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
+                /*if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
                   Swal.fire({
                     title: "Error!",
                     text: "Please upload Evident picture.",
                     icon: "error",
                   });
                   return;
-                }
-        }   
+                }*/
+
+       // }   
 
         var fillAllItems = true;
         //console.log("jobItems",jobItems);
@@ -613,6 +617,7 @@ const Page = ({ searchParams }) => {
         preview_2={preview_2}
         onclicktoShow={handleToShowOnClick}
         machineAsLinename={machineAsLinename}  
+        user={user}
       />
 
       {testMethodDescription && (

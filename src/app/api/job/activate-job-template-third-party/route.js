@@ -236,6 +236,7 @@ export const GET = async (req, res) => {
             name: job.JOB_NAME,
             activatedBy: activater,
             timeout: job.TIMEOUT,
+            linename:job.LINE_NAME,
         };
         await sendEmails(uniqueEmails, jobData);  
         return NextResponse.json({ status: 200, JobID: job._id ,jobItemList : jobItemList /*, ToSeeData: link*/});

@@ -3,7 +3,7 @@ import { Job } from "@/lib/models/Job.js";
 import { Status } from "@/lib/models/Status.js";
 import { NextResponse } from 'next/server';
 import { JobApproves } from "@/lib/models/JobApprove";
-
+import { User } from "@/lib/models/User.js";
 
 export const POST = async (req, res) => {
     await connectToDb();
@@ -15,13 +15,16 @@ export const POST = async (req, res) => {
         const complete = await Status.findOne({ status_name: 'complete' });
         const job = await Job.findOne({ _id: job_id });
         if ( !isApproved ) {
+            // กรณีที่ เป็นการ Disapprove
             job.JOB_STATUS_ID = renew._id;
             job.DISAPPROVE_REASON=disapprove_reason;
             await job.save();
         }
         else {
+            // กรณีการ Approve
             job.JOB_STATUS_ID = complete._id;
-            await job.save();
+            job.JOB_APPROVERS=[user_id];   // ระบุข้อมูล  user ที่ Approve งานนั้น
+            await job.save(); 
         }
 
         const jobApprove = new JobApproves({

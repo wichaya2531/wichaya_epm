@@ -31,8 +31,11 @@ export const GET = async (req, res) => {
              status_name: "complete",
       });  
       
-      const submittedUser = await User.findById(userId);
-      console.log('statusAssigned',statusAssigned);
+      let submittedUser = await User.findById(userId);
+      submittedUser.USERNAME="unknown";
+      submittedUser.PASSWORD="unknown";
+
+      //console.log('statusAssigned',statusAssigned);
 
       job.JOB_STATUS_ID =  statusAssigned._id;
       job.SUBMITTED_BY = submittedUser;

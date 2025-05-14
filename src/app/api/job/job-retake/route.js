@@ -25,7 +25,9 @@ export const PUT = async (req, res) => {
     
     try {
         const job = await Job.findOne({ _id: jobID });
-        const submitteduser = await User.findById(submitUser);
+        let submitteduser = await User.findById(submitUser);
+        submittedUser.USERNAME="unknown";
+        submittedUser.PASSWORD="unknown";
         const latestDocNo = await getRevisionNo(job.DOC_NUMBER);
         if (latestDocNo.message){
             return NextResponse.json({ status: 455, message: latestDocNo.message });

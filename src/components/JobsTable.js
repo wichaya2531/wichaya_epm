@@ -8,6 +8,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import useFetchUser from "@/lib/hooks/useFetchUser";
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 const jobsActiveHeader = [
   "ID",
@@ -116,7 +117,7 @@ const JobsTable = ({ refresh }) => {
     jobs &&
     jobs.filter((job) => {
       //console.log("filterxxx");
-
+      //console.log(' job ',job);
       // Filter by status
       if (
         filterStatus !== "All" &&
@@ -184,56 +185,65 @@ const JobsTable = ({ refresh }) => {
         "Document no.": job.LINE_NAME,
         Status: (
           <div
-            style={{ backgroundColor: statusColor }}
-            className="py-1 select-none rounded-2xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-3"
+            style={{ backgroundColor: statusColor,position:'relative' }}
+            className="py-1 select-none rounded-2xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
+            
           >
-            {job.STATUS_NAME ? job.STATUS_NAME : "pending"}
+            {job.STATUS_NAME ? job.STATUS_NAME : "pending"}&nbsp;&nbsp;&nbsp;{  
+                (job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
+                  <div style={{position:'absolute',right:'1px'}}> 
+                         <VerifiedIcon color="white"  />
+                  </div>  
+                   
+                
+                ):""
+            }
           </div>
         ),
         Active: activeValue, // ใช้ activeValue ที่ได้จากการตรวจสอบ
         "Submitted By": job.SUBMITTED_BY ? job.SUBMITTED_BY.EMP_NAME : "-",
         Action: (
           <div>
-            {job.STATUS_NAME === "complete" ? (
-              <div
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
-                // href={{
-                //   pathname: "/pages/view-jobs",
-                //   query: {
-                //     job_id: job._id,
-                //     view: "true",
-                //   },
-                // }}
+            {job.STATUS_NAME === "complete" || job.STATUS_NAME === "waiting for approval" ? (
+               <div className="flex gap-2 items-center justify-center">
+                    
+                    {job.STATUS_NAME === "waiting for approval" && user.emp_number===job.SUBMITTED_BY.EMP_NUMBER  ?(
+                        <div
+                          className={`text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer`}
+                          onClick={() => {
+                            navigateToJob(job._id, false);
+                          }}
+                        >
+                          Edit
+                        </div>                      
+                    ):""}
+                        
 
-                onClick={() => {
-                  //console.log("Button clicked!");
-                  // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
-                  //alert(`You clicked the job: ${job._id}`);
-                  navigateToJob(job._id, true);
-                }}
-              >
-                View
-              </div>
+
+                    <div
+                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                      onClick={() => {
+                        navigateToJob(job._id, true);
+                      }}
+                    >
+                      View 
+                    </div>
+               </div>
+              
+              
+             
+
+
+              
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
                 {job.STATUS_NAME === "ongoing" ||
                 job.STATUS_NAME === "new" ||
-                job.STATUS_NAME === "renew" ? (
+                job.STATUS_NAME === "renew"  ? (
                   <div className="flex gap-2 items-center justify-center">
                     <div
                       className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
-                      // href={{
-                      //   pathname: "/pages/view-jobs",
-                      //   query: {
-                      //     job_id: job._id,
-                      //     view: "false",
-                      //   },
-                      // }}
-
                       onClick={() => {
-                        //console.log("Button clicked!");
-                        // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
-                        //alert(`You clicked the job: ${job._id}`);
                         navigateToJob(job._id, false);
                       }}
                     >
@@ -241,18 +251,7 @@ const JobsTable = ({ refresh }) => {
                     </div>
                     <div
                       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
-                      // href={{
-                      //   pathname: "/pages/view-jobs",
-                      //   query: {
-                      //     job_id: job._id,
-                      //     view: "true",
-                      //   },
-                      // }}
-
                       onClick={() => {
-                        // console.log("Button clicked!");
-                        // เพิ่ม logic เพิ่มเติมตามที่คุณต้องการ เช่น การตรวจสอบ หรือการแจ้งเตือน
-                        //alert(`You clicked the job: ${job._id}`);
                         navigateToJob(job._id, true);
                       }}
                     >
@@ -278,6 +277,7 @@ const JobsTable = ({ refresh }) => {
             )}
           </div>
         ),
+        
       };
     });
 

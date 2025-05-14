@@ -70,8 +70,7 @@ useEffect(() => {
         if (chunk) {
           try {
             const data = JSON.parse(chunk);
-           // console.log('📦 ได้ข้อมูล:', data.length);
-
+            //console.log('📦 ได้ข้อมูล:', data);
             if (Array.isArray(data)) {
               setJobs(prev => [...prev, ...data]);
             }
@@ -82,6 +81,7 @@ useEffect(() => {
         }
       }
     }
+    
   };
 
 

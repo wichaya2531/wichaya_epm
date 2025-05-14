@@ -224,6 +224,7 @@ export const POST = async (req, res) => {
       name: job.JOB_NAME,
       activatedBy: activater ? activater.EMP_NAME : null,
       timeout: job.TIMEOUT,
+      linename:job.LINE_NAME,
     };
     await sendEmails(uniqueEmails, jobData);
 

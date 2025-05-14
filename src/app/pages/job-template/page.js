@@ -711,7 +711,7 @@ const Page = () => {
               className="flex flex-col items-start space-y-2 border-red-300"
               style={{ height: "auto", padding: "10px" }}
             >
-              <div id="1" style={{ border: "1px solid none", padding: "5px" }}>
+              <div id="1" style={{ border: "1px solid none", padding: "5px",display:'none' }}>
                 <input
                   type="checkbox"
                   id="picture-evident-require"

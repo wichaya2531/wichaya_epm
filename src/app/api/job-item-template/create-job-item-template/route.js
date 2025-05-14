@@ -77,7 +77,7 @@ export const POST = async (req) => {
     // Save the JobItemTemplate instance to the database
     await jobItemTemplate.save();
     
-    console.log("jobItemTemplate save Success");
+   // console.log("jobItemTemplate save Success");
 
     return NextResponse.json({ status: 200, jobItemTemplate });
   } catch (err) {

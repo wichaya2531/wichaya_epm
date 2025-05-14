@@ -11,11 +11,8 @@ const TableComponent = ({
   PageSize,
   searchHidden = null,
   linenameOnSelect = null,
-  
   currentPage,
-  
   onPageChange,
-
   disablePageSize,
   disableFilter,
 }) => {

@@ -196,7 +196,7 @@ export async function sendEmails(emailList, job) {
   }
 
   const emailString = emailList.join(",");
-
+  //console.log('job on email sent',job);
   const response = await fetch(
     process.env.NEXT_PUBLIC_HOST_LINK + "/api/emailsent",
     {
@@ -204,6 +204,8 @@ export async function sendEmails(emailList, job) {
       headers: {
         "Content-Type": "application/json",
       },
+
+     
       body: JSON.stringify({
         email: emailString,
         subject: "New CheckList activated",
@@ -211,10 +213,11 @@ export async function sendEmails(emailList, job) {
             You have a new checklist to do.
             Please check the EPM system for more details.
             Details:
-            name: ${job.name}
-            activated by: ${job.activatedBy}
-            timeout: ${job.timeout}
-            direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+            Checklist Name : ${job.name}
+            Job Line  : ${job.linename}
+            Activated by: ${job.activatedBy}
+            Timeout: ${job.timeout}
+            Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
             `,
         mailsender: "epm-system@wdc.com",
         namesender: "epm-system@wdc.com",

@@ -14,6 +14,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import Image from "next/image";
 import TableComponentAdmin from "@/components/TableComponentAdmin";
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
@@ -489,7 +490,7 @@ const Page = () => {
                     if (chunk) {
                       try {
                         const data = JSON.parse(chunk);
-                        //console.log('📦 ได้ข้อมูล:', data.length);
+                        //console.log('📦 ได้ข้อมูล:', data);
                         if (Array.isArray(data)) {
                           
                           setJobs(prev => [...prev, ...data]);
@@ -651,7 +652,7 @@ const Page = () => {
           <div style={{ border: "1px solid none" }}>
             <div className="py-3 inline-block">
               <button
-                className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-3 rounded "
+                className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-5 rounded "
                 onClick={() => handlePlan(data)}
                 disabled={
                   !userEnableFunctions.some(
@@ -668,7 +669,7 @@ const Page = () => {
                     : "pointer",
                 }}
               >
-                plan
+                Plan
               </button>
             </div>
             &nbsp;&nbsp;
@@ -694,7 +695,7 @@ const Page = () => {
             </button>
             &nbsp;&nbsp;
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-2 rounded"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-2 rounded"
               onClick={() => handleViewDetial(data)}
               disabled={
                 !userEnableFunctions.some(
@@ -760,10 +761,17 @@ const Page = () => {
         "Line Name": job.LINE_NAME,
         Status: (
           <div
-            style={{ backgroundColor: job.STATUS_COLOR }}
-            className="px-4 text-[12px] font-bold py-1 rounded-full text-white shadow-xl ipadmini:text-sm whitespace-nowrap overflow-hidden text-ellipsis select-none"
+            style={{ backgroundColor: job.STATUS_COLOR ,position:'relative'}}
+           // className="px-4 text-[12px] font-bold py-1 rounded-full text-white shadow-xl ipadmini:text-sm whitespace-nowrap overflow-hidden text-ellipsis select-none"
+             className="py-1 select-none rounded-2xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
           >
-            {job.STATUS_NAME ? job.STATUS_NAME : "pending"}
+          {job.STATUS_NAME ? job.STATUS_NAME : "pending"}&nbsp;&nbsp;&nbsp;{  
+                (job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
+                  <div style={{position:'absolute',right:'1px'}}> 
+                         <VerifiedIcon color="white"  />
+                  </div>                  
+                ):""
+              }
           </div>
         ),
 

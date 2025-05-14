@@ -63,7 +63,12 @@ export const POST = async (req) => {
     }
 
     // ค้นหาผู้ส่งข้อมูล
-    const submittedUser = await User.findById(jobData.submittedBy);
+    let submittedUser = await User.findById(jobData.submittedBy);
+    submittedUser.USERNAME="unknown";
+    submittedUser.PASSWORD="unknown";
+
+    //console.log('submittedUser',submittedUser);  
+
     //console.log("job",job);   
     //console.log("process.env.WD_INTRANET_MODE",process.env.WD_INTRANET_MODE);
     if(process.env.NEXT_PUBLIC_AGILE_ACCESS==="true"){

@@ -31,6 +31,12 @@ const Page = ({ searchParams }) => {
   const [commentDetail, setCommentDetail] = useState(null);
   const [showDetail, setShowDetail] = useState(null);
 
+
+  const [wdtagImg_1, setWdtagImg_1] = useState(null);
+  const [wdtagImg_2, setWdtagImg_2] = useState(null);
+  const [preview_1, setPreview_1] = useState(null);
+  const [preview_2, setPreview_2] = useState(null);  
+
   useEffect(() => {
     if (user._id && jobData.Approvers) {
       if (jobData.Approvers.includes(user._id)) {
@@ -48,6 +54,60 @@ const Page = ({ searchParams }) => {
     }
   }, [user, jobData]);
 
+
+  const handleUploadFileToJob = (files,event) => {
+          const file =files ;//event.target.files[0];
+          //setSelectedFile(file);
+          if(event=="fileInput-1"){
+            setPreview_1(URL.createObjectURL(file)); // แสดง preview ของไฟล์
+          }else if(event=="fileInput-2"){
+            setPreview_2(URL.createObjectURL(file)); // แสดง preview ของไฟล์
+          }
+          
+
+          setTimeout(() => {
+            uploadJobPictureToServer(file,event);
+          }, 10);
+  }
+
+  const uploadJobPictureToServer = async (inputFile,selector) => {
+    
+    if (!inputFile) {
+      alert("Please select a file first.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", inputFile);
+    formData.append("job_id", jobData.JobID);
+    formData.append("selector", selector);
+
+    try {
+      const res = await fetch("/api/uploadPicture", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json(); // อ่าน response จาก API
+
+      if (data.result) {
+        if(selector=="fileInput-1"){
+          setWdtagImg_1(data.filePath);
+        }else if(selector=="fileInput-2"){
+          setWdtagImg_2(data.filePath);
+        }
+
+        
+      } else {
+        alert("Failed to upload file. Error " + data.error);
+      }
+    } catch (error) {
+      //console.error(error);
+      alert("An error occurred while uploading the file.");
+    }
+  };
+
+
+
   const toggleJobInfo = () => {
     setIsShowJobInfo(!isShowJobInfo);
   };
@@ -62,7 +122,8 @@ const Page = ({ searchParams }) => {
   };
 
   const handleApprove = async (isApproved, comment = null) => {
-    
+     // alert('Approved');
+     // return;
     var disapprove_reason="";
     if(!isApproved){
        
@@ -235,7 +296,11 @@ const Page = ({ searchParams }) => {
         isShowJobInfo={isShowJobInfo}
         toggleAddComment={toggleAddComment}
         view={view}
+        preview_1={preview_1}
+        preview_2={preview_2}        
         onclicktoShow={handleToShowOnClick}
+        handleUploadFileToJob={handleUploadFileToJob}
+        user={user}
       />
       {jobItemDetail && (
         <ItemInformationModal

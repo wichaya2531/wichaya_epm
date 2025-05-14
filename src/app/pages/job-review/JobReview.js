@@ -11,6 +11,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Img } from "@chakra-ui/react";
 import Swal from "sweetalert2";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const JobForm = ({
   jobData,
@@ -24,8 +26,15 @@ const JobForm = ({
   isShowJobInfo,
   toggleAddComment,
   view,
+  preview_1,
+  preview_2,  
   onclicktoShow,
+  handleUploadFileToJob,
+  user
 }) => {
+
+
+  const [showPanel, setShowPanel] = useState(false);
   //console.log("jobData.=>", jobData);
   //console.log("jobItems.=>", jobItems);
   //console.log(jobData.IMAGE_FILENAME);
@@ -330,35 +339,189 @@ const JobForm = ({
             disabled
           />
         </div>
-        <div></div>
-
         <div className="flex flex-col">
-          <label
-            htmlFor="image-file"
-            className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
-          >Evident before</label>
-          {jobData.IMAGE_FILENAME ? (
-            <img
-              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
-              alt="Job Image"
-              width={200}
-              height={200}
-              onClick={() =>
-                onclicktoShow(
-                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
-                )
-              }
-            />
-          ) : (
-            <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
-          )}
+                      {/* ปุ่ม Hide/Unhide */}
+                      <div
+                        onClick={() => setShowPanel(!showPanel)}
+                        className="cursor-pointer w-full border text-right text-sm ipadmini:text-md font-bold text-gray-800 pb-1 cursor-pointer"
+                        style={{borderRadius:'0.5em'}} 
+                      >
+                        Job Evident &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   {showPanel ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </div>
+                      {
+                        //--------------------------------------------------------->>                        
+                      }
+                      <div className={`${showPanel ? "" : "hidden"}`} style={{border:'1px solid none',position:'relative'}}>
+                          <div className={`flex flex-col`}
+                              style={{border:'1px solid none',position:'relative'}} 
+                          >
+                            {
+                              <label
+                                htmlFor="text"
+                                className=" text-sm ipadmini:text-md font-bold text-gray-600 "
+                              >
+                                &nbsp; Sticker Before {" "}
+                              </label>
+                            }
+
+                            {(
+                              <div 
+                                  className="flex flex-col items-center"
+                                  style={{position:'absolute',border:'1px solid none',right:'5px'}}
+                              >
+                                {/* ซ่อน input อัปโหลดไฟล์ */}
+                                <input
+                                  type="file"
+                                  id="fileInput-1"
+                                  className="hidden"
+                                  onChange={(e) =>
+                                    handleUploadFileToJob(e.target.files[0], "fileInput-1")
+                                  }
+                                  accept="image/*"
+                                />
+
+                                {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+                                    <label
+                                            htmlFor="fileInput-1"
+                                            className="cursor-pointer"
+                                      >
+                                        <img
+                                          src="/assets/images/image.png"
+                                          alt="person"
+                                          width={30}
+                                          height={30}
+                                        />
+                                    </label>
+                                    
+
+                              </div>
+                            )}
+
+                            {/* แสดงตัวอย่างรูปภาพถ้ามี */}
+                            {preview_1 && (
+                              <img src={preview_1} alt="Preview" width={200} className="mt-4" />
+                            )}
+                            {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                            {jobData.IMAGE_FILENAME && (
+                              <img
+                                src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
+                                alt="Preview"
+                                width={200}
+                                className="mt-4"
+                                onClick={() =>
+                                  onclicktoShow(
+                                    `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
+                                  )
+                                }
+                              />
+                            )}
+                          </div>
+
+                          {
+                            //-------------------------------------------------------------------------------------------->>
+                            <p style={{borderBottom:'2px solid gray',padding:'5px'}}></p>  
+                          }    
+
+                            <div className={`flex flex-col `}
+                                style={{borderTop:'1px solid none',position:'relative',paddingTop:'5px'}}  
+                            >
+                              {
+                                <label
+                                  htmlFor="text"
+                                  className="text-sm ipadmini:text-md font-bold text-gray-600"
+                                >
+                                  &nbsp;  Sticker After{" "}
+                                </label>
+                              }
+
+                              {(
+                                <div className="flex flex-col items-center"
+                                    style={{position:'absolute',border:'1px solid none',right:'5px'}}
+                                >
+                                  {/* ซ่อน input อัปโหลดไฟล์ */}
+                                  <input
+                                    type="file"
+                                    id="fileInput-2"
+                                    className="hidden"
+                                    onChange={(e) =>
+                                      handleUploadFileToJob(e.target.files[0], "fileInput-2")
+                                    }
+                                    accept="image/*"
+                                  />
+
+                                  {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+                                  <label
+                                    htmlFor="fileInput-2"
+                                      className="cursor-pointer"
+                                  // className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
+                                  >
+                                        <img
+                                          src="/assets/images/image.png"
+                                          alt="person"
+                                          width={30}
+                                          height={30}
+                                        />
+                                
+                                  </label>
+                                </div>
+                              )}
+
+                              {/* แสดงตัวอย่างรูปภาพถ้ามี */}
+                              {preview_2 && (
+                                <img src={preview_2} alt="Preview" width={200} className="mt-4" />
+                              )}
+                              {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                              {jobData.IMAGE_FILENAME_2 && (
+                                <img
+                                  src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
+                                  alt="Preview"
+                                  width={200}
+                                  className="mt-4"
+                                  onClick={() =>
+                                    onclicktoShow(
+                                      `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
+                                    )
+                                  }
+                                />
+                              )}
+                            </div>  
+                      </div>
+
+                      {
+                        //---------------------------------------------------------->>
+                      }
+        </div>  
+
+        <div className="flex flex-col hidden">
+
+                  <label
+                    htmlFor="image-file"
+                    className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
+                  >Evident before(PM Sticker)</label>
+                  {jobData.IMAGE_FILENAME ? (
+                    <img
+                      src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
+                      alt="Job Image"
+                      width={200}
+                      height={200}
+                      onClick={() =>
+                        onclicktoShow(
+                          `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
+                        )
+                      }
+                    />
+                  ) : (
+                    <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
+                  )}
+
+
+
         </div>
-
-        <div className="flex flex-col">
+        <div className="flex flex-col hidden" >
           <label
             htmlFor="image-file"
             className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
-          > Evident after</label>
+          > Evident after(PM Sticker)</label>
           {jobData.IMAGE_FILENAME_2 ? (
             <img
               src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์

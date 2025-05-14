@@ -12,6 +12,10 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { blue } from "@mui/material/colors";
 import Swal from "sweetalert2";
 import ChatIcon from "@mui/icons-material/Chat";
+import EditNoteIcon from '@mui/icons-material/EditNote';
+
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const JobForm = ({
   jobData,
@@ -36,12 +40,14 @@ const JobForm = ({
   preview_1,
   preview_2,
   onclicktoShow,
-  machineAsLinename
+  machineAsLinename,
+  user
 }) => {
   //view=false;
-//  console.log("jobData",jobData);
-//  console.log("machines",machines);
-  const existsLinenameInMachine = machines.some(machine => machine.wd_tag === jobData.LINE_NAME);
+  //console.log('user',user);
+  console.log("jobData",jobData);
+ // console.log("machines",machines);
+  //const existsLinenameInMachine = machines.some(machine => machine.wd_tag === jobData.LINE_NAME);
   machines.forEach(element => {
           if (element.wd_tag===jobData.LINE_NAME) {
                   //console.log('element',element);
@@ -52,6 +58,9 @@ const JobForm = ({
                   machineName=element.name;
           }
   });
+
+  const [showPanel, setShowPanel] = useState(false);
+
 
   const isPictureRequired = jobData.PICTURE_EVEDENT_REQUIRE;
 
@@ -570,118 +579,171 @@ const JobForm = ({
           )}
         </div>
 
+
+
         <div className="flex flex-col">
-            <div className={`${isPictureRequired ? "" : "hidden"}`}>
-                  
+
+
+            {/* ปุ่ม Hide/Unhide */}
+            <div
+               onClick={() => setShowPanel(!showPanel)}
+               className="cursor-pointer w-full border text-right text-sm ipadmini:text-md font-bold text-gray-800 pb-1 cursor-pointer"
+               style={{borderRadius:'0.5em'}} 
+            >
+              Job Evident &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   {showPanel ? <VisibilityOffIcon /> : <VisibilityIcon />}
+            </div>
+            <div className={`${showPanel ? "" : "hidden"}`} style={{border:'1px solid none',position:'relative'}}>
+
+                      <div className={`flex flex-col `}
+                           style={{border:'1px solid none',position:'relative'}} 
+                      >
+                        {
+                          <label
+                            htmlFor="text"
+                            className=" text-sm ipadmini:text-md font-bold text-gray-600 "
+                          >
+                            &nbsp; Sticker Before {" "}
+                          </label>
+                        }
+
+                        {(
+                          <div 
+                              className="flex flex-col items-center"
+                              style={{position:'absolute',border:'1px solid none',right:'5px'}}
+                          >
+                            {/* ซ่อน input อัปโหลดไฟล์ */}
+                                <input
+                                  type="file"
+                                  id="fileInput-1"
+                                  className="hidden"
+                                  onChange={(e) =>
+                                    handleUploadFileToJob(e.target.files[0], "fileInput-1")
+                                  }
+                                  accept="image/*"
+                                />
+
+                            {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+
+                            {user.role==="Admin Group"?(
+                                  <label
+                                        htmlFor="fileInput-1"
+                                        className="cursor-pointer"
+                                  >
+                                    <img
+                                      src="/assets/images/image.png"
+                                      alt="person"
+                                      width={30}
+                                      height={30}
+                                    />
+                                </label>
+                            ):""}
+                                
+                                
+
+                          </div>
+                        )}
+
+                        {/* แสดงตัวอย่างรูปภาพถ้ามี */}
+                        {preview_1 && (
+                          <img src={preview_1} alt="Preview" width={200} className="mt-4" />
+                        )}
+                        {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                        {jobData.IMAGE_FILENAME && (
+                          <img
+                            src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
+                            alt="Preview"
+                            width={200}
+                            className="mt-4"
+                            onClick={() =>
+                              onclicktoShow(
+                                `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
+                              )
+                            }
+                          />
+                        )}
+                      </div>
+
+                      {
+                        //-------------------------------------------------------------------------------------------->>
+                        <p style={{borderBottom:'2px solid gray',padding:'5px'}}></p>  
+                      }    
+
+                        <div className={`flex flex-col`}
+                             style={{borderTop:'1px solid none',position:'relative',paddingTop:'5px'}}  
+                        >
+                          {
+                            <label
+                              htmlFor="text"
+                              className="text-sm ipadmini:text-md font-bold text-gray-600"
+                            >
+                              &nbsp;  Sticker After{" "}
+                            </label>
+                          }
+
+                          {(
+                            <div className="flex flex-col items-center"
+                                style={{position:'absolute',border:'1px solid none',right:'5px'}}
+                            >
+                              {/* ซ่อน input อัปโหลดไฟล์ */}
+                              <input
+                                type="file"
+                                id="fileInput-2"
+                                className="hidden"
+                                onChange={(e) =>
+                                  handleUploadFileToJob(e.target.files[0], "fileInput-2")
+                                }
+                                accept="image/*"
+                              />
+
+                              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+                                {user.role==="Admin Group"?(
+                                    <label
+                                      htmlFor="fileInput-2"
+                                        className="cursor-pointer"
+                                    // className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
+                                    >
+                                        <img
+                                          src="/assets/images/image.png"
+                                          alt="person"
+                                          width={30}
+                                          height={30}
+                                        />
+                                     </label>
+                                ):""}
+                              
+                            </div>
+                          )}
+
+                          {/* แสดงตัวอย่างรูปภาพถ้ามี */}
+                          {preview_2 && (
+                            <img src={preview_2} alt="Preview" width={200} className="mt-4" />
+                          )}
+                          {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                          {jobData.IMAGE_FILENAME_2 && (
+                            <img
+                              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
+                              alt="Preview"
+                              width={200}
+                              className="mt-4"
+                              onClick={() =>
+                                onclicktoShow(
+                                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
+                                )
+                              }
+                            />
+                          )}
+                        </div>
             </div> 
         </div>
-        <div className={`flex flex-col ${isPictureRequired ? "" : "hidden"}`}>
-          {
+        <div className="flex flex-col">
             <label
-              htmlFor="text"
-              className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
+              htmlFor="text-input"
+              className="text-sm ipadmini:text-md font-bold text-gray-600"
             >
-              &nbsp;&nbsp;&nbsp;&nbsp;Evident Before{" "}
+                    Approve By :<a href="#" style={{color:'blue',textDecorationLine:'underline'}}> {jobData.ApproverName||""}</a>
             </label>
-          }
-
-          {!view && (
-            <div className="flex flex-col items-center">
-              {/* ซ่อน input อัปโหลดไฟล์ */}
-              <input
-                type="file"
-                id="fileInput-1"
-                className="hidden"
-                onChange={(e) =>
-                  handleUploadFileToJob(e.target.files[0], "fileInput-1")
-                }
-                accept="image/*"
-              />
-
-              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
-              <label
-                htmlFor="fileInput-1"
-                className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
-              >
-                <CameraAltIcon />
-                Upload Image
-              </label>
-            </div>
-          )}
-
-          {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-          {preview_1 && (
-            <img src={preview_1} alt="Preview" width={200} className="mt-4" />
-          )}
-          {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-          {jobData.IMAGE_FILENAME && (
-            <img
-              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
-              alt="Preview"
-              width={200}
-              className="mt-4"
-              onClick={() =>
-                onclicktoShow(
-                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
-                )
-              }
-            />
-          )}
         </div>
 
-        <div className={`flex flex-col ${isPictureRequired ? "" : "hidden"}`}>
-          {
-            <label
-              htmlFor="text"
-              className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
-            >
-              &nbsp;&nbsp;&nbsp;&nbsp;Evident After{" "}
-            </label>
-          }
-
-          {!view && (
-            <div className="flex flex-col items-center">
-              {/* ซ่อน input อัปโหลดไฟล์ */}
-              <input
-                type="file"
-                id="fileInput-2"
-                className="hidden"
-                onChange={(e) =>
-                  handleUploadFileToJob(e.target.files[0], "fileInput-2")
-                }
-                accept="image/*"
-              />
-
-              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
-              <label
-                htmlFor="fileInput-2"
-                className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
-              >
-                <CameraAltIcon />
-                Upload Image
-              </label>
-            </div>
-          )}
-
-          {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-          {preview_2 && (
-            <img src={preview_2} alt="Preview" width={200} className="mt-4" />
-          )}
-          {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-          {jobData.IMAGE_FILENAME_2 && (
-            <img
-              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
-              alt="Preview"
-              width={200}
-              className="mt-4"
-              onClick={() =>
-                onclicktoShow(
-                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
-                )
-              }
-            />
-          )}
-        </div>
       </div>
       <hr />
       <div className="flex flex-col gap-8">

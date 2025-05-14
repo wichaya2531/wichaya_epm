@@ -401,6 +401,7 @@ export const POST = async (req, res) => {
           name: job.JOB_NAME,
           activatedBy: activater,
           timeout: job.TIMEOUT,
+          linename:job.LINE_NAME,
         };
 
         // console.log("jobData=>", jobData);

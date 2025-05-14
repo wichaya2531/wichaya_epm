@@ -8,6 +8,7 @@ import { TestLocation } from "@/lib/models/TestLocation";
 import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { JobApproves } from "@/lib/models/JobApprove";
+import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
 
 const getPositionTimeByJobItem = async (jobItemID) => {
   const jobItem = await JobItem.findOne({ JOB_ITEM_TEMPLATE_ID: jobItemID });
@@ -31,17 +32,33 @@ const getGuideInputByJobItem = async (jobItemID) => {
   guideInput = [...new Set(guideInput)];
   return guideInput;
 };
-
 export const dynamic = "force-dynamic";
+
+
+async function getApproverName(user_id) {
+        //console.log('user_id',user_id);
+        try {
+
+                      const userApprove = await User.findOne({
+                        _id: new ObjectId( user_id[0] ),
+                      });
+
+                     //console.log("userApprove ",userApprove);   
+                     return userApprove.EMP_NAME;
+        } catch (error) {
+                //console.log(error);
+        }
+        return "unknown";
+}
+
 export const GET = async (req, res) => {
   await connectToDb();
   const searchParams = req.nextUrl.searchParams;
   const JobID = searchParams.get("job_id");
   
-  
-
 
   //console.log('JobID=>', JobID);
+  
 
   try {
     let machineName;
@@ -94,7 +111,9 @@ export const GET = async (req, res) => {
       SubmittedBy: job.SUBMITTED_BY ? job.SUBMITTED_BY.EMP_NAME : "",
       SubmitedAt: job.SUBMITTED_DATE ? job.SUBMITTED_DATE.toLocaleString() : "",     
       Status: statusName,
+     // Approvers: job.JOB_APPROVERS,
       Approvers: job.JOB_APPROVERS,
+      ApproverName: statusName=="complete"?await getApproverName(job.JOB_APPROVERS):"",      
       DISAPPROVE_REASON:job.DISAPPROVE_REASON||"",
       PICTURE_EVEDENT_REQUIRE:job.PICTURE_EVEDENT_REQUIRE || false ,
     };    
