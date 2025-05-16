@@ -68,7 +68,45 @@ const Page = ({ searchParams }) => {
   const [machineAsLinename, setMachineAsLinename] = useState({
     value:'....',
     label:'Select...'
-});
+  });
+
+
+  useEffect(() => {
+    if ( (!machines || machines.length<1 )&& jobData.length<1) return; // ❗ รอจนกว่าจะมีข้อมูล
+     
+    // ทำสิ่งที่ต้องการเมื่อ myData มีค่าแล้ว
+      //console.log('machines พร้อมแล้ว:', machines);
+      //console.log('jobData',jobData);
+      if(jobData.WD_TAG){
+              handleWdChange({
+                    value:jobData.WD_TAG,
+                    label:jobData.WD_TAG
+              });
+      }else{
+          machines.forEach(element => {
+            // console.log('element',element);
+              if (element.wd_tag===jobData.LINE_NAME) {
+                    // console.log('Yes Found Condition.',element);
+                    //jmp:1 
+                  
+                        handleWdChange({
+                              value:element.wd_tag,
+                              label:element.wd_tag
+                        });
+                    
+                    //  wdtagMatchLinename=true;
+                    //   machineAsLinename={
+                    //     value:element.wd_tag,
+                    //     label:element.wd_tag
+                    //   }
+                    //   machineName=element.name;
+              }
+          });
+      }   
+
+               
+
+  }, [machines,jobData]);
 
 
   //const [message, setMessage] = useState("");....

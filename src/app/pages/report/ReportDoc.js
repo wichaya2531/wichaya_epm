@@ -240,15 +240,21 @@ const ReportDoc = ({
           return updatedWorkgroups;
         });
   };
-  const handleLineNameChange = (lineName) => {
-    setSelectedLineNames((prev) =>
-      prev.includes(lineName)
-        ? prev.filter((item) => item !== lineName)
-        : [...prev, lineName]
-    );
+  
+   const handleLineNameChange = (lineName) => {
+    //console.log('lineName',lineName);  
+    setSelectedLineNames([lineName]);
+    // setSelectedLineNames((prev) =>
+    //   prev.includes(lineName)
+    //     ? prev.filter((item) => item !== lineName)
+    //     : [...prev, lineName]
+    // );
+    //console.log('selectedLineNames',selectedLineNames);
     setSelectedDocNumbers([]);
     setSelectedJobItemNames([]);
   };
+
+
   const handleDocNumberChange = (docNumber) => {
     setSelectedDocNumbers(docNumber);
     setSelectedJobItemNames([]);
@@ -760,7 +766,7 @@ const ReportDoc = ({
         {/* LineNames UI */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            LineNames
+            LineName
           </label>
           <button
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
@@ -770,7 +776,7 @@ const ReportDoc = ({
             disabled={isLoading || selectedWorkgroups.length === 0} // ปิดการใช้งานถ้าไม่มี Workgroups ถูกเลือก
           >
             {selectedLineNames.length > 0
-              ? `Selected ${selectedLineNames.length} LineNames`
+              ? `Selected : ${selectedLineNames[0]}`
               : selectedWorkgroups.length > 0
               ? "Select LineNames"
               : "Select Workgroups first"}
@@ -778,22 +784,24 @@ const ReportDoc = ({
           {isOpen1 && selectedWorkgroups.length > 0 && (
             <div className="absolute bottom-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
               <label className="block p-2 cursor-pointer">
-                <input
-                  type="checkbox"
+                {/* <input
+                  type="radio"
+                  name="rd1"
                   onChange={() => setSelectedLineNames([])}
                   checked={selectedLineNames.length === 0}
-                />
-                All LineNames
+                /> */}
+                Select...
               </label>
               {availableLineNames.map((lineName) => (
                 <label key={lineName} className="block p-2 cursor-pointer">
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="rd1"
                     value={lineName}
                     checked={selectedLineNames.includes(lineName)}
                     onChange={() => handleLineNameChange(lineName)}
                   />
-                  {lineName}
+                  &nbsp;{lineName}
                 </label>
               ))}
             </div>

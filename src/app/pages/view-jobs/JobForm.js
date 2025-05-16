@@ -45,19 +45,44 @@ const JobForm = ({
 }) => {
   //view=false;
   //console.log('user',user);
-  console.log("jobData",jobData);
- // console.log("machines",machines);
+  //console.log('jobData',jobData);
+  //console.log("jobData.WD_TAG",jobData.WD_TAG);
+  // console.log("machines",machines);
   //const existsLinenameInMachine = machines.some(machine => machine.wd_tag === jobData.LINE_NAME);
-  machines.forEach(element => {
-          if (element.wd_tag===jobData.LINE_NAME) {
-                  //console.log('element',element);
-                  machineAsLinename={
-                    value:element.wd_tag,
-                    label:element.wd_tag
-                  }
-                  machineName=element.name;
-          }
-  });
+ 
+ 
+ 
+  //var wdtagMatchLinename=false;
+
+
+
+  
+
+  //   machineAsLinename={
+  //     value:jobData.WD_TAG,
+  //     label:jobData.WD_TAG
+  //   }
+  
+
+  // console.log('jobData',jobData);
+  // console.log('wd tag ตรงกับ line name  ',wdtagMatchLinename);
+  // console.log('linename',jobData.LINE_NAME);
+  // console.log('wd_tag',jobData.WD_TAG);
+  // console.log('machinename',jobData.MachineName);
+
+  
+  //jmp:2
+
+  // if(!wdtagMatchLinename){
+  //         //console.log('OK');
+  //           machineAsLinename={
+  //            value:jobData.WD_TAG,
+  //            label:jobData.WD_TAG
+  //          }
+  // }
+
+
+
 
   const [showPanel, setShowPanel] = useState(false);
 
@@ -502,6 +527,7 @@ const JobForm = ({
             {process.env.NEXT_PUBLIC_LABEL_WD_TAG}
           </label>
           {view ? (
+            /* view mode และมีข้อมูล WD tag อยู่แล้ว */    
             <input
               type="text"
               id="disabled-input"
@@ -510,19 +536,24 @@ const JobForm = ({
               value={jobData.WD_TAG}
               disabled
             />
-          ) : jobData.WD_TAG ? (
-            <Select
-              className="mb-5"
-              options={machines.map((item) => ({
-                value: item.wd_tag,
-                label: item.wd_tag,
-              }))}
-              onChange={(selectedOption) => handleWdChange(selectedOption)}
-              name="wd_tag"
-              placeholder={jobData.WD_TAG}
-              disabled
-            />
-          ) : (
+          )
+          //  : jobData.WD_TAG ? (
+          //   /* edit mode และมีข้อมูล WD tag อยู่แล้ว */    
+          //   <Select
+          //     className="mb-5"
+          //     options={machines.map((item) => ({
+          //       value: item.wd_tag,
+          //       label: item.wd_tag,
+          //     }))}
+               
+          //     onChange={(selectedOption) => handleWdChange(selectedOption)}
+          //     name="wd_tag"
+          //     placeholder={jobData.WD_TAG}
+          //     disabled
+          //   />
+          // ) 
+          : (
+            /* edit mode กรณีที่ไม่มี wd tag */    
             <Select
               className="mb-5"
               options={machines.map((item) => ({
