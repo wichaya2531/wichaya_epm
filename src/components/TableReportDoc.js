@@ -130,6 +130,7 @@ const TableReportDoc = ({
           docNumber: item.docNumber,
           jobItemName: item.jobItemName,
           jobItemTitle: item.jobItemTitle,
+          upper_lower:item.upper_lower,
           month: itemDate.getMonth(),
           year: itemDate.getFullYear(),
           actualValue: item.actualValue,
@@ -174,6 +175,7 @@ const TableReportDoc = ({
         docNumber: item.docNumber,
         jobItemName: item.jobItemName,
         jobItemTitle: item.jobItemTitle,
+        upper_lower:item.upper_lower,
         months: Array(monthsToShow.length).fill(null),
         weeks: Array(weeksToShow.length).fill(null),
         dates: Array(datesToShow.length).fill(null),
@@ -359,22 +361,28 @@ const TableReportDoc = ({
             <tr>
               <th
                 rowSpan={2}
-                className="sticky left-0 z-20 border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+                className="hidden sticky left-0 z-20 border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
               >
                 Doc Number
               </th>
-              <th
+              <th 
                 rowSpan={2}
-                className="sticky left-[100px] z-20 border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+                className="sticky left-[0px] z-20 border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
               >
                 Item Title
               </th>
               <th
                 rowSpan={2}
-                className="sticky left-[220px] z-20 border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+                className="sticky left-[100px] z-20 border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
               >
                 Item Name
               </th>
+              <th
+                rowSpan={2}
+                className="sticky left-[220px] z-20 border px-4 py-3 text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
+              >
+                Upper&nbsp;/&nbsp;Lower
+              </th>              
               {/* แสดงข้อมูลตามประเภท reportType */}
               {reportType === "month" &&
                 monthsToShow.map((monthDate, index) => (
@@ -434,14 +442,17 @@ const TableReportDoc = ({
             {displayedData.length > 0 ? (
               displayedData.map((row, index) => (
                 <tr key={index} className="group">
-                  <td className="sticky left-0 z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-50">
+                  <td className="sticky hidden left-0 z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
                     {row.docNumber}
                   </td>
-                  <td className="sticky left-[100px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-50">
+                  <td className="sticky cursor-default left-[0px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
                     {row.jobItemTitle}
                   </td>
-                  <td className="sticky left-[220px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-50">
+                  <td className="sticky cursor-default left-[100px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
                     {row.jobItemName}
+                  </td>
+                   <td className="sticky cursor-default left-[220px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
+                    {row.upper_lower}
                   </td>
                   {reportType === "month" &&
                     row.months.map((value, monthIndex) => (

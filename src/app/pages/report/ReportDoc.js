@@ -21,6 +21,8 @@ const ReportDoc = ({
   workgroupOfUser,
 }) => {
     
+
+ // console.log('report in reportDoc',report); 
   const [workgroups, setWorkgroups] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
@@ -84,8 +86,13 @@ const ReportDoc = ({
     ]);
     return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)";
   };
+  //let debug=false;
   const groupedDataByLineNameAndWorkgroupAndJobItem = report
     .map((item) => {
+      // if (!debug) {
+      //       debug=true;
+      //       console.log(item);
+      // }
       const updatedAt = new Date(item.jobItemsUpdatedAt);
       if (isNaN(updatedAt.getTime())) {
         console.warn(
@@ -98,6 +105,7 @@ const ReportDoc = ({
         workgroupName: item.WORKGROUP_NAME || "Unknown",
         jobItemName: item.JOB_ITEM_NAME || "Unknown",
         jobItemTitle: item.JOB_ITEM_TITLE || "Unknown",
+        upper_lower:item.UPPER+" / "+item.LOWER || "Unknown",
         x: updatedAt.toISOString(),
         actualValue: item.ACTUAL_VALUE || "Unknown",
         docNumber: item.DOC_NUMBER || "Unknown",
@@ -122,6 +130,7 @@ const ReportDoc = ({
           docNumber: curr.docNumber,
           jobItemName: curr.jobItemName,
           jobItemTitle: curr.jobItemTitle,
+          upper_lower:curr.upper_lower,
           lineName: curr.lineName,
         });
       }
@@ -167,7 +176,9 @@ const ReportDoc = ({
     })
 
     .map((groupKey) => {
+      //console.log('sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]',sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]);
       const [lineName, workgroupName, jobItemName] = groupKey.split("-");
+     
       return {
         label: `${lineName} - ${workgroupName} - ${jobItemName}`,
         data: sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]
@@ -183,6 +194,7 @@ const ReportDoc = ({
             docNumber: item.docNumber,
             jobItemName: item.jobItemName,
             jobItemTitle: item.jobItemTitle,
+            upper_lower:item.upper_lower,
             lineName: item.lineName,
           })),
       };
@@ -334,6 +346,7 @@ const ReportDoc = ({
         "DocNumber",
         "JobItemTitle",
         "JobItemName",
+        "Upper/Lower",
         "Month",
         "Date",
         "Time",
@@ -357,6 +370,7 @@ const ReportDoc = ({
             item.docNumber || "Unknown",
             item.jobItemTitle || "Unknown",
             item.jobItemName || "Unknown",
+            item.UPPER+"/"+item.LOWER || "xxxxxx",
             month, // ชื่อเดือนที่ถูกต้อง
             date,
             time,
@@ -476,6 +490,7 @@ const ReportDoc = ({
           DocNumber: item.docNumber || "Unknown",
           JobItemTitle: item.jobItemTitle || "Unknown",
           JobItemName: item.jobItemName || "Unknown",
+          upper_lower:item.upper_lower || "Unknown",
           Month: months[localDate.getMonth()],
           Date: formattedDate,
           Time: formattedTime,
@@ -551,6 +566,7 @@ const ReportDoc = ({
             DocNumber: item.docNumber || "Unknown",
             JobItemTitle: item.jobItemTitle || "Unknown",
             JobItemName: item.jobItemName || "Unknown",
+            upper_lower:"E",
             Month: month,
             Date: date,
             Time: time,
@@ -570,6 +586,7 @@ const ReportDoc = ({
         "DocNumber",
         "JobItemTitle",
         "JobItemName",
+        "Upper/Lower",
         "Month",
         "Date",
         "Time",
@@ -581,6 +598,7 @@ const ReportDoc = ({
         data.DocNumber,
         data.JobItemTitle,
         data.JobItemName,
+        data.upper_lower,
         data.Month,
         data.Date,
         data.Time,
@@ -863,27 +881,29 @@ const ReportDoc = ({
         </div>
       </div>
       {/* DOC Numbers */}
-      <div className="flex flex-col md:flex-row gap-5 mt-5">
+      <div className="flex flex-col ">
         {/* Section ตัวเลือก DOC Numbers */}
-        <div className="relative w-full md:w-1/4 lg:w-1/6">
+        <div className=" relative w-full pb-4">
           <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
-            <label className="block p-2 cursor-pointer">DOC Numbers</label>
-            {availableDocNumbers.map((docNumber) => (
-              <label key={docNumber} className="block p-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="docNumber"
-                  value={docNumber}
-                  checked={selectedDocNumbers === docNumber}
-                  onChange={() => handleDocNumberChange(docNumber)}
-                />
-                {docNumber}
-              </label>
-            ))}
+            <label className="block p-2 font-semibold">DOC Numbers</label>
+            <select
+              className="w-[250px] p-2 border rounded"
+              value={selectedDocNumbers}
+              onChange={(e) => handleDocNumberChange(e.target.value)}
+            >
+              <option value="">-- Select DOC Number --</option>
+              {availableDocNumbers.map((docNumber) => (
+                <option key={docNumber} value={docNumber}>
+                  {docNumber}
+                </option>
+              ))}
+            </select>
           </div>
+
         </div>
+       
         {/* Section ตาราง */}
-        <div className="w-full md:w-3/4 lg:w-full">
+        <div className="w-full ">
           <TableReportDoc
             filteredData={filteredData}
             startDate={startDate}

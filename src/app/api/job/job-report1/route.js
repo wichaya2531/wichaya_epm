@@ -70,7 +70,9 @@ export const GET = async (req, res) => {
                     JOB_ITEM_NAME: "$jobItems.JOB_ITEM_NAME",
                     JOB_ITEM_TITLE: "$jobItems.JOB_ITEM_TITLE",
                     jobItemsUpdatedAt: "$jobItems.updatedAt",
-                    ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE"
+                    ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
+                    UPPER:"$jobItems.UPPER_SPEC",
+                    LOWER:"$jobItems.LOWER_SPEC",
                   }
                 },
                 {
@@ -197,7 +199,7 @@ export const GET = async (req, res) => {
         item.JOB_ITEM_TITLE &&
         item.DOC_NUMBER &&
         item.ACTUAL_VALUE &&
-        item.jobItemsUpdatedAt
+        item.jobItemsUpdatedAt 
     );
 
     // console.log("Job values after aggregation:", cleanedJobValues);
