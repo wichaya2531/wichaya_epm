@@ -68,25 +68,42 @@ export const GET = async (req, res) => {
                             
                     //console.log('jobs count=',jobs.length);
                     var n=false;    
+                        const dataInJobs = await Promise.all(jobs.map(async (element) => {
+                           
+                                const activateDate_s = new Date(element.createdAt);
+                                const hours = activateDate_s.getHours().toString().padStart(2, '0');
+                                const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
+                                const activationTime = `${hours}:${minutes}`;
 
-                    const dataInJobs = await Promise.all(jobs.map(async (element) => {
-                                    const activateDate_s = new Date(element.createdAt);
-                                    const hours = activateDate_s.getHours().toString().padStart(2, '0');  // แปลงให้เป็น 2 หลัก
-                                    const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
-                                    const activationTime = `${hours}:${minutes}`;
-                                    return{
-                                       
-                                            title:element.LINE_NAME+" : "+element.JOB_NAME+" : "+activationTime,
-                                            job_id:element._id,
-                                            status_name:arr_status[element.JOB_STATUS_ID.toString()].status_name,
-                                            start:element.createdAt,
-                                            end:element.updatedAt,
-                                            color:arr_status[element.JOB_STATUS_ID.toString()].color
-                                        }
-                               
-                                   
-                    }));
+                                const startDate = new Date(element.createdAt);
+                                const endDate = new Date(element.updatedAt);
+
+                                // ถ้า start กับ end ไม่ใช่วันเดียวกัน → set end เป็น 23:59 ของ start
+                                let adjustedEnd = endDate;
+                                if (startDate.toDateString() !== endDate.toDateString()) {
+                                    adjustedEnd = new Date(startDate);
+                                    adjustedEnd.setHours(23, 59, 0, 0); // 23:59:00.000
+                                }
+
+                                return {
+                                    title: element.LINE_NAME + " : " + element.JOB_NAME + " : " + activationTime,
+                                    job_id: element._id,
+                                    status_name: arr_status[element.JOB_STATUS_ID.toString()].status_name,
+                                    start: startDate,
+                                    end: adjustedEnd,
+                                    color: arr_status[element.JOB_STATUS_ID.toString()].color,
+                                    sticker_verify: (element.IMAGE_FILENAME_2 || element.IMAGE_FILENAME)?true:false
+                                };
+                        }));
                     
+                        // dataInJobs.forEach(element => {
+                        //                 if (!element.sticker_verify) {
+                        //                        // console.log('element',element);
+                        //                         n=true;
+                        //                 }
+                        // });
+
+
                    // console.log('dataInJobs count',dataInJobs.length);
 
 

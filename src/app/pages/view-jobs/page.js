@@ -122,15 +122,41 @@ const Page = ({ searchParams }) => {
     });
   };
 
-  const handleToShowOnClick = (item) => {
-    Swal.fire({
-      title: item.title,
-      html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
-      confirmButtonText: "OK",
-      width: "auto",
-      height: "80%",
-    });
-  };
+  // const handleToShowOnClick = (item) => {
+  //   Swal.fire({
+  //     title: item.title,
+  //     html: `<img src="${item}" alt="${item}" style="max-width: 100%; height: auto;" />`,
+  //     confirmButtonText: "OK",
+  //     width: "auto",
+  //     height: "80%",
+  //   });
+  // };
+
+        const handleToShowOnClick = (item) => {
+          Swal.fire({
+            title: item.title,
+            html: `
+              <div style="
+                width: 50vw;
+                height: auto;
+                aspect-ratio: 4 / 3;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+              ">
+                <img src="${item}" alt="${item}" style="
+                  width: 100%;
+                  height: auto;
+                  object-fit: contain;
+                " />
+              </div>
+            `,
+            confirmButtonText: "OK",
+            width: "auto",
+            showCloseButton: true,
+          });
+        };
 
   const updateJobStatusToOngoing = async () => {
     const body = {

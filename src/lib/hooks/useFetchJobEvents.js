@@ -16,7 +16,7 @@ const useFetchJobEvents = (workgroup_id,selectedType,refresh = null) => {
                         try {
                             const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}&type=${selectedType}`, { next: { revalidate: 10 } });
                             const data = await res.json();
-                            //console.log("data5 -> ", data);
+                            //console.log("data5 -> ", data);                            
                             setEvents(data.events);
                             setEventLoading(false);
                         } catch (error) {

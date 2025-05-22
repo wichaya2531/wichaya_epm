@@ -4,6 +4,26 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 import { Workgroup } from "@/lib/models/Workgroup.js";
 import { Job } from "@/lib/models/Job.js";
+import { JobItem } from "@/lib/models/JobItem";
+import { Status } from "@/lib/models/Status.js";
+
+
+
+function addTime(date, hours, minutes) {
+  const newDate = new Date(date);
+  newDate.setHours(newDate.getHours() + hours);
+  newDate.setMinutes(newDate.getMinutes() + minutes);
+  return newDate;
+}
+async function getStatusNameById(status_id) {
+        try {
+                const status=await Status.findById(status_id);
+                //console.log('status',status);
+                return status.status_name;
+        } catch (error) {
+                return "Error";
+        }
+}
 
 
 export const GET = async (req, res) => {
@@ -13,12 +33,20 @@ export const GET = async (req, res) => {
   const searchParams = req.nextUrl.searchParams;
   //console.log('searchParams',searchParams); 
 
-  const startDate =  new Date(searchParams.get('start')); // วันที่เริ่มต้น
-  const endDate = new Date(searchParams.get('end'));   // วันที่สิ้นสุด
-  const workgroup_name =searchParams.get('workgroup');   // กลุ่มงาน
 
+  
+  const startDate = addTime(new Date(searchParams.get('start')), -24,0); // เพิ่ม 7 ชั่วโมง
+
+  const rawEndDate = addTime(new Date(searchParams.get('end')), 23, 59);
+  // const now = new Date();
+  // now.setDate(now.getDate() + 1); // บวก 1 วัน
+  const endDate = rawEndDate;
+  // const endDate = rawEndDate > now ? now : rawEndDate;
+
+  //console.log('startDate',startDate);
+  //console.log('endDate',endDate);
  
-
+  const workgroup_name =searchParams.get('workgroup');   // กลุ่มงาน 
   //console.log('workgroup_name',workgroup_name);
   const workgroupID = await Workgroup.findOne({WORKGROUP_NAME:workgroup_name})||{_id:0};  
 
@@ -53,12 +81,15 @@ export const GET = async (req, res) => {
                 },
                 {
                   $match: {
-                    "jobItems.ACTUAL_VALUE": { $ne: null },
+                  //  "jobItems.ACTUAL_VALUE": { $ne: null },
                     "jobItems.updatedAt": { $ne: null },
                     "LINE_NAME": { $ne: null },
                     "DOC_NUMBER": { $ne: null },
+                    "JOB_STATUS_ID":{ $ne: null },
                     "jobItems.JOB_ITEM_NAME": { $ne: null },
-                    "jobItems.JOB_ITEM_TITLE": { $ne: null }
+                    "jobItems.JOB_ITEM_TITLE": { $ne: null },
+                    //"jobItems.FILE": { $ne: null },
+                    //"jobItems._id": { $ne: null },
                   }
                 },
                 {
@@ -67,12 +98,14 @@ export const GET = async (req, res) => {
                     WORKGROUP_NAME: workgroup_name,
                     LINE_NAME: "$LINE_NAME",
                     DOC_NUMBER: "$DOC_NUMBER",
+                    JOB_STATUS:"$JOB_STATUS_ID",
                     JOB_ITEM_NAME: "$jobItems.JOB_ITEM_NAME",
                     JOB_ITEM_TITLE: "$jobItems.JOB_ITEM_TITLE",
                     jobItemsUpdatedAt: "$jobItems.updatedAt",
                     ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
                     UPPER:"$jobItems.UPPER_SPEC",
                     LOWER:"$jobItems.LOWER_SPEC",
+                    FILE:"$jobItems.IMG_ATTACH",
                   }
                 },
                 {
@@ -188,8 +221,10 @@ export const GET = async (req, res) => {
 
     // // ลบข้อมูลที่ไม่มีค่าหรือ null ออก
     
-    //console.log('jobValues',jobValues);
-
+   //console.log('jobValues count ',jobValues.length);
+   // jobValues.forEach(element => {
+             //   console.log(element._id);
+   // });    
 
     const cleanedJobValues = jobValues.filter(
       (item) =>
@@ -202,13 +237,19 @@ export const GET = async (req, res) => {
         item.jobItemsUpdatedAt 
     );
 
-    // console.log("Job values after aggregation:", cleanedJobValues);
+    //console.log("Job values after aggregation:", cleanedJobValues);
     if (cleanedJobValues.length === 0) {
           //console.log("No data found for the given filters.");
     }
 
-    // console.log('cleanedJobValues',cleanedJobValues); 
+      //getStatusNameById
+     //console.log('cleanedJobValues',cleanedJobValues); 
+     for (let index = 0; index < cleanedJobValues.length; index++) {
+          cleanedJobValues[index].JOB_STATUS=await getStatusNameById(cleanedJobValues[index].JOB_STATUS);
+          //cleanedJobValues[index].FILE=await getAttachImageFromJobItem(cleanedJobValues[index].JOBITEM_ID);
+     } 
 
+    // console.log('cleanedJobValues count ',cleanedJobValues.length); 
     //console.log("get report end ",new Date());
   
     //console.timeEnd("Query Execution Time"); // แสดงเวลาที่ใช้ในการ query    

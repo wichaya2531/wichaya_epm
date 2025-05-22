@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "set NODE_OPTIONS=--max-old-space-size=4096 && next build",
     "start": "set NODE_OPTIONS=--max-old-space-size=4096 && next start",
-    "lint": "next lint",
-    "export": "next export"
+    "lint": "next lint" 
   },
   "dependencies": {
     "@chakra-ui/next-js": "^2.2.0",
@@ -34,6 +33,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-datalabels": "^2.2.0",
     "date-fns": "^3.6.0",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "file-saver": "^2.0.5",

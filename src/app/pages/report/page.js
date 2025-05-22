@@ -22,13 +22,18 @@ const Page = () => {
 
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   // เวลาปัจจุบัน - 3 วัน
+ // console.log('currentDate',currentDate);
   const pastDate = new Date(currentDate);
-  pastDate.setDate(currentDate.getDate() - 3);
+  pastDate.setDate(pastDate.getDate() - 2); // ย้อน 1 วัน
+ // pastDate.setDate(currentDate.getDate());
   const formattedStartDate = pastDate.toISOString().split("T")[0];
   const [startDate, setStartDate] = useState(formattedStartDate);
+
   const pastDate_a = new Date(currentDate);
+  pastDate_a.setDate(pastDate_a.getDate() +1); // ย้อน 1 วัน
   const formattedStartDate_a = pastDate_a.toISOString().split("T")[0];
   const [endDate, setEndDate] = useState(formattedStartDate_a);
+
   const [workgroupSelect, setWorkgroupSelect] = useState(user.workgroup);
   const { report, isLoading } = useFetchReport1(
     refresh,
@@ -51,13 +56,6 @@ const Page = () => {
     // { label: "By activate name", value: "BarChart4" },
   ];
 
-  const handleDateStartFilterChange = (start) => {
-    //alert('OK');
-    setStartDate(start);
-    //setEndDate(end);
-    //console.log("Filtered Start Date:", start);
-    //console.log('Filtered End Date:', end);
-  };
 
   useEffect(() => {
         //setAllLineName([]);
@@ -68,10 +66,22 @@ const Page = () => {
               workgroup:user.workgroup,
               workgroup_id:user.workgroup_id
              }); 
+             setWorkgroupSelect(user.workgroup);
+             //console.log('workgroupSelect',workgroupSelect);
         }
 
   }, [user]);
 
+  const handleDateStartFilterChange = (start) => {
+    //alert('OK');
+   // console.log('old startDate',startDate);   
+   // console.log('start',start);
+    setStartDate(start);
+
+    //setEndDate(end);
+    //console.log("Filtered Start Date:", start);
+    //console.log('Filtered End Date:', end);
+  };
 
   const handleDateEndFilterChange = (end) => {
     //alert('OK');
@@ -81,8 +91,9 @@ const Page = () => {
    // console.log("Filtered End Date:", end);
   };
   const handlePullData = () => {
-    //console.log(workgroupOfUser);
-    //alert(workgroupOfUser.workgroup);
+    //      console.log(workgroupOfUser);
+   // return;
+    //alert(workgroupSelect);
 
     if (workgroupSelect===undefined) {
       setWorkgroupSelect(workgroupOfUser.workgroup);
@@ -156,6 +167,8 @@ const Page = () => {
             onPullData={handlePullData}
             onWorkgroupSelect={handleWorkgroupSelect}
             workgroupOfUser={workgroupOfUser}
+            dateTimeStart={startDate}
+            dateTimeEnd={endDate}
           />
         )}
       </div>

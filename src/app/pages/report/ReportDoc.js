@@ -10,6 +10,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import html2canvas from "html2canvas";
 import TableReportDoc from "@/components/TableReportDoc";
+import { set } from "react-hook-form";
 
 const ReportDoc = ({  
   report,
@@ -19,14 +20,31 @@ const ReportDoc = ({
   onPullData,
   onWorkgroupSelect,
   workgroupOfUser,
+  dateTimeStart,
+  dateTimeEnd,
 }) => {
     
+  // console.log('report Data',report);
+
+  
+  //console.log('workgroupOfUser',workgroupOfUser);
+ 
+  // setSelectedWorkgroups([workgroupOfUser]);
 
  // console.log('report in reportDoc',report); 
   const [workgroups, setWorkgroups] = useState([]);
   const [refresh, setRefresh] = useState(false);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+
+    const onStart = new Date();
+    onStart.setDate(onStart.getDate() - 1); // ย้อน 1 วัน
+    onStart.setHours(0, 0, 0, 0); // ตั้งเวลาเป็น 00:00:00.000
+
+    const onEnd = new Date();
+   // onEnd.setDate(onEnd.getDate() + 1); // ล่วงหน้า 1 วัน
+    onEnd.setHours(23, 59, 59, 999); // ตั้งเวลาเป็น 23:59:59.999
+
+  const [startDate, setStartDate] = useState(new Date(dateTimeStart));
+  const [endDate, setEndDate] = useState(new Date(dateTimeEnd));
   // const { lineNames, workgroupNames } =
   //   useFetchReportWorkgroupLinename(refresh);
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
@@ -86,13 +104,23 @@ const ReportDoc = ({
     ]);
     return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)";
   };
-  //let debug=false;
+
+  //function checkStartAndEnd() {
+     //     console.log('startDate',startDate);
+     //     console.log('endDate',endDate);
+  //}
+
+ //setSelectedWorkgroups([workgroupOfUser]);
+ // console.log('report',report);
+
+ //console.log('startDate',startDate);
+ //console.log('endDate',endDate);
+ // console.log('report',report); 
+
+
+  let debug=false;
   const groupedDataByLineNameAndWorkgroupAndJobItem = report
     .map((item) => {
-      // if (!debug) {
-      //       debug=true;
-      //       console.log(item);
-      // }
       const updatedAt = new Date(item.jobItemsUpdatedAt);
       if (isNaN(updatedAt.getTime())) {
         console.warn(
@@ -109,6 +137,8 @@ const ReportDoc = ({
         x: updatedAt.toISOString(),
         actualValue: item.ACTUAL_VALUE || "Unknown",
         docNumber: item.DOC_NUMBER || "Unknown",
+        Job_status:item.JOB_STATUS || "Unknown",
+        Img_file:item.FILE||"Unknown",
       };
     })
     .filter(Boolean)
@@ -117,6 +147,7 @@ const ReportDoc = ({
       return date >= startDate && date <= endDate;
     })
     .reduce((acc, curr) => {
+      //console.log('curr',curr);
       const groupKey = `${curr.lineName}|${curr.workgroupName}|${curr.jobItemName}`;
       const lineGroup = acc[groupKey] || [];
       const existing = lineGroup.find((item) => item.x === curr.x);
@@ -132,11 +163,16 @@ const ReportDoc = ({
           jobItemTitle: curr.jobItemTitle,
           upper_lower:curr.upper_lower,
           lineName: curr.lineName,
+          Job_status:curr.Job_status,
+          Img_file:curr.Img_file,
         });
       }
       acc[groupKey] = lineGroup;
       return acc;
     }, {});
+
+
+  //console.log('groupedDataByLineNameAndWorkgroupAndJobItem',groupedDataByLineNameAndWorkgroupAndJobItem);
 
   Object.entries(groupedDataByLineNameAndWorkgroupAndJobItem).forEach(
     ([_, data]) => {
@@ -161,6 +197,7 @@ const ReportDoc = ({
   //console.log('sortedDataByLineNameAndWorkgroupAndJobItem',sortedDataByLineNameAndWorkgroupAndJobItem);
   const filteredData = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
     .filter((groupKey) => {
+      //console.log('groupKey1',groupKey);
       const [lineName, workgroupName, jobItemName] = groupKey.split("|");
       return (
         lineName !== "unknown" &&
@@ -173,12 +210,12 @@ const ReportDoc = ({
         (selectedJobItemNames.length === 0 ||
           selectedJobItemNames.includes(jobItemName))
       );
-    })
-
-    .map((groupKey) => {
+    }).map((groupKey) => {
       //console.log('sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]',sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]);
       const [lineName, workgroupName, jobItemName] = groupKey.split("-");
-     
+      //console.log('groupKey2',groupKey);
+    //  console.log('item',item);
+     // console.log('sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]',sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]);
       return {
         label: `${lineName} - ${workgroupName} - ${jobItemName}`,
         data: sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]
@@ -196,11 +233,15 @@ const ReportDoc = ({
             jobItemTitle: item.jobItemTitle,
             upper_lower:item.upper_lower,
             lineName: item.lineName,
+            Job_status:item.Job_status,
+            Img_file:item.Img_file,
           })),
       };
     });
-  // console.log('after filteredData ',filteredData);
-  // เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
+  
+  
+   // console.log('after filteredData ',filteredData);
+  //  เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
   const filteredReportData = report.filter((item) => {
     const updatedAt = new Date(item.jobItemsUpdatedAt);
     return updatedAt >= startDate && updatedAt <= endDate;
@@ -271,20 +312,46 @@ const ReportDoc = ({
     setSelectedDocNumbers(docNumber);
     setSelectedJobItemNames([]);
   };
+
+
+
+
   const filteredValues = (items) =>
     items
       .filter((item) => item && item.trim() !== "" && item !== "Unknown") // กรองค่า
       .sort((a, b) => a.localeCompare(b));
-  const availableLineNames = filteredValues(
-    lineNames.filter((lineName) =>
-      selectedWorkgroups.some((workgroup) =>
-        report.some(
-          (item) =>
-            item.LINE_NAME === lineName && item.WORKGROUP_NAME === workgroup
-        )
-      )
-    )
-  );
+
+  
+  // console.log('report',report);
+  // var LineNamess=new Array();
+  // report.forEach(element => {
+  //       element.LINE_NAME;
+  // });
+
+    const availableLineNames = [...new Set(report.map(element => element.LINE_NAME))];
+
+   
+
+
+  //const availableLineNames =['A','B','C'];
+  //  = filteredValues(
+  //   lineNames.filter((lineName) =>
+  //     selectedWorkgroups.some((workgroup) =>
+  //       report.some(
+  //         (item) =>
+  //           item.LINE_NAME === lineName && item.WORKGROUP_NAME === workgroup
+  //       )
+  //     )
+  //   )
+  // );
+
+  
+  
+  
+  //console.log('availableLineNames',availableLineNames);
+  
+
+
   const availableDocNumbers = filteredValues(
     docNumbers.filter((docNumber) =>
       report.some(
@@ -294,6 +361,7 @@ const ReportDoc = ({
       )
     )
   );
+
   const availableWorkgroups = filteredValues(workgroupNames);
   const exportToPDF = async () => {
     const months = [
@@ -379,6 +447,9 @@ const ReportDoc = ({
           ];
         })
       );
+
+      //console.log('tableRows',tableRows);  
+
 
       if (tableRows.length === 0) {
         alert("ไม่มีข้อมูลสำหรับส่งออก");
@@ -495,7 +566,10 @@ const ReportDoc = ({
           Date: formattedDate,
           Time: formattedTime,
           Shift: shift,
-          ActualValue: item.actualValue ?? "-",
+          ActualValue: item.actualValue ?? "-",    
+          Job_status:item.Job_status,     
+          Img_file:item.Img_file,            
+
         };
       })
     );
@@ -572,6 +646,8 @@ const ReportDoc = ({
             Time: time,
             Shift: shift,
             ActualValue: item.actualValue ?? "-",
+            Job_status:'B',
+            Img_file:item.Img_file,
           };
         })
       );
@@ -636,7 +712,15 @@ const ReportDoc = ({
   };
 
 
+  function pressCheck(b) {
+            alert(b);
+  }
+
   //handleWorkgroupChange(workgroupOfUser.workgroup);
+
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+const maxDateStr = tomorrow.toISOString().split("T")[0];
 
   return (
     <div>
@@ -658,25 +742,17 @@ const ReportDoc = ({
             }*/
             id="start-month"
             value={format(startDate, "yyyy-MM-dd")}
-            // value={
-            //   startDate && !isNaN(startDate.getTime())
-            //     ? format(
-            //         startDate,
-            //         reportType === "month" || reportType === "week"
-            //           ? "yyyy-MM"
-            //           : "yyyy-MM-dd"
-            //       )
-            //     : ""
-            // }
+             max={format(maxDateStr, "yyyy-MM-dd")}  // ✅ จำกัดไม่ให้เลือกวันที่ในอนาคต
+           
             onChange={(e) => {
               onDateStartFilterChange(e.target.value);
               const selectedStartDate = new Date(e.target.value);
               setStartDate(selectedStartDate);
-
+              // checkStartAndEnd(); 
               if (reportType === "date" || reportType === "shift") {
-                setEndDate(selectedStartDate);
+                //setEndDate(selectedStartDate);
               } else {
-                setEndDate(getLastDayOfMonth(selectedStartDate));
+                //setEndDate(getLastDayOfMonth(selectedStartDate));
               }
             }}
             disabled={isLoading}
@@ -700,25 +776,17 @@ const ReportDoc = ({
             // }
             id="end-month"
             value={format(endDate, "yyyy-MM-dd")}
-            /*value={
-              endDate && !isNaN(endDate.getTime())
-                ? format(
-                    endDate,
-                    reportType === "month" || reportType === "week"
-                      ? "yyyy-MM"
-                      : "yyyy-MM-dd"
-                  )
-                : ""
-            }*/
+            max={format(maxDateStr, "yyyy-MM-dd")}  // ✅ จำกัดไม่ให้เลือกวันที่ในอนาคต
+            
             onChange={(e) => {
               onDateEndFilterChange(e.target.value);
               const selectedEndDate = new Date(e.target.value);
               setEndDate(selectedEndDate);
-
+              //checkStartAndEnd();
               if (reportType === "date" || reportType === "shift") {
-                setEndDate(selectedEndDate);
+               // setEndDate(selectedEndDate);
               } else {
-                setEndDate(getLastDayOfMonth(selectedEndDate));
+                //setEndDate(getLastDayOfMonth(selectedEndDate));
               }
             }}
             disabled={isLoading}
@@ -783,32 +851,40 @@ const ReportDoc = ({
 
         {/* LineNames UI */}
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1"
+             
+          >
             LineName
           </label>
-          <button
+          <div
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
-            className={`w-full border border-gray-300 rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
+             //onClick={() => pressCheck(1)}
+            className={`w-full border border-gray-300 cursor-default rounded-md py-2 px-3 text-left bg-white hover:bg-gray-50 focus:outline-none ${
               isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
             }`}
             disabled={isLoading || selectedWorkgroups.length === 0} // ปิดการใช้งานถ้าไม่มี Workgroups ถูกเลือก
           >
             {selectedLineNames.length > 0
-              ? `Selected : ${selectedLineNames[0]}`
-              : selectedWorkgroups.length > 0
-              ? "Select LineNames"
-              : "Select Workgroups first"}
-          </button>
-          {isOpen1 && selectedWorkgroups.length > 0 && (
+              ? `Selected :  ${selectedLineNames[0]}`:"Select......"
+              //: selectedWorkgroups.length > 0
+              //? "Select LineNames"
+              //: "Select Workgroups first"
+              }
+          </div>
+          { isOpen1 && /*selectedWorkgroups.length > 0 &&*/ (
             <div className="absolute bottom-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto w-full z-10 shadow-lg">
-              <label className="block p-2 cursor-pointer">
+              <label className="block p-2 cursor-pointer"
+                 //onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
+                 //onClick={() => pressCheck(2)}
+              >
                 {/* <input
                   type="radio"
                   name="rd1"
                   onChange={() => setSelectedLineNames([])}
                   checked={selectedLineNames.length === 0}
                 /> */}
-                Select...
+
+                Select....
               </label>
               {availableLineNames.map((lineName) => (
                 <label key={lineName} className="block p-2 cursor-pointer">
@@ -868,6 +944,7 @@ const ReportDoc = ({
             <option value="shift">Shift</option>
           </select>
         </div>
+        
         <div className="flex flex-wrap gap-2 mt-4">
           {colorValues.map((value) => (
             <div key={value} className="flex items-center space-x-2">

@@ -15,6 +15,7 @@ import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
+import VerifiedIcon from '@mui/icons-material/Verified';
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
@@ -68,6 +69,17 @@ const Page = () => {
 
   // Define the eventPropGetter function
   const eventPropGetter = (event, start, end, isSelected) => {
+       // const isMonthView = view === 'month';
+       // const sameDay = start.toDateString() === end.toDateString();
+
+       //console.log('event',event);
+
+        // ถ้าอยู่ใน month view และ event ข้ามวัน ให้เปลี่ยน end เป็นวันเดียวกับ start
+       // if (isMonthView && !sameDay) {
+        //  event.end = new Date(start);
+       //   event.end.setHours(start.getHours() + 1); // ให้สิ้นสุดในชั่วโมงเดียวกัน
+       // }
+
     return {
       style: {
         fontSize: "0.8em", // กำหนดขนาดตัวอักษรที่ต้องการ
@@ -111,7 +123,7 @@ const Page = () => {
           confirmButtonText: "OK",
         });
         return;
-      } else if (event.status_name === "waiting for approval") {
+      }/* else if (event.status_name === "waiting for approval") {
         Swal.fire({
           title: "Checklist is waiting for approval",
           text: "You cannot view the Checklist in waiting for approval status",
@@ -119,7 +131,7 @@ const Page = () => {
           confirmButtonText: "OK",
         });
         return;
-      } else if (
+      }*/ else if (
         event.status_name === "new" ||
         event.status_name === "ongoing" ||
         event.status_name === "renew"
@@ -160,7 +172,18 @@ const Page = () => {
   };
 
 
-  
+  const CustomEvent = ({ event }) => {
+  return (
+    <div style={{ display: "flex", alignItems: "center", overflow: "hidden" }}>
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1 }}>
+        {event.title}
+      </span>
+      {event.sticker_verify === true && (
+        <VerifiedIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
+      )}
+    </div>
+  );
+};
 
 
   return (
@@ -341,6 +364,9 @@ const Page = () => {
             eventPropGetter={eventPropGetter}
             dayPropGetter={dayPropGetter}
             onSelectEvent={handleSelectEvent}
+             components={{
+              event: CustomEvent,
+            }}
           />
         </div>
       </div>

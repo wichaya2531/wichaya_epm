@@ -5,6 +5,9 @@ const useFetchReport1 = (refresh,start, end,workgroupSelect) => {
   //console.log('workgroupSelect in useFetchReport',workgroupSelect);
   //console.log('User',user);
 
+  //console.log('start',start);
+  //console.log('end',end);
+
   const [report, setReport] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {      

@@ -1,4 +1,9 @@
+import { ConstructionOutlined } from "@mui/icons-material";
 import React, { useState } from "react";
+import { FaHourglassHalf } from "react-icons/fa"
+import { FaCheckCircle } from "react-icons/fa"; 
+import { FaImage } from "react-icons/fa";        // ไอคอนภาพ
+import Swal from "sweetalert2";
 
 const TableReportDoc = ({
   filteredData,
@@ -28,7 +33,6 @@ const TableReportDoc = ({
   const endYear = endDate ? endDate.getFullYear() : 9999;
 
   //console.log("in TableReportDoc filteredData.", filteredData);
-
   // filteredData,
   // startDate,
   // endDate,
@@ -119,6 +123,7 @@ const TableReportDoc = ({
   }
 
   // สร้าง tableData ที่กรองข้อมูลตามช่วงเวลา
+ // console.log('filteredData',filteredData);
   const tableData = Object.values(filteredData).flatMap((dataset) =>
     dataset.data
       .map((item) => {
@@ -141,6 +146,8 @@ const TableReportDoc = ({
             minute: "2-digit",
           }),
           ampm: ampm,
+          Job_status:item.Job_status,
+          Img_file:item.Img_file,
         };
       })
       .filter((item) => {
@@ -156,6 +163,14 @@ const TableReportDoc = ({
             (week) => item.date >= week.start && item.date <= week.end
           );
         } else if (reportType === "date" || reportType === "shift") {
+          // console.log('datesToShow',datesToShow);
+          // const nn=datesToShow.some(
+          //   (date) =>
+          //     date instanceof Date &&
+          //     date.toISOString().split("T")[0] === item.dateStr
+          // );
+          // console.log('nn',nn);
+
           return datesToShow.some(
             (date) =>
               date instanceof Date &&
@@ -167,9 +182,10 @@ const TableReportDoc = ({
   );
 
   // สร้าง groupedData ตามเงื่อนไขที่กำหนด
+  //console.log('tableData',tableData);
   const groupedData = tableData.reduce((acc, item) => {
     const key = `${item.docNumber}-${item.jobItemName}`;
-
+    //console.log('acc',acc);
     if (!acc[key]) {
       acc[key] = {
         docNumber: item.docNumber,
@@ -205,16 +221,18 @@ const TableReportDoc = ({
         acc[key].weeks[index] = item.actualValue;
       }
     } else if (reportType === "date") {
-      // สำหรับ reportType === "date"
+      //สำหรับ reportType === "date"
       index = datesToShow.findIndex(
         (date) =>
           date instanceof Date &&
           date.toISOString().split("T")[0] === item.dateStr
       );
-      if (index !== -1) {
+      if (index !== -1) { //console.log("");
         acc[key].dates[index] = {
           date: item.dateStr, // เก็บแค่วันที่
           actualValue: item.actualValue, // เก็บ actual value
+          item_status:item.Job_status,
+          Img_file:item.Img_file,
         };
       }
     } else if (reportType === "shift") {
@@ -230,13 +248,17 @@ const TableReportDoc = ({
           time: item.time,
           ampm: item.ampm,
           actualValue: item.actualValue,
+          Img_file:item.Img_file,
         };
       }
     }
+   
     //console.log("item.x (raw):", item.time);
     //console.log("item.x (raw):", item.ampm);
     return acc;
   }, {});
+
+
 
   const formattedData = Object.values(groupedData);
   //console.log('formattedData.',formattedData);
@@ -248,6 +270,9 @@ const TableReportDoc = ({
     startIndex,
     startIndex + rowsPerPage
   );
+
+ // console.log('displayedData',displayedData);
+
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) {
       onPageChange(page);
@@ -296,7 +321,7 @@ const TableReportDoc = ({
   // console.log("endDate: ", endDate);
   // console.log("weeksToShow: ", weeksToShow);
   // console.log("monthsToShow: ", monthsToShow);
-  // console.log("datesToShow: ", datesToShow);
+   //console.log("datesToShow: ", datesToShow);
   // console.log("formattedData: ", formattedData);
   // console.log("reportType: ", reportType);
 
@@ -327,6 +352,33 @@ const TableReportDoc = ({
       return "bg-white"; // ถ้าไม่ใช่ string จะใช้พื้นหลังเป็นสีขาว
     }
   };
+
+
+ const handleToShowOnClick = (item) => {
+          Swal.fire({
+            title: item.title,
+            html: `
+              <div style="
+                width: 50vw;
+                height: auto;
+                aspect-ratio: 4 / 3;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+              ">
+                <img src="${item}" alt="${item}" style="
+                  width: 100%;
+                  height: auto;
+                  object-fit: contain;
+                " />
+              </div>
+            `,
+            confirmButtonText: "OK",
+            width: "auto",
+            showCloseButton: true,
+          });
+        };
 
   return (
     <div className="overflow-x-auto rounded-lg">
@@ -465,31 +517,72 @@ const TableReportDoc = ({
                         {value || "-"}{" "}
                       </td>
                     ))}
-                  {reportType === "week" &&
-                    row.weeks.map((value, weekIndex) => (
-                      <td
-                        key={weekIndex}
-                        className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                          value
-                        )}`}
-                      >
-                        {value !== null && value !== undefined ? value : "-"}{" "}
-                        {/* แสดง "-" ถ้าค่าเป็น null หรือ undefined */}
-                      </td>
-                    ))}
-                  {reportType === "date" &&
-                    row.dates.map((dateData, dateIndex) => {
-                      const value = dateData?.actualValue ?? "-"; // ใช้ค่าของ actualValue ถ้ามี ไม่งั้นใช้ "-"
 
-                      return (
+                  
+                  {reportType === "week" &&
+                     
+                     (
+                      row.weeks.map((value, weekIndex) => (
                         <td
-                          key={dateIndex}
+                          key={weekIndex}
                           className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
                             value
                           )}`}
                         >
-                          {value}
+                          {value !== null && value !== undefined ? value : "-"}{" "}
+                          {/* แสดง "-" ถ้าค่าเป็น null หรือ undefined */}
                         </td>
+                      ))
+                    )
+                    }
+                  {reportType === "date" &&
+                    row.dates.map((dateData, dateIndex) => {
+                      const value = dateData?.actualValue ?? "-"; // ใช้ค่าของ actualValue ถ้ามี ไม่งั้นใช้ "-"
+                      //console.log('dateData',dateData);  
+                      var itemIcon="";
+                      if(dateData?.item_status){
+                              itemIcon=dateData?.item_status; 
+                      }
+                      var imgIcon="";
+                      if(dateData?.item_status){
+                              imgIcon=dateData?.Img_file; 
+                      }
+                      return (
+                           <td
+                              key={dateIndex}
+                              className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(value)}`}
+                            >
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                {value}
+                                {itemIcon=='complete'?(
+                                     <FaCheckCircle style={{ color: 'green', fontSize: '0.85em' }} />
+                                ):itemIcon=='waiting for approval'? (
+                                      <FaHourglassHalf style={{ color: 'orange', fontSize: '0.85em' }} />
+                                ):"" }
+                                {
+                                  imgIcon.length>25?(
+                                        // <FaImage style={{ color: 'green', fontSize: '0.85em' }} />
+                                        <img
+                                            src={`/api/viewPictureItem?imgName=` + imgIcon} // ใช้เพียงชื่อไฟล์
+                                            alt="Preview"
+                                            width={20}
+                                            className="mt-4"
+                                            onClick={() =>
+                                              handleToShowOnClick(
+                                                `/api/viewPictureItem?imgName=` + imgIcon
+                                              )
+                                            }
+                                          />
+                                  ):""
+                                }
+
+                                
+                                
+                                
+                                
+                                { /* { <FaHourglassHalf style={{ color: 'orange', fontSize: '0.85em' }} /> } */}
+                              </span>
+                            </td>
                       );
                     })}
                   {reportType === "shift" &&
