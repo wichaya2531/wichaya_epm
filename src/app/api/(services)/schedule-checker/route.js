@@ -237,13 +237,16 @@ export const POST = async (req, res) => {
         schedulers.ACTIVATE_DATE.toDateString() === now.toDateString() ||
         schedulers.ACTIVATE_DATE < now
       ) {
-        //console.log(" schedulers.jobTemplateCreateID => ", schedulers.JOB_TEMPLATE_CREATE_ID );
+       // console.log(" schedulers.JOB_TEMPLATE_ID => ", schedulers.JOB_TEMPLATE_ID );
         //1 create job
         //1.1 find job template where jobtemplateid = jobtemplateid and jobtemplatecreateid = jobtemplatecreateid
+       // console.log("ค้นหา jobTemplate._id ด้วย scheduler.JOB_TEMPLATE_ID ",schedulers.JOB_TEMPLATE_ID);
         const jobTemplate = await JobTemplate.findOne({
-          JobTemplateCreateID: schedulers.JOB_TEMPLATE_CREATE_ID,
+          //JobTemplateCreateID: schedulers.JOB_TEMPLATE_CREATE_ID,
+          _id:schedulers.JOB_TEMPLATE_ID
         });
 
+        //console.log('jobTemplate ที่ค้นเจอ ',jobTemplate);
         if (!jobTemplate) {
           console.log(
             " Job template not found :" + schedulers.JOB_TEMPLATE_CREATE_ID
@@ -291,7 +294,8 @@ export const POST = async (req, res) => {
         await job.save();
 
         //console.log("Submit job Done=>",job);
-
+        //return NextResponse.json({ status: 200 });  //-->Check
+         
         //  //2 update to jobtemplateactivate
         const jobTemplateActivate = new JobTemplateActivate({
           JobTemplateID: jobTemplate._id,

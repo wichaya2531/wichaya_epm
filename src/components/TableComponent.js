@@ -18,7 +18,7 @@ const TableComponent = ({
 }) => {
   //console.log('disablePageSize',disablePageSize);
   // console.log('headers',headers);
-  // console.log('datas',datas);
+   //console.log('datas',datas);
   // console.log('searchColumn',searchColumn);
   // console.log('filterColumn',filterColumn);
   // console.log('PageSize',PageSize);
@@ -28,6 +28,7 @@ const TableComponent = ({
 
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
+    
     try {
       setPageSize(Number(rowsVisible));
     } catch (error) {}
@@ -166,6 +167,7 @@ const TableComponent = ({
   };
 
   const getRowsVisible = () => {
+    //console.log('document.cookie',document.cookie);
     try {
       const cookies = document.cookie.split(";");
       for (let i = 0; i < cookies.length; i++) {

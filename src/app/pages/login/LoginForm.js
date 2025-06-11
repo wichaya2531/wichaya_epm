@@ -170,8 +170,15 @@ export default function LoginForm() {
           >
             Forgot Password?
           </Link>
+
+
+     
         </div>
+            
       </div>
+      <div className="absolute bottom-1 text-white  right-2 text-gray-500 text-[18px] italic">
+            Rev. 5.29.25.10.03.T
+      </div>   
     </div>
   );
 }

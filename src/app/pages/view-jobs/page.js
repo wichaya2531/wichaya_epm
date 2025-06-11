@@ -70,6 +70,25 @@ const Page = ({ searchParams }) => {
     label:'Select...'
   });
 
+  const setMachineID = (rows) => {
+    try {
+      document.cookie = `machineID=${rows}; path=/; max-age=31536000`; // 1 year
+    } catch (err) {}
+  };
+
+const getMachineID = () => {
+    try {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith("rows=")) {
+          return cookie.substring(5, cookie.length);
+        }
+      }
+    } catch (error) {}
+
+    return "null";
+  };
 
   useEffect(() => {
     if ( (!machines || machines.length<1 )&& jobData.length<1) return; // ❗ รอจนกว่าจะมีข้อมูล
@@ -132,29 +151,39 @@ const Page = ({ searchParams }) => {
   //   });
   // };
 
-        const handleToShowOnClick = (item) => {
+       const handleToShowOnClick = (item) => {
           Swal.fire({
             title: item.title,
             html: `
-              <div style="
-                width: 50vw;
-                height: auto;
-                aspect-ratio: 4 / 3;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                overflow: hidden;
-              ">
-                <img src="${item}" alt="${item}" style="
-                  width: 100%;
-                  height: auto;
-                  object-fit: contain;
-                " />
+              <div style="width: 50vw; height: auto; aspect-ratio: 4 / 3; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                <img id="swal-image" src="${item}" alt="${item}" style="width: 100%; height: auto; object-fit: contain; transition: transform 0.3s ease;" />
+              </div>
+              <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+                <button id="rotate-left" class="swal2-confirm swal2-styled" style="background-color: #3085d6;">⟲</button>
+                <button id="ok-button" class="swal2-confirm swal2-styled" style="background-color: #28a745;">Close</button>
+                <button id="rotate-right" class="swal2-confirm swal2-styled" style="background-color: #3085d6;">⟳</button>
               </div>
             `,
-            confirmButtonText: "OK",
-            width: "auto",
+            showConfirmButton: false,
             showCloseButton: true,
+            width: "auto",
+            didOpen: () => {
+              let rotation = 0;
+
+              document.getElementById("rotate-left").addEventListener("click", () => {
+                rotation -= 90;
+                document.getElementById("swal-image").style.transform = `rotate(${rotation}deg)`;
+              });
+
+              document.getElementById("rotate-right").addEventListener("click", () => {
+                rotation += 90;
+                document.getElementById("swal-image").style.transform = `rotate(${rotation}deg)`;
+              });
+
+              document.getElementById("ok-button").addEventListener("click", () => {
+                Swal.close();
+              });
+            },
           });
         };
 

@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import TableComponent from "@/components/TableComponent";
 import { config } from "@/config/config.js";
 
-const workgroupHeader = ["id","EMP_number", "Email" ,"Name", "Role", "Action"];
-const userHeader = ["id","EMP_number", "Email", "Name", "Role", "Action"];
+const workgroupHeader = ["id","EMP_number", "Email" ,"Name","Username", "Role", "Action"];
+const userHeader = ["id","EMP_number", "Email", "Name", "Username","Role", "Action"];
 
 
 const Page = ({searchParams}) => {
@@ -36,6 +36,7 @@ const Page = ({searchParams}) => {
         throw new Error("Failed to fetch workgroup");
       }
       const workgroupData = await response.json();
+      //console.log('workgroupData',workgroupData);
       setWorkgroup(workgroupData.workgroup);
     } catch (error) {
       console.error(error);
@@ -47,11 +48,12 @@ const Page = ({searchParams}) => {
       const response = await fetch(
         `/api/workgroup/get-users-from-workgroup/${workgroup_id}`, { next: { revalidate: 10 } }
       );
-      console.log("fetchUsersWorkgroup response",response); 
+      //console.log("fetchUsersWorkgroup response",response); 
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
       const usersWorkgroupData = await response.json();
+      console.log('usersWorkgroupData.user',usersWorkgroupData.user);
       setUsersWorkgroup(usersWorkgroupData.users);
 
     } catch (error) {
@@ -65,7 +67,7 @@ const Page = ({searchParams}) => {
         `/api/user/get-users`, { next: { revalidate: 10 } }
       );
 
-      console.log("fetchUsers response",response);  
+     // console.log("fetchUsers response",response);  
 
       if (!response.ok) {
         throw new Error("Failed to fetch users");
@@ -152,6 +154,7 @@ const Page = ({searchParams}) => {
       EMP_number: user.emp_number,
       Email: user.email,
       Name: user.name,
+      Username:user.username,
       Role: user.role,
       action: [
         <span className="pl-4">
@@ -175,6 +178,7 @@ const Page = ({searchParams}) => {
     EMP_number: user.emp_number,
     Email: user.email,
     Name: user.name,
+    Username:user.username,
     Role: user.role,
     action: [
       <span className="pl-4" key={user._id}>

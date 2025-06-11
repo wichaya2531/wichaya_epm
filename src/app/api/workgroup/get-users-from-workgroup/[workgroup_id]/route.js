@@ -37,6 +37,7 @@ export const GET = async (req, {params}) => {
                         emp_number: user.EMP_NUMBER,
                         email: user.EMAIL,
                         name: user.EMP_NAME,
+                        username:user.USERNAME,
                         role: role_name
                         
                     }

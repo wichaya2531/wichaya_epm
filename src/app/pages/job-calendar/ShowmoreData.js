@@ -61,19 +61,29 @@ const ShowmoreData = ({ data, close }) => {
         WebkitScrollbar: "none",
       }}
     >
-      <div className="flex justify-between items-start">
-        <h2 className="text-lg font-semibold text-gray-800">
-          Checklists on {formattedDate}
-        </h2>
-        <IconButton onClick={close} className="absolute top-2 right-2">
-          <CloseIcon />
-        </IconButton>
-      </div>
+
+      <div 
+            id="header-bar"
+            className="sticky top-0 z-10 bg-white"
+            style={{border:'1px solid none',width:'100%',height:'5em',top:'-19px'}}
+      >
+          <div className="flex justify-between items-start">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Checklists on {formattedDate}
+            </h2>
+            <IconButton onClick={close} className="absolute top-2 right-2">
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <div>
+            <li className="text-sm font-semibold text-gray-600">
+              Total Checklists: {events.length}
+            </li>
+          </div>
+      </div>  
       <hr className="border-gray-300 my-4" />
       <ul className="flex flex-col gap-3">
-        <li className="text-sm font-semibold text-gray-600">
-          Total Checklists: {events.length}
-        </li>
+        
         <ul className="flex flex-wrap gap-2">
           {events.map((event, index) => (
             <li key={index} className="flex items-start justify-between">

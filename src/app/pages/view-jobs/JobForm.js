@@ -12,10 +12,15 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { blue } from "@mui/material/colors";
 import Swal from "sweetalert2";
 import ChatIcon from "@mui/icons-material/Chat";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+
 import EditNoteIcon from '@mui/icons-material/EditNote';
 
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
+
+
 
 const JobForm = ({
   jobData,
@@ -71,8 +76,6 @@ const JobForm = ({
   // console.log('machinename',jobData.MachineName);
 
   
-  //jmp:2
-
   // if(!wdtagMatchLinename){
   //         //console.log('OK');
   //           machineAsLinename={
@@ -81,6 +84,48 @@ const JobForm = ({
   //          }
   // }
 
+
+const [isMenuVisible, setIsMenuVisible] = useState(false);
+
+  const [rotation, setRotation] = useState(0);
+  const toggleMenu = () => {
+    setIsMenuVisible((prev) => !prev);
+    setRotation((prev) => prev + 90); // เพิ่มรอบละ 360°
+  };
+
+ const autoFullItems = (dataValue) => {
+      toggleMenu();
+        //setIsMenuVisible((prev) => !prev);
+        //setRotation((prev) => prev + 90); // เพิ่มรอบละ 360°
+         //jmp:1
+        jobItems.forEach(element => {
+                  //console.log('element',element.JobItemID);
+                  try {
+                          document.getElementById(element.JobItemID+"/"+jobData.LINE_NAME).value=dataValue;
+                  } catch (error) {
+                          console.log(error);
+                  }  
+
+                  try {
+                    handleInputChange({ target: { value: dataValue } }, element);
+                  } catch (error) {
+                    console.log(error);
+                  }
+                  
+  
+          })
+      
+
+        // console.log('jobItems',jobItems);
+        //   const updatedJobItems = jobItems.map(item => ({
+        //     ...item,
+        //     ActualValue: "OK"
+        //   }));
+        //   setJobItems(updatedJobItems); // <- สำคัญ
+        //   console.log('jobItems',jobItems);
+  };
+
+   
 
 
 
@@ -777,26 +822,65 @@ const JobForm = ({
 
       </div>
       <hr />
-      <div className="flex flex-col gap-8">
-        <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
-          Checklist Items
-          {isShowJobItem ? (
-            <ArrowDropUpIcon
-              style={{ fontSize: "5rem" }}
-              onClick={toggleJobItem}
-            />
-          ) : (
-            <ArrowDropDownIcon
-              style={{ fontSize: "5rem" }}
-              onClick={toggleJobItem}
-            />
-          )}
-        </h1>
+      <div className="flex flex-col gap-2">
+
+
+        <div style={{position:'relative',border:'1px solid none',display:'inline-block',width:'100%'}}>
+              <div style={{position:'relative',border:'1px solid none',display:'inline-block',width:'20em'}}>
+                <h1 className="text-2xl font-bold text-primary flex items-center cursor-pointer">
+                    Checklist Items
+                    {isShowJobItem ? (
+                      <ArrowDropUpIcon
+                        style={{ fontSize: "5rem" }}
+                        onClick={toggleJobItem}
+                      />
+                    ) : (
+                      <ArrowDropDownIcon
+                        style={{ fontSize: "5rem" }}
+                        onClick={toggleJobItem}
+                      />
+                    )}
+                </h1>          
+              </div>   
+              { !view && (
+                    <div 
+                      onClick={toggleMenu}
+                      className="absolute right-1 inline-block w-8  hover:border-[3px] hover:border-gradient-to-r hover:from-blue-500 hover:to-cyan-400 transition-transform duration-200 hover:scale-125"              
+                    >
+                        <AutorenewIcon
+                          className="text-black text-[32px] transition-transform duration-[5500ms] ease-in-out"
+                          style={{ transform: `rotate(${rotation}deg)` }}
+                        />
+                    </div>
+                  )              
+               }           
+                    
+
+                    {/* แถบเมนูลับ */}
+                    {isMenuVisible && (
+                      <div className="absolute top-10 right-0 bg-white border border-green-500 shadow-lg p-4 rounded-lg w-48">
+                        <p className="text-sm text-gray-800 border-b border-gray-400 cursor-default">***Fill Items***</p>
+                        <ul className="mt-2 space-y-1 text-sm text-gray-600 cursor-default">
+                         <li onClick={() => autoFullItems("Pass")}
+                                className="hover:bg-yellow-100 cursor-pointer px-2 py-1"
+                          >⚙️ All "Pass"</li>
+                         <li onClick={() => autoFullItems("Line not run")}
+                                className="hover:bg-yellow-100 cursor-pointer px-2 py-1"
+                          >⚙️ All "Line not run"</li>
+                        </ul>
+                      </div>
+                    )}
+        </div>                    
+         
+      
         <div
           className={`overflow-x-auto ${
             isShowJobItem ? "" : "hidden"
-          } flex flex-col gap-5`}
+          } flex flex-col gap-1`}
         >
+          {/* <div>
+                    xxxx
+            </div> */}
           <div className="flex flex-wrap gap-2 mt-4">
             {colorValues.map((value) => (
               <div key={value} className="flex items-center space-x-2">
@@ -807,6 +891,7 @@ const JobForm = ({
                 <span className="text-sm text-gray-700">{value}</span>
               </div>
             ))}
+            
           </div>
           <table className="table-auto border-collapse w-full text-sm">
             <thead className="text-center">
@@ -935,6 +1020,7 @@ const JobForm = ({
                             <select
                               className="mb-5"
                               name="item-guide-select"
+                              id={'item-'+item.JobItemID}
                               style={{
                                 padding: "5px",
                                 border: "1px solid green",

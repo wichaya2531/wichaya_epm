@@ -14,7 +14,7 @@ const useFetchWorkgroups = (refresh) => {
         if (!res.ok) throw new Error("Failed to fetch workgroups");
 
         const json = await res.json();
-        console.log("Fetched Workgroups:", json); // ✅ Debugging
+       // console.log("Fetched Workgroups:", json); // ✅ Debugging
 
         if (json && json.workgroups) {
           // ✅ ปรับให้ใช้ WORKGROUP_NAME และ _id

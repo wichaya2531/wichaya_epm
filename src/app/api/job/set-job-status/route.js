@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server.js";
 import { Job } from "@/lib/models/Job.js";
 //import { JobItem } from "@/lib/models/JobItem.js";
-import { Machine } from "@/lib/models/Machine";
-import { Workgroup } from "@/lib/models/Workgroup";
+//import { Machine } from "@/lib/models/Machine";
+//import { Workgroup } from "@/lib/models/Workgroup";
 import { User } from "@/lib/models/User.js";
-import { TestLocation } from "@/lib/models/TestLocation";
+//import { TestLocation } from "@/lib/models/TestLocation";
 import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
-import { JobApproves } from "@/lib/models/JobApprove";
+//import { JobApproves } from "@/lib/models/JobApprove";
+//import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
 
 //export const dynamic = "force-dynamic";
 export const GET = async (req, res) => {
@@ -26,30 +27,36 @@ export const GET = async (req, res) => {
 
    try {  
      const job = await Job.findOne({ _id: JobId });
-     //jobItem.ACTUAL_VALUE = JobItemvalue;
-      const statusAssigned = await Status.findOne({
-             status_name: "complete",
-      });  
-      
-      let submittedUser = await User.findById(userId);
-      submittedUser.USERNAME="unknown";
-      submittedUser.PASSWORD="unknown";
+     if (job) {
+          //jobItem.ACTUAL_VALUE = JobItemvalue;
+            const statusAssigned = await Status.findOne({
+                  status_name: "complete",
+            });  
+            //console.log('statusAssigned',statusAssigned);
 
-      //console.log('statusAssigned',statusAssigned);
+          // console.log('userId',userId);
 
-      job.JOB_STATUS_ID =  statusAssigned._id;
-      job.SUBMITTED_BY = submittedUser;
-      job.SUBMITTED_DATE = new Date();
-     // job.IMAGE_FILENAME = jobData.wdtagImage_1;
-     // job.IMAGE_FILENAME_2 = jobData.wdtagImage_2;
+            let submittedUser = await User.findOne({});
+            submittedUser.EMP_NAME="Auto Machine";
+            submittedUser.USERNAME="unknown";
+            submittedUser.PASSWORD="unknown";
+            //console.log('submittedUser',submittedUser);
+          // console.log('statusAssigned._id',statusAssigned._id); 
+          // console.log('job ',job);
+            job.JOB_STATUS_ID = statusAssigned._id;
+            job.SUBMITTED_BY = submittedUser;
+            job.SUBMITTED_DATE = new Date();
 
-     await job.save();
-
+            //console.log('job before save',job);
+          // job.IMAGE_FILENAME = jobData.wdtagImage_1;
+          // job.IMAGE_FILENAME_2 = jobData.wdtagImage_2;
+           await job.save();
+            return NextResponse.json({
+              status: 200       
+            });
+     }
       return NextResponse.json({
-        status: 200
-        // ,
-        // jobData: jobData,
-        // jobItemData: jobItemData,
+        status: 200,message:'job not found'  
       });
   } catch (err) {
       console.log(err);

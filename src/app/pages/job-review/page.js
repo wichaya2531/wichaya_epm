@@ -201,31 +201,41 @@ const Page = ({ searchParams }) => {
   //   });
   // };
 
-        const handleToShowOnClick = (item) => {
-          Swal.fire({
-            title: item.title,
-            html: `
-              <div style="
-                width: 50vw;
-                height: auto;
-                aspect-ratio: 4 / 3;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                overflow: hidden;
-              ">
-                <img src="${item}" alt="${item}" style="
-                  width: 100%;
-                  height: auto;
-                  object-fit: contain;
-                " />
-              </div>
-            `,
-            confirmButtonText: "OK",
-            width: "auto",
-            showCloseButton: true,
-          });
-        };
+      const handleToShowOnClick = (item) => {
+                Swal.fire({
+                  title: item.title,
+                  html: `
+                    <div style="width: 50vw; height: auto; aspect-ratio: 4 / 3; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                      <img id="swal-image" src="${item}" alt="${item}" style="width: 100%; height: auto; object-fit: contain; transition: transform 0.3s ease;" />
+                    </div>
+                    <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+                      <button id="rotate-left" class="swal2-confirm swal2-styled" style="background-color: #3085d6;">⟲</button>
+                      <button id="ok-button" class="swal2-confirm swal2-styled" style="background-color: #28a745;">Close</button>
+                      <button id="rotate-right" class="swal2-confirm swal2-styled" style="background-color: #3085d6;">⟳</button>
+                    </div>
+                  `,
+                  showConfirmButton: false,
+                  showCloseButton: true,
+                  width: "auto",
+                  didOpen: () => {
+                    let rotation = 0;
+      
+                    document.getElementById("rotate-left").addEventListener("click", () => {
+                      rotation -= 90;
+                      document.getElementById("swal-image").style.transform = `rotate(${rotation}deg)`;
+                    });
+      
+                    document.getElementById("rotate-right").addEventListener("click", () => {
+                      rotation += 90;
+                      document.getElementById("swal-image").style.transform = `rotate(${rotation}deg)`;
+                    });
+      
+                    document.getElementById("ok-button").addEventListener("click", () => {
+                      Swal.close();
+                    });
+                  },
+                });
+              };
 
 
   const handleShowTestMethodDescription = (item) => {
