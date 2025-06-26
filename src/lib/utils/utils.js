@@ -23,13 +23,14 @@ export async function decrypt(input) {
 }
 
 export async function login(prevState, formData) {
+  console.log('use login function !!');
   const username = formData.get("username");
   const password = formData.get("password");
   //const host_link=formData.get("host_link");
 
   //console.log("username:"+username);
   //console.log("link:"+host_link);
-  //return;
+  return;
 
   const res = await fetch(
     process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`,
@@ -67,7 +68,7 @@ export async function logins(prevState, formData) {
 
   //console.log("username:"+username);
   //console.log("link:"+host_link);
-  //return;
+  return;
 
   const res = await fetch(
     process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`,
@@ -208,10 +209,9 @@ export async function sendEmails(emailList, job) {
      
       body: JSON.stringify({
         email: emailString,
-        subject: "New CheckList activated",
+        subject: `${job.linename} : ${job.name} - CheckList activated `,
         body: `
-            You have a new checklist to do.
-            Please check the EPM system for more details.
+            You have a new checklist to do. Please check the EPM system for more details.
             Details:
             Checklist Name : ${job.name}
             Job Line  : ${job.linename}

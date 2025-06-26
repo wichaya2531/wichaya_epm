@@ -8,6 +8,9 @@ import Image from "next/image";
 import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
+
+  //console.log("Hello World",process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`);
+
   const router = useRouter();
   //const [host, setHost]=useState("default");
   const [state, formAction] = useFormState(login, undefined);
@@ -43,6 +46,39 @@ export default function LoginForm() {
 
   };
 
+const Test2PoST = async () => {
+  console.log('use function Test2PoSt');
+  const username="komkrich_k";
+  const password="88888888";
+  const res = await fetch(
+    process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    }
+  );
+
+  const data = await res.json();
+  console.log('data response',data);
+  if (data.status === 200) {
+    document.cookie = `token=${data.token}; path=/;`; // ต้องไม่ใช้ httpOnly
+    if (!data.user.Role) {
+      alert("User is not assigned role.");
+      return;
+    }
+    const path = routing(data.user.Role);
+    const router = useRouter();
+    router.push(path);
+  } else {
+    alert("Wrong credentials. Please try again");
+  }
+};
 
 
   return (
@@ -178,6 +214,9 @@ export default function LoginForm() {
       </div>
       <div className="absolute bottom-1 text-white  right-2 text-gray-500 text-[18px] italic">
             Rev. 5.29.25.10.03.T
+            {/* <div>
+                  <button onClick={Test2PoST}>Test POST</button>
+            </div> */}
       </div>   
     </div>
   );

@@ -150,6 +150,12 @@ export const GET = async (req, res) => {
                             }
                 }); 
 
+                //var newdataAlterSortAZ=new Array();
+              const newdataAlterSortAZ = afterFilter.slice().sort((a, b) => {
+                return a.title.localeCompare(b.title);
+               });
+                
+                //console.log('newdataAlterSortAZ',newdataAlterSortAZ)
 
                 // allData.forEach(element => {
                 //                 if( element.start>new Date('2025-04-25') /*element.status_name!='complete' && element.status_name != 'waiting for approval' */ ){
@@ -158,7 +164,7 @@ export const GET = async (req, res) => {
                 // });            
                 // console.log('allData',allData);
                 //console.timeEnd("fetch-jobs");
-            return NextResponse.json({ status: 200 ,events: afterFilter}); 
+            return NextResponse.json({ status: 200 ,events: newdataAlterSortAZ}); 
         }else{
            // console.time("fetch-jobs");
             let jobTemplates;

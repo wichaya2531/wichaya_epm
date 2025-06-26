@@ -26,6 +26,9 @@ const TableComponent = ({
   // console.log('onPageChange',onPageChange);
   //console.log('TableName',TableName);
 
+
+
+
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
     
@@ -265,9 +268,11 @@ const TableComponent = ({
                 key={item.ID||"x"}
                 className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
-                {Object.keys(item).map((key) => (
-                  <td key={`${item.id}-${key}`} className="px-4 py-3">
-                    {item[key] ? item[key] : "N/A"}
+                {Object.keys(item).map((key,index) => (
+                  <td key={`${item.id}-${key}`} className="px-4 py-3"
+                      style={index===3?{maxWidth:'5em'}:{}} // {{maxWidth:'5em'}}
+                  >
+                    {item[key] ? item[key] : "-"}
                   </td>
                 ))}
               </tr>

@@ -21,7 +21,10 @@ import { toggleButtonClasses } from "@mui/material";
 
 const jobTemplatesHeader = [
   "ID",
-  "Checklist Template Name",
+  "Plan Start",
+  "Plan End",  
+  "Template Name",
+  "Version",
   "Line Name",
   "Created At",
   "Action",
@@ -168,14 +171,17 @@ const Page = () => {
       if (data.status === 200) {
         setJobTemplates(data.jobTemplates);
       }
+      //console.log('active-remove-job template data',data);
+
     } catch (err) {
       console.log("err", err);
     }
     //showInvalidLineNamePopup;
   };
 
-  const onLineNameSelected = async (linenameSelected, dataJobTemplate) => {
-     
+  const onLineNameSelected = async (linenameSelected, dataJobTemplate,event) => {
+   // console.log('object',event);
+   // return;     
     //console.log("before dataJobTemplate=>", dataJobTemplate);
     dataJobTemplate.LINE_NAME = linenameSelected;
     //console.log("after dataJobTemplate=>", dataJobTemplate);
@@ -197,7 +203,13 @@ const Page = () => {
         } catch (error) {}
       } else if (result.dismiss === Swal.DismissReason.cancel) {
       }
+      event.target.value="";
     });
+    
+   
+        
+  
+
   };
 
   function toogleAllLinePanel(b) {
@@ -625,11 +637,16 @@ const Page = () => {
     };
 
     //console.log("allLineNamev=>", allLineName);
-    // console.log("jobTemplate.LINE_NAME=>", jobTemplate.LINE_NAME);
+     //console.log("jobTemplate=>", jobTemplate);
+    const planStart =jobTemplate.onPlanStatus.start ?  new Date(jobTemplate.onPlanStatus.start).toISOString().split('T')[0] : "";
+    const planEnd = jobTemplate.onPlanStatus.end ? new Date(jobTemplate.onPlanStatus.end).toISOString().split('T')[0] : "";
 
     return {
       ID: index + 1,
+      "Plan Start": planStart,
+      "Plan End":planEnd,
       "Checklist Template Name": jobTemplate.JOB_TEMPLATE_NAME,
+      "Version":jobTemplate.CHECKLIST_VERSION,
       "Line Name": jobTemplate.LINE_NAME,
       //  "Line Name": (
       //       <select
@@ -720,13 +737,13 @@ const Page = () => {
               style={{ display: "none" }}
             >
               <center style={{ padding: "5px", border: "1px solid none" }}>
-                <select
+                <select                  
                   onChange={(event) =>
-                    onLineNameSelected(event.target.value, data)
+                    onLineNameSelected(event.target.value, data,event)
                   }
                   style={{ padding: "10px" }}
                 >
-                  <option value="">Select Line Name</option>{" "}
+                  <option value="">Select Line</option>{" "}
                   {/* Option เริ่มต้น */}
                   {allLineName.map((lineName) => (
                     <option key={lineName} value={lineName}>

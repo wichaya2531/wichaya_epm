@@ -48,7 +48,9 @@ const ShowmoreData = ({ data, close }) => {
         viewMode = "false";
       }
       sessionStorage.setItem("viewMode", viewMode);
-      router.push(`/pages/view-jobs?job_id=${event.job_id}`);
+      // router.push(`/pages/view-jobs?job_id=${event.job_id}`);
+       const url = `/pages/view-jobs?job_id=${event.job_id}`;
+       window.open(url, "_blank"); // เปิดหน้าใหม่ในแท็บใหม่
     }
   };
 

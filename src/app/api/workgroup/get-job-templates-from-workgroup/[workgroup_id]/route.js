@@ -3,7 +3,25 @@ import { NextResponse } from 'next/server';
 import { JobTemplate } from "@/lib/models/JobTemplate";
 import { Machine } from "@/lib/models/Machine";
 import { connectToDb } from "@/app/api/mongo/index.js";
+import { Schedule } from "@/lib/models/Schedule.js";
+
 export const dynamic = 'force-dynamic';
+
+
+async function getPlaningInfomation(job_id) {
+     const  scheduals=await Schedule.find({JOB_TEMPLATE_ID: job_id}) ;//.limit(1);
+     const dates = scheduals.map(item => new Date(item.ACTIVATE_DATE));
+
+        const minDate = new Date(Math.min(...dates));
+        const maxDate = new Date(Math.max(...dates));
+
+     //   console.log("📅 น้อยสุด (เริ่มต้น):", minDate);
+     //   console.log("📅 มากสุด (ล่าสุด):", maxDate);
+    // console.log('scheduals',scheduals);
+     return {start:minDate,end:maxDate,schedualCount:dates.length}   
+
+}
+
 export const GET = async (req, {params}) => {
     await connectToDb();
     const { workgroup_id } = params;
@@ -29,7 +47,7 @@ export const GET = async (req, {params}) => {
                 WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
                 createdAt: createdAt,
                 createdAtSort:jobTemplate.createdAt,
-
+                onPlanStatus: await getPlaningInfomation(jobTemplate._id)
             };
         }));
 

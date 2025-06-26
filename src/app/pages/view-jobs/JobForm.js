@@ -55,8 +55,26 @@ const JobForm = ({
   // console.log("machines",machines);
   //const existsLinenameInMachine = machines.some(machine => machine.wd_tag === jobData.LINE_NAME);
  
+  //console.log(' jobData.Name',jobData.Name);
+  //const text = "Test1[TD-123]";
+   var machineNameTrap="";
+  try {
+        machineNameTrap = jobData.Name.match(/\[(.*?)\]/)[1];
+        console.log('machineNameTrap',machineNameTrap);
+        setTimeout(() => {
+                try {
+                        document.getElementById('my-wd-tag-select').value="";
+                } catch (error) {
+                        console.error("error",error);
+                }
+        }, 2000);
+  } catch (error) {
+    
+  }
  
- 
+  // if(machineNameTrap[1]){
+  //       console.log('machineName from trap',machineNameTrap[1]);
+  // }
   //var wdtagMatchLinename=false;
 
 
@@ -601,6 +619,7 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             /* edit mode กรณีที่ไม่มี wd tag */    
             <Select
               className="mb-5"
+              inputId="my-wd-tag-select"   // 👈 ตั้ง id ที่นี่
               options={machines.map((item) => ({
                 value: item.wd_tag,
                 label: item.wd_tag,
@@ -926,12 +945,12 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                   </td>
                   <td className="border px-4 py-2">
                     <div>
-                      Upper{" "}
+                      {process.env.NEXT_PUBLIC_UPPER_SPEC}{" "}
                       <b style={{ color: "red", fontWeight: "1200" }}>↑</b> :{" "}
                       {item.UpperSpec}
                     </div>
                     <div>
-                      Lower{" "}
+                      {process.env.NEXT_PUBLIC_LOWER_SPEC}{" "}
                       <b style={{ color: "blue", fontWeight: "1200" }}>↓</b> :{" "}
                       {item.LowerSpec}
                     </div>
