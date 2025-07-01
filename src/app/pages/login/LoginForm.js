@@ -213,7 +213,7 @@ const Test2PoST = async () => {
             
       </div>
       <div className="absolute bottom-1 text-white  right-2 text-gray-500 text-[18px] italic">
-            Rev. 5.29.25.10.03.T
+            Rev. 6.26.25.22.52.T
             {/* <div>
                   <button onClick={Test2PoST}>Test POST</button>
             </div> */}

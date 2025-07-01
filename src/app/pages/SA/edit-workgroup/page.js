@@ -53,7 +53,7 @@ const Page = ({searchParams}) => {
         throw new Error("Failed to fetch users");
       }
       const usersWorkgroupData = await response.json();
-      console.log('usersWorkgroupData.user',usersWorkgroupData.user);
+      //console.log('usersWorkgroupData.user',usersWorkgroupData.user);
       setUsersWorkgroup(usersWorkgroupData.users);
 
     } catch (error) {

@@ -80,29 +80,50 @@ export const GET = async (req, { params }) => {
     //   })
     // );
 
-    const data = {
-      _id: jobTemplate._id,
-      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
-      AUTHOR_ID: jobTemplate.AUTHOR_ID,
-      JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
-      DOC_NUMBER: jobTemplate.DOC_NUMBER,
-      LINE_NAME: jobTemplate.LINE_NAME,
-      DUE_DATE: jobTemplate.DUE_DATE,
-      CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
-      MACHINE_ID: jobTemplate.MACHINE_ID,
-      MACHINE_NAME: machineName,
-      WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
-      JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
-      TIMEOUT: jobTemplate.TIMEOUT,
-      createdAt: createdAt,
-      ApproverList: usersApprove,
-      NotifyList: usersNotifier,
-      NotifyOverdueList: usersNotifierOverdue,
-      PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
-      AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false,
-      SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION || false
-    };
-
+    // const data = {
+    //   _id: jobTemplate._id,
+    //   JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+    //   AUTHOR_ID: jobTemplate.AUTHOR_ID,
+    //   JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
+    //   DOC_NUMBER: jobTemplate.DOC_NUMBER,
+    //   LINE_NAME: jobTemplate.LINE_NAME,
+    //   DUE_DATE: jobTemplate.DUE_DATE,
+    //   CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
+    //   MACHINE_ID: jobTemplate.MACHINE_ID,
+    //   MACHINE_NAME: machineName,
+    //   WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
+    //   JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+    //   TIMEOUT: jobTemplate.TIMEOUT,
+    //   createdAt: createdAt,
+    //   ApproverList: usersApprove,
+    //   NotifyList: usersNotifier,
+    //   NotifyOverdueList: usersNotifierOverdue,
+    //   PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
+    //   AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false,
+    //   SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION || false
+    // };
+      const data = {
+        _id: jobTemplate._id,
+        JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+        AUTHOR_ID: jobTemplate.AUTHOR_ID,
+        JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
+        DOC_NUMBER: jobTemplate.DOC_NUMBER,
+        LINE_NAME: jobTemplate.LINE_NAME,
+        DUE_DATE: jobTemplate.DUE_DATE,
+        CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
+        MACHINE_ID: jobTemplate.MACHINE_ID,
+        MACHINE_NAME: machineName,
+        WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
+        TIMEOUT: jobTemplate.TIMEOUT,
+        createdAt: createdAt,
+        ApproverList: (usersApprove || []).filter(Boolean),
+        NotifyList: (usersNotifier || []).filter(Boolean),
+        NotifyOverdueList: (usersNotifierOverdue || []).filter(Boolean),
+        PICTURE_EVEDENT_REQUIRE: jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
+        AGILE_SKIP_CHECK: jobTemplate.AGILE_SKIP_CHECK || false,
+        SORT_ITEM_BY_POSITION: jobTemplate.SORT_ITEM_BY_POSITION || false,
+      };
+    //console.log('data',data);
     return NextResponse.json({ status: 200, jobTemplate: data });
   } catch (err) {
     return NextResponse.json({

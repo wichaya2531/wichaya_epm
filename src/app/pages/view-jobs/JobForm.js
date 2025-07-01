@@ -57,20 +57,7 @@ const JobForm = ({
  
   //console.log(' jobData.Name',jobData.Name);
   //const text = "Test1[TD-123]";
-   var machineNameTrap="";
-  try {
-        machineNameTrap = jobData.Name.match(/\[(.*?)\]/)[1];
-        console.log('machineNameTrap',machineNameTrap);
-        setTimeout(() => {
-                try {
-                        document.getElementById('my-wd-tag-select').value="";
-                } catch (error) {
-                        console.error("error",error);
-                }
-        }, 2000);
-  } catch (error) {
-    
-  }
+
  
   // if(machineNameTrap[1]){
   //       console.log('machineName from trap',machineNameTrap[1]);

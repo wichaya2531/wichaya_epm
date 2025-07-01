@@ -16,7 +16,8 @@ const useFetchMachines = (user) => {
     //console.log('user in useFetchMachines',user);
     const fetchMachines = async () => {
       try {
-        const res = await fetch(`/api/machine/get-machines?workgroup_id=${user.workgroup_id}`, {
+          const res = await fetch(`/api/machine/get-machines?workgroup_id=${user.workgroup_id}&filter=${user.job_id}`, {
+          //const res = await fetch(`/api/machine/get-machines?workgroup_id=${user.workgroup_id}`, {
           next: { revalidate: 10 },
         });
         const data = await res.json();

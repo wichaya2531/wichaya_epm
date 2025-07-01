@@ -30,7 +30,7 @@ export async function login(prevState, formData) {
 
   //console.log("username:"+username);
   //console.log("link:"+host_link);
-  return;
+  //return;
 
   const res = await fetch(
     process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`,
@@ -68,7 +68,7 @@ export async function logins(prevState, formData) {
 
   //console.log("username:"+username);
   //console.log("link:"+host_link);
-  return;
+  //return;
 
   const res = await fetch(
     process.env.NEXT_PUBLIC_HOST_LINK + `/api/auth/login`,

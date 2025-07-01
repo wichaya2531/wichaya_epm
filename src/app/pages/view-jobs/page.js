@@ -33,6 +33,7 @@ const Page = ({ searchParams }) => {
   const router = useRouter();
   const job_id = searchParams.job_id;
   const [view, setView] = useState(false);
+  //console.log('job_id',job_id);
   //var view = searchParams.view;  
   //console.log("use Page view-jobs/page.js ",searchParams.view);
   //console.log("process.env.NEXT_PUBLIC_MQT_USERNAME",connectUrl);
@@ -46,7 +47,7 @@ const Page = ({ searchParams }) => {
     machines,
     isLoading: machinesLoading,
     error: machinesError,
-  } = useFetchMachines({workgroup_id:"0"});
+  } = useFetchMachines({workgroup_id:"0",job_id:job_id});
   const { user } = useFetchUser(refresh);
   const [isShowJobInfo, setIsShowJobInfo] = useState(true);
   const [isShowJobItem, setIsShowJobItem] = useState(true);
@@ -464,7 +465,7 @@ const getMachineID = () => {
           }
 
           // ตรวจสอบว่า wd_tag ไม่ว่างเปล่า
-          if (!wdTag) {
+          if (!wdTag || wdTag==='....') {
             Swal.fire({
               title: "Error!",
               text: "Please fill in the "+process.env.NEXT_PUBLIC_LABEL_WD_TAG+".",
@@ -472,6 +473,9 @@ const getMachineID = () => {
             });
             return;
           }
+                    
+          //console.log('wdTag',wdTag);
+          //return;  
 
 
           //console.log("wdtagImg_1",wdtagImg_1);

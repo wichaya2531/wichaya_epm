@@ -171,7 +171,7 @@ const JobsTable = ({ refresh }) => {
           ? new Date(job.createdAt).toLocaleString()
           : "Not Active";
       return {
-        ...(user.role === "Admin Group" && {
+        ...( (user.role === "Admin Group" || user.role === "Owner")  && {
           checkbox: (
             <input
               type="checkbox"

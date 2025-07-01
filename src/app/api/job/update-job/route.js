@@ -78,7 +78,7 @@ export const POST = async (req) => {
         // ปิดไว้เมื่อต้องการทดสอบ local fee
         //console.log(" ตรวจสอบหมายเลขเอกสาร");
         if (latestDocNo.message) {
-          console.log("Doc number error");
+          console.log("Doc number error for "+job.DOC_NUMBER);
           return NextResponse.json({ status: 455, message: latestDocNo.message });
         } else if (job.CHECKLIST_VERSION !== latestDocNo) {
           return NextResponse.json({

@@ -19,45 +19,10 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
 
-const jobTemplatesHeader = [
-  "ID",
-  "Plan Start",
-  "Plan End",  
-  "Template Name",
-  "Version",
-  "Line Name",
-  "Created At",
-  "Action",
-];
 
-const jobsHeader = [
-  "",
-  "ID",
-  "Checklist Name",
-  "Line Name",
-  "Status",
-  "Active",
-  "Activator",
-  "Action",
-];
-
-const enabledFunction = {
-  "activate-job-template": "66389056d81a314967236e07",
-  "remove-job": "6638906bd81a314967236e09",
-};
-
-const statusOptions = [
-  "All",
-  "New",
-  "Ongoing",
-  "Plan",
-  "Waiting for approval",
-  "Complete",
-  "Retake",
-  "Overdue",
-];
 
 const Page = () => {
+
   const [refresh, setRefresh] = useState(false);
   const [jobTemplates, setJobTemplates] = useState([]);
   const [session, setSession] = useState({});
@@ -72,6 +37,47 @@ const Page = () => {
   const [currentPageJob, setCurrentPageJob] = useState(1);
   const [currentPageJobTemplate, setCurrentPageJobTemplate] = useState(1);
 
+  const [showPlanningColumns, setShowPlanningColumns] = useState(false);
+
+   //---------------------------------------------------------------->>
+    const jobTemplatesHeader = [
+      "ID",
+      ...(showPlanningColumns ? ["Plan Start", "Plan End"] : []),
+      "Checklist Template Name",
+      "Version",
+      "Line Name",
+      "Create At",
+      "Action",
+    ];
+
+    const jobsHeader = [
+      "",
+      "ID",
+      "Checklist Name",
+      "Line Name",
+      "Status",
+      "Active",
+      "Activator",
+      "Action",
+    ];
+
+    const enabledFunction = {
+      "activate-job-template": "66389056d81a314967236e07",
+      "remove-job": "6638906bd81a314967236e09",
+    };
+
+    const statusOptions = [
+      "All",
+      "New",
+      "Ongoing",
+      "Plan",
+      "Waiting for approval",
+      "Complete",
+      "Retake",
+      "Overdue",
+    ];
+
+   //------------------------------------------------------------------>>
   const [selectedJobs, setSelectedJobs] = useState([]);
   const handleSelectJob = (jobId) => {
     //console.log("Page handleSelectJob");
@@ -252,6 +258,9 @@ const Page = () => {
       allLinePanel.style.display = "none";
     }
   }
+
+
+
 
   const handleActivate = async (jobTemplateSelectedFromUser) => {
     if (
@@ -628,6 +637,8 @@ const Page = () => {
     }
   };
 
+
+
   const jobTemplatesBody = jobTemplates.map((jobTemplate, index) => {
     const data = {
       jobTemplateID: jobTemplate._id,
@@ -641,25 +652,18 @@ const Page = () => {
     const planStart =jobTemplate.onPlanStatus.start ?  new Date(jobTemplate.onPlanStatus.start).toISOString().split('T')[0] : "";
     const planEnd = jobTemplate.onPlanStatus.end ? new Date(jobTemplate.onPlanStatus.end).toISOString().split('T')[0] : "";
 
-    return {
+
+    const baseRow = {
       ID: index + 1,
-      "Plan Start": planStart,
-      "Plan End":planEnd,
+      ...(showPlanningColumns
+    ? {
+        "Plan Start": planStart,
+        "Plan End": planEnd,
+      }
+    : {}),
       "Checklist Template Name": jobTemplate.JOB_TEMPLATE_NAME,
       "Version":jobTemplate.CHECKLIST_VERSION,
       "Line Name": jobTemplate.LINE_NAME,
-      //  "Line Name": (
-      //       <select
-      //           // onChange={(e) => handleLineNameChange(e.target.value)}
-      //       >
-      //         <option value="">Select Line Name</option> {/* Option เริ่มต้น */}
-      //         {allLineName.map((lineName) => (
-      //           <option key={lineName} value={lineName}>
-      //             {lineName}
-      //           </option>
-      //         ))}
-      //       </select>
-      //     ),
       "Create At": jobTemplate.createdAt,
       Action: (
         <div
@@ -757,6 +761,11 @@ const Page = () => {
         </div>
       ),
     };
+
+
+
+    return baseRow;
+
   });
   //console.log("----------------------------------------------------------");
   const jobsBody =
@@ -928,8 +937,25 @@ const Page = () => {
         />
         WorkGroup: {user?.workgroup}{" "}
       </h1>
-      <div className="mb-4 p-4 bg-white rounded-xl">
-        <h1 className="text-2xl font-bold">Checklist Templates</h1>
+      <div className="mb-4 p-4 bg-white rounded-xl" style={{position:'relative'}}>
+        <h1 className="text-2xl font-bold">Checklist Templates 
+          
+         
+               
+        </h1> 
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  
+           <label className="inline-flex items-center space-x-2 select-none "
+              style={{position:'absolute',right:'5px',top:'5px'}}
+           >
+              <input
+                type="checkbox"
+               checked={showPlanningColumns}
+               onChange={() => setShowPlanningColumns(!showPlanningColumns)}
+                className="form-checkbox"
+              />
+              <span><p>Hide/Show</p>
+                 <p>Columns Plan</p></span>
+             </label>
         <TableComponent
           headers={jobTemplatesHeader}
           datas={jobTemplatesBody}
@@ -937,6 +963,7 @@ const Page = () => {
           searchColumn="Checklist Template Name"
           filterColumn="Line Name"
           //onPageChange={handleOnpageChange}
+
           onPageChange={(page) => setCurrentPageJobTemplate(page)}
           currentPage={currentPageJobTemplate}
         />
