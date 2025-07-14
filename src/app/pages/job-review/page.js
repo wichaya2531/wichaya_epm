@@ -37,7 +37,13 @@ const Page = ({ searchParams }) => {
   const [preview_1, setPreview_1] = useState(null);
   const [preview_2, setPreview_2] = useState(null);  
 
+
+ 
+
   useEffect(() => {
+
+    const viewMode = sessionStorage.getItem("viewMode");
+    
     if (user._id && jobData.Approvers) {
       if (jobData.Approvers.includes(user._id)) {
         setView(false);

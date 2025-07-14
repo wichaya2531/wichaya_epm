@@ -71,6 +71,7 @@ const JobsTable = ({ refresh }) => {
 
   // ฟังก์ชันลบงานที่เลือก
   const handleDeleteSelected = async () => {
+    //alert('Delete');
     if (selectedJobs.length === 0) return;
 
     const result = await Swal.fire({

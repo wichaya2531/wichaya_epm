@@ -642,6 +642,7 @@ const Page = () => {
   const jobTemplatesBody = jobTemplates.map((jobTemplate, index) => {
     const data = {
       jobTemplateID: jobTemplate._id,
+      jobTemplateName:jobTemplate.JOB_TEMPLATE_NAME,
       jobTemplateCreateID: jobTemplate.JobTemplateCreateID,
       ACTIVATER_ID: user._id,
       LINE_NAME: jobTemplate.LINE_NAME,

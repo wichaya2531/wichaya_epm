@@ -26,6 +26,15 @@ export const DELETE = async (req, res) => {
     return NextResponse.json({ status: 400, error: "Invalid job_ids" });
   }
   //console.log("✅ Received job_ids to delete:", job_ids);
+  const isJob=await Job.findById(job_ids);
+  //console.log('find_job',find_job);
+  if (!isJob) {
+        console.log('is schedual',job_ids);
+        const findSchedual=await Schedule.findById(job_ids);
+        console.log('findSchedual',findSchedual);
+
+  }
+
   try {
     await Promise.all(
       job_ids.map(async (job_id) => {

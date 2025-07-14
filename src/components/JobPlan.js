@@ -6,6 +6,7 @@ import HelpIcon from "@mui/icons-material/Help";
 import ChatIcon from "@mui/icons-material/Chat";
 
 const JobPlan = ({ data, onClose, setRefresh }) => {
+ // console.log('job plan',data);
   const [dateType, setDateType] = useState("");
   const [showRecurring, setShowRecurring] = useState(false);
   const [showShiftDate, setshowShiftDate] = useState(false);
@@ -303,11 +304,10 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
         onSubmit={handleSubmit}
       >
       
-        <h1 className="text-2xl font-bold">Set Advance Activation Date  
-        <HelpIcon
+        <h1 className="text-2xl font-bold"><HelpIcon
                     className="text-blue-600"
                     onClick={() => handleHelpButton()}
-        />
+        />Plan : <a id='planing-tag' style={{color:'blue'}}>{data.jobTemplateName}</a>
         
         </h1>
         <div className="flex flex-col gap-2">
@@ -441,6 +441,9 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
+                <option value="2monthly">2Monthly</option>
+                <option value="3monthly">3Monthly</option>
+                <option value="6monthly">6Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>
 

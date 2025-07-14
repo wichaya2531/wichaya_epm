@@ -28,3 +28,23 @@
 .show {
   display: flex;
 }
+
+/* เพิ่มในไฟล์ global.css หรือไฟล์ style ที่ import แล้ว */
+.custom-scroll::-webkit-scrollbar {
+  width: 24px; /* ความกว้างของ scrollbar แนวตั้ง */
+  height: 12px; /* ความสูงของ scrollbar แนวนอน (ถ้ามี) */
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 12px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 12px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

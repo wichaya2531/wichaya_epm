@@ -3,8 +3,11 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
+import VerifiedIcon from '@mui/icons-material/Verified';
 
-const ShowmoreData = ({ data, close }) => {
+
+const ShowmoreData = ({ data, close,showOptionAfterClickEvent }) => {
   const router = useRouter();
   const { events, date } = data;
   const formattedDate = new Date(date).toLocaleDateString();
@@ -12,9 +15,12 @@ const ShowmoreData = ({ data, close }) => {
   //console.log("data", data);
 
   const handleSelectEvent = (event) => {
+    //console.log('use handleSelectEvent click on event');
+    
     if (router) {
       let viewMode = "";
       if (event.status_name === "plan") {
+        close();
         Swal.fire({
           title: "Checklist is in plan status",
           text: "You cannot view the Checklist in plan status",
@@ -25,6 +31,7 @@ const ShowmoreData = ({ data, close }) => {
       } else if (event.status_name === "complete") {
         viewMode = "true";
       } else if (event.status_name === "overdue") {
+        close();
         Swal.fire({
           title: "Checklist is overdue",
           text: "You cannot view the Checklist in overdue status",
@@ -33,6 +40,7 @@ const ShowmoreData = ({ data, close }) => {
         });
         return;
       } else if (event.status_name === "waiting for approval") {
+        close();
         Swal.fire({
           title: "Checklist is waiting for approval",
           text: "You cannot view the Checklist in waiting for approval status",
@@ -86,17 +94,21 @@ const ShowmoreData = ({ data, close }) => {
       <hr className="border-gray-300 my-4" />
       <ul className="flex flex-col gap-3">
         
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap gap-2 overflow-auto max-h-96 custom-scroll">
           {events.map((event, index) => (
             <li key={index} className="flex items-start justify-between">
               <span
                 className="text-sm font-semibold p-3 text-white rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => handleSelectEvent(event)}
+                // onClick={() => handleSelectEvent(event)}
+                onClick={() => showOptionAfterClickEvent(event)}
                 style={{
                   backgroundColor: event.color || "#f0f0f0",
                 }}
               >
                 {event.title}
+                {event.sticker_verify === true && (
+                  <VerifiedIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
+                )}
               </span>
             </li>
           ))}

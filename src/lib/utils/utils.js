@@ -28,6 +28,7 @@ export async function login(prevState, formData) {
   const password = formData.get("password");
   //const host_link=formData.get("host_link");
 
+  console.log('use function login',process.env.NEXT_PUBLIC_HOST_LINK);
   //console.log("username:"+username);
   //console.log("link:"+host_link);
   //return;

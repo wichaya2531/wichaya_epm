@@ -13,6 +13,9 @@ const nextConfig = {
     //     }
     //   ];
     // }
+    //  experimental: {
+    //     serverActions: true, // ✅ ต้องเปิด
+    // }
   };
   
   export default nextConfig;

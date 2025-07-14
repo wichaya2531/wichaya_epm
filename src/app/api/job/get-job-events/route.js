@@ -121,6 +121,7 @@ export const GET = async (req, res) => {
                         const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
                         const activationTime = `${hours}:${minutes}`;
                         return{
+                            _id:element._id,
                             title:element.LINE_NAME+" : "+element.JOB_TEMPLATE_NAME+" : "+activationTime,
                             job_id:element.JOB_TEMPLATE_ID,
                             status_name:element.STATUS,

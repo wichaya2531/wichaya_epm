@@ -58,6 +58,222 @@ const Page = () => {
     setView(newView);
   };
 
+
+
+
+const handleshowOptionAfterClickEvent = async (b) => { 
+        //setDate(newDate);
+            let data_lv1;
+            try {
+              const res = await fetch('/api/job/get-job-event-infomation?job_id='+b.job_id+'&user_id='+user._id+'&user_workgroup_id='+user.workgroup_id); // ✅ รอ fetch ให้เสร็จ
+              data_lv1 = await res.json(); // ✅ รอ parse JSON
+              //console.log('data fetch', data);
+              // setJobInfo(data); // ถ้ามี state
+            } catch (error) {
+              console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error);
+            }
+
+        close();
+            
+            //console.log('data',data);    
+
+            let htmlBtn=``;
+              if(data_lv1.menu.includes('Get')){
+                     htmlBtn+=`<button id="btn-get"   class="swal2-cancel swal2-styled" style="background-color:#FF9800;">Get</button>`;
+              }
+              if(data_lv1.menu.includes('Edit')){
+                     htmlBtn+=`<button id="btn-edit" class="swal2-cancel swal2-styled" style="background-color:#FF9800;">Edit</button>`;
+              }
+              if(data_lv1.menu.includes('View')){
+                     htmlBtn+=`<button id="btn-view" class="swal2-cancel swal2-styled" style="background-color:#2196F3;">View</button>`;
+              }
+              if(data_lv1.menu.includes('Approve')){
+                     htmlBtn+=`<button id="btn-approve" class="swal2-cancel swal2-styled" style="background-color:#FF9800;">Approve</button>`;
+              }
+              if(data_lv1.menu.includes('Move')){
+                     htmlBtn+=`<button id="btn-move" class="swal2-cancel swal2-styled" style="background-color:rgb(143, 138, 138);">Move</button>`;
+              }
+              if(data_lv1.menu.includes('Delete')){
+                     htmlBtn+=`<button id="btn-delete" class="swal2-cancel swal2-styled" style="background-color: #f44336;">Delete</button>`;
+              }
+
+              htmlBtn+=`
+                <button id="btn-cancel" class="swal2-cancel swal2-styled">Cancel</button>
+              `;
+
+
+
+            Swal.fire({
+            title: b.title,
+            text: '',
+            icon: 'info',
+            showConfirmButton: false,
+            html: htmlBtn,
+            didOpen: () => {
+              const popup = Swal.getPopup();
+
+              popup.querySelector('#btn-get')?.addEventListener('click', () => {
+                  sessionStorage.setItem("viewMode", false);
+                  window.open("/pages/view-jobs?job_id=" + b.job_id, "_blank");
+                Swal.close();
+                //console.log('➡️ GET action called for', b);
+              });
+
+              popup.querySelector('#btn-edit')?.addEventListener('click', () => {
+                  sessionStorage.setItem("viewMode", false);
+                  window.open("/pages/view-jobs?job_id=" + b.job_id, "_blank");
+                  Swal.close();
+                //console.log('✏️ EDIT action called for', b);
+              });
+
+              popup.querySelector('#btn-view')?.addEventListener('click', () => {
+                  sessionStorage.setItem("viewMode", true);
+                  window.open("/pages/view-jobs?job_id=" + b.job_id, "_blank");
+                  Swal.close();
+               // console.log('👁 VIEW action called for', b);
+              });
+              popup.querySelector('#btn-approve')?.addEventListener('click', () => {
+                 window.open("/pages/job-review?job_id=" + b.job_id, "_blank");
+                 sessionStorage.setItem("approveMode", true);
+                 Swal.close();
+               // console.log('👁 VIEW action called for', b);
+              });
+
+              popup.querySelector('#btn-move')?.addEventListener('click', () => {
+                Swal.close(); // ปิด popup เดิมก่อน
+                
+                const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD ของวันนี้
+                
+                        Swal.fire({
+                        title: ""+b.title,
+                        html: `
+                          <label for="swal-date">DateTime:</label><br/>
+                          <input type="date" id="swal-date" class="swal2-input" min="${today}">
+                          <input type="time" id="swal-time" class="swal2-input">
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: "Submit",
+                        preConfirm: () => {
+                          const date = document.getElementById("swal-date").value;
+                          const time = document.getElementById("swal-time").value;
+
+                          if (!date) {
+                            Swal.showValidationMessage("กรุณาเลือกวันที่");
+                          }
+
+                          if (!time) {
+                            Swal.showValidationMessage("กรุณาเลือกเวลา");
+                          }
+
+                          return `${date} ${time}`;
+                        }
+                      }).then( async (result) => {
+                        //console.log('result',result);
+
+                        if (result.isConfirmed) {
+                            //console.log('result isConfirmed',result.isConfirmed);
+                              const datetime = result.value; 
+                              try{
+                                //src/app/api/schedual/remove-schedual
+                                    const response = await fetch(`/api/schedual/edit-schedual`, {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                         _id: [b._id],
+                                         datetime:datetime
+                                        }), // ✅ ส่งเป็น array เสมอ
+                                    });                    
+                                    const data = await response.json();
+                                    //console.log('data',data);
+                                    if (data.status === 200) {
+                                              setRefresh(!refresh);
+                                              // ลบสำเร็จ
+                                              return;
+                                    }
+                                    alert(data.message);
+                                    //console.log('data',data);
+                              }catch(err){
+                                      console.error("Error update job:", err); 
+                              }
+
+
+                        }
+                      });
+              });
+
+              popup.querySelector('#btn-delete')?.addEventListener('click', () => {
+                Swal.close();
+                Swal.fire({
+                  title: "Are you sure?",
+                  text: "to delete \" "+b.title+"\"",
+                  icon: "warning",
+                  showCancelButton: true,
+                  confirmButtonText: "Yes, delete it!",
+                  cancelButtonText: "No, cancel!",
+                  reverseButtons: true,
+                }).then(async (result) => {
+                        if (result.isConfirmed) {
+                          if(data_lv1.info.STATUS==='plan'){
+                              try{
+                                    const response = await fetch(`/api/schedual/remove-schedual`, {
+                                      method: "DELETE",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({ _id: [b._id]}), // ✅ ส่งเป็น array เสมอ
+                                    });                    
+                                    const data = await response.json();
+                                    if (data.status === 200) {
+                                              setRefresh(!refresh);
+                                              return;
+                                    }
+                                    alert(data.message);
+                              }catch(err){
+                                      console.error("Error deleting job:", error); 
+                              }
+                          }else{
+                              try{
+                                    const response = await fetch(`/api/job/remove-job`, {
+                                      method: "DELETE",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({ job_ids: [b.job_id]}), // ✅ ส่งเป็น array เสมอ
+                                    });                    
+                                    const data = await response.json();
+                                    if (data.status === 200) {
+                                              setRefresh(!refresh);
+                                              // ลบสำเร็จ
+                                    }
+                                    //console.log('data',data);
+                              }catch(err){
+                                      console.error("Error deleting job:", error); 
+                              }
+                          }
+                          
+
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                          console.log("ยกเลิกการลบ");
+                          
+                        }
+                      });
+               // console.log('👁 VIEW action called for', b);
+              });
+              popup.querySelector('#btn-cancel')?.addEventListener('click', () => {
+                Swal.close();
+                //console.log('❌ Cancelled');
+              });
+            }
+          });
+
+
+
+
+};
+
+
   const handleNavigate = (newDate) => {
     setDate(newDate);
   };
@@ -103,6 +319,11 @@ const Page = () => {
 
   // Define the onSelectEvent function
   const handleSelectEvent = (event) => {
+    //console.log('use handleSelectEvent event',event);
+    handleshowOptionAfterClickEvent(event);
+
+    return ;  
+
     if (router) {
       let viewMode = "";
       if (event.status_name === "plan") {
@@ -380,7 +601,7 @@ const Page = () => {
           className="absolute top-1/2 left-1/2 transform -translate-x-1/4 -translate-y-1/2  max-w-3xl w-full max-h-90vh overflow-y-auto p-4 rounded-lg "
           sx={{ outline: "none" }}
         >
-          <ShowmoreData data={eventData} close={close} />
+          <ShowmoreData data={eventData} close={close}  showOptionAfterClickEvent={handleshowOptionAfterClickEvent}/>
         </Box>
       </Modal>
     </Layout>
