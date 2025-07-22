@@ -48,7 +48,12 @@ const Page = () => {
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
 
+
   //console.log("refresh",refresh);
+
+
+
+
 
   const handleClcik = () => {
     // sendData();

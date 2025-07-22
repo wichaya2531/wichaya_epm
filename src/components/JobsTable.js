@@ -60,6 +60,50 @@ const JobsTable = ({ refresh }) => {
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
+
+
+      // useEffect(() => {
+
+      //   let total_byte_counter=0;
+      //   const interval = setInterval(() => {
+      //     const fetchStream = async (workgroup_id) => {
+      //       try {
+      //         const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
+      //         const reader = res.body?.getReader();
+      //         const decoder = new TextDecoder();
+      //         let buffer = '';
+      //         // Optional: handle streaming data here
+      //         while (true) {
+      //           const { done, value } = await reader.read();
+      //           if (done) break;
+      //           buffer += decoder.decode(value, { stream: true });
+      //           // คุณสามารถแยกข้อมูล JSON แล้ว update state ได้ที่นี่
+      //         }
+
+      //         // ตัวอย่าง: แสดง log ข้อมูลที่อ่านได้
+      //         if (total_byte_counter!=buffer.length) {
+                
+      //         }
+              
+      //             total_byte_counter
+              
+      //         console.log("Received stream:", buffer.length);
+      //       } catch (error) {
+      //         console.error("Stream error:", error);
+      //       }
+      //     };
+
+      //     // เรียกฟังก์ชันและส่ง workgroup_id ที่คุณมี
+      //     if (user?.workgroup_id) {
+      //       fetchStream(user.workgroup_id);
+      //     }
+      //   }, 5000);
+
+      //   return () => clearInterval(interval);
+      // }, [user?.workgroup_id]); // เพิ่ม dependency เพื่อให้แน่ใจว่า user พร้อม
+
+
+
   const handleSelectJob = (jobId) => {
     //console.log("JobTable handleSelectJob");
     setSelectedJobs((prevSelected) =>

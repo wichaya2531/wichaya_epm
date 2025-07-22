@@ -57,7 +57,10 @@ const TableReportDoc = ({
       datesToShow.push(new Date(currentDate)); // เพิ่มวันในช่วงที่เลือก
       currentDate.setDate(currentDate.getDate() + 1); // ไปยังวันถัดไป
     }
+    //console.log('datesToShow',datesToShow);
   }
+
+  //console.log('datesToShow',datesToShow);
 
   // คำนวณสัปดาห์ทั้งหมดในช่วงเวลาที่เลือก
   const getWeeksInRange = (startDate, endDate) => {
@@ -120,6 +123,7 @@ const TableReportDoc = ({
     // ใช้ weeksToShow สำหรับแสดงข้อมูลในรูปแบบสัปดาห์
   } else if (reportType === "date" || reportType === "shift") {
     // ตัวแปร datesToShow จะถูกใช้ในภายหลัง
+    
   }
 
   // สร้าง tableData ที่กรองข้อมูลตามช่วงเวลา
@@ -237,20 +241,36 @@ const TableReportDoc = ({
       }
     } else if (reportType === "shift") {
       // สำหรับ reportType === "shift"
-      index = datesToShow.findIndex(
-        (date) =>
-          date instanceof Date &&
-          date.toISOString().split("T")[0] === item.dateStr
-      );
-      if (index !== -1) {
-        acc[key].dates[index] = {
-          date: item.dateStr,
-          time: item.time,
-          ampm: item.ampm,
-          actualValue: item.actualValue,
-          Img_file:item.Img_file,
-        };
-      }
+          //console.log('item.ampm',item.ampm);
+          index = datesToShow.findIndex(
+            (date) =>
+              date instanceof Date &&
+              date.toISOString().split("T")[0] === item.dateStr
+          );
+              
+          if (index !== -1) {
+            if (!acc[key].dates[index]) {
+              acc[key].dates[index] = {}; // สร้าง object ว่างถ้ายังไม่มี
+            }
+
+            if (item.ampm === "AM") {
+              acc[key].dates[index].date_am = item.dateStr;
+              acc[key].dates[index].time_am = item.time;
+              acc[key].dates[index].ampm_am = item.ampm;
+              acc[key].dates[index].actualValue_am = item.actualValue;
+              acc[key].dates[index].Img_file_am = item.Img_file;
+            } else if (item.ampm === "PM") {
+              acc[key].dates[index].date_pm = item.dateStr;
+              acc[key].dates[index].time_pm = item.time;
+              acc[key].dates[index].ampm_pm = item.ampm;
+              acc[key].dates[index].actualValue_pm = item.actualValue;
+              acc[key].dates[index].Img_file_pm = item.Img_file;
+            }
+          }
+
+
+
+
     }
    
     //console.log("item.x (raw):", item.time);
@@ -597,31 +617,60 @@ const TableReportDoc = ({
                     })}
                   {reportType === "shift" &&
                     datesToShow.map((date, dateIndex) => {
-                      const dateData = row.dates[dateIndex];
 
-                      const time = dateData ? dateData.time : "-";
-                      const ampm = dateData ? dateData.ampm : "-";
-                      const value = dateData ? dateData.actualValue : "-";
+                      const dateData = row.dates[dateIndex];
+                      
+                       //console.log('dateData',dateData);
+                       //const time_am = dateData ? dateData.time_am : "-";
+                       var ampm_am,value_am,ampm_pm,value_pm,amValue,pmValue;
+                       try{
+                          ampm_am = dateData ? dateData.ampm_am : "-";
+                       }catch(err){} 
+                        
+                       try{
+                          value_am = dateData ? dateData.actualValue_am : "-";
+                       }catch(err){} 
+                        
+                       
+                       //const time_pm = dateData ? dateData.time_pm : "-";
+                       try{
+                          ampm_pm = dateData ? dateData.ampm_pm : "-";
+                       }catch(err){} 
+                        
+                       try{
+                            value_pm = dateData ? dateData.actualValue_pm : "-";
+                       }catch(err){} 
+                       
+                        
 
                       // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
-                      const ampmValue = ampm !== "-" ? value : ampm;
-
-                      return (
+                      try{
+                       amValue = ampm_am !== "-" ? value_am : ampm_am;
+                      }catch(err){}
+                      try{
+                           pmValue = ampm_pm !== "-" ? value_pm : ampm_pm;  
+                      }catch(err){}
+                      
+                       //console.log(date+"  # "+ampmValue+" # "+ampm); 
+                       return (
                         <React.Fragment key={dateIndex}>
                           <td
                             key={`time-${dateIndex}`}
                             className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
-                              ampmValue
+                              amValue
                             )}`}
                           >
-                            {ampmValue}{" "}
+                            {amValue}{" "}
                             {/* แสดงค่า ampm ที่ถูกแปลงเป็นค่า value หากมีค่า AM หรือ PM */}
                           </td>
                           <td
                             key={`value-${dateIndex}`}
-                            className={`border px-4 py-2 text-sm text-gray-700 text-center align-middle`}
+                            className={`border px-4 py-2 text-sm text-gray-700 ${getBackgroundColor(
+                              pmValue
+                            )}`}
                           >
-                            -
+                           {pmValue}{" "}
+                            {/* แสดงค่า ampm ที่ถูกแปลงเป็นค่า value หากมีค่า AM หรือ PM */}
                           </td>
                         </React.Fragment>
                       );

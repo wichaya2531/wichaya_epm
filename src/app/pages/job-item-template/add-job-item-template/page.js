@@ -414,7 +414,7 @@ const Page = ({ searchParams }) => {
 
       const data = await res.json();
       //console.log("data=>", data);
-      setRefresh((prev) => !prev);      
+      //setRefresh((prev) => !prev);      
       //if (data.result) {
       //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
       //} else {

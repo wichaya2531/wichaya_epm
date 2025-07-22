@@ -240,7 +240,7 @@ const ReportDoc = ({
     });
   
   
-   // console.log('after filteredData ',filteredData);
+    //console.log('after filteredData ',filteredData);
   //  เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
   const filteredReportData = report.filter((item) => {
     const updatedAt = new Date(item.jobItemsUpdatedAt);
@@ -431,6 +431,7 @@ const ReportDoc = ({
             minute: "2-digit",
             hour12: false,
           }); // HH:mm
+          //console.log('dataset',dataset);
           const shift = dateObj.getHours() < 12 ? "AM" : "PM";
           const month = months[dateObj.getMonth()]; // ใช้ months array เพื่อแปลงหมายเลขเดือนเป็นชื่อเดือน
 

@@ -815,6 +815,22 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                             />
                           )}
                         </div>
+            </div>
+             <div
+               className="p-5"
+             >
+              {
+                  jobData.DISAPPROVE_REASON!=""?(<div>
+                     <ChatIcon
+                        className="text-blue-600 size-8 cursor-default"
+                  />
+                  {
+                    " : "+jobData.DISAPPROVE_REASON
+                  }
+                  </div>):""
+
+              }
+                
             </div> 
         </div>
         <div className="flex flex-col">
