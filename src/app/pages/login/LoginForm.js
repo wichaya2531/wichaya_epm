@@ -91,11 +91,11 @@ const Test2PoST = async () => {
       }}
     >
       <div className="w-full absolute top-0 text-white flex items-start p-3 flex flex-col">
-        <Image
-          src="/assets/images/wd-logo-white.jpg"
+        <img
+          src="/assets/card-logo/wd-logo.png"
           alt="wd logo"
-          width={250}
-          height={250}
+          width={200}
+          height={150}
           className=""
         />
       </div>
@@ -213,7 +213,7 @@ const Test2PoST = async () => {
             
       </div>
       <div className="absolute bottom-1 text-white  right-2 text-gray-500 text-[18px] italic">
-            Rev. 6.26.25.22.52.T
+            Rev. 27.07.25.T.17.25
             {/* <div>
                   <button onClick={Test2PoST}>Test POST</button>
             </div> */}

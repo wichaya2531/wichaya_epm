@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import VerifiedIcon from '@mui/icons-material/Verified';
+import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
 
 const jobsActiveHeader = [
   "ID",
@@ -162,7 +163,9 @@ const JobsTable = ({ refresh }) => {
     jobs &&
     jobs.filter((job) => {
       //console.log("filterxxx");
-      //console.log(' job ',job);
+       //if(job.JOB_NAME==='wichaya_for_test'){
+       //     console.log(' job.JOB_NAME ',job);
+       //}     
       // Filter by status
       if (
         filterStatus !== "All" &&
@@ -231,18 +234,39 @@ const JobsTable = ({ refresh }) => {
         Status: (
           <div
             style={{ backgroundColor: statusColor,position:'relative' }}
-            className="py-1 select-none rounded-2xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
+            className="py-1 px-8 select-none rounded-xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
             
           >
             {job.STATUS_NAME ? job.STATUS_NAME : "pending"}&nbsp;&nbsp;&nbsp;{  
-                (job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
+                //(job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
                   <div style={{position:'absolute',right:'1px'}}> 
-                         <VerifiedIcon color="white"  />
+                      {
+                        (job.ITEM_ABNORMAL===1)?(
+                                <NotificationImportantSharpIcon color="white"  />
+                        ):""
+
+                      } 
+                      {
+                        (job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
+                            <VerifiedIcon color="white"  />                  
+                        ):""
+                      }
                   </div>  
-                   
-                
-                ):""
+                                   
+               // ):""                
             }
+
+            {/*
+            job.ITEM_ABNORMAL===false?(
+                <div>
+                    <div style={{position:'absolute',right:'10px',top:'0px'}}> 
+                         <NotificationImportantSharpIcon color="white"  />
+                    </div> 
+                </div>
+            ):""
+              */
+            }
+
           </div>
         ),
         Active: activeValue, // ใช้ activeValue ที่ได้จากการตรวจสอบ
@@ -252,7 +276,7 @@ const JobsTable = ({ refresh }) => {
             {job.STATUS_NAME === "complete" || job.STATUS_NAME === "waiting for approval" ? (
                <div className="flex gap-2 items-center justify-center">
                     
-                    {job.STATUS_NAME === "waiting for approval" && user.emp_number===job.SUBMITTED_BY.EMP_NUMBER  ?(
+                    {job.STATUS_NAME === "waiting for approval" && ( user.emp_number===job.SUBMITTED_BY.EMP_NUMBER || job.PUBLIC_EDIT_IN_WORKGROUP===true)  ?(
                         <div
                           className={`text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer`}
                           onClick={() => {
@@ -273,13 +297,7 @@ const JobsTable = ({ refresh }) => {
                     >
                       View 
                     </div>
-               </div>
-              
-              
-             
-
-
-              
+               </div>              
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
                 {job.STATUS_NAME === "ongoing" ||

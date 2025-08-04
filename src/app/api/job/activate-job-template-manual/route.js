@@ -112,7 +112,7 @@ export const POST = async (req, res) => {
       PICTURE_EVEDENT_REQUIRE : jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
       AGILE_SKIP_CHECK : jobTemplate.AGILE_SKIP_CHECK || false,
       SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
-
+      PUBLIC_EDIT_IN_WORKGROUP: jobTemplate.PUBLIC_EDIT_IN_WORKGROUP||false,
     });
    // console.log("Job->", job);
     await job.save();

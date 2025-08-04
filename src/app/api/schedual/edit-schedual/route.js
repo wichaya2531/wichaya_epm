@@ -10,7 +10,7 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 import { JobApproves } from "@/lib/models/JobApprove";
 import { Schedule } from "@/lib/models/Schedule.js";
 export const POST = async (req) => {
-  console.log('use edit schedual!!');
+  //console.log('use edit schedual!!');
   await connectToDb();
 
   const body = await req.json();

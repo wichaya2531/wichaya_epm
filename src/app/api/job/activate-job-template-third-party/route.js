@@ -132,7 +132,8 @@ export const GET = async (req, res) => {
                 TEST_LOCATION_ID: jobItemTemplate.TEST_LOCATION_ID,
                 JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
                 FILE: jobItemTemplate.FILE,
-                createdAt : jobItemTemplate.createdAt
+                createdAt : jobItemTemplate.createdAt,
+                INPUT_CONVERT:jobItemTemplate.INPUT_CONVERT||false
             });
             await jobItem.save();
             

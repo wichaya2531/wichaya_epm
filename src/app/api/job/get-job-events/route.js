@@ -1,268 +1,157 @@
-import { NextResponse } from 'next/server.js';
-import { JobTemplateActivate } from "@/lib/models/AE/JobTemplateActivate";
-import { JobTemplate } from "@/lib/models/JobTemplate";
-import { Job } from "@/lib/models/Job";
-import { Status } from "@/lib/models/Status";
+import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
-import { Schedule } from "@/lib/models/Schedule.js";
-import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
+import { Job } from "@/lib/models/Job";
+import { JobItem } from "@/lib/models/JobItem";
+import { Schedule } from "@/lib/models/Schedule";
+import { Status } from "@/lib/models/Status";
+import { ObjectId } from "mongodb";
+import { TextEncoder } from "util";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-
-
-function getColorByStatusName(statusName, statusMap) {
-    for (const key in statusMap) {
-        if (statusMap[key].status_name === statusName) {
-            return statusMap[key].color;
-        }
-    }
-    return '#999999'; // สี default ถ้าไม่พบ
+const checkItemAbNormal = async (_id) => {
+   const _jobItem=await JobItem.find({JOB_ID:_id});
+   let _abnormal=false; 
+   _jobItem.forEach(element => {
+          _abnormal|=element.ACTUAL_VALUE==="Fail"?true:false
+   }); 
+   //console.log(_id,_abnormal);
+   return _abnormal;
 }
 
-export const GET = async (req, res) => {
-    await connectToDb();
-    const searchParams = req.nextUrl.searchParams;
 
-    //console.log('searchParams',searchParams);
+export const GET = async (req) => {
+  await connectToDb();
+  const searchParams = req.nextUrl.searchParams;
 
-    let workgroup_id = searchParams.get("workgroup_id");
-    let selectedType = searchParams.get("type");
-    if (selectedType.length<3) {
-        selectedType="all";
-    }
+  const workgroup_id_raw = searchParams.get("workgroup_id");
+  const selectedType = searchParams.get("type") || "all";
+  const selectedPlanType = searchParams.get("plantype") || "all";
 
-    if (workgroup_id=="No workgroup") {
-        workgroup_id="all";
-    }
-   
+  const workgroup_id = workgroup_id_raw === "No workgroup" ? "all" : workgroup_id_raw;
 
-   // console.log('workgroup_id',workgroup_id);
-   // console.log('selectedType',selectedType);
-    
-   // return NextResponse.json({ status: 200, events: "test" });
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        const statusArr = await Status.find();
+        const statusMap = {};
+        statusArr.forEach((s) => {
+          statusMap[s._id] = {
+            status_name: s.status_name,
+            color: s.color,
+          };
+        });
 
+        // Jobs
+        const jobs =
+          workgroup_id === "all"
+            ? await Job.find()
+            : await Job.find({ WORKGROUP_ID: workgroup_id });
 
-    try {
-        let sw_type=true;
-        if (sw_type) {
-                    //console.time("fetch-jobs");         
-                    let arr_status=new Array();
-                    const status=await Status.find();
-                    status.forEach(element => {
-                        arr_status[element._id]={
-                            status_name:element.status_name,
-                            color:element.color
-                        }
-                    });
-                    //console.log('arr_status',arr_status);    
+        for (const job of jobs) {
+          const startDate = new Date(job.createdAt);
+          const endDate = new Date(job.updatedAt);
 
+          const adjustedEnd =
+            startDate.toDateString() !== endDate.toDateString()
+              ? new Date(startDate.setHours(23, 59, 0, 0))
+              : endDate;
 
-                    // Fetch job templates based on workgroup_id
-                    let jobs;
-                    if(workgroup_id=='all'){
-                        jobs=await Job.find();//.limit(1);
-                    }else{
-                        jobs=await Job.find({WORKGROUP_ID:workgroup_id});//.limit(1);
-                    }
-                            
-                    //console.log('jobs count=',jobs.length);
-                    var n=false;    
-                        const dataInJobs = await Promise.all(jobs.map(async (element) => {
-                           
-                                const activateDate_s = new Date(element.createdAt);
-                                const hours = activateDate_s.getHours().toString().padStart(2, '0');
-                                const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
-                                const activationTime = `${hours}:${minutes}`;
-
-                                const startDate = new Date(element.createdAt);
-                                const endDate = new Date(element.updatedAt);
-
-                                // ถ้า start กับ end ไม่ใช่วันเดียวกัน → set end เป็น 23:59 ของ start
-                                let adjustedEnd = endDate;
-                                if (startDate.toDateString() !== endDate.toDateString()) {
-                                    adjustedEnd = new Date(startDate);
-                                    adjustedEnd.setHours(23, 59, 0, 0); // 23:59:00.000
-                                }
-
-                                return {
-                                    title: element.LINE_NAME + " : " + element.JOB_NAME + " : " + activationTime,
-                                    job_id: element._id,
-                                    status_name: arr_status[element.JOB_STATUS_ID.toString()].status_name,
-                                    start: startDate,
-                                    end: adjustedEnd,
-                                    color: arr_status[element.JOB_STATUS_ID.toString()].color,
-                                    sticker_verify: (element.IMAGE_FILENAME_2 || element.IMAGE_FILENAME)?true:false
-                                };
-                        }));
-                    
-                        // dataInJobs.forEach(element => {
-                        //                 if (!element.sticker_verify) {
-                        //                        // console.log('element',element);
-                        //                         n=true;
-                        //                 }
-                        // });
+          const hours = job.createdAt.getHours().toString().padStart(2, "0");
+          const minutes = job.createdAt.getMinutes().toString().padStart(2, "0");
+          const time = `${hours}:${minutes}`;
 
 
-                   // console.log('dataInJobs count',dataInJobs.length);
+          const jobStatus = statusMap[job.JOB_STATUS_ID?.toString()];
+          const event = {
+            job_id:job._id,
+            event_id:job._id,
+            event_type:"job",
+            title: `${job.LINE_NAME} : ${job.JOB_NAME} : ${time}`,
+            status_name: jobStatus?.status_name || "Unknown",
+            start: job.createdAt,
+            end: adjustedEnd,
+            color: jobStatus?.color || "#999999",
+            sticker_verify: !!(job.IMAGE_FILENAME_2 || job.IMAGE_FILENAME),
+            abnormal_item:job.VALUE_ITEM_ABNORMAL||false, //await checkItemAbNormal(job._id)
+            job_name:job.JOB_NAME,
+            line_name:job.LINE_NAME,
+          };
+
+          if (selectedType === "all" || event.status_name === selectedType) {
+            controller.enqueue(encoder.encode(JSON.stringify([event]) + "\n"));
+          }
+        }
 
 
-                    let scheduals;
-                    if(workgroup_id=='all'){
-                        scheduals=await Schedule.find() ;//.limit(1);
-                    }else{
-                        scheduals=await Schedule.find({WORKGROUP_ID: new ObjectId(workgroup_id)}) ;//.limit(1);
-                    }
-                   
-                    const dataInScheduals = await Promise.all(scheduals.map(async (element) => {
-                        //console.log(element);
-                        const activateDate_s = new Date(element.ACTIVATE_DATE);
-                        const hours = activateDate_s.getHours().toString().padStart(2, '0');  // แปลงให้เป็น 2 หลัก
-                        const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
-                        const activationTime = `${hours}:${minutes}`;
-                        return{
-                            _id:element._id,
-                            title:element.LINE_NAME+" : "+element.JOB_TEMPLATE_NAME+" : "+activationTime,
-                            job_id:element.JOB_TEMPLATE_ID,
-                            status_name:element.STATUS,
-                            start:element.ACTIVATE_DATE,
-                            end:element.ACTIVATE_DATE,
-                            color:getColorByStatusName(element.STATUS,arr_status)
-                        }   
 
-                    }));            
+      const query = {};
 
-                //console.log('dataInJobs end proc',dataInJobs); 
-                //console.log('dataInScheduals end proc',dataInScheduals); 
-                const allData = [...dataInJobs, ...dataInScheduals];
-                if (n==false) {
-                        n=true;
-                        //console.log('allData',allData);
-                }
-                 
-                var afterFilter=new Array();
-                allData.forEach(element => {
-                            if (selectedType!='all') {
-                                if(element.status_name==selectedType){
-                                    afterFilter.push(element);       
-                                }
-                            }else{
-                                afterFilter.push(element);
-                            }
-                }); 
+      // กำหนดเงื่อนไข WORKGROUP_ID
+      if (workgroup_id !== "all") {
+        query.WORKGROUP_ID = new ObjectId(workgroup_id);
+      }
 
-                //var newdataAlterSortAZ=new Array();
-              const newdataAlterSortAZ = afterFilter.slice().sort((a, b) => {
-                return a.title.localeCompare(b.title);
-               });
-                
-                //console.log('newdataAlterSortAZ',newdataAlterSortAZ)
+      // กำหนดเงื่อนไข PLAN_TYPE
+      if (selectedPlanType !== "all") {
+        query.PLAN_TYPE = selectedPlanType;
+      }
 
-                // allData.forEach(element => {
-                //                 if( element.start>new Date('2025-04-25') /*element.status_name!='complete' && element.status_name != 'waiting for approval' */ ){
-                //                             console.log(element);
-                //                 }
-                // });            
-                // console.log('allData',allData);
-                //console.timeEnd("fetch-jobs");
-            return NextResponse.json({ status: 200 ,events: newdataAlterSortAZ}); 
-        }else{
-           // console.time("fetch-jobs");
-            let jobTemplates;
-            if (workgroup_id === "all") {
-                jobTemplates = await JobTemplate.find();
-            } else {
-                jobTemplates = await JobTemplate.find({ WORKGROUP_ID: workgroup_id });
-            }
+      // แล้วใช้ query นี้ในการดึงข้อมูล
+      //console.log('query',query);
+      const schedules = await Schedule.find(query);
 
-            // Check if there are no job templates
-            if (jobTemplates.length === 0) {
-                return NextResponse.json({ status: 200, events: [] });
-            }
-            // Fetch job template activations
-            const jobTemplatesActivates = await Promise.all(jobTemplates.map(async (jobTemplate) => {
-                return await JobTemplateActivate.find({ JobTemplateID: jobTemplate._id }).sort({ createdAt: -1 });
-            }));
+        // // Schedules
+        // const schedules =
+        //   workgroup_id === "all"
+        //     ? await Schedule.find()
+        //     : await Schedule.find({ WORKGROUP_ID: new ObjectId(workgroup_id)/*,PLAN_TYPE:selectedType*/ });
 
-            // Flatten the activations array
-            const flattenedActivates = jobTemplatesActivates.flat();
 
-            //console.log('jobTemplates',jobTemplates);
-            // Fetch schedules        
-            const schedules = await Promise.all(jobTemplates.map(async (jobTemplate) => {
-                // console.log('jobTemplate._id',jobTemplate._id);   
-                //return await Schedule.find({ _id : jobTemplate._id}).sort({ createdAt: -1 });
-                return await Schedule.find({ JOB_TEMPLATE_ID: jobTemplate._id}).sort({ createdAt: -1 });
-            }));
-            
-            //console.log('schedules.',schedules);
-            // Flatten the schedules array
-            const flattenedSchedules = schedules.flat();
 
-            // Create events from job template activations
-            const activationEvents = await Promise.all(flattenedActivates.map(async (jobTemplateActivate) => {
-                const createdAtDate = new Date(jobTemplateActivate.createdAt);
-                const job = await Job.findOne({ _id: jobTemplateActivate.JOB_ID });
-                if (!job) {
-                    return null; // Skip if the job does not exist
-                }
-                const jobName = job.JOB_NAME;
-                const status = await Status.findOne({ _id: job.JOB_STATUS_ID });
-                const statusColor = status ? status.color : null;
-                const statusName = status ? status.status_name : null;
-                //console.log("test->",job.LINE_NAME+" : "+jobName);
-                return {
-                    title: job.LINE_NAME+" : "+jobName,
-                    job_id: job._id,
-                    status_name: statusName,
-                        //line_name: job.LINE_NAME,
-                    start: new Date(createdAtDate.getFullYear(), createdAtDate.getMonth(), createdAtDate.getDate()),
-                    end: new Date(createdAtDate.getFullYear(), createdAtDate.getMonth(), createdAtDate.getDate()),
-                    color: statusColor,
-                };
-            }));
-            
-            //console.log('activationEvents',activationEvents);
-            // Filter out null values from activationEvents
-            const validActivationEvents = activationEvents.filter(event => event !== null);
 
-            // Create events from schedules
-            const scheduleEvents = await Promise.all(flattenedSchedules.map(async (schedule) => {
-                const activateDate = new Date(schedule.ACTIVATE_DATE);
-                const status = await Status.findOne({ status_name: schedule.STATUS });
-                const statusColor = status ? status.color : null;
-                //console.log('schedule',schedule);
-                const LineName=await JobTemplate.findOne({JobTemplateCreateID:schedule.JOB_TEMPLATE_CREATE_ID});
-                const Line_Name=LineName?.LINE_NAME || 'Unknown';
-                //console.log("test->",schedule.LINE_NAME+" : "+schedule.JOB_TEMPLATE_NAME);    
-                const activateDate_s = new Date(schedule.ACTIVATE_DATE);
-                const hours = activateDate_s.getHours().toString().padStart(2, '0');  // แปลงให้เป็น 2 หลัก
-                const minutes = activateDate_s.getMinutes().toString().padStart(2, '0');
-                const activationTime = `${hours}:${minutes}`;
+        for (const schedule of schedules) {
+          const status = statusMap[schedule.STATUS] || {
+            status_name: schedule.STATUS,
+            color: "#999999",
+          };
 
-                return {
-                    title: schedule.LINE_NAME+" : "+schedule.JOB_TEMPLATE_NAME+"   :  "+activationTime,
-                    job_id: schedule.JOB_TEMPLATE_ID,
-                    status_name: schedule.STATUS,
-                    //line_name: schedule.LINE_NAME,
-                    start: new Date(activateDate.getFullYear(), activateDate.getMonth(), activateDate.getDate()),
-                    end: new Date(activateDate.getFullYear(), activateDate.getMonth(), activateDate.getDate()),
-                    color: statusColor,
-                };
-            }));
-            // Combine valid activation events and schedule events
-            const resolvedEvents = [...validActivationEvents, ...await Promise.all(scheduleEvents)];        
-            // console.log("Resolved events:", resolvedEvents);
-            // resolvedEvents.forEach(element => {
-            //                 if(element.start>new Date('2025-04-25')){
-            //                             console.log(element);
-            //                 }
-            // });        
-            //console.timeEnd("fetch-jobs");  // จะแสดงเวลาใน milliseconds
-            return NextResponse.json({ status: 200, events: resolvedEvents });
-        }  
-    } catch (error) {
-        console.error("Error fetching job events:", error);
-        return NextResponse.json({ status: 404, file: __filename, error: error.message || error });
-    }
+          const hours = schedule.ACTIVATE_DATE.getHours().toString().padStart(2, "0");
+          const minutes = schedule.ACTIVATE_DATE.getMinutes().toString().padStart(2, "0");
+          const time = `${hours}:${minutes}`;
+
+          const event = {
+            event_id:schedule._id,
+            event_type:"schedule",            
+            title: `${schedule.LINE_NAME} : ${schedule.JOB_TEMPLATE_NAME} : ${time}`,
+            job_id: schedule.JOB_TEMPLATE_ID,
+            status_name: status.status_name,
+            start: schedule.ACTIVATE_DATE,
+            end: schedule.ACTIVATE_DATE,
+            color: status.color,
+            plan_type: schedule.PLAN_TYPE || "Unknown",
+            job_name:schedule.JOB_TEMPLATE_NAME,
+            line_name:schedule.LINE_NAME,
+          };
+
+          if (selectedType === "all" || event.status_name === selectedType) {
+            controller.enqueue(encoder.encode(JSON.stringify([event]) + "\n"));
+          }
+        }
+
+        controller.close();
+      } catch (err) {
+        console.error("Stream error", err);
+        controller.error(err);
+      }
+    },
+  });
+
+  return new NextResponse(stream, {
+    headers: {
+      "Content-Type": "application/json",
+      "Transfer-Encoding": "chunked",
+    },
+  });
 };

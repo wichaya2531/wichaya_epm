@@ -15,7 +15,7 @@ export const DELETE = async (req, res) => {
   await connectToDb();
   const body = await req.json();
   let schedual_id = body._id;
-  //console.log('schedual_id',schedual_id);
+  console.log('schedual_id to want to delete',schedual_id);
   // const isJob=await Job.findById(job_ids);
  
 

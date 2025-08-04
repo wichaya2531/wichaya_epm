@@ -127,6 +127,7 @@ export const POST = async (req) => {
     job.SUBMITTED_DATE = new Date();
     job.IMAGE_FILENAME = jobData.wdtagImage_1;
     job.IMAGE_FILENAME_2 = jobData.wdtagImage_2;
+    job.VALUE_ITEM_ABNORMAL=jobData.valueItemABnormal;
 
     await job.save();
     // console.log("Job updated successfully");

@@ -13,33 +13,33 @@ import { useFormState } from "react-dom";
 import { login } from "@/lib/utils/utils.js";
 import { FaTimes } from "react-icons/fa";
 
-const sendData = async () => {
-  try {
-    const response = await fetch(
-      "http://10.171.134.51:3000/api/elasticsearch/push/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          exec_time: "your_exec_time",
-          name: "your_name",
-          date: "your_date",
-        }),
-      }
-    );
+// const sendData = async () => {
+//   try {
+//     const response = await fetch(
+//       "http://10.171.134.51:3000/api/elasticsearch/push/",
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           exec_time: "your_exec_time",
+//           name: "your_name",
+//           date: "your_date",
+//         }),
+//       }
+//     );
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
+//     if (!response.ok) {
+//       throw new Error(`Error: ${response.statusText}`);
+//     }
 
-    const data = await response.json();
-    console.log("data",data);
-  } catch (error) {
-    console.error("Error sending data:", error);
-  }
-};
+//     const data = await response.json();
+//     console.log("data",data);
+//   } catch (error) {
+//     console.error("Error sending data:", error);
+//   }
+// };
 
 const Page = () => {
   //console.log('flush from Page dashboard');

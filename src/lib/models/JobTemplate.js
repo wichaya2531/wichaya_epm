@@ -14,6 +14,7 @@ const jobTemplateSchema = new mongoose.Schema(
     PICTURE_EVEDENT_REQUIRE: { type: Boolean, required: false },    
     AGILE_SKIP_CHECK: { type: Boolean, required: false },    
     SORT_ITEM_BY_POSITION:{ type: Boolean, default: false },
+    PUBLIC_EDIT_IN_WORKGROUP:{ type: Boolean, default: false },
   },
   { timestamps: true }
 );

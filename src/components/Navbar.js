@@ -169,10 +169,10 @@ const Navbar = ({ menu }) => {
         </div>
         <Link href="/pages/dashboard" className="text-white">
           <Image
-            src="/assets/images/wd-logo-white.jpg"
+            src="/assets/card-logo/wd-logo.png"
             alt="wd logo"
-            width={200}
-            height={200}
+            width={150}
+            height={150}
             className=""
           />
         </Link>

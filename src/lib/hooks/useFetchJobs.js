@@ -47,7 +47,6 @@ const useFetchJobs = (refresh = null) => {
 
 useEffect(() => {
 
-
   const fetchStream = async (workgroup_id) => {
     const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
     const reader = res.body?.getReader();
@@ -55,13 +54,14 @@ useEffect(() => {
     let buffer = '';
 
     if (!reader) return;
-
+    let num_r=0;
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
 
+     
       let boundary;
       while ((boundary = buffer.indexOf('\n')) >= 0) {
         const chunk = buffer.slice(0, boundary).trim();
@@ -70,6 +70,10 @@ useEffect(() => {
         if (chunk) {
           try {
             const data = JSON.parse(chunk);
+            if(num_r==0){
+              //console.log('📦 ได้ข้อมูล:', data);
+              num_r++;
+            }
             //console.log('📦 ได้ข้อมูล:', data);
             if (Array.isArray(data)) {
               setJobs(prev => [...prev, ...data]);

@@ -16,6 +16,7 @@ import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import VerifiedIcon from '@mui/icons-material/Verified';
+import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
@@ -27,6 +28,7 @@ const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState("");
   const [selectedType, setSelectedType] = useState("");
+  const [selectedPlanType, setSelectedPlanType] = useState("");
   const { user, isLoading: userLoading, error: userError } = useFetchUser();
   const {
     workgroups,
@@ -38,6 +40,7 @@ const Page = () => {
   const { events, eventLoading, error } = useFetchJobEvents(
     selectedWorkgroup,
     selectedType,
+    selectedPlanType,
     refresh
   );
 
@@ -57,6 +60,34 @@ const Page = () => {
     //console.log(" use handleViewChange ");
     setView(newView);
   };
+
+
+
+const handleDeleteEventFromShowMoreData = async (events) => {
+  close();
+  //console.log("handleDeleteEventFromShowMoreData", events);
+  try {
+    const response = await fetch("/api/events/deletes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ events }), // ส่ง events array ไป
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      Swal.fire("Deleted!", `${events.length} item(s) removed`, "success");
+      setRefresh(!refresh);
+    } else {
+      Swal.fire("Error!", result.message || "Failed to delete", "error");
+    }
+  } catch (error) {
+    console.error("Delete error:", error);
+    Swal.fire("Error!", "Network error or server issue", "error");
+  }
+};
 
 
 
@@ -205,6 +236,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
 
               popup.querySelector('#btn-delete')?.addEventListener('click', () => {
                 Swal.close();
+                //console.log('b',b);
                 Swal.fire({
                   title: "Are you sure?",
                   text: "to delete \" "+b.title+"\"",
@@ -222,7 +254,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
                                       headers: {
                                         "Content-Type": "application/json",
                                       },
-                                      body: JSON.stringify({ _id: [b._id]}), // ✅ ส่งเป็น array เสมอ
+                                      body: JSON.stringify({ _id: [b.event_id]}), // ✅ ส่งเป็น array เสมอ
                                     });                    
                                     const data = await response.json();
                                     if (data.status === 200) {
@@ -383,8 +415,34 @@ const handleshowOptionAfterClickEvent = async (b) => {
 
 
   const handleChangeType = (selectedType) => {
-      //console.log("setEvents");
+      //console.log("selectedType",selectedType);
+      try{
+            if(selectedType==="plan"){
+                    document.getElementById('plan-type-panel').style.display='block';
+            }else{
+                    document.getElementById('plan-type-panel').style.display='none';
+            }
+      }catch(err){
+              console.log(err);
+      }
+
+
       setSelectedType(selectedType);
+      setRefresh(!refresh);
+    /* if (selectedType === "all") {
+      setEvents(allEvents);
+    } else {
+      const filtered = allEvents.filter(
+        (event) => event.status_name.toLowerCase() === selectedType.toLowerCase()
+      );
+      setEvents(filtered);
+    }*/
+  };
+
+
+  const handleChangePlanType = (selectedPlanType) => {
+      //console.log("setEvents");
+      setSelectedPlanType(selectedPlanType);
       setRefresh(!refresh);
     /* if (selectedType === "all") {
       setEvents(allEvents);
@@ -403,6 +461,11 @@ const handleshowOptionAfterClickEvent = async (b) => {
       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1 }}>
         {event.title}
       </span>
+      {
+        event.abnormal_item===1&&(
+          <NotificationImportantSharpIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
+        )
+      }
       {event.sticker_verify === true && (
         <VerifiedIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
       )}
@@ -497,6 +560,26 @@ const handleshowOptionAfterClickEvent = async (b) => {
                 ))} */}
               </select> }
             </label>
+            <label id='plan-type-panel' style={{display:'none'}} className="md:ml-4">
+                  Plan Type:
+                  { <select
+                className={`text-sm border border-gray-300 rounded-md p-1 ml-2 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
+                onChange={(e) => handleChangePlanType(e.target.value)}
+                disabled={eventLoading}
+              >
+                <option value="" enabled>
+                  All
+                </option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="2monthly">2Monthly</option>
+                <option value="3monthly">3Monthly</option>
+                <option value="6monthly">6Monthly</option>
+                <option value="yearly">Yearly</option>           
+              </select> }  
+            </label>
+
 
           </div>
         </div>
@@ -601,7 +684,14 @@ const handleshowOptionAfterClickEvent = async (b) => {
           className="absolute top-1/2 left-1/2 transform -translate-x-1/4 -translate-y-1/2  max-w-3xl w-full max-h-90vh overflow-y-auto p-4 rounded-lg "
           sx={{ outline: "none" }}
         >
-          <ShowmoreData data={eventData} close={close}  showOptionAfterClickEvent={handleshowOptionAfterClickEvent}/>
+          <ShowmoreData 
+          data={eventData} close={close}  
+          showOptionAfterClickEvent={handleshowOptionAfterClickEvent}
+           handleDeleteEventFromShowMoreData={handleDeleteEventFromShowMoreData}
+           loginUser={user}
+           selectedWorkgroup={selectedWorkgroup}
+           workgroups={workgroups}
+           />
         </Box>
       </Modal>
     </Layout>

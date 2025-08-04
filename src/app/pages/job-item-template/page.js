@@ -485,7 +485,7 @@ const Page = () => {
                 : "pointer",
             }}
           >
-            Add Item
+            Add/Edit Item
           </Link>
 
           <button

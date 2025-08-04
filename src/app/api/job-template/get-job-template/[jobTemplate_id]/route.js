@@ -21,10 +21,15 @@ export const GET = async (req, { params }) => {
     const createdAt = new Date(jobTemplate.createdAt).toLocaleString();
 
     // Fetch Approvers
+
+    //console.log('jobTemplate_id',jobTemplate_id);
+    //console.log('jobTemplate.JobTemplateCreateID',jobTemplate.JobTemplateCreateID);
     const approvers = await Approves.find({
       JOB_TEMPLATE_ID: jobTemplate_id,
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
     });
+
+    //console.log('approvers',approvers);
 
     const notifier = await Notifies.find({
       JOB_TEMPLATE_ID: jobTemplate_id /*,
@@ -122,6 +127,7 @@ export const GET = async (req, { params }) => {
         PICTURE_EVEDENT_REQUIRE: jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
         AGILE_SKIP_CHECK: jobTemplate.AGILE_SKIP_CHECK || false,
         SORT_ITEM_BY_POSITION: jobTemplate.SORT_ITEM_BY_POSITION || false,
+        PUBLIC_EDIT_IN_WORKGROUP:jobTemplate.PUBLIC_EDIT_IN_WORKGROUP || false,
       };
     //console.log('data',data);
     return NextResponse.json({ status: 200, jobTemplate: data });

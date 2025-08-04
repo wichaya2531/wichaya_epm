@@ -7,9 +7,11 @@ export const dynamic = 'force-dynamic';
 export const GET = async (req, { params }) => {
     await connectToDb();
     const { jobtemplate_id } = params;
+    //console.log('params',params);
     try {
 
         const jobItemTemplates = await JobItemTemplate.find({ JOB_TEMPLATE_ID: jobtemplate_id });
+        //console.log('jobItemTemplates',jobItemTemplates);
         const data = await Promise.all(jobItemTemplates.map(async jobItemTemplate => {
             const user = await User.findById(jobItemTemplate.AUTHOR_ID);
             const location = await TestLocation.findById(jobItemTemplate.TEST_LOCATION_ID);

@@ -88,7 +88,7 @@ const TableComponent = ({
      currentPage * pageSize
     );
 
- // console.log("currentPageData.",currentPageData);
+  //console.log("currentPageData..",currentPageData);
 
 
   const goToPage = (page) => {
@@ -271,10 +271,13 @@ const TableComponent = ({
                 className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
                 {Object.keys(item).map((key,index) => (
-                  <td key={`${item.id}-${key}`} className="px-4 py-3"
-                      style={index===3?{maxWidth:'5em'}:{}} // {{maxWidth:'5em'}}
+                  <td key={`${item.id}-${key}`} className="px-4 py-3"                      
+                      //{item[key] ? item[key] : "N/A"}
+                      ///style={index===3?{maxWidth:'5em'}:{}} // {{maxWidth:'5em'}}
+                      //title={"user : "+item.username}
                   >
-                    {item[key] ? item[key] : "-"}
+                    {(item[key] ? item[key] : "-")}
+
                   </td>
                 ))}
               </tr>

@@ -111,7 +111,10 @@ export const POST = async (req, res) => {
     if (
       recurrence === "weekly" ||
       recurrence == "monthly" ||
-      recurrence === "yearly"
+      recurrence === "yearly" || 
+      recurrence === "2monthly" ||
+      recurrence === "3monthly" ||
+      recurrence === "6monthly"         
     ) {
       startDateActive = new Date(
         formatDateToString(new Date(activationDate)) +
@@ -175,7 +178,8 @@ export const POST = async (req, res) => {
           ACTIVATE_DATE: AdvanceActivationDate,
           LINE_NAME: lineName,
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
-          WORKGROUP_ID: jobTemplate.WORKGROUP_ID,          
+          WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
+          PLAN_TYPE:recurrence,          
         });
         //console.log(`Saving Schedule `, schedule1);
         //console.log(`Saving Schedule for lineName: ${lineName}`, schedule1);
@@ -221,6 +225,12 @@ export const POST = async (req, res) => {
         rolling_Datetime.setDate(rolling_Datetime.getDate() + 7); // Add seven days for weekly recurrence
       } else if (recurrence === "monthly") {
         rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 1); // Add one month for monthly recurrence
+      } else if (recurrence === "2monthly") {
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 2); // Add one month for monthly recurrence
+      } else if (recurrence === "3monthly") {
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 3); // Add one month for monthly recurrence
+      } else if (recurrence === "6monthly") {
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 6); // Add one month for monthly recurrence
       } else if (recurrence === "yearly") {
         rolling_Datetime.setFullYear(rolling_Datetime.getFullYear() + 1); // Add one year for yearly recurrence
       } else {

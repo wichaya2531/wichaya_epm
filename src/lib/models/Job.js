@@ -40,7 +40,9 @@ const jobSchema = new mongoose.Schema(
     IMAGE_FILENAME_2: { type: String, default: null }, //// image for evident after
     PICTURE_EVEDENT_REQUIRE:{ type: Boolean, default: false },
     AGILE_SKIP_CHECK:{ type: Boolean, default: false },
-    SORT_ITEM_BY_POSITION:{ type: Boolean, default: false }
+    SORT_ITEM_BY_POSITION:{ type: Boolean, default: false },
+    VALUE_ITEM_ABNORMAL: { type: Number, default: 0 },
+    PUBLIC_EDIT_IN_WORKGROUP:{ type: Boolean, default: false },
   },
   { timestamps: true }
 );

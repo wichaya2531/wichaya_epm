@@ -19,6 +19,7 @@ const scheduleSchema = new mongoose.Schema(
       ref: "Workgroup",
       required: true,
     },
+    PLAN_TYPE: { type: String, default: "Unknown" },
   },
   { timestamps: true }
 );

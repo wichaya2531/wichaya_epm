@@ -23,6 +23,8 @@ const jobItemTemplateEditSchema = new mongoose.Schema(
 
     JobTemplateCreateID: { type: String, required: true },
     JobItemTemplateCreateID: { type: String, required: true },
+    INPUT_CONVERT:{ type: Boolean, default: false },
+
   },
   { timestamps: true }
 );

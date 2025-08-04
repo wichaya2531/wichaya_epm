@@ -42,7 +42,7 @@ export const POST = async (req) => {
     const JobTemplateCreateID = form.get("JobTemplateCreateID");
     const FILE = form.get("FILE");
     const pos=await checkLastIndexOfItem(JobTemplateCreateID);
-
+    const input_convert= form.get("INPUT_CONVERT")==='true'?true:false;
     let filePath = form.get("FILE"); // Initialize filePath to null
     /*
     if (FILE && FILE.size > 0) {
@@ -68,9 +68,11 @@ export const POST = async (req) => {
       JobTemplateCreateID,
       JobItemTemplateCreateID,
       FILE: filePath, // Include the filePath in the data
-      pos:pos
+      pos:pos,
+      INPUT_CONVERT:input_convert,
     };
 
+    //console.log('jobItemTemplateData',jobItemTemplateData);
     // Create a new instance of JobItemTemplate
     const jobItemTemplate = new JobItemTemplate(jobItemTemplateData);
 

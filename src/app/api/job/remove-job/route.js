@@ -29,10 +29,9 @@ export const DELETE = async (req, res) => {
   const isJob=await Job.findById(job_ids);
   //console.log('find_job',find_job);
   if (!isJob) {
-        console.log('is schedual',job_ids);
+        //console.log('is schedual',job_ids);
         const findSchedual=await Schedule.findById(job_ids);
-        console.log('findSchedual',findSchedual);
-
+        //console.log('findSchedual',findSchedual);
   }
 
   try {

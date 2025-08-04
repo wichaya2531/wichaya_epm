@@ -342,6 +342,11 @@ const Page = () => {
       ? true
       : false;
 
+      const PUBLIC_EDIT_IN_WORKGROUP = document.getElementById("public-edit-in-workgroup").checked
+      ? true
+      : false;
+
+
     //console.log("PICTURE_EVEDENT_REQUIRE",PICTURE_EVEDENT_REQUIRE);
 
     //console.log("APPROVERS_ID",APPROVERS_ID);
@@ -383,6 +388,7 @@ const Page = () => {
       PICTURE_EVEDENT_REQUIRE,
       AGILE_SKIP_CHECK,
       SORT_ITEM_BY_POSITION,
+      PUBLIC_EDIT_IN_WORKGROUP
     };
 
     try {
@@ -741,7 +747,17 @@ const Page = () => {
                 <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
                   &nbsp;&nbsp;&nbsp;Sort Item By Position
                 </label>
-              </div>              
+              </div>      
+            <div id="3" style={{ border: "1px solid none", padding: "5px" }}>
+                <input
+                  type="checkbox"
+                  id="public-edit-in-workgroup"
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                />
+                <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                  &nbsp;&nbsp;&nbsp;public edit in workgroup
+                </label>
+              </div>           
             </div>
           </div>
           {

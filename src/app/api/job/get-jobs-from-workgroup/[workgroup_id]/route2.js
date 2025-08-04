@@ -1,5 +1,4 @@
 import { Job } from "@/lib/models/Job";
-import { JobItem } from "@/lib/models/JobItem";
 import { NextResponse } from "next/server";
 import { User } from "@/lib/models/User";
 import { Status } from "@/lib/models/Status";
@@ -7,9 +6,6 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
 import { JobTemplate } from "@/lib/models/JobTemplate";
 export const dynamic = "force-dynamic";
-
-// code แบบ ดึงทีละหน่อย 
-
 export const GET = async (req, { params }) => {
   await connectToDb();
 
@@ -22,13 +18,16 @@ export const GET = async (req, { params }) => {
     });
   } 
   
+
+  
+  
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       
-      var gap=20;       // maximum record for query per round 
+      var gap=10;       // maximum record for query per round 
       
-      for (let i = 1; i <= 40; i++) {        
+      for (let i = 1; i <= 20; i++) {        
               var jobs,schedules;
               jobs = await Job.find({ WORKGROUP_ID: workgroup_id }).sort({ createdAt: -1 }).skip((i - 1) * gap).limit(gap);//.limit(2000);              
               if(jobs.length<=0){
@@ -36,40 +35,19 @@ export const GET = async (req, { params }) => {
               }   
               schedules = await Schedule.find({ WORKGROUP_ID: workgroup_id }).sort({ createdAt: -1 }).skip((i - 1) * gap).limit(gap);//.limit(2000);
               //console.log("i="+i+",gap="+gap+",length="+jobs.length);                
-              var io=0;
+
               const activaterPromises = jobs.map(async (job) => {
                 const user = await User.findOne({ _id: job.ACTIVATE_USER });
                 const status = await Status.findOne({ _id: job.JOB_STATUS_ID });
                 const activaterName = user?.EMP_NAME || "Unknown";
                 const statusName = status?.status_name || "Unknown";
                 const statusColor = status?.color || "Unknown";
-                
-                //if(job){
-                //    console.log(job.PUBLIC_EDIT_IN_WORKGROUP);
-                //}
-                
-                // if(job.JOB_TEMPLATE_NAME.includes("wichaya_for")){
-                //     console.log('job',job);
-                //     io++;
-                // }
-               
+          
                 return {
                   ...job.toObject(),
-                  /*_id:job._id,
-                  SUBMITTED_BY:{
-                     EMP_NUMBER:job.SUBMITTED_BY.EMP_NUMBER,
-                     EMP_NAME:job.SUBMITTED_BY.EMP_NAME,
-                  },
-                  IMAGE_FILENAME:job.IMAGE_FILENAME,
-                  IMAGE_FILENAME_2:job.IMAGE_FILENAME_2,
-                  JOB_NAME:job.JOB_NAME,   
-                  LINE_NAME:job.LINE_NAME,
-                  */               
                   ACTIVATER_NAME: activaterName,
                   STATUS_NAME: statusName,
                   STATUS_COLOR: statusColor,
-                  ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL||false, //await checkItemAbNormal(job._id),
-                  //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };
               });
           
@@ -85,17 +63,17 @@ export const GET = async (req, { params }) => {
                 const Line_Name = LineName?.LINE_NAME || "Unknown";
                 return {
                   _id: schedule._id,//schedule.JOB_TEMPLATE_ID,
-                  //REVIEWS: "",
-                  //WD_TAG: "",
-                  //JOB_STATUS_ID: "",                  
+                  REVIEWS: "",
+                  WD_TAG: "",
+                  JOB_STATUS_ID: "",
                   LINE_NAME: schedule.LINE_NAME,
                   JOB_APPROVERS: [],
                   JOB_NAME: schedule.JOB_TEMPLATE_NAME,
-                  DOC_NUMBER: schedule.DOC_NUMBER,                  
-                  //CHECKLIST_VERSION: "",
-                  //WORKGROUP_ID: "",
+                  DOC_NUMBER: schedule.DOC_NUMBER,
+                  CHECKLIST_VERSION: "",
+                  WORKGROUP_ID: "",
                   ACTIVATE_USER: "Scheduler",
-                  //TIMEOUT: "",
+                  TIMEOUT: "",
                   createdAt: new Date(schedule.ACTIVATE_DATE).toISOString(),
                   //submitedAt:new Date().toISOString(),
                   updatedAt: schedule.updatedAt,
@@ -108,14 +86,10 @@ export const GET = async (req, { params }) => {
                   SCHEDULE_STATUS: schedule.STATUS,
                 };
               });
-              
-             // console.log('activaterPromises',activaterPromises);
-              
+          
               const combinedPromises = [...activaterPromises, ...schedulePromises];
               let jobsWithActivater = await Promise.all(combinedPromises);
-              
-              //console.log('jobsWithActivater',jobsWithActivater);
-
+          
               jobsWithActivater.sort((a, b) => {
                 return new Date(b.updatedAt) - new Date(a.updatedAt);
               });
@@ -126,7 +100,7 @@ export const GET = async (req, { params }) => {
               await new Promise(resolve => setTimeout(resolve, 500)); // delay 1 วิ
       }
 
-      controller.enqueue(encoder.encode('"จบการส่งข้อมูล"\n'));
+      controller.enqueue(encoder.encode('"A จบการส่งข้อมูล"\n'));
       controller.close();
 
     }

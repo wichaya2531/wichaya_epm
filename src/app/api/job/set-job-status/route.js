@@ -30,7 +30,7 @@ export const GET = async (req, res) => {
      if (job) {
           //jobItem.ACTUAL_VALUE = JobItemvalue;
             const statusAssigned = await Status.findOne({
-                  status_name: "complete",
+                  status_name: "waiting for approval",
             });  
             //console.log('statusAssigned',statusAssigned);
 

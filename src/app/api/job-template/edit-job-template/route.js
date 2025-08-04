@@ -34,7 +34,8 @@ export const PUT = async (req, res) => {
     notifiesOverdue_id,
     PICTURE_EVEDENT_REQUIRE,
     AGILE_SKIP_CHECK,
-    SORT_ITEM_BY_POSITION
+    SORT_ITEM_BY_POSITION,
+    PUBLIC_EDIT_IN_WORKGROUP
   } = body;
 
   // console.log("timeout:", timeout);
@@ -55,7 +56,8 @@ export const PUT = async (req, res) => {
       TIMEOUT: jobTemplate.TIMEOUT,
       PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
       AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false,
-      SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION|| false
+      SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION|| false,
+      PUBLIC_EDIT_IN_WORKGROUP:jobTemplate.PUBLIC_EDIT_IN_WORKGROUP||false
     });
     //console.log("jobTemplateEdit", jobTemplateEdit)
     await jobTemplateEdit.save();
@@ -77,6 +79,7 @@ export const PUT = async (req, res) => {
     jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
     jobTemplate.AGILE_SKIP_CHECK=AGILE_SKIP_CHECK;
     jobTemplate.SORT_ITEM_BY_POSITION=SORT_ITEM_BY_POSITION
+    jobTemplate.PUBLIC_EDIT_IN_WORKGROUP=PUBLIC_EDIT_IN_WORKGROUP
 
     //console.log('jobTemplate after',jobTemplate);
 

@@ -21,6 +21,10 @@ import { Notified, Notifies } from "@/lib/models/Notifies.js";
 import { User } from "@/lib/models/User.js";
 import { sendEmailsOverdude } from "@/lib/utils/sendemailoverdude";
 //import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
+import { EmailStack } from "@/lib/models/emailStacker";
+
+
+
 
 async function getEmailfromUserID(userID) {
   try {
@@ -46,6 +50,39 @@ async function getEmailfromUserID(userID) {
 //     //console.log("Overdue Jobs Job",jobs);
 
 // }
+
+const saveDatatoEmailStack = async (emailList,jobDataInfo) => {
+  if (process.env.WD_INTRANET_MODE === false) {
+    console.log("send emailList to=>", emailList);
+    return;
+  }
+
+   const emailString = emailList.join(",");
+    try{
+           await connectToDb();
+           const _emailStacker = new EmailStack({
+               EMAIL_SUBJECT: `${jobDataInfo.linename} : ${jobDataInfo.name} - CheckList activated `,
+               EMAIL_TO:emailString,
+               EMIAL_SENDER: "epm-system@wdc.com",
+               EMAIL_CC:'',
+               EMAIL_BODY:`
+                        You have a new checklist to do. Please check the EPM system for more details.
+                        Details:
+                        Checklist Name : ${jobDataInfo.name}
+                        Job Line  : ${jobDataInfo.linename}
+                        Activated by: ${jobDataInfo.activatedBy}
+                        Timeout: ${jobDataInfo.timeout}
+                        Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+                        `,
+          });      
+          //console.log('_emailStacker',_emailStacker);
+          await _emailStacker.save();
+          //console.log("บันทึกสำเร็จ");
+    }catch(err){
+      console.error(err);
+    }
+}
+
 
 const convertTimeout = async (timeout, createdAt) => {
   const startDate = new Date(createdAt);
@@ -141,7 +178,7 @@ export const POST = async (req, res) => {
         //return NextResponse.json({ status: 200 });
 
         //บันทึกงานที่เปลี่ยนสถานะ
-        await job.save();
+         await job.save();
 
         // ดึงข้อมูลผู้อนุมัติจาก JOB_APPROVERS
         let emailList = [];
@@ -209,6 +246,10 @@ export const POST = async (req, res) => {
 
     // console.log("scheduler=>",scheduler);
 
+
+
+
+
     //console.log("-------Checking for active by schedule (±60 minutes)--------");
 
     const now = new Date(); // เวลาปัจจุบัน
@@ -221,26 +262,28 @@ export const POST = async (req, res) => {
     //console.log("scheduler endTime:",endTime);  
     
     const scheduler = await Schedule.find({
-      ACTIVATE_DATE: {
-        $gte: startTime, // เวลาที่มากกว่าหรือเท่ากับ startTime (60 นาทีก่อนหน้า)
-        $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
-      },
-      STATUS:"plan",
+      //_id:new ObjectId('685bafc08b0fe0aeab1b128c'),
+      //WORKGROUP_ID:"66a083975eb2368f98ece93e",  คัดกรองเอาเฉพาะ กลุ่ม ESD-RT
+       ACTIVATE_DATE: {
+         $gte: startTime, // เวลาที่มากกว่าหรือเท่ากับ startTime (60 นาทีก่อนหน้า)
+         $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
+       },
+      STATUS:"plan", 
     });
-
-    //console.log("scheduler ที่ค้นหาเจอ=>", scheduler);
+   
+    //console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
     //return NextResponse.json({ status: 200 });
 
     scheduler.map(async (schedulers) => {
       //console.log("scheduler=>",scheduler);
-      if (
-        schedulers.ACTIVATE_DATE.toDateString() === now.toDateString() ||
-        schedulers.ACTIVATE_DATE < now
-      ) {
+      //if (
+      //  schedulers.ACTIVATE_DATE.toDateString() === now.toDateString() ||
+      //  schedulers.ACTIVATE_DATE < now
+      //) {
        // console.log(" schedulers.JOB_TEMPLATE_ID => ", schedulers.JOB_TEMPLATE_ID );
         //1 create job
         //1.1 find job template where jobtemplateid = jobtemplateid and jobtemplatecreateid = jobtemplatecreateid
-       // console.log("ค้นหา jobTemplate._id ด้วย scheduler.JOB_TEMPLATE_ID ",schedulers.JOB_TEMPLATE_ID);
+        //console.log("ค้นหา jobTemplate._id ด้วย scheduler.JOB_TEMPLATE_ID ",schedulers.JOB_TEMPLATE_ID);
         const jobTemplate = await JobTemplate.findOne({
           //JobTemplateCreateID: schedulers.JOB_TEMPLATE_CREATE_ID,
           _id:schedulers.JOB_TEMPLATE_ID
@@ -256,9 +299,24 @@ export const POST = async (req, res) => {
         }
 
         //1.2 find approvers where jobtemplateid = jobtemplateid and jobtemplatecreateid = jobtemplatecreateid  1 job template can have multiple approvers
+
+       //console.log('jobTemplate_id',schedulers.JOB_TEMPLATE_ID);//jmp:1234
+       const _JobTemplate=await JobTemplate.findById(schedulers.JOB_TEMPLATE_ID);
+      // console.log('jobTemplate.JobTemplateCreateID',_JobTemplate.JobTemplateCreateID);
+
+        //console.log('schedulers',schedulers);  
+
         const approvers = await Approves.find({
-          JobTemplateCreateID: schedulers.JOB_TEMPLATE_CREATE_ID,
+          JOB_TEMPLATE_ID: schedulers.JOB_TEMPLATE_ID,
+          JobTemplateCreateID: _JobTemplate.JobTemplateCreateID,
         });
+
+        //const approvers = await Approves.find({
+        //  JobTemplateCreateID: schedulers.JOB_TEMPLATE_CREATE_ID,
+        //});
+
+        //console.log('approvers',approvers);  
+
         if (!approvers) {
           //   return NextResponse.json({ status: 404, file: __filename, error: "Approvers not found" });
           // console.log(
@@ -291,9 +349,9 @@ export const POST = async (req, res) => {
           SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
         });
 
-        await job.save();
+         await job.save();
 
-        //console.log("Submit job Done=>",job);
+        //console.log("Submit job Done. JOB_APPROVERS=>",job.JOB_APPROVERS);
         //return NextResponse.json({ status: 200 });  //-->Check
          
         //  //2 update to jobtemplateactivate
@@ -368,7 +426,7 @@ export const POST = async (req, res) => {
               JobItemTemplateCreateID: jobItemTemplate.JobItemTemplateCreateID,
               JOB_ITEM_ID: jobItem._id,
             });
-            await jobItemTemplateActivate.save();
+             await jobItemTemplateActivate.save();
           })
         );
 
@@ -411,8 +469,9 @@ export const POST = async (req, res) => {
         // console.log("jobData=>", jobData);
         // console.log("userEmails=>", scheduler);
         await Schedule.deleteOne({ _id: new ObjectId(schedulers._id) });
-        await sendEmails(userEmails, jobData);
-      }
+        await saveDatatoEmailStack(userEmails, jobData);
+      //  await sendEmails(userEmails, jobData);
+      //}
     });
     //console.log("Success Auto Activated!!");
     return NextResponse.json({ status: 200 });

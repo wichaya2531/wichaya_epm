@@ -30,6 +30,7 @@ export const GET = async (req, { params }) => {
       JobItemTemplateCreateID: jobItemTemplate.JobItemTemplateCreateID,
       JobTemplateCreateID: jobItemTemplate.JobTemplateCreateID,
       FILE: jobItemTemplate.FILE,
+      INPUT_CONVERT:jobItemTemplate.INPUT_CONVERT,
       createdAt: createdAt,
     };
 

@@ -516,6 +516,7 @@ const getMachineID = () => {
        // }   
 
         var fillAllItems = true;
+        var valueItemABnormal=false;
         //console.log("jobItems",jobItems);
         for(var t in jobItems){
                 var item=jobItems[t];
@@ -524,14 +525,18 @@ const getMachineID = () => {
                   fillAllItems = false;
                   break;
                 }
+                if(item.ActualValue==="Fail"){
+                      valueItemABnormal|=true;
+                }
 
         } 
        
+       // console.log('valueItemABnormal',valueItemABnormal);
         
         //console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);
         //console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);
         //alert('555++');  
-        //return;
+       // return;
         
         //   console.log("fillAllItems", fillAllItems);
         if(fillAllItems==false){
@@ -575,6 +580,7 @@ const getMachineID = () => {
             submittedBy: user._id,
             wdtagImage_1: wdtagImg_1||jobData.IMAGE_FILENAME,
             wdtagImage_2: wdtagImg_2||jobData.IMAGE_FILENAME_2,
+            valueItemABnormal:valueItemABnormal,
           };
           // console.log("----------JobInfo----------");
           // console.log('jobData',jobData);

@@ -87,6 +87,11 @@
                 }catch(err){
                   //console.log("error",err);
                 }
+                try{
+                  document.getElementById('public-edit-in-workgroup').checked=jobTemplate.PUBLIC_EDIT_IN_WORKGROUP;
+                }catch(err){
+                  //console.log("error",err);
+                }
                 clearInterval(timerID);
                 
         }, 1000);
@@ -442,9 +447,10 @@
     };
 
     const dataApprover = approvers?.map((approver, index) => {
+      //console.log('approver',approver); 
       return {
         //ID: index + 1,
-        Name: approver.EMP_NAME,
+        Name: approver.EMP_NAME/*+":"+approver.USERNAME*/,
         Action: (
           <button
             onClick={() => handleRemoveApprover(approver._id)}
@@ -453,6 +459,8 @@
             Del
           </button>
         ),
+       //username:approver.USERNAME,
+       
       };
     });
 
@@ -550,6 +558,8 @@
       const PICTURE_EVEDENT_REQUIRE=false;//document.getElementById('picture-evident-require').checked;
       const AGILE_SKIP_CHECK=document.getElementById('agile-skip-check').checked;
       const SORT_ITEM_BY_POSITION=document.getElementById('sort-item-by-position').checked;
+      const PUBLIC_EDIT_IN_WORKGROUP=document.getElementById('public-edit-in-workgroup').checked;
+      
 
 
       // รับ ID ที่ต้องการลบ
@@ -583,7 +593,8 @@
         removedNotifiesOverdue,
         PICTURE_EVEDENT_REQUIRE,
         AGILE_SKIP_CHECK,
-        SORT_ITEM_BY_POSITION
+        SORT_ITEM_BY_POSITION,
+        PUBLIC_EDIT_IN_WORKGROUP
       };
 
       try {
@@ -847,7 +858,17 @@
                   <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
                     &nbsp;&nbsp;&nbsp;Sort Item By Position
                   </label>
-                </div>                             
+                </div>  
+                  <div id="2" style={{ border: "1px solid none", padding: "5px" }}>
+                  <input
+                    type="checkbox"
+                    id="public-edit-in-workgroup"
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                  />
+                  <label className="text-gray-800 pr-2 font-medium text-sm md:text-base">
+                    &nbsp;&nbsp;&nbsp;public edit in workgroup
+                  </label>
+                </div>                           
                 
               </div>
 

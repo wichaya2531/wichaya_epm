@@ -39,7 +39,7 @@ const Page = () => {
         Status: (
           <div
             style={{ backgroundColor: jobApprove.job_status_color }}
-            className="py-1 px-2 rounded-full text-black font-bold shadow-xl text-[12px] ipadmini:text-sm"
+            className="py-1 px-2 rounded-lg text-black font-bold shadow-xl text-[12px] ipadmini:text-sm"
           >
             {jobApprove.job_status ? jobApprove.job_status : "pending"}
           </div>

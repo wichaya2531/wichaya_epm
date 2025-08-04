@@ -3,6 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { config } from "@/config/config.js";
+//import { connectToDb } from "@/app/api/mongo/index.js";
 
 const secretKey = process.env.SECRET_KEY;
 const key = new TextEncoder().encode(secretKey);
@@ -28,7 +29,7 @@ export async function login(prevState, formData) {
   const password = formData.get("password");
   //const host_link=formData.get("host_link");
 
-  console.log('use function login',process.env.NEXT_PUBLIC_HOST_LINK);
+  //console.log('use function login',process.env.NEXT_PUBLIC_HOST_LINK);
   //console.log("username:"+username);
   //console.log("link:"+host_link);
   //return;
@@ -192,39 +193,65 @@ export const getRevisionNo = async (documentNo) => {
 };
 
 export async function sendEmails(emailList, job) {
-  if (process.env.WD_INTRANET_MODE === false) {
-    console.log("send emailList to=>", emailList);
-    return;
-  }
+  // if (process.env.WD_INTRANET_MODE === false) {
+  //   console.log("send emailList to=>", emailList);
+  //   return;
+  // }
 
-  const emailString = emailList.join(",");
-  //console.log('job on email sent',job);
-  const response = await fetch(
-    process.env.NEXT_PUBLIC_HOST_LINK + "/api/emailsent",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+  //  const emailString = emailList.join(",");
+  // // //console.log('job on email sent',job);
+  // // const response = await fetch(
+  // //   process.env.NEXT_PUBLIC_HOST_LINK + "/api/emailsent",
+  // //   {
+  // //     method: "POST",
+  // //     headers: {
+  // //       "Content-Type": "application/json",
+  // //     },
 
      
-      body: JSON.stringify({
-        email: emailString,
-        subject: `${job.linename} : ${job.name} - CheckList activated `,
-        body: `
-            You have a new checklist to do. Please check the EPM system for more details.
-            Details:
-            Checklist Name : ${job.name}
-            Job Line  : ${job.linename}
-            Activated by: ${job.activatedBy}
-            Timeout: ${job.timeout}
-            Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
-            `,
-        mailsender: "epm-system@wdc.com",
-        namesender: "epm-system@wdc.com",
-      }),
-    }
-  );
+  // //     body: JSON.stringify({
+  // //       email: emailString,
+  // //       subject: `${job.linename} : ${job.name} - CheckList activated `,
+  // //       body: `
+  // //           You have a new checklist to do. Please check the EPM system for more details.
+  // //           Details:
+  // //           Checklist Name : ${job.name}
+  // //           Job Line  : ${job.linename}
+  // //           Activated by: ${job.activatedBy}
+  // //           Timeout: ${job.timeout}
+  // //           Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+  // //           `,
+  // //       mailsender: "epm-system@wdc.com",
+  // //       namesender: "epm-system@wdc.com",
+  // //     }),
+  // //   }
+  // // );
+  
+  //   try{
+  //          await connectToDb();
+  //          const _emailStacker = new EmailStack({
+  //              EMAIL_SUBJECT: `${job.linename} : ${job.name} - CheckList activated `,
+  //              EMAIL_TO:emailString,
+  //              EMIAL_SENDER: "epm-system@wdc.com",
+  //              EMAIL_CC:'',
+  //              EMAIL_BODY:`
+  //                       You have a new checklist to do. Please check the EPM system for more details.
+  //                       Details:
+  //                       Checklist Name : ${job.name}
+  //                       Job Line  : ${job.linename}
+  //                       Activated by: ${job.activatedBy}
+  //                       Timeout: ${job.timeout}
+  //                       Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+  //                       `,
+  //         });      
+  //         //console.log('_emailStacker',_emailStacker);
+  //         await _emailStacker.save();
+  //         //console.log("บันทึกสำเร็จ");
+  //   }catch(err){
+  //     console.error(err);
+  //   }
+
+
 }
 
 export async function sendResetEmail(information, token) {

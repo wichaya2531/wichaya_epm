@@ -14,6 +14,7 @@ const useFetchJobItemTemplate = (jobItemTemplate_id, refresh = null) => {
             try {
                 const response = await fetch(`/api/job-item-template/get-job-item-template/${jobItemTemplate_id}`, { next: { revalidate: 10 } });
                 const data = await response.json();
+                //console.log('data',data);
                 if (data.status === 200) {
                     setJobItemTemplate(data.jobItemTemplates);
                 }

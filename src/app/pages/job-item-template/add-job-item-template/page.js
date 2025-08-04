@@ -124,6 +124,8 @@ const Page = ({ searchParams }) => {
   const HandleSubmit = async (e) => {
     e.preventDefault();
     const form = new FormData(e.target);
+    //console.log('form.get("input-convert")',form.get("input-convert"));
+    //alert('1');
     const data = {
       AUTHOR_ID: user._id,
       JOB_ITEM_TEMPLATE_TITLE: form.get("job_item_template_title"),
@@ -134,8 +136,10 @@ const Page = ({ searchParams }) => {
       JOB_TEMPLATE_ID: jobTemplate_id,
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
       TEST_LOCATION_ID: "667b915a596b4d721ec60c40", //form.get("test_location"),
+      INPUT_CONVERT:form.get("input-convert")==="on"?true:false,
     };
-
+   //console.log('data',data); 
+   //return;
     const formData = new FormData();
     formData.append("AUTHOR_ID", data.AUTHOR_ID);
     formData.append("JOB_ITEM_TEMPLATE_TITLE", data.JOB_ITEM_TEMPLATE_TITLE);
@@ -146,6 +150,7 @@ const Page = ({ searchParams }) => {
     formData.append("JOB_TEMPLATE_ID", data.JOB_TEMPLATE_ID);
     formData.append("JobTemplateCreateID", data.JobTemplateCreateID);
     formData.append("TEST_LOCATION_ID", data.TEST_LOCATION_ID);
+    formData.append("INPUT_CONVERT", data.INPUT_CONVERT);
 
     // ใช้พาธไฟล์ที่ได้จากการอัปโหลด
     formData.append("FILE", itemPicture);
@@ -537,7 +542,7 @@ const Page = ({ searchParams }) => {
                                   enabledFunction["remove-job-item-template"]
                               )
                                 ? "bg-lime-500 cursor-not-allowed"
-                                : "bg-lime-700 hover:bg-green-800 focus:ring-4 focus:outline-none dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+                                : "bg-lime-700 hover:bg-green-800 focus:ring-4 focus:outline-none dark:bg-green-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
                             }`}
             onClick={() => handleMqtt(jobItemTemplate)}
             disabled={
@@ -761,6 +766,24 @@ const Page = ({ searchParams }) => {
                 required
               />
             </div>
+
+            <div  className="select-none">
+              <label
+                htmlFor="input-convert"
+                className="flex items-center space-x-2 text-sm font-medium text-gray-900"
+              >
+                <input
+                  type="checkbox"
+                  id="input-convert"
+                  name="input-convert"
+                 className="w-5 h-5 bg-white border border-gray-300 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
+                  // required
+                />
+                <span>Input Converter( 1 to "Pass" , 0 to "Fail")</span>
+              </label>
+            </div>
+
+
             <div style={{ display: "none" }}>
               <label
                 htmlFor="test_location"

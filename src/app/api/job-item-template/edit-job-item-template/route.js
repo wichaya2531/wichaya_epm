@@ -4,6 +4,7 @@ import { NextResponse } from "next/server.js";
 import { JobItemTemplateEdit } from "@/lib/models/AE/JobItemTemplateEdit";
 import { JobTemplate } from "@/lib/models/JobTemplate";
 import { connectToDb } from "@/app/api/mongo/index.js";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 export const PUT = async (req, res) => {
 
@@ -20,7 +21,11 @@ export const PUT = async (req, res) => {
     test_method,
     test_location,
     filePath, // เพิ่ม field filePath ที่จะได้รับจาก body
+    input_convert,
   } = body;
+ 
+  //console.log('body',body);  
+  
 
   try {
     const newJobItemTemplateCreateID = await generateUniqueKey();
@@ -39,8 +44,10 @@ export const PUT = async (req, res) => {
       TEST_LOCATION_ID: jobItemTemplate.TEST_LOCATION_ID,
       JobItemTemplateCreateID: jobItemTemplate.JobItemTemplateCreateID,
       JobTemplateCreateID: jobItemTemplate.JobTemplateCreateID,
-      pos:jobItemTemplate.pos || 0
+      pos:jobItemTemplate.pos || 0,
+      INPUT_CONVERT:input_convert,
     });
+    //console.log('jobItemTemplateEdit',jobItemTemplateEdit);
     await jobItemTemplateEdit.save();
 
     // current job template create id
@@ -59,6 +66,7 @@ export const PUT = async (req, res) => {
     jobItemTemplate.TEST_LOCATION_ID = test_location;
     jobItemTemplate.JobItemTemplateCreateID = newJobItemTemplateCreateID;
     jobItemTemplate.JobTemplateCreateID =currentJobTemplateCreateID.JobTemplateCreateID;
+    jobItemTemplate.INPUT_CONVERT=input_convert;
     // jobItemTemplate.pos=pos;
 
     // ตรวจสอบว่ามี filePath หรือไม่ และอัปเดตฟิลด์ FILE
@@ -66,7 +74,10 @@ export const PUT = async (req, res) => {
       jobItemTemplate.FILE = filePath; // อัปเดตฟิลด์ FILE
     }
 
-    await jobItemTemplate.save();
+
+    //console.log('jobItemTemplate',jobItemTemplate);
+
+   await jobItemTemplate.save();
 
     return NextResponse.json({ status: 200, jobItemTemplateEdit });
   } catch (err) {

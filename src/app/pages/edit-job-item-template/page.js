@@ -4,7 +4,7 @@ import Layout from "@/components/Layout.js";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import useFetchTestLocations from "@/lib/hooks/useFetchTestLocations";
 import Select from "react-select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import useFetchJobItemTemplate from "@/lib/hooks/useFetchJobItemTemplate";
 import Swal from "sweetalert2";
@@ -87,7 +87,7 @@ const Page = ({ searchParams }) => {
       return null; // คืนค่า null หากเกิดข้อผิดพลาด
     }
   };
-
+  
   const HandleSubmit = async (e) => {
     e.preventDefault();
     // if (!e.target.test_location.value) {
@@ -99,7 +99,13 @@ const Page = ({ searchParams }) => {
     //   return;
     // }
 
+
+
     const form = new FormData(e.target);
+
+    //console.log('form.get("input-convert")',form.get("input-convert"));  
+    //return;
+
     const data = {
       jobTemplate_id,
       jobItemTemplate_id,
@@ -109,8 +115,8 @@ const Page = ({ searchParams }) => {
       upper_spec: form.get("upper_spec"),
       lower_spec: form.get("lower_spec"),
       test_method: form.get("test_method"),
-
       test_location: "667b915a596b4d721ec60c40", //TEST_LOCATION_ID: '667b915a596b4d721ec60c40'
+      input_convert:form.get("input-convert")==='on'?true:false,
     };
     // เพิ่มการจัดเก็บ filePath ที่ได้จากการอัปโหลด
     if (selectedFile) {
@@ -278,6 +284,30 @@ const Page = ({ searchParams }) => {
                 required
               />
             </div>
+
+           <div className="select-none">
+              <label
+                htmlFor="input-convert"
+                className="flex items-center space-x-2 text-sm font-medium text-gray-900"
+              >
+                <input
+                  type="checkbox"
+                  id="input-convert"
+                  name="input-convert"
+                  className="w-5 h-5 bg-white border border-gray-300 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
+                  defaultChecked={jobItemTemplate.INPUT_CONVERT||false}
+                  // onChange={(e) =>
+                  //   setJobItemTemplate((prev) => ({
+                  //     ...prev,
+                  //     INPUT_CONVERT: e.target.checked,
+                  //   }))
+                  // }
+                  // required
+                />
+                <span>Input Converter( 1 to "Pass" , 0 to "Fail")</span>
+              </label>
+            </div>
+
             <div>
               {/* <label
                 for="test_method"
