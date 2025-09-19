@@ -2,7 +2,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { config } from "@/config/config.js";
+//import { config } from "@/config/config.js";
 //import { connectToDb } from "@/app/api/mongo/index.js";
 
 const secretKey = process.env.SECRET_KEY;
@@ -151,9 +151,14 @@ export async function logout() {
 }
 
 export async function getSession() {
-  const session = cookies().get("token")?.value;
-  if (!session) return { message: "Session not found" };
-  return await decrypt(session);
+  //try{
+    const session = cookies().get("token")?.value;
+    if (!session) return { message: "Session not found" };
+    return await decrypt(session);
+  //}catch(err){
+      
+  //}
+
 }
 
 export const generateUniqueKey = async () => {
@@ -191,6 +196,94 @@ export const getRevisionNo = async (documentNo) => {
     return { message: "Error occurred while fetching data" };
   }
 };
+
+
+export async function sendEmailsFromManual(emailList, job,mode='wait_for_get') {
+  //console.log('sendEmailsFromManual mode',mode);
+  //return;
+   
+  //console.log('sendEmailsFromManual ');
+  //console.log('emailList ',emailList);
+  //console.log('job ',job);
+  var subject=''; 
+  var mailBody='';
+  if(mode==='wait_for_get'){
+      subject=`${job.linename} : ${job.name} - CheckList activated `;
+      mailBody= `
+            You have a new checklist to do. Please check the EPM system for more details.
+            Details:
+            Checklist Name : ${job.name}
+            Job Line  : ${job.linename}
+            Activated by: ${job.activatedBy}
+            Timeout: ${job.timeout}
+            Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+            `;
+  }else if (mode=='wait_for_approve') {
+      subject=`${job.linename} : ${job.name} - CheckList is Waiting for Approve `;
+      mailBody= `
+            You have a checklist to Waiting for Approve. Please check the EPM system for more details.
+            Details:
+            Checklist Name : ${job.name}
+            Job Line  : ${job.linename}
+            Activated by: ${job.activatedBy}
+            Timeout: ${job.timeout}
+            Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+            `;    
+  }
+
+
+
+
+   if (process.env.WD_INTRANET_MODE === false) {
+    console.log("send emailList to=>", emailList);
+    return;
+  }
+
+   const emailString = emailList.join(",");
+  //console.log('job on email sent',job);
+  const response = await fetch(
+    process.env.NEXT_PUBLIC_HOST_LINK + "/api/emailsentManual",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+     
+      body: JSON.stringify({
+        email: emailString,
+        subject: subject,
+        body:mailBody,
+        mailsender: "epm-system@wdc.com",
+        namesender: "epm-system@wdc.com",
+      }),
+    }
+  );
+  
+    // try{
+    //        await connectToDb();
+    //        const _emailStacker = new EmailStack({
+    //            EMAIL_SUBJECT: `${job.linename} : ${job.name} - CheckList activated `,
+    //            EMAIL_TO:emailString,
+    //            EMIAL_SENDER: "epm-system@wdc.com",
+    //            EMAIL_CC:'',
+    //            EMAIL_BODY:`
+    //                     You have a new checklist to do. Please check the EPM system for more details.
+    //                     Details:
+    //                     Checklist Name : ${job.name}
+    //                     Job Line  : ${job.linename}
+    //                     Activated by: ${job.activatedBy}
+    //                     Timeout: ${job.timeout}
+    //                     Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+    //                     `,
+    //       });      
+    //       //console.log('_emailStacker',_emailStacker);
+    //       await _emailStacker.save();
+    //       //console.log("บันทึกสำเร็จ");
+    // }catch(err){
+    //   console.error(err);
+    // }
+}
 
 export async function sendEmails(emailList, job) {
   // if (process.env.WD_INTRANET_MODE === false) {

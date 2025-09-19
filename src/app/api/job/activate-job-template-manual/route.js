@@ -8,7 +8,7 @@ import { JobItemTemplate } from "@/lib/models/JobItemTemplate.js";
 import { JobTemplate } from "@/lib/models/JobTemplate.js";
 import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
-import { sendEmails } from "@/lib/utils/utils";
+import { sendEmailsFromManual } from "@/lib/utils/utils";
 import { Workgroup } from "@/lib/models/Workgroup";
 import { User } from "@/lib/models/User";
 import { ObjectId } from "mongodb";
@@ -43,7 +43,7 @@ async function getApproversUserEmail(job) {
 }
 
 export const POST = async (req, res) => {
-  // console.log("Activate Job Template Manual");
+  // console.log("Activate Job Template By Manual");
   await connectToDb();
   const body = await req.json();
   const { JobTemplateID, ACTIVATER_ID, JobTemplateCreateID, LINE_NAME } = body;
@@ -226,10 +226,14 @@ export const POST = async (req, res) => {
       timeout: job.TIMEOUT,
       linename:job.LINE_NAME,
     };
-    await sendEmails(uniqueEmails, jobData);
+
+    //console.log('uniqueEmails',uniqueEmails);
+    await sendEmailsFromManual(uniqueEmails, jobData);
 
     return NextResponse.json({ status: 200, data: job });
   } catch (err) {
+
+  
     return NextResponse.json({
       status: 500,
       file: __filename,

@@ -4,6 +4,7 @@ import { Status } from "@/lib/models/Status";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { User } from "@/lib/models/User";
+import { sendEmailsFromManual } from "@/lib/utils/utils";
 import {
   ActivateJobTemplate,
   getRevisionNo,
@@ -14,8 +15,18 @@ import { bool } from "sharp";
 //import path from "path";
 
 export const POST = async (req) => {
+      //const form = await req.formData();
+      //console.log("form=>",form);
+      // รับ jobData และ jobItemsData จาก FormData
+      //const jobData = JSON.parse(form.get("jobData"));      
+      //const _Job= await Job.findById(jobData.JobID);
+      //console.log('_Job',_Job);
+      //console.log('Approve',_Job.JOB_APPROVERS);
+      //console.log('jobData',jobData);
+       
+      //console.log(' this is test function !!!');
 
-   
+
   try {
     // เชื่อมต่อฐานข้อมูล
     await connectToDb();
@@ -102,10 +113,6 @@ export const POST = async (req) => {
 
 
     var statusAssigned;  
-
-   
-
-    
     if (job.JOB_APPROVERS.length==0) {
       //console.log(" ไม่มี Approve"); 
       statusAssigned = await Status.findOne({
@@ -130,8 +137,28 @@ export const POST = async (req) => {
     job.VALUE_ITEM_ABNORMAL=jobData.valueItemABnormal;
 
     await job.save();
-    // console.log("Job updated successfully");
-    //console.log("Updated job data:", job);
+    {
+      //console.log('submittedUser',submittedUser);
+      const approverIds = job.JOB_APPROVERS;     // <-- อาจมี 1 หรือหลาย id
+      var emailList=new Array();
+      if (approverIds && approverIds.length > 0) {
+        const approvers = await User.find({ _id: { $in: approverIds } });
+        // แสดง email ของผู้อนุมัติทุกคน
+        approvers.forEach((user) => {
+          emailList.push(user.EMAIL);
+        });
+      } 
+      const _jobForEmail= {
+              name: job.JOB_NAME,
+              activatedBy: submittedUser.EMP_NAME,
+              timeout:  job.TIMEOUT,
+              linename: job.LINE_NAME
+      };      
+      await sendEmailsFromManual(emailList, _jobForEmail,"wait_for_approve");
+   }
+
+
+
 
     return NextResponse.json({
       status: 200,

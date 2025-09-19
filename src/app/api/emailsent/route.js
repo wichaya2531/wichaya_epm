@@ -16,9 +16,7 @@ export const POST = async (req, res) => {
   if(data.email.length<5){
       return NextResponse.json({status: 200 , message: "emial is invalid" });
   }
-
-
-
+  
   try{
          await connectToDb();
          const _emailStacker = new EmailStack({

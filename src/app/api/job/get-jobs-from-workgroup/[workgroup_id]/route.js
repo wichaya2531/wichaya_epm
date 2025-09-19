@@ -12,8 +12,16 @@ export const dynamic = "force-dynamic";
 
 export const GET = async (req, { params }) => {
   await connectToDb();
-
+  // รับค่า starttime และ endtime จาก query string
+  const startTime = req.nextUrl.searchParams.get("starttime")+"T00:00:00Z";
+  const endTime = req.nextUrl.searchParams.get("endtime")+"T23:59:59Z";
+  // แปลงเป็น ISO string ถ้ามีค่า
+  //const startTimeISO = startTime ? new Date(startTime).toISOString() : undefined;
+  //const endTimeISO = endTime ? new Date(endTime).toISOString() : undefined;
   const { workgroup_id } = params;
+  //
+ // console.log("workgroup_id=>", workgroup_id, "startTime=>", startTime, "endTime=>", endTime);
+
   //console.log("workgroup_id=>",workgroup_id);
   if (workgroup_id === "undefined") {
     return NextResponse.json({
@@ -27,15 +35,44 @@ export const GET = async (req, { params }) => {
     async start(controller) {
       
       var gap=20;       // maximum record for query per round 
-      
+      //var numTotal=0;
       for (let i = 1; i <= 40; i++) {        
               var jobs,schedules;
-              jobs = await Job.find({ WORKGROUP_ID: workgroup_id }).sort({ createdAt: -1 }).skip((i - 1) * gap).limit(gap);//.limit(2000);              
-              if(jobs.length<=0){
-                break;
-              }   
-              schedules = await Schedule.find({ WORKGROUP_ID: workgroup_id }).sort({ createdAt: -1 }).skip((i - 1) * gap).limit(gap);//.limit(2000);
-              //console.log("i="+i+",gap="+gap+",length="+jobs.length);                
+              
+                // สร้าง filter สำหรับ jobs โดยใช้ startTime และ endTime ถ้ามีค่า
+                const jobFilter = { WORKGROUP_ID: workgroup_id };
+                if (startTime) {
+                jobFilter.updatedAt = { ...jobFilter.updatedAt, $gte: new Date(startTime) };
+                }
+                if (endTime) {
+                jobFilter.updatedAt = { ...jobFilter.updatedAt, $lte: new Date(endTime) };
+                }
+                jobs = await Job.find(jobFilter)
+                .sort({ createdAt: -1 })
+                .skip((i - 1) * gap)
+                .limit(gap);
+              
+              //if(jobs.length<=0){
+              //  break;
+              //}   
+                // กรอง schedules ด้วย startTime และ endTime ถ้ามีค่า
+                const scheduleFilter = { WORKGROUP_ID: workgroup_id };
+                if (startTime) {
+                  scheduleFilter.ACTIVATE_DATE = { ...scheduleFilter.ACTIVATE_DATE, $gte: new Date(startTime) };
+                }
+                if (endTime) {
+                  scheduleFilter.ACTIVATE_DATE = { ...scheduleFilter.ACTIVATE_DATE, $lte: new Date(endTime) };
+                }
+                schedules = await Schedule.find(scheduleFilter)
+                .sort({ createdAt: -1 })
+                .skip((i - 1) * gap)
+                .limit(gap);
+                if(jobs.length<=0 && schedules.length<=0){
+                  break;
+                }
+
+
+                //console.log("i="+i+",gap="+gap+",length="+jobs.length);                
               var io=0;
               const activaterPromises = jobs.map(async (job) => {
                 const user = await User.findOne({ _id: job.ACTIVATE_USER });
@@ -44,31 +81,40 @@ export const GET = async (req, { params }) => {
                 const statusName = status?.status_name || "Unknown";
                 const statusColor = status?.color || "Unknown";
                 
+               // console.log("job.SUBMITTED_BY.EMP_NAME",job.SUBMITTED_BY.EMP_NAME);
+
+                 // บางเรคคอร์ดใช้ฟิลด์แยกชื่อ/อีเมล
+                const submit_name = {
+                  EMP_NAME:  job.SUBMITTED_BY_NAME  ?? job.SUBMITTED_BY?.EMP_NAME  ?? "-",
+                 // EMP_EMAIL: job.SUBMITTED_BY_EMAIL ?? job.SUBMITTED_BY?.EMP_EMAIL ?? "",
+                };
                 //if(job){
                 //    console.log(job.PUBLIC_EDIT_IN_WORKGROUP);
                 //}
                 
-                // if(job.JOB_TEMPLATE_NAME.includes("wichaya_for")){
-                //     console.log('job',job);
-                //     io++;
-                // }
-               
-                return {
-                  ...job.toObject(),
-                  /*_id:job._id,
-                  SUBMITTED_BY:{
-                     EMP_NUMBER:job.SUBMITTED_BY.EMP_NUMBER,
-                     EMP_NAME:job.SUBMITTED_BY.EMP_NAME,
-                  },
-                  IMAGE_FILENAME:job.IMAGE_FILENAME,
-                  IMAGE_FILENAME_2:job.IMAGE_FILENAME_2,
-                  JOB_NAME:job.JOB_NAME,   
+                //  if(job.JOB_TEMPLATE_NAME.includes("wichaya_for")){
+                //      console.log('job',job);
+                //      io++;
+                //  }
+
+                 //console.log("job",job);
+                 
+                 return {
+                  //...job.toObject(),
+                  _id:job._id,
+                  SUBMITTED_BY: submit_name,
                   LINE_NAME:job.LINE_NAME,
-                  */               
+                  JOB_NAME:job.JOB_NAME,
+                  ACTIVATE_USER:job.ACTIVATE_USER,
+                  createdAt:job.createdAt,
                   ACTIVATER_NAME: activaterName,
                   STATUS_NAME: statusName,
                   STATUS_COLOR: statusColor,
-                  ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL||false, //await checkItemAbNormal(job._id),
+                  ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL||false,
+
+                  VALUE_ITEM_ABNORMAL:job.VALUE_ITEM_ABNORMAL,
+
+                  //await checkItemAbNormal(job._id),
                   //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };
               });
@@ -119,14 +165,15 @@ export const GET = async (req, { params }) => {
               jobsWithActivater.sort((a, b) => {
                 return new Date(b.updatedAt) - new Date(a.updatedAt);
               });
+             // numTotal+=jobsWithActivater.length;
               //------------------------------------------>>
               const json = JSON.stringify(jobsWithActivater);      // แปลงเป็น string
               const chunk = encoder.encode(json + '\n'); // ใส่ newline คั่นแต่ละ batch
               controller.enqueue(chunk);
               await new Promise(resolve => setTimeout(resolve, 500)); // delay 1 วิ
       }
-
-      controller.enqueue(encoder.encode('"จบการส่งข้อมูล"\n'));
+      //console.log("จำนวนรอบที่ทำงานทั้งหมด numTotal="+numTotal);
+      controller.enqueue(encoder.encode( '" จบการส่งข้อมูล"\n'));
       controller.close();
 
     }

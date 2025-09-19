@@ -450,6 +450,8 @@ const getMachineID = () => {
 
   const handleSubmit = async (e) => {
           //alert('On Submit');
+          //return;
+
           e.preventDefault();
 
           const wdTag = e.target.wd_tag.value.trim(); // ตัดช่องว่าง
@@ -600,6 +602,7 @@ const getMachineID = () => {
               method: "POST",
               body: formData, // ส่งข้อมูลในรูปแบบ FormData
             });
+            
 
             // เช็คสถานะการตอบกลับ
             if (!response.ok) {
@@ -613,27 +616,58 @@ const getMachineID = () => {
             }
 
             const data = await response.json();
-            if (data.status === 455) {
+            if (data.status === 455 || data.status === 400  ) {
               Swal.fire({
                 title: "Error!",
                 text: data.message,
                 icon: "error",
               });
             } else {
+              
               Swal.fire({
                 title: "Success!",
                 text: "Checklist updated successfully!",
                 icon: "success",
-              }).then(() => {
-                window.history.replaceState({}, "", "/pages/dashboard");
-                if (router) {
-                  router.push("/pages/dashboard");
+                showCancelButton: true,
+                confirmButtonText: "OK & Done",
+                cancelButtonText: "Reuse",   // ปุ่มเพิ่มใหม่
+              }).then(async (result) => {
+                if (result.isConfirmed) {
+                  window.history.replaceState({}, "", "/pages/dashboard");
+                  if (router) {
+                    router.push("/pages/dashboard");   // ปิดเพื่อทดสอบ
+                  }
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                  // เมื่อกด Reuse this page
+                  Swal.fire("You chose to reuse this page!", "", "info");
+                  console.log('jobData',jobData);
+                  
+                  // goto step 
+                  //1.ส่งคำสั่งเพื่อขอเปิด  new job
+
+                    //   try{
+                    //       const response = await fetch(`api for open job with the same of template`, {
+                    //         method: "POST",
+                    //         headers: {
+                    //           "Content-Type": "application/json",
+                    //         },
+                    //         body: JSON.stringify({ }), // ✅ ส่งเป็น array เสมอ
+                    //       });                    
+                    //       const data = await response.json();
+                    //       // console.log('schedual-manual-trigger',data); 
+                    //       //console.log('data',data);
+                    // }catch(err){
+                    //         console.error("Error update job:", err); 
+                    // }
+
+                  //2.reload หน้านี้ด้วย job_id ที่เปิดใหม่   
                 }
               });
-              e.target.reset();
+
+              e.target.reset();  // reset ค่าต่างๆใน value 
               //setRefresh((prev) => !prev);
-              setTimeout(() => {
-                router.push("/pages/dashboard");
+              setTimeout(() => {                   
+                     //router.push("/pages/dashboard"); // ปิดเมื่อทดสอบ
               }, 2000);
             }
           } catch (err) {

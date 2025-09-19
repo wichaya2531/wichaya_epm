@@ -76,9 +76,9 @@ const Page = () => {
               WorkGroup: <span className="text-primary">{user.workgroup}</span>
             </h1>
           </div>
-          <h1 className="text-sm font-bold text-secondary flex items-center">
+          {/* <h1 className="text-sm font-bold text-secondary flex items-center">
             Welcome to the e - PM System
-          </h1>
+          </h1> */}
         </div>
 
         {/* Cards section */}

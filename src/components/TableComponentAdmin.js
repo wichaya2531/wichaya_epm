@@ -230,7 +230,7 @@ const TableComponentAdmin = ({
           {/* ปุ่ม Select All และ Remove Selected */}
           <div className="flex items-center space-x-4 p-2 rounded-lg ">
             {/* Select All Checkbox */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-50">
               <input
                 type="checkbox"
                 name="select-job-all"

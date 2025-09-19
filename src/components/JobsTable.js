@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import TableComponent from "./TableComponent";
 import TableComponentAdmin from "./TableComponentAdmin";
@@ -53,16 +53,40 @@ const JobsTable = ({ refresh }) => {
   //console.log("JobsTable=>",refresh);
   //console.log(refresh);
   const { user, isLoading: userLoading } = useFetchUser(refresh);
-  const { jobs, setJobs, isLoading: jobsLoading } = useFetchJobs(refresh); // Assuming useFetchJobs supports filters
-  const [filterStatus, setFilterStatus] = useState("All");
+
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
+
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [reloadKey, setReloadKey] = useState(0);
+  
+  
+  
+  const { jobs, setJobs, isLoading: jobsLoading, fetchJobs } =  useFetchJobs({
+    refresh,
+    startTime: startDate,
+    endTime: endDate,
+    status: filterStatus,
+    reloadKey,   // ส่งไปใน dependency
+  });
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
 
 
+ // useEffect(() => {
+  //   if (fetchJobs) {
+  //     fetchJobs({
+  //       refresh,
+  //       startTime: startDate,
+  //       endTime: endDate,
+  //       status: filterStatus,
+  //     });
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [startDate, endDate]);
       // useEffect(() => {
 
       //   let total_byte_counter=0;
@@ -175,14 +199,14 @@ const JobsTable = ({ refresh }) => {
       }
 
       // Filter by start date
-      if (startDate && new Date(job.createdAt) < new Date(startDate)) {
-        return false;
-      }
+      // if (startDate && new Date(job.createdAt) < new Date(startDate)) {
+      //   return false;
+      // }
 
-      // Filter by end date
-      if (endDate && new Date(job.createdAt) > new Date(endDate)) {
-        return false;
-      }
+      // // Filter by end date
+      // if (endDate && new Date(job.createdAt) > new Date(endDate)) {
+      //   return false;
+      // }
 
       // Filter by search query
       if (
@@ -222,6 +246,7 @@ const JobsTable = ({ refresh }) => {
         ...( (user.role === "Admin Group" || user.role === "Owner")  && {
           checkbox: (
             <input
+              className="w-5 h-5"
               type="checkbox"
               checked={selectedJobs.includes(job._id)}
               onChange={() => handleSelectJob(job._id)}
@@ -348,15 +373,72 @@ const JobsTable = ({ refresh }) => {
 
   const handleStartDateChange = (e) => {
     setStartDate(e.target.value);
+
   };
 
   const handleEndDateChange = (e) => {
     setEndDate(e.target.value);
+   
   };
+
+  // Set default startDate and endDate to today -3 and today +3
+  useEffect(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - 3);
+    const end = new Date(today);
+    end.setDate(today.getDate() + 3);
+
+    setStartDate(start.toISOString().slice(0, 10));
+    setEndDate(end.toISOString().slice(0, 10));
+  }, []);
 
   return (
     <div className="w-full flex flex-col mt-5">
       <div className="flex flex-wrap mb-4 justify-start items-center gap-4">
+      
+          <div className="flex flex-row gap-4">
+            <div className="flex-2 w-1/2">
+              <label
+                htmlFor="startDate"
+                className="block text-sm font-medium text-black"
+              >
+                Start Date
+              </label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                value={startDate || ""}
+                onChange={handleStartDateChange}
+                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+              />
+            </div>
+
+            <div className="flex-2 w-1/2">
+              <label
+                htmlFor="endDate"
+                className="block text-sm font-medium text-gray-900"
+              >
+                End Date
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                value={endDate || ""}
+                onChange={handleEndDateChange}
+                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+              />
+            </div>
+          </div>
+   
+
+
+
+        <div className="flex-2">
+         
+        </div>
         <div className="flex-1.5">
           <label
             htmlFor="statusFilter"
@@ -406,38 +488,6 @@ const JobsTable = ({ refresh }) => {
               </option>
             ))}
           </select>
-        </div>
-        <div className="flex-2">
-          <label
-            htmlFor="startDate"
-            className="block text-sm font-medium  text-black"
-          >
-            Start Date
-          </label>
-          <input
-            type="date"
-            id="startDate"
-            name="startDate"
-            value={startDate || ""}
-            onChange={handleStartDateChange}
-            className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          />
-        </div>
-        <div className="flex-2">
-          <label
-            htmlFor="endDate"
-            className="block text-sm font-medium text-gray-900 "
-          >
-            End Date
-          </label>
-          <input
-            type="date"
-            id="endDate"
-            name="endDate"
-            value={endDate || ""}
-            onChange={handleEndDateChange}
-            className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          />
         </div>
       </div>
       {user.role === "Admin Group" || user.role === "Owner" ? (

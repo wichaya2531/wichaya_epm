@@ -22,14 +22,12 @@ const useFetchCards = (refresh = null) => {
           `/api/user/get-card-from-user/${user_id}`,
           { next: { revalidate: 10 } }
         );
-
        
         if (!response.ok) {
           throw new Error("Failed to fetch roles");
         }
         const data = await response.json();
-        //console.log("data.",data);  
-
+        //console.log("get card from users.",data);  
         setCards(data.cards);
       } catch (error) {
         setError(error);

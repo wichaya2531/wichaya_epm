@@ -62,7 +62,7 @@ export const GET = async (req) => {
           PICTURE_EVEDENT_REQUIRE: jobTemplates.PICTURE_EVEDENT_REQUIRE||false,// { type: Boolean, required: false },    
           AGILE_SKIP_CHECK:jobTemplates.AGILE_SKIP_CHECK||false,// { type: Boolean, required: false },    
           SORT_ITEM_BY_POSITION: jobTemplates.SORT_ITEM_BY_POSITION ||false,//{ type: Boolean, default: false },
-
+              
 
         });
         await jobTemplate.save();

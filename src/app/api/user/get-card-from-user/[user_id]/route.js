@@ -40,6 +40,7 @@ export const GET = async (req, { params }) => {
             }
         ]);
 
+        //console.log('userActions',userActions);    
 
         const cards = await Card.find().sort({ pos: 1});
 

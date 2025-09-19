@@ -16,6 +16,8 @@ import Image from "next/image";
 import TableComponentAdmin from "@/components/TableComponentAdmin";
 import VerifiedIcon from '@mui/icons-material/Verified';
 
+import JobsTable from "@/components/JobsTable";
+
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
 
@@ -302,7 +304,8 @@ const Page = () => {
           confirmButtonText: "OK",
         }).then(async () => {
           // ดึงข้อมูล jobs ใหม่
-          await fetchJobs(user.workgroup_id);
+                //await fetchJobs(user.workgroup_id);
+                setRefresh(true);
         });
       }
     } catch (error) {
@@ -470,64 +473,51 @@ const Page = () => {
     setIsShowPlan((prev) => !prev);
   };
 
-  const fetchJobs = async (workgroup_id) => {
-            setJobs([]);  
-            /*try {
-              //console.log("workgroup_id....=>", workgroup_id);
-              const response = await fetch(
-                `/api/job/get-jobs-from-workgroup/${workgroup_id}`,
-                { next: { revalidate: 10 } }
-              );
-              //console.log("response=>",response);
-              const data = await response.json();
-              //console.log("jobs data xxxx=>",data);
-              if (data.status === 200) {
-                setJobs(data.jobs);
-              }
-            } catch (err) {
-              console.log("err", err);
-            }*/
-             
-
-              const fetchStream = async (workgroup_id) => {
-                const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
-                const reader = res.body?.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
+  // const fetchJobs = async (workgroup_id) => {
+  //           setJobs([]);  
+  //             const fetchStream = async (workgroup_id) => {
+  //               const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
+  //               const reader = res.body?.getReader();
+  //               const decoder = new TextDecoder();
+  //               let buffer = '';
             
-                if (!reader) return;
+  //               if (!reader) return;
             
-                while (true) {
-                  const { value, done } = await reader.read();
-                  if (done) break;
+  //               while (true) {
+  //                 const { value, done } = await reader.read();
+  //                 if (done) break;
             
-                  buffer += decoder.decode(value, { stream: true });
+  //                 buffer += decoder.decode(value, { stream: true });
             
-                  let boundary;
-                  while ((boundary = buffer.indexOf('\n')) >= 0) {
-                    const chunk = buffer.slice(0, boundary).trim();
-                    buffer = buffer.slice(boundary + 1);
+  //                 let boundary;
+  //                 while ((boundary = buffer.indexOf('\n')) >= 0) {
+  //                   const chunk = buffer.slice(0, boundary).trim();
+  //                   buffer = buffer.slice(boundary + 1);
             
-                    if (chunk) {
-                      try {
-                        const data = JSON.parse(chunk);
-                        //console.log('📦 ได้ข้อมูล:', data);
-                        if (Array.isArray(data)) {
+  //                   if (chunk) {
+  //                     try {
+  //                       const data = JSON.parse(chunk);
+  //                       //console.log('📦 ได้ข้อมูล:', data);
+  //                       if (Array.isArray(data)) {
                           
-                          setJobs(prev => [...prev, ...data]);
-                        }
+  //                         setJobs(prev => [...prev, ...data]);
+  //                       }
             
-                      } catch (err) {
-                        //console.error('❌ JSON parse error:', err, chunk);
-                      }
-                    }
-                  }
-                }
-              };
+  //                     } catch (err) {
+  //                       //console.error('❌ JSON parse error:', err, chunk);
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //             };
              
-              fetchStream(workgroup_id);
+  //             fetchStream(workgroup_id);
 
-  };
+  // };
+
+
+
+
 
   const handleRemove = async (job_id) => {
  
@@ -971,9 +961,10 @@ const Page = () => {
       </div>
 
       <div className="mb-4 p-4 bg-white rounded-xl">
-        <h1 className="mb-4 text-2xl font-bold">Active Jobs</h1>
+        {/* <h1 className="mb-4 text-2xl font-bold">Active Jobs</h1> */}
         {/* ฟิลเตอร์สถานะ */}
-        <div className="flex items-center">
+        
+        {/* <div className="flex items-center">
           <label htmlFor="status-filter" className="mr-2 font-semibold">
             Filter by Status:
           </label>
@@ -989,8 +980,10 @@ const Page = () => {
               </option>
             ))}
           </select>
-        </div>
-        { user.role==="Admin Group" || user.role === "Owner" ? (
+        </div> */}
+
+
+        {/* { user.role==="Admin Group" || user.role === "Owner" ? (
                  <TableComponentAdmin
                  headers={jobsHeader}
                  datas={jobsBody}
@@ -1018,7 +1011,10 @@ const Page = () => {
                   />
               )
 
-        }
+        } */}
+        <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
+          <JobsTable refresh={refresh} />
+        </div>
 
       </div>
       {isShowDetail && <ShowDetailModal />}

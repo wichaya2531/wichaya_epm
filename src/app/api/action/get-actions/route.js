@@ -13,6 +13,7 @@ export const GET = async (req) => {
             name: action.ACTION_NAME,
            
         }));
+       // console.log('data action list',data);
         return NextResponse.json({ actions:data , status: "200" });
     } catch (err) {
         return NextResponse.json({ message: "Read all actions failed", file: __filename, error: err.message });

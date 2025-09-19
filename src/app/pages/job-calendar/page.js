@@ -17,6 +17,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import VerifiedIcon from '@mui/icons-material/Verified';
 import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
+import { Alert } from "@mui/material";
 
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
@@ -124,6 +125,10 @@ const handleshowOptionAfterClickEvent = async (b) => {
               if(data_lv1.menu.includes('Move')){
                      htmlBtn+=`<button id="btn-move" class="swal2-cancel swal2-styled" style="background-color:rgb(143, 138, 138);">Move</button>`;
               }
+
+              if(data_lv1.menu.includes('Trigger')){
+                     htmlBtn+=`<button id="btn-trigger" class="swal2-cancel swal2-styled" style="background-color:rgba(9, 180, 40, 1);">Trigger</button>`;
+              }
               if(data_lv1.menu.includes('Delete')){
                      htmlBtn+=`<button id="btn-delete" class="swal2-cancel swal2-styled" style="background-color: #f44336;">Delete</button>`;
               }
@@ -170,6 +175,42 @@ const handleshowOptionAfterClickEvent = async (b) => {
                // console.log('👁 VIEW action called for', b);
               });
 
+
+               popup.querySelector('#btn-trigger')?.addEventListener('click', async () => {
+                Swal.close(); // ปิด popup เดิมก่อน
+                 // console.log('manual trigger ไปที่  schedual_id ',b);  
+                      try{
+                      //src/app/api/schedual/remove-schedual
+                          const response = await fetch(`/api/schedual/schedual-manual-trigger`, {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              _id: [b.event_id],
+                              //datetime:datetime
+                              }), // ✅ ส่งเป็น array เสมอ
+                          });                    
+                          const data = await response.json();
+                         // console.log('schedual-manual-trigger',data); 
+                          if (data.status === 200) {
+                                  //  setTimeout(function(){
+                                  //     setRefresh(!refresh);
+                                  //  },500);
+                                    location.reload();
+                                    // ลบสำเร็จ
+                                    return;
+                          }
+                          alert(data.message);
+                          //console.log('data',data);
+                    }catch(err){
+                            console.error("Error update job:", err); 
+                    }
+                 
+
+               });
+
+
               popup.querySelector('#btn-move')?.addEventListener('click', () => {
                 Swal.close(); // ปิด popup เดิมก่อน
                 
@@ -212,7 +253,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
                                         "Content-Type": "application/json",
                                       },
                                       body: JSON.stringify({
-                                         _id: [b._id],
+                                         _id: [b.event_id],
                                          datetime:datetime
                                         }), // ✅ ส่งเป็น array เสมอ
                                     });                    

@@ -9,6 +9,8 @@
   import useFetchUser from "@/lib/hooks/useFetchUser.js";
   import useFetchJobTemplate from "@/lib/hooks/useFetchJobTemplate.js";
   import useFetchUsers from "@/lib/hooks/useFetchUsers.js";
+  import useFetchUsersInWorkgroup from "@/lib/hooks/useFetchUsersInWorkgroup.js";
+  
   import Swal from "sweetalert2";
   //import { config } from "@/config/config.js";
   //import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -45,6 +47,15 @@
     const [evidentImageReq, setEvidentImageReq] = useState([]);
     const [agileSkipCheck, setAgileSkipCheck] = useState([]);
     const [sortItemByPosition, setSortItemByPosition] = useState([]);
+
+    
+    const [usersInActiveList, setUsersInActiveList] = useState([]);
+    
+    
+    const [users, setUsers] = useState([]);
+    //const [error, setError] = useState([]);
+    
+
 
     const {
       user,
@@ -101,11 +112,35 @@
     }, [jobTemplate, isJobTemplateLoading]);
 
 
-    const {
-      users,
-      isLoading: isUsersLoading,
-      error: usersError,
-    } = useFetchUsers(refresh);
+    //  const {
+    //    users,
+    //    isLoading: isUsersLoading,
+    //    error: usersError,
+    //  } = useFetchUsers(refresh);
+
+    useEffect(() => {
+      if (user?.workgroup_id) {
+             const fetchUsers = async () => {
+                  //console.log('use fetchUsers ');
+                  try {
+                      const res = await fetch(`/api/user/get-users-in-workgroup/${user.workgroup_id}`, { next: { revalidate: 10 } });
+                      const data = await res.json();
+                      //console.log("data users ",data);
+                      setUsers(data.users);
+                      setUsersInActiveList(data.users);
+                      setLoading(false);
+                  } catch (error) {
+                    // setError(error);
+                    // setLoading(false);
+                  }
+
+
+
+              };
+            fetchUsers();
+         }
+    }, [user?.workgroup_id]);
+
 
     const [timeout, setTimeout] = useState({
       value: jobTemplate.TIMEOUT, // เริ่มต้นค่าจาก jobTemplate
@@ -159,15 +194,20 @@
               value: userItem._id,
               label: userItem.name,
             }));
-          setFilteredOptions(filteredUsers);
+           // console.log('filteredUsers',filteredUsers);
+            setFilteredOptions(filteredUsers);
         }
       }
-
       //console.log('approvers',approvers);
-
-
-
     }, [approvers, notifies, users, workgroups, user]);
+
+    useEffect(() => {
+          //console.log("ทำงาน");
+          if(user){
+                  //console.log('user',user);
+          }
+    },[user]);
+
 
     useEffect(() => {
       // สำหรับ Add Notify Overdue ใช้ users ทั้งหมด
@@ -505,9 +545,11 @@
       e.preventDefault();
 
       //const formData = new FormData(e.target);
-    // console.log('timeout=',timeout);  
-
+      //console.log('timeout=',timeout);  
+      //const notifies_ids = notifies.map((notify) => notify._id);
+      //console.log('notifies_ids',notifies_ids);  
       //return;
+      
       //var c_timeout=timeout;
 
       const jobTemplateID = jobTemplate_id;

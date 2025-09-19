@@ -15,9 +15,8 @@ const useFetchUsers = () => {
         const fetchUsers = async () => {
             try {
                 const res = await fetch(`/api/user/get-users`, { next: { revalidate: 10 } });
-
                 const data = await res.json();
-                //console.log("data users:",data);
+                //console.log("แสดงจำนวนผู้ใช้งานทั้งหมดในระบบ users:",data);
                 setUsers(data.users);
                 setLoading(false);
             } catch (error) {

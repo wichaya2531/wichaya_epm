@@ -22,6 +22,8 @@ import { User } from "@/lib/models/User.js";
 import { sendEmailsOverdude } from "@/lib/utils/sendemailoverdude";
 //import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 import { EmailStack } from "@/lib/models/emailStacker";
+import { ConstructionOutlined } from "@mui/icons-material";
+import { trusted } from "mongoose";
 
 
 
@@ -131,101 +133,125 @@ export const POST = async (req, res) => {
     updatedAt: { $gte: lrv_Date }
   })
 
+  //console.log("jobs ",jobs.length);
+
   // jobs.forEach(job => {
   //       console.log(job.updatedAt);
   // });
 
   const now = new Date();
-  //return NextResponse.json({ status: 200 });
+ // return NextResponse.json({ status: 200 });
+  
+  const overdue_check=false;
+  if (overdue_check) {
+              try {
+              //console.log("------Checking for Overdue Jobs--------");
+              const overdueStatus = await Status.findOne({ status_name: "overdue" });
+              //console.log('overdueStatus',overdueStatus);
+            // console.log('lrv_Date-3 คือเวลา ',lrv_Date);
+            // console.log('จำนวนงานทั้งหมดที่เจอในระบบ' , jobs.length);
 
-  try {
-    //console.log("------Checking for Overdue Jobs--------");
-    const overdueStatus = await Status.findOne({ status_name: "overdue" });
+              // ทำการตรวจสอบและเปลี่ยนสถานะของงาน
 
-    // ทำการตรวจสอบและเปลี่ยนสถานะของงาน
-    const checkOverdue = jobs.map(async (job) => {
-      const status = await Status.findOne({ _id: job.JOB_STATUS_ID });
-      const statusName = status?.status_name || "Unknown";
-      const jobCreationTime = new Date(job.createdAt);
-      const jobExpiryTime = await convertTimeout(job.TIMEOUT, job.createdAt);
+              var num=0;
 
-      // ตรวจสอบว่าเวลาปัจจุบันเกินเวลาที่กำหนดแล้ว และงานยังไม่ได้มีสถานะเป็น "overdue" หรือ "complete"
-      if (
-        now > jobExpiryTime &&
-        statusName !== "overdue" &&
-        statusName !== "complete"
-      ) {
-        // เปลี่ยนสถานะเป็น "overdue"
-        job.JOB_STATUS_ID = overdueStatus._id;
+              const checkOverdue = jobs.map(async (job) => {
+                        const status = await Status.findOne({ _id: job.JOB_STATUS_ID });
+                        const statusName = status?.status_name || "Unknown";
+                        const jobCreationTime = new Date(job.createdAt);
+                        const jobExpiryTime = await convertTimeout(job.TIMEOUT, job.createdAt);
 
-        if (job.LINE_NAME === undefined) {
-          job.LINE_NAME = "Unknown";
-        }
-        //    getOverdueList(job);
-        //console.log("Notify Overdue List : ",job.OVERDUE_NOTIFYS);
-        let overdueEmailList = [];
-        if (job.OVERDUE_NOTIFYS && Array.isArray(job.OVERDUE_NOTIFYS)) {
-          for (const overdueListId of job.OVERDUE_NOTIFYS) {
-            const email = await getEmailfromUserID(overdueListId); // ใช้ getEmailfromUserID ดึงอีเมล
-            if (email) {
-              overdueEmailList.push(email); // เก็บอีเมลในรายการ
+                        // if (num===0) {
+                        //      console.log('infomation _id',job._id);
+                        //      console.log('infomation TIMEOUT',job.TIMEOUT);
+                        //      console.log('jobExpiryTime',jobExpiryTime);
+                        //      console.log('All Infomation ',job);
+                        // }   
+                        // num++;
+                        // return NextResponse.json({ status: 200 });
+                        // ตรวจสอบว่าเวลาปัจจุบันเกินเวลาที่กำหนดแล้ว และงานยังไม่ได้มีสถานะเป็น "overdue" หรือ "complete"
+                        if (
+                          now > jobExpiryTime &&
+                          statusName !== "overdue" &&
+                          statusName !== "complete" && statusName !== "waiting for approval"
+                        ) {
+                          // เปลี่ยนสถานะเป็น "overdue"
+                          job.JOB_STATUS_ID = overdueStatus._id;
+
+                          if (job.LINE_NAME === undefined) {
+                            job.LINE_NAME = "Unknown";
+                          }
+                          //    getOverdueList(job);
+                          //console.log("Notify Overdue List : ",job.OVERDUE_NOTIFYS);
+
+                          //console.log('ค้นพบเจองานที่ Overdue!!',job);  
+                          //return NextResponse.json({ status: 200 });
+
+                          let overdueEmailList = [];
+                          if (job.OVERDUE_NOTIFYS && Array.isArray(job.OVERDUE_NOTIFYS)) {
+                            for (const overdueListId of job.OVERDUE_NOTIFYS) {
+                              const email = await getEmailfromUserID(overdueListId); // ใช้ getEmailfromUserID ดึงอีเมล
+                              if (email) {
+                                overdueEmailList.push(email); // เก็บอีเมลในรายการ
+                              }
+                            }
+                          }
+
+                          //console.log("overdueEmailList",overdueEmailList);
+
+                          //return NextResponse.json({ status: 200 });
+
+                          //บันทึกงานที่เปลี่ยนสถานะ
+                          await job.save();
+
+                          // ดึงข้อมูลผู้อนุมัติจาก JOB_APPROVERS
+                          let emailList = [];
+                          if (job.JOB_APPROVERS && Array.isArray(job.JOB_APPROVERS)) {
+                            for (const approverId of job.JOB_APPROVERS) {
+                              const email = await getEmailfromUserID(approverId); // ใช้ getEmailfromUserID ดึงอีเมล
+                              if (email) {
+                                emailList.push(email); // เก็บอีเมลในรายการ
+                              }
+                            }
+                          }
+
+                          // ตรวจสอบว่าเราได้อีเมลล์จาก ACTIVATE_USER หรือไม่
+                          const activater = await User.findOne({ _id: job.ACTIVATE_USER }).select(
+                            "EMAIL"
+                          );
+                          if (activater && activater.EMAIL) {
+                            emailList.push(activater.EMAIL); // ใส่อีเมลของผู้สร้างงาน
+                          }
+
+                          // ตรวจสอบว่า emailList มีข้อมูลหรือไม่
+                          if (overdueEmailList.length > 0) {
+                            //emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
+                            //console.log("OVERDUE send emailList to=>", overdueEmailList); // แสดง emailList ที่จะส่ง
+                            // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
+                            //await sendEmailsOverdude(overdueEmailList, job); // ฟังก์ชันการส่งอีเมล ปิดเพื่อทดสอบ
+                          } else {
+                                //console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
+                          }
+                        }
+
+                        // ดึงสถานะสุดท้ายของงาน
+                        const finalStatus = await Status.findOne({ _id: job.JOB_STATUS_ID });
+                        const finalStatusName = finalStatus?.status_name || "Unknown";
+
+                        return {
+                          jobID: job._id,
+                          jobName: job.JOB_NAME,
+                          STATUS_NAME: finalStatusName,
+                        };
+              });
+
+              await Promise.all(checkOverdue);
+            } catch (error) {
+              console.error("Check Overdue Error: ", error);
             }
-          }
-        }
 
-        //console.log("overdueEmailList",overdueEmailList);
-
-        //return NextResponse.json({ status: 200 });
-
-        //บันทึกงานที่เปลี่ยนสถานะ
-         await job.save();
-
-        // ดึงข้อมูลผู้อนุมัติจาก JOB_APPROVERS
-        let emailList = [];
-        if (job.JOB_APPROVERS && Array.isArray(job.JOB_APPROVERS)) {
-          for (const approverId of job.JOB_APPROVERS) {
-            const email = await getEmailfromUserID(approverId); // ใช้ getEmailfromUserID ดึงอีเมล
-            if (email) {
-              emailList.push(email); // เก็บอีเมลในรายการ
-            }
-          }
-        }
-
-        // ตรวจสอบว่าเราได้อีเมลล์จาก ACTIVATE_USER หรือไม่
-        const activater = await User.findOne({ _id: job.ACTIVATE_USER }).select(
-          "EMAIL"
-        );
-        if (activater && activater.EMAIL) {
-          emailList.push(activater.EMAIL); // ใส่อีเมลของผู้สร้างงาน
-        }
-
-        // ตรวจสอบว่า emailList มีข้อมูลหรือไม่
-        if (overdueEmailList.length > 0) {
-          //emailList = [...new Set(emailList)]; // กำจัดอีเมลที่ซ้ำกัน
-          //console.log("OVERDUE send emailList to=>", overdueEmailList); // แสดง emailList ที่จะส่ง
-          // ส่งอีเมลไปยังผู้อนุมัติและผู้สร้างงาน
-          await sendEmailsOverdude(overdueEmailList, job); // ฟังก์ชันการส่งอีเมล
-        } else {
-              //console.log("No email found for the approver."); // กรณีที่ไม่พบอีเมลล์
-        }
-      }
-
-      // ดึงสถานะสุดท้ายของงาน
-      const finalStatus = await Status.findOne({ _id: job.JOB_STATUS_ID });
-      const finalStatusName = finalStatus?.status_name || "Unknown";
-
-      return {
-        jobID: job._id,
-        jobName: job.JOB_NAME,
-        STATUS_NAME: finalStatusName,
-      };
-    });
-
-    await Promise.all(checkOverdue);
-  } catch (error) {
-    console.error("Check Overdue Error: ", error);
   }
-
+  
   //-------------------------ค้นหา Schedual-------------------------
   try {
     // console.log("-------Checking for active by schedual--------");
@@ -246,10 +272,6 @@ export const POST = async (req, res) => {
 
     // console.log("scheduler=>",scheduler);
 
-
-
-
-
     //console.log("-------Checking for active by schedule (±60 minutes)--------");
 
     const now = new Date(); // เวลาปัจจุบัน
@@ -269,11 +291,10 @@ export const POST = async (req, res) => {
          $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
        },
       STATUS:"plan", 
-    });
+    }).limit(60);
    
     //console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
     //return NextResponse.json({ status: 200 });
-
     scheduler.map(async (schedulers) => {
       //console.log("scheduler=>",scheduler);
       //if (

@@ -226,7 +226,6 @@ const Page = () => {
         throw new Error("Failed to fetch roles");
       }
       const res = await response.json();
-
       setActionList(res.actions);
     } catch (error) {
       console.error(error);

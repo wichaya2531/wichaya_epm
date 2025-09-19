@@ -94,7 +94,14 @@ export const GET = async (req, res) => {
                             return NextResponse.json({ status: 200 ,info:theJob,menu:['View']});    
                         }
                     }else if(job_status.status_name==='overdue'){
-                        if (role_user==="Admin Group" || role_user==="Owner") {
+
+                        //console.log("งานที่คุณกดนั้น เป็น Over Due!!");
+                        //console.log('user_id ของคุณคือ',user_id);
+                        //console.log('theJob.JOB_APPROVERS มีรายชื่อ ดังนี้',theJob.JOB_APPROVERS);
+                        //console.log('คุณคือ 1 ใน Approve List ใช่้หรือไม่' ,theJob.JOB_APPROVERS.includes(user_id));
+                        if(theJob.JOB_APPROVERS.includes(user_id)){
+                            return NextResponse.json({ status: 200 ,info:theJob,menu:['View','Approve']});       
+                        }else if (role_user==="Admin Group" || role_user==="Owner") {
                             return NextResponse.json({ status: 200 ,info:theJob,menu:["Delete",'View']});    
                         }else{
                             return NextResponse.json({ status: 200 ,info:theJob,menu:['View']});    
@@ -118,7 +125,7 @@ export const GET = async (req, res) => {
                 if(theSchedual.WORKGROUP_ID.toString()===user_workgroup_id){
                     //  user อยู่ใน workgroup เดียวกันกับงานนั้น 
                     if (role_user==="Admin Group" || role_user==="Owner") {
-                        return NextResponse.json({ status: 200 ,info:theSchedual,menu:['Delete','Move']});                             
+                        return NextResponse.json({ status: 200 ,info:theSchedual,menu:['Delete','Trigger','Move']});                             
                     }else{
                         return NextResponse.json({ status: 200 ,info:theSchedual,menu:[]});         
                     }
