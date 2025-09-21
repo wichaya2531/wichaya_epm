@@ -203,7 +203,7 @@ export async function sendEmailsFromManual(emailList, job,mode='wait_for_get') {
   //return;
    
   //console.log('sendEmailsFromManual ');
-  //console.log('emailList ',emailList);
+  console.log('send email to ',emailList);
   //console.log('job ',job);
   var subject=''; 
   var mailBody='';

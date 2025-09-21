@@ -40,7 +40,8 @@ const JobItemSchema = new mongoose.Schema(
     },
     REAL_TIME_VALUE: { type: String, default: "None" },
     FILE: { type: String, default: null },
-    IMG_ATTACH: { type: String, default: null },
+    IMG_ATTACH: { type: String, default: null },// before edit
+    IMG_ATTACH_1: { type: String, default: null }, // after edit
     
     INPUT_TYPE: { type: String,required: false},
     POS: { type: Number, default: 0 },

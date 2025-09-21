@@ -84,6 +84,7 @@ export const GET = async (req, res) => {
                   //  "jobItems.ACTUAL_VALUE": { $ne: null },
                     "jobItems.updatedAt": { $ne: null },
                     "LINE_NAME": { $ne: null },
+                    "WD_TAG": { $ne: null },
                     "DOC_NUMBER": { $ne: null },
                     "JOB_STATUS_ID":{ $ne: null },
                     "jobItems.JOB_ITEM_NAME": { $ne: null },
@@ -106,6 +107,7 @@ export const GET = async (req, res) => {
                     UPPER:"$jobItems.UPPER_SPEC",
                     LOWER:"$jobItems.LOWER_SPEC",
                     FILE:"$jobItems.IMG_ATTACH",
+                    WD_TAG: "$WD_TAG" // เพิ่มบรรทัดนี้
                   }
                 },
                 {

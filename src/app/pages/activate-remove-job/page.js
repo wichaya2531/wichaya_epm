@@ -195,23 +195,38 @@ const Page = () => {
     //console.log("after dataJobTemplate=>", dataJobTemplate);
     Swal.fire({
       title: "Are you sure?",
-      text: "You won't be confirm for this line :" + linenameSelected + " !",
+      html: `
+      <div>
+        <p>You won't be confirm for this line: <b>${linenameSelected}</b>!</p>
+        <label for="jobCountInput">จำนวนงานที่จะเปิด:</label>
+        <input id="jobCountInput" type="number" min="1" max="60" value="1" style="width: 100px; margin-top: 8px;" />
+      </div>
+      `,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes, confirm!",
       cancelButtonText: "No, cancel!",
       reverseButtons: true,
+      preConfirm: () => {
+      const jobCount = document.getElementById("jobCountInput").value;
+      if (!jobCount || jobCount < 1) {
+        Swal.showValidationMessage("กรุณากรอกจำนวนงานที่ถูกต้อง (มากกว่า 0)");
+        return false;
+      }
+      return jobCount;
+      }
     }).then((result) => {
       if (result.isConfirmed) {
-        activateJobProcess(dataJobTemplate);
-        try {
-          document.getElementById(
-            "allLinePanel-" + dataJobTemplate.jobTemplateID
-          ).style.display = "none";
-        } catch (error) {}
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
+      // เพิ่มจำนวนงานเข้า dataJobTemplate
+      dataJobTemplate.jobCount = Number(result.value);
+      activateJobProcess(dataJobTemplate);
+      try {
+        document.getElementById(
+        "allLinePanel-" + dataJobTemplate.jobTemplateID
+        ).style.display = "none";
+      } catch (error) {}
       }
-      event.target.value="";
+      event.target.value = "";
     });
     
    
@@ -261,9 +276,6 @@ const Page = () => {
     }
   }
 
-
-
-
   const handleActivate = async (jobTemplateSelectedFromUser) => {
     if (
       !jobTemplateSelectedFromUser.LINE_NAME ||
@@ -291,6 +303,7 @@ const Page = () => {
           JobTemplateCreateID: checkListTemplate.jobTemplateCreateID,
           ACTIVATER_ID: checkListTemplate.ACTIVATER_ID,
           LINE_NAME: checkListTemplate.LINE_NAME,
+          jobCount: checkListTemplate.jobCount || 1, // จำนวนงานที่จะเปิด (ถ้าไม่มีให้เป็น 1)
         }),
       });
       const responseData = await response.json();
@@ -303,9 +316,10 @@ const Page = () => {
           text: "The checklist template has been successfully activated",
           confirmButtonText: "OK",
         }).then(async () => {
-          // ดึงข้อมูล jobs ใหม่
+               // ดึงข้อมูล jobs ใหม่
                 //await fetchJobs(user.workgroup_id);
-                setRefresh(true);
+                //setRefresh(true);
+                setRefresh((prev) => !prev);
         });
       }
     } catch (error) {

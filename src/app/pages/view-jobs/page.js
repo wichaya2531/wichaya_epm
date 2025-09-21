@@ -325,12 +325,16 @@ const getMachineID = () => {
     setIsShowJobInfo(!isShowJobInfo);
   };
 
-  const handleIMGItemChange = (filePath, item) => {
+  const handleIMGItemChange = (filePath, item,imgItemSelectBeforeUpload) => {
     const value = filePath;
-
     for (var t in jobItems) {
       if (jobItems[t].JobItemID == item.JobItemID) {
-        jobItems[t].IMG_ATTACH = value;
+        if(imgItemSelectBeforeUpload===1){
+          jobItems[t].IMG_ATTACH = value;
+        }else if(imgItemSelectBeforeUpload===2){
+          jobItems[t].IMG_ATTACH_1 = value;
+        }
+        
       }
     }
   };
@@ -639,26 +643,38 @@ const getMachineID = () => {
                   }
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
                   // เมื่อกด Reuse this page
-                  Swal.fire("You chose to reuse this page!", "", "info");
+                  //Swal.fire("You chose to reuse this page!", "", "info");
                   console.log('jobData',jobData);
-                  
+                  console.log('user ',user);
                   // goto step 
                   //1.ส่งคำสั่งเพื่อขอเปิด  new job
-
-                    //   try{
-                    //       const response = await fetch(`api for open job with the same of template`, {
-                    //         method: "POST",
-                    //         headers: {
-                    //           "Content-Type": "application/json",
-                    //         },
-                    //         body: JSON.stringify({ }), // ✅ ส่งเป็น array เสมอ
-                    //       });                    
-                    //       const data = await response.json();
-                    //       // console.log('schedual-manual-trigger',data); 
-                    //       //console.log('data',data);
-                    // }catch(err){
-                    //         console.error("Error update job:", err); 
-                    // }
+                  // เปิด job ใหม่ โดยใช้ template เดิม
+                      try{
+                          const response = await fetch(`../api/job/create-new-job-with-template-id`, {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              template_id: jobData.JobTemplateID,
+                              linename: jobData.LINE_NAME,
+                              activate_user_id: user._id,
+                              //JobTemplateCreateID: jobData.JobTemplateCreateID,                              
+                            }), // ✅ ส่งเป็น array เสมอ
+                          });                    
+                          const data = await response.json();
+                          console.log('response from open new job',data);
+                          if(data.status==200){
+                             const new_job_id=data.response._id;
+                             //console.log('new_job_id',new_job_id);   
+                             setTimeout(() => {
+                              router.push("/pages/view-jobs?job_id="+new_job_id);  // เปิด job ใหม่                              
+                             }, 1000);                           
+                          }
+                          //console.log('data',data);
+                    }catch(err){
+                            console.error("Error update job:", err); 
+                    }
 
                   //2.reload หน้านี้ด้วย job_id ที่เปิดใหม่   
                 }

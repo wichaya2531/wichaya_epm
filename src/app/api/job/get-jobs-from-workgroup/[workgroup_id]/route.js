@@ -111,9 +111,9 @@ export const GET = async (req, { params }) => {
                   STATUS_NAME: statusName,
                   STATUS_COLOR: statusColor,
                   ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL||false,
-
                   VALUE_ITEM_ABNORMAL:job.VALUE_ITEM_ABNORMAL,
-
+                  updatedAt: job.updatedAt,
+                  SUBMITTED_DATE: job.SUBMITTED_DATE,
                   //await checkItemAbNormal(job._id),
                   //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };

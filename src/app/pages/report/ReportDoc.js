@@ -24,7 +24,7 @@ const ReportDoc = ({
   dateTimeEnd,
 }) => {
     
-  // console.log('report Data',report);
+   //console.log('report Data',report);
 
   
   //console.log('workgroupOfUser',workgroupOfUser);
@@ -50,15 +50,16 @@ const ReportDoc = ({
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   const [selectedLineNames, setSelectedLineNames] = useState([]);
   const [selectedWorkgroups, setSelectedWorkgroups] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isOpen1, setIsOpen1] = useState(false);
+  const [selectedWDTag, setSelectedWDTag] = useState("");
   const [selectedDocNumbers, setSelectedDocNumbers] = useState("");
   const [selectedJobItemNames, setSelectedJobItemNames] = useState([]);
   const [docNumbers, setDocNumbers] = useState([]);
   const [jobItemNames, setJobItemNames] = useState([]);
   const [workgroupNames, setWorkgroupNames] = useState([]);
-
   const [lineNames, setLineNames] = useState([]);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen1, setIsOpen1] = useState(false);
   const [reportType, setReportType] = useState("month");
   const [currentPage, setCurrentPage] = useState(1);
   const getLastDayOfMonth = (date) => {
@@ -139,6 +140,7 @@ const ReportDoc = ({
         docNumber: item.DOC_NUMBER || "Unknown",
         Job_status:item.JOB_STATUS || "Unknown",
         Img_file:item.FILE||"Unknown",
+        wd_tag: item.WD_TAG||"Unknown",
       };
     })
     .filter(Boolean)
@@ -159,6 +161,7 @@ const ReportDoc = ({
           y: curr.y,
           actualValue: curr.actualValue,
           docNumber: curr.docNumber,
+          wd_tag: curr.wd_tag,
           jobItemName: curr.jobItemName,
           jobItemTitle: curr.jobItemTitle,
           upper_lower:curr.upper_lower,
@@ -197,7 +200,6 @@ const ReportDoc = ({
   //console.log('sortedDataByLineNameAndWorkgroupAndJobItem',sortedDataByLineNameAndWorkgroupAndJobItem);
   const filteredData = Object.keys(sortedDataByLineNameAndWorkgroupAndJobItem)
     .filter((groupKey) => {
-      //console.log('groupKey1',groupKey);
       const [lineName, workgroupName, jobItemName] = groupKey.split("|");
       return (
         lineName !== "unknown" &&
@@ -210,19 +212,19 @@ const ReportDoc = ({
         (selectedJobItemNames.length === 0 ||
           selectedJobItemNames.includes(jobItemName))
       );
-    }).map((groupKey) => {
-      //console.log('sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]',sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]);
-      const [lineName, workgroupName, jobItemName] = groupKey.split("-");
-      //console.log('groupKey2',groupKey);
-    //  console.log('item',item);
-     // console.log('sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]',sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]);
+    })
+    .map((groupKey) => {
+     // console.log('groupKey',groupKey);
+      const [lineName, workgroupName, jobItemName] = groupKey.split("|");
       return {
         label: `${lineName} - ${workgroupName} - ${jobItemName}`,
         data: sortedDataByLineNameAndWorkgroupAndJobItem[groupKey]
           .filter(
             (item) =>
-              selectedDocNumbers.length === 0 ||
-              selectedDocNumbers.includes(item.docNumber)
+              (selectedDocNumbers.length === 0 ||
+                selectedDocNumbers.includes(item.docNumber)) &&
+              (selectedWDTag === "" ||
+                (item.wd_tag === selectedWDTag))
           )
           .map((item) => ({
             x: item.x,
@@ -231,21 +233,17 @@ const ReportDoc = ({
             docNumber: item.docNumber,
             jobItemName: item.jobItemName,
             jobItemTitle: item.jobItemTitle,
-            upper_lower:item.upper_lower,
+            upper_lower: item.upper_lower,
             lineName: item.lineName,
-            Job_status:item.Job_status,
-            Img_file:item.Img_file,
+            Job_status: item.Job_status,
+            Img_file: item.Img_file,
+            wd_tag: item.wd_tag,
           })),
       };
     });
   
   
-    //console.log('after filteredData ',filteredData);
-  //  เปลี่ยนชื่อ filteredData ให้เป็นชื่ออื่น เช่น filteredReportData
-  const filteredReportData = report.filter((item) => {
-    const updatedAt = new Date(item.jobItemsUpdatedAt);
-    return updatedAt >= startDate && updatedAt <= endDate;
-  });
+
 
   const fetchWorkgroups = async () => {
     try {
@@ -536,7 +534,10 @@ const ReportDoc = ({
     ];
 
     const tableData = filteredData.flatMap((dataset) =>
+
       dataset.data.map((item) => {
+        console.log('item',item);
+
         const itemDate = new Date(item.x); // แปลงเป็น Date โดยใช้ UTC time (จาก item.x)
 
         // แปลงเวลาเป็น Local Time
@@ -563,6 +564,7 @@ const ReportDoc = ({
           JobItemTitle: item.jobItemTitle || "Unknown",
           JobItemName: item.jobItemName || "Unknown",
           upper_lower:item.upper_lower || "Unknown",
+          wd_tag:item.wd_tag || "Unknown",
           Month: months[localDate.getMonth()],
           Date: formattedDate,
           Time: formattedTime,
@@ -850,13 +852,30 @@ const maxDateStr = tomorrow.toISOString().split("T")[0];
           </button>
         </div>
 
-        {/* LineNames UI */}
+        
+        
+        
+        <div className="flex flex-wrap gap-2 mt-4">
+          {colorValues.map((value) => (
+            <div key={value} className="flex items-center space-x-2">
+              <span
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: getPastelColorForValue(value) }}
+              ></span>
+              <span className="text-sm text-gray-700">{value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* DOC Numbers */}
+      <div className="flex flex-col ">
+        
+        <div className="relative w-full pb-4">
+          <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm mt-4 flex flex-wrap gap-4">
+           
+          {/* LineNames UI */}
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1"
-             
-          >
-            LineName
-          </label>
+           <label className="block p-2 font-semibold">LineName</label>
           <div
             onClick={() => setIsOpen1((prevOpen) => !prevOpen)}
              //onClick={() => pressCheck(1)}
@@ -902,84 +921,81 @@ const maxDateStr = tomorrow.toISOString().split("T")[0];
             </div>
           )}
         </div>
-        <div className="relative mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Report View Type
-          </label>
-          <select
-            className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400 ${
-              isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
-            }`}
-            value={reportType}
-            onChange={(e) => {
-              const selectedReportType = e.target.value;
-              setReportType(selectedReportType);
-
-              // เปลี่ยนรูปแบบ startDate และ endDate ตามประเภทที่เลือก
-              if (
-                selectedReportType === "month" ||
-                selectedReportType === "week"
-              ) {
-                // const currentMonthStart = new Date();
-                // setStartDate(
-                //   new Date(
-                //     currentMonthStart.getFullYear(),
-                //     currentMonthStart.getMonth(),
-                //     1
-                //   )
-                // );
-                // setEndDate(getLastDayOfMonth(currentMonthStart)); // สิ้นสุดที่วันสุดท้ายของเดือน
-              } else if (
-                selectedReportType === "date" ||
-                selectedReportType === "shift"
-              ) {
-                /*const currentDate = new Date();
-                setStartDate(currentDate);
-                setEndDate(currentDate); // ใช้วันที่เดียวกัน*/
-              }
-            }}
-          >
-            <option value="month">Month</option>
-            <option value="week">Week</option>
-            <option value="date">Date</option>
-            <option value="shift">Shift</option>
-          </select>
-        </div>
-        
-        <div className="flex flex-wrap gap-2 mt-4">
-          {colorValues.map((value) => (
-            <div key={value} className="flex items-center space-x-2">
-              <span
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: getPastelColorForValue(value) }}
-              ></span>
-              <span className="text-sm text-gray-700">{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* DOC Numbers */}
-      <div className="flex flex-col ">
-        {/* Section ตัวเลือก DOC Numbers */}
-        <div className=" relative w-full pb-4">
-          <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
-            <label className="block p-2 font-semibold">DOC Numbers</label>
+           
+           
+           <div className="mb-4">
+           <label className="block p-2 font-semibold">DOC No.</label>
             <select
-              className="w-[250px] p-2 border rounded"
+              className="w-auto p-2 border rounded"
               value={selectedDocNumbers}
               onChange={(e) => handleDocNumberChange(e.target.value)}
             >
-              <option value="">-- Select DOC Number --</option>
+              <option value="">-- Select--</option>
               {availableDocNumbers.map((docNumber) => (
                 <option key={docNumber} value={docNumber}>
                   {docNumber}
                 </option>
               ))}
-            </select>
-          </div>
+            </select> 
+           </div>
+            <div className="mb-4">
+                <label className="block p-2 font-semibold">WD_TAG</label>
+                <select
+                  className="w-auto p-2 border rounded"
+                  value={selectedWDTag}
+                  onChange={(e) => setSelectedWDTag(e.target.value)}
+                >
+                  <option value="">-- Select WD_TAG --</option>
+                  {[...new Set(report.map(item => item.WD_TAG).filter(Boolean))].map((tag) => (
+                    <option key={tag} value={tag}>
+                      {tag}
+                    </option>
+                  ))}
+                </select>
+            </div>
+            <div className="relative mb-4">
+                <label className="block p-2 font-semibold">Report View Type</label>
+                <select
+                  className={`border border-gray-300 rounded-md py-2 px-3 w-auto focus:border-blue-400 ${
+                    isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+                  }`}
+                  value={reportType}
+                  onChange={(e) => {
+                    const selectedReportType = e.target.value;
+                    setReportType(selectedReportType);
 
+                    // เปลี่ยนรูปแบบ startDate และ endDate ตามประเภทที่เลือก
+                    if (
+                      selectedReportType === "month" ||
+                      selectedReportType === "week"
+                    ) {
+                      // const currentMonthStart = new Date();
+                      // setStartDate(
+                      //   new Date(
+                      //     currentMonthStart.getFullYear(),
+                      //     currentMonthStart.getMonth(),
+                      //     1
+                      //   )
+                      // );
+                      // setEndDate(getLastDayOfMonth(currentMonthStart)); // สิ้นสุดที่วันสุดท้ายของเดือน
+                    } else if (
+                      selectedReportType === "date" ||
+                      selectedReportType === "shift"
+                    ) {
+                      /*const currentDate = new Date();
+                      setStartDate(currentDate);
+                      setEndDate(currentDate); // ใช้วันที่เดียวกัน*/
+                    }
+                  }}
+                >
+                  <option value="month">Month</option>
+                  <option value="week">Week</option>
+                  <option value="date">Date</option>
+                  <option value="shift">Shift</option>
+                </select>
+              </div>
+          </div>
         </div>
-       
         {/* Section ตาราง */}
         <div className="w-full ">
           <TableReportDoc

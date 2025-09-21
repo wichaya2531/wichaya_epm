@@ -92,6 +92,7 @@ export const GET = async (req, res) => {
      //console.log('job=>', job);
 
     const jobData = {
+      JobTemplateID: job.JOB_TEMPLATE_ID,
       JobID: JobID,
       Status: statusName,
       Timeout: job.TIMEOUT,

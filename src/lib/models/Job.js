@@ -3,6 +3,11 @@ import { userSchema } from "./User";
 
 const jobSchema = new mongoose.Schema(
   {
+    JOB_TEMPLATE_ID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "JobTemplate",
+      required: true,
+    },
     REVIEWS: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "JobApproves",

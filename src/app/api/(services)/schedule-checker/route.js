@@ -123,7 +123,7 @@ const logText = async () => {
 
 export const POST = async (req, res) => {
   await connectToDb();
-  // console.log("Checking for overdue jobs");
+  //console.log("Checking for overdue jobs");
   // return NextResponse.json({ status: 200, file: "", error: "Job item templates not found" });
 
   const lrv_Date = new Date();
@@ -279,7 +279,7 @@ export const POST = async (req, res) => {
     startTime.setMinutes(now.getMinutes() - 60); // ลบ 60 นาที
     
     const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
-    endTime.setMinutes(now.getMinutes() + 60); // เพิ่ม 60 นาที
+    endTime.setMinutes(now.getMinutes() + 600); // เพิ่ม 60 นาที
     //console.log("scheduler startTime:",startTime);  
     //console.log("scheduler endTime:",endTime);  
     
@@ -293,7 +293,7 @@ export const POST = async (req, res) => {
       STATUS:"plan", 
     }).limit(60);
    
-    //console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
+    console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
     //return NextResponse.json({ status: 200 });
     scheduler.map(async (schedulers) => {
       //console.log("scheduler=>",scheduler);
@@ -357,6 +357,7 @@ export const POST = async (req, res) => {
         //1.3 create job
         const job = new Job({
           JOB_NAME: jobTemplate.JOB_TEMPLATE_NAME,
+          JOB_TEMPLATE_ID: jobTemplate._id, // ต้องระบุเพื่อให้รู้ว่า job นี้มาจาก job template ไหน
           JOB_STATUS_ID: newID._id,
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
           CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
@@ -495,7 +496,7 @@ export const POST = async (req, res) => {
       //}
     });
     //console.log("Success Auto Activated!!");
-    return NextResponse.json({ status: 200 });
+    return NextResponse.json({ status: 200 ,message:"Success Auto Activated!!"});
   } catch (error) {
     console.error("Check schedual Error: ", error);
     return NextResponse.json({ status: 500, error: error.message });

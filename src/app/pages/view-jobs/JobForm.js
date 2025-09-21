@@ -131,7 +131,7 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
   };
 
    
-
+   let imgItemSelectBeforeUpload=0;
 
 
   const [showPanel, setShowPanel] = useState(false);
@@ -153,13 +153,16 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
     } catch (error) {}
   };
 
-  const handleUploadFileToJobItemResize = (item) => {
+  const handleUploadFileToJobItemResize = (item,InputSelect) => {
     jobItemSelected = item;
+    imgItemSelectBeforeUpload=InputSelect;
     try {
       const fileInput = document.getElementById("item-fileInput");
       fileInput.setAttribute("data-upload-type", "resize");
       fileInput.click();
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleShowComment = (item) => {
@@ -246,10 +249,12 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
     }
     try {
       var valuePath = await uploadJobItemPictureToServer(file);
-      document.getElementById("item-img-" + jobItemSelected.JobItemID).src =
+      //console.log("imgItemSelectBeforeUpload", imgItemSelectBeforeUpload);
+      document.getElementById("item-img-"+imgItemSelectBeforeUpload+"-"+jobItemSelected.JobItemID).src =
         URL.createObjectURL(file);
+      document.getElementById("item-img-"+imgItemSelectBeforeUpload+"-"+jobItemSelected.JobItemID).style.display = "block";  
       //console.log("valuePath",valuePath);
-      onItemImgChange(valuePath, jobItemSelected);
+      onItemImgChange(valuePath, jobItemSelected,imgItemSelectBeforeUpload);
     } catch (error) {
       alert(error.message);
     }
@@ -1112,40 +1117,59 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
 
                     <center>
                       {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
-                      <img
+                        {/* {<img
                         id={"item-img-" + item.JobItemID}
                         style={{ display: "none" }}
                         // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
                         width={200}
                         className="mt-4"
                         alt="Preview"
-                      />
+                      />} */}
                     </center>
                     {view === false && (
                       <div className="relative">
-                        <div className="flex flex-grow justify-center items-center">
-                          <CameraAltIcon
-                            style={{
-                              width: "60px",
-                              height: "60px",
-                              color: "#1E40AF",
-                            }}
-                            className="cursor-pointer"
-                            onClick={() =>
-                              handleUploadFileToJobItemResize(item)
-                            }
-                          />
-                        </div>
-                        <div className="flex justify-end items-end w-full">
-                          <TripOriginIcon
-                            style={{
-                              width: "20px",
-                              height: "20px",
-                            }}
-                            className="cursor-pointer"
-                            onClick={() => handleUploadFileToJobItem(item)}
-                          />
-                        </div>
+                        <div className="grid grid-cols-2 gap-4 items-center">
+                            {/* ช่องที่ 1 */}
+                            <div className="flex flex-col justify-center items-center p-2">
+                              <img
+                                id={"item-img-1-" + item.JobItemID}
+                                style={{ display: "none",border:'1px solid gray',borderRadius:'0.1em' }}
+                                width={200}
+                                className="mt-4"
+                                alt="Preview"
+                              />
+                              <CameraAltIcon
+                                style={{
+                                  width: "30px",
+                                  height: "30px",
+                                  color: "#1E40AF",
+                                }}
+                                className="cursor-pointer"
+                                onClick={() => handleUploadFileToJobItemResize(item, 1)}
+                              />
+                            </div>
+
+                            {/* ช่องที่ 2 */}
+                            <div className="flex flex-col justify-center items-center p-2">
+                              <img
+                                id={"item-img-2-" + item.JobItemID}
+                               style={{ display: "none",border:'1px solid gray',borderRadius:'0.1em' }}
+                                width={200}
+                                className="mt-4"
+                                alt="Preview"
+                              />
+                              <CameraAltIcon
+                                style={{
+                                  width: "30px",
+                                  height: "30px",
+                                  color: "#1E40AF",
+                                }}
+                                className="cursor-pointer"
+                                onClick={() => handleUploadFileToJobItemResize(item, 2)}
+                              />
+                            </div>
+                          </div>
+
                       </div>
                     )}
                   </td>

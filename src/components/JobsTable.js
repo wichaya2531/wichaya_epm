@@ -46,7 +46,7 @@ const statusOptions = [
 
 const JobsTable = ({ refresh }) => {
   const router = useRouter();
-
+  //console.log("refresh JobsTable=>",refresh);
  
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
   //console.log("****use JibsTable****");
@@ -372,13 +372,47 @@ const JobsTable = ({ refresh }) => {
   //console.log("jobsActiveBody=>",jobsActiveBody);
 
   const handleStartDateChange = (e) => {
-    setStartDate(e.target.value);
+    const newStartDate = e.target.value;
+    setStartDate(newStartDate);
 
+    if (endDate && newStartDate) {
+      const start = new Date(newStartDate);
+      const end = new Date(endDate);
+      const diffDays = Math.abs((end - start) / (1000 * 60 * 60 * 24));
+      if (diffDays > 90) {
+        Swal.fire({
+          icon: "warning",
+          title: "Date range too large",
+          text: "Start Date and End Date must be within 90 days.",
+        });
+        // ปรับ startDate ให้ไม่เกิน 90 วันจาก endDate
+        const maxStart = new Date(end);
+        maxStart.setDate(end.getDate() - 90);
+        setStartDate(maxStart.toISOString().slice(0, 10));
+      }
+    }
   };
 
   const handleEndDateChange = (e) => {
-    setEndDate(e.target.value);
-   
+    const newEndDate = e.target.value;
+    setEndDate(newEndDate);
+
+    if (startDate && newEndDate) {
+      const start = new Date(startDate);
+      const end = new Date(newEndDate);
+      const diffDays = Math.abs((end - start) / (1000 * 60 * 60 * 24));
+      if (diffDays > 90) {
+        Swal.fire({
+          icon: "warning",
+          title: "Date range too large",
+          text: "Start Date and End Date must be within 90 days.",
+        });
+        // ปรับ endDate ให้ไม่เกิน 90 วันจาก startDate
+        const maxEnd = new Date(start);
+        maxEnd.setDate(start.getDate() + 90);
+        setEndDate(maxEnd.toISOString().slice(0, 10));
+      }
+    }
   };
 
   // Set default startDate and endDate to today -3 and today +3
@@ -494,7 +528,7 @@ const JobsTable = ({ refresh }) => {
         <TableComponentAdmin
           headers={jobsActiveHeaderAdmin}
           datas={jobsActiveBody}
-          TableName="Active Jobs"
+          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
           PageSize={5}
           searchColumn={"Checklist Name"}
           searchHidden={true}
@@ -509,7 +543,7 @@ const JobsTable = ({ refresh }) => {
         <TableComponent
           headers={jobsActiveHeader}
           datas={jobsActiveBody}
-          TableName="Active Jobs"
+          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
           PageSize={5}
           searchColumn={"Checklist Name"}
           searchHidden={true}
