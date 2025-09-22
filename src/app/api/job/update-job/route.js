@@ -214,7 +214,8 @@ const updateJobItems = async (jobItemsData) => {
         jobItemData.BeforeValue2 === "" || jobItemData.BeforeValue2 == null
           ? null
           : jobItemData.BeforeValue2;
-      jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // อัปเดต ImageFileName
+      jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // รูปสำหรับ before 
+      jobItem.IMG_ATTACH_1 = jobItemData.IMG_ATTACH_1 || jobItem.IMG_ATTACH_1; // รูปสำหรับ after
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
       //console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);

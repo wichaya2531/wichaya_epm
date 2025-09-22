@@ -25,6 +25,19 @@ const enabledFunction = {
   "add-job-item-template": "6638600dd81a314967236df5",
 };
 
+const TIMEOUT_OPTIONS = [
+  { value: "12 hrs", label: "12 hrs" },
+  { value: "1 days", label: "1 days" },
+  { value: "3 days", label: "3 days" },
+  { value: "7 days", label: "7 days" },
+  { value: "15 days", label: "15 days" },
+  { value: "30 days", label: "30 days" },
+  { value: "3 months", label: "3 months" },
+  { value: "6 months", label: "6 months" },
+  { value: "12 months", label: "12 months" },
+];
+
+
 const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const [jobTemplates, setJobTemplates] = useState([]);
@@ -507,6 +520,109 @@ const Page = () => {
     };
   });
 
+const handleCreateTemplate = async () => {
+  const { value: formValues } = await Swal.fire({
+    title: 'Create New Template',
+    html: `
+      <div style="text-align: left;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Template Name:</label>
+        <input id="templateName" class="swal2-input" placeholder="Enter template name" style="margin-bottom: 10px;">
+        
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Document No.:</label>
+        <input id="documentNo" class="swal2-input" placeholder="Enter document number" style="margin-bottom: 10px;">
+        
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Checklist Version:</label>
+        <input id="checklistVersion" class="swal2-input" placeholder="Enter version" style="margin-bottom: 10px;">
+        
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Timeout:</label>
+        <select id="timeout" class="swal2-input" style="margin-bottom: 10px;">
+          <option value="">Select timeout</option>
+          ${TIMEOUT_OPTIONS.map(option => 
+            `<option value="${option.value}">${option.label}</option>`
+          ).join('')}
+        </select>
+        
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Checklist Type:</label>
+        <select id="checklistType" class="swal2-input" style="margin-bottom: 10px;">
+          <option value="">Select checklist type</option>
+          <option value="Shiftly">Shiftly</option>
+          <option value="Daily">Daily</option>
+          <option value="Weekly">Weekly</option>
+          <option value="Monthly">Monthly</option>
+        </select>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Create',
+    cancelButtonText: 'Cancel',
+    width: '500px',
+    preConfirm: () => {
+      const templateName = document.getElementById('templateName').value;
+      const documentNo = document.getElementById('documentNo').value;
+      const checklistVersion = document.getElementById('checklistVersion').value;
+      const timeout = document.getElementById('timeout').value;
+      const checklistType = document.getElementById('checklistType').value;
+
+      if (!templateName || !documentNo || !checklistVersion || !timeout || !checklistType) {
+        Swal.showValidationMessage('Please fill in all fields');
+        return false;
+      }
+      
+      return {
+        templateName,
+        documentNo,
+        checklistVersion,
+        timeout,
+        checklistType
+      };
+    }
+  });
+
+  // เพิ่มส่วนนี้เพื่อส่งข้อมูลไปยัง API
+  if (formValues) {
+    try {
+      const requestBody = {
+        AUTHOR_ID: session.user_id,
+        JOB_TEMPLATE_NAME: formValues.templateName,
+        DOC_NUMBER: formValues.documentNo,
+        CHECKLIST_VERSION: formValues.checklistVersion,
+        TIMEOUT: formValues.timeout,
+        WORKGROUP_ID: user.workgroup_id,
+        CHECKLIST_TYPE: formValues.checklistType, // เพิ่มฟิลด์นี้ตาม API
+      };
+
+      const response = await fetch('/api/job-template/create-job-template-new', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Template created successfully',
+        });
+        setRefresh(prev => !prev); // รีเฟรชข้อมูล
+      } else {
+        throw new Error(data.message || 'Failed to create template');
+      }
+    } catch (error) {
+      console.error('Error creating template:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to create template. Please try again.',
+      });
+    }
+  }
+};
+
+
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-5">
       <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
@@ -526,7 +642,7 @@ const Page = () => {
       </div>
 
       <div className="flex flex-col gap-4 mb-4 p-4 bg-white rounded-xl">
-        <div className="flex flex-col">
+        <div className="flex flex-col" style={{ position: 'relative' }}>
           {/* <label
             htmlFor="template-name-filter"
             className="text-lg font-bold mb-2"
@@ -546,6 +662,14 @@ const Page = () => {
               </option>
             ))}
           </select>
+          <button
+            className="bg-blue-500 w-[auto] hover:bg-green-700 text-white font-semibold py-2 px-4 rounded mt-2 ml-auto"
+            style={{ position: 'absolute', right: '10px', top: '5px' }}
+            onClick={handleCreateTemplate}
+          >
+            Create 
+          </button>
+
         </div>
         <TableComponent
           headers={jobItemTemplateHeader}

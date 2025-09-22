@@ -484,7 +484,7 @@ const getMachineID = () => {
           //return;  
 
 
-          //console.log("wdtagImg_1",wdtagImg_1);
+          //console.log("wdtagImg_1",wdtag`Img`_1);
 
        // console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);    
         //console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);    
@@ -537,6 +537,9 @@ const getMachineID = () => {
 
         } 
        
+        //console.log('jobItems',jobItems);
+
+
        // console.log('valueItemABnormal',valueItemABnormal);
         
         //console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);

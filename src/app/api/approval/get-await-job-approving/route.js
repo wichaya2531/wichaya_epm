@@ -3,6 +3,7 @@ import { Job } from "@/lib/models/Job.js";
 import { Status } from "@/lib/models/Status.js";
 import { NextResponse } from 'next/server';
 import { User } from "@/lib/models/User.js";
+import { ObjectId } from "mongodb";
 
 export const dynamic = 'force-dynamic';
 export const GET = async (req, res) => {
@@ -12,9 +13,10 @@ export const GET = async (req, res) => {
     //console.log("user_id => ", user_id);
     try {
         const waitForApproveStatus = await Status.findOne({ status_name: 'waiting for approval' });
+       // console.log("waitForApproveStatus => ", waitForApproveStatus);
         const jobs = await Job.find({
             JOB_STATUS_ID: waitForApproveStatus._id,
-            JOB_APPROVERS: { $in: [user_id] }
+            JOB_APPROVERS: new ObjectId(user_id)
         }).sort({ updatedAt: -1 })
         //console.log("Job=>", jobs);
         const promiseData = jobs.map(async (job) => {

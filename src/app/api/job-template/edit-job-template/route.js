@@ -18,8 +18,9 @@ export const PUT = async (req, res) => {
 
   const body = await req.json();
 
- // console.log('body',body);
-  const {
+  //console.log('body',body);
+  
+ const {
     jobTemplateID,
     author,
     workgroup,
@@ -35,14 +36,18 @@ export const PUT = async (req, res) => {
     PICTURE_EVEDENT_REQUIRE,
     AGILE_SKIP_CHECK,
     SORT_ITEM_BY_POSITION,
-    PUBLIC_EDIT_IN_WORKGROUP
+    PUBLIC_EDIT_IN_WORKGROUP,
+    checklist_type,
   } = body;
 
-  // console.log("timeout:", timeout);
+   //console.log("timeout:", timeout);
 
   try {
     const JobTemplateCreateID = await generateUniqueKey();
     const jobTemplate = await JobTemplate.findById(jobTemplateID);
+
+    console.log("jobTemplate found:", jobTemplate);
+
     const jobTemplateEdit = new JobTemplateEdit({
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
       JOB_TEMPLATE_ID: jobTemplate._id,
@@ -54,12 +59,13 @@ export const PUT = async (req, res) => {
       CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       TIMEOUT: jobTemplate.TIMEOUT,
+      TYPE: jobTemplate.TYPE || "Null",
       PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
       AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false,
       SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION|| false,
       PUBLIC_EDIT_IN_WORKGROUP:jobTemplate.PUBLIC_EDIT_IN_WORKGROUP||false
     });
-    //console.log("jobTemplateEdit", jobTemplateEdit)
+    console.log("jobTemplateEdit", jobTemplateEdit)
     await jobTemplateEdit.save();
 
 
@@ -74,12 +80,13 @@ export const PUT = async (req, res) => {
     jobTemplate.LINE_NAME = line_name;
     jobTemplate.CHECKLIST_VERSION = checklist_ver;
     jobTemplate.WORKGROUP_ID = workgroup;
-    jobTemplate.TIMEOUT = timeout.value;
+    jobTemplate.TIMEOUT = timeout;
+    jobTemplate.TYPE = checklist_type || "Null";
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
     jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
     jobTemplate.AGILE_SKIP_CHECK=AGILE_SKIP_CHECK;
-    jobTemplate.SORT_ITEM_BY_POSITION=SORT_ITEM_BY_POSITION
-    jobTemplate.PUBLIC_EDIT_IN_WORKGROUP=PUBLIC_EDIT_IN_WORKGROUP
+    jobTemplate.SORT_ITEM_BY_POSITION=SORT_ITEM_BY_POSITION;
+    jobTemplate.PUBLIC_EDIT_IN_WORKGROUP=PUBLIC_EDIT_IN_WORKGROUP;
 
     //console.log('jobTemplate after',jobTemplate);
 

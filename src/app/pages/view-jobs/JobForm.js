@@ -1115,6 +1115,31 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                       />
                     )}
 
+                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                    {item.IMG_ATTACH_1 && (
+                      <img
+                        src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH_1} // ใช้เพียงชื่อไฟล์
+                        alt="Preview"
+                        width={200}
+                        className="mt-4"
+                        onClick={() =>
+                          onclicktoShow(
+                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH_1
+                          )
+                        }
+                      />
+                    )}
+
+                    <center>
+                      {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
+                        {/* {<img
+                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                          )
+                        }
+                      />
+                    )}
+
+
                     <center>
                       {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
                         {/* {<img

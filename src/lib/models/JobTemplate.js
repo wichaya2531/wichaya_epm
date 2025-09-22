@@ -11,6 +11,7 @@ const jobTemplateSchema = new mongoose.Schema(
     CHECKLIST_VERSION: { type: String, required: true },
     WORKGROUP_ID: { type: String, required: true },
     TIMEOUT: { type: String, required: true },
+    TYPE: { type: String, required: false },       // Shiftly, Daily, Weekly, Monthly, Yearly
     PICTURE_EVEDENT_REQUIRE: { type: Boolean, required: false },    
     AGILE_SKIP_CHECK: { type: Boolean, required: false },    
     SORT_ITEM_BY_POSITION:{ type: Boolean, default: false },

@@ -669,22 +669,46 @@ const JobForm = ({
                         className="text-sm ipadmini:text-md font-bold text-gray-600"
                       ></label>
                       {item.IMG_ATTACH ? (
-                        <img
+                        <div className="pt-2">
+                           <img
+                            src={
+                              `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                            }
+                            alt="Job Image"
+                            width={200}
+                            height={200}
+                            onClick={() =>
+                              onclicktoShow(
+                                `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                              )
+                            }
+                          />
+                        </div>
+                       
+                      ) : (
+                        <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
+                      )}
+                      
+                      {item.IMG_ATTACH_1 ? (
+                        <div className="pt-2">
+                           <img
                           src={
-                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH_1
                           }
                           alt="Job Image"
                           width={200}
                           height={200}
                           onClick={() =>
                             onclicktoShow(
-                              `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                              `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH_1
                             )
                           }
                         />
+                        </div>
+                       
                       ) : (
                         <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
-                      )}
+                      )}                      
                     </center>
                   </td>
                   {/* <td className="border py-2 relative">

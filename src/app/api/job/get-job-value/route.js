@@ -142,6 +142,7 @@ export const GET = async (req, res) => {
           ExecuteDate: jobItem.EXECUTE_DATE,
           LastestUpdate: jobItem.updatedAt.toLocaleString(),
           IMG_ATTACH: jobItem.IMG_ATTACH,
+          IMG_ATTACH_1: jobItem.IMG_ATTACH_1||"",
           File: jobItem.FILE ? jobItem.FILE.replace(/\\/g, "/") : null,
           createAt: jobItem.createdAt.toLocaleString(),
           createAtTemplate: await getPositionTimeByJobItem(
