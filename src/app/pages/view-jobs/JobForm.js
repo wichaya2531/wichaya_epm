@@ -18,6 +18,7 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import HistoryIcon from '@mui/icons-material/History';
 
 
 
@@ -29,6 +30,7 @@ const JobForm = ({
   machineName,
   handleInputChange,
   handleBeforeValue,
+  handleOptionInputChange,
   handleWdChange,
   handleSubmit,
   handleShowJobItemDescription,
@@ -49,6 +51,7 @@ const JobForm = ({
   user
 }) => {
   //view=false;
+  //console.log('jobItems',jobItems);
   //console.log('user',user);
   //console.log('jobData',jobData);
   //console.log("jobData.WD_TAG",jobData.WD_TAG);
@@ -190,11 +193,11 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
       handleInputChange({ target: { value: valueItem } }, item);
     } catch (error) {}
 
-    try {
-      document.getElementById(
-        "guide-input-panel-" + item.JobItemID
-      ).style.display = "none";
-    } catch (error) {}
+    // try {
+    //   document.getElementById(
+    //     "guide-input-panel-" + item.JobItemID
+    //   ).style.display = "none";
+    // } catch (error) {}
   };
 
   const handleHiddenSelectGuideInput = (item) => {
@@ -329,6 +332,24 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
     return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
   };
 
+    function handleShowHistory(item) {
+      const safe = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
+
+      Swal.fire({
+        title: "History",
+        html: `
+          <div style="text-align:left;font-size:14px;line-height:1.6">
+            <div><b>BeforeValue2:</b> ${safe(item.BeforeValue2)}</div>
+            <div><b>BeforeValue:</b> ${safe(item.BeforeValue)}</div>
+            <div><b>LastestUpdate:</b> ${safe(item.LastestUpdate)}</div>
+          </div>
+        `,
+        icon: "info",
+        showCloseButton: true,
+        confirmButtonText: "Close",
+        width: 420,
+      });
+    }
   return (
     <form
       className="flex flex-col gap-8 p-4 bg-white rounded-xl"
@@ -927,7 +948,7 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                 <th className="w-[50px]">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME} </th>
                 <th className="w-[50px] px-4 py-2">{process.env.NEXT_PUBLIC_UPPER_SPEC+"/"+  process.env.NEXT_PUBLIC_LOWER_SPEC}</th>
                 {/* <th className="w-[50px] px-4 py-2"></th> */}
-                <th className="w-[150px] px-4 py-2">Before Value</th>
+                {/* <th className="w-[150px] px-4 py-2">Before Value</th> */}
                 <th className="w-[150px] px-4 py-2">Actual Value</th>
                 <th className="w-[150px] px-4 py-2">Attach</th>
               </tr>
@@ -963,13 +984,13 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                       {item.LowerSpec}
                     </div>
                   </td>
-                  <td className="border px-4 py-2 relative">
+                  {/* <td className="border px-1 py-1 w-[125px]  relative disabled">
                     {view ? (
                       <input
                         type="text"
                         id={`before_value_2${item.JobItemID}`}
                         value={item.BeforeValue2 || item.BeforeValue || ""}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                        className="bg-gray-100 w-[125px] border border-gray-100 text-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
                         disabled
                         title={"Lastest Update: " + item.LastestUpdate}
                         style={{
@@ -983,7 +1004,7 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                       step="0.01"
                       id={`before_value_2${item.JobItemID}`}
                       onChange={(e) => handleBeforeValue(e, item)}
-                      className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                      className="bg-white border w-[125px]  border-gray-100 text-gray-300 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                       placeholder={item.BeforeValue || ""}
                       disabled
                       title={"Lastest Update: " + item.LastestUpdate}
@@ -992,143 +1013,190 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                         type="text"
                         id={`before_value_2${item.JobItemID}`}
                         onChange={(e) => handleBeforeValue(e, item)}
-                        className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                        className="bg-white border w-[125px]  border-gray-100 text-gray-300 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                         placeholder={item.BeforeValue || ""}
                         disabled
                         title={"Lastest Update: " + item.LastestUpdate}
                       />
                     )}
-                  </td>
+                  </td> */}
                   <td className="border px-4 py-2 relative">
-                    {view ? (
-                      <input
-                        type="text"
-                        id={item.JobItemID}
-                        value={item.ActualValue}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                        disabled
-                        title="This is a tooltip"
-                        style={{
-                          backgroundColor: getPastelColorForValue(
-                            item.ActualValue || ""
-                          ),
-                        }}
-                      />
-                    ) : item.input_type=="Numeric" ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          id={item.JobItemID+"/"+jobData.LINE_NAME}
-                          defaultValue={item.ActualValue || ""}
-                          onChange={(e) => handleInputChange(e, item)}
-                          className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                          placeholder="Enter value"
-                          onFocus={() => handleOnFocusItemInput(item)}
-                          autoComplete="on"
-                        />
-                    ): (
-                        <div>
-                          <div>
+                   {/* ROW หลัก: ไอคอนซ้าย → ช่องอินพุต → ไอคอนคอมเมนต์ขวา */}
+                      <div className="flex items-center gap-3 w-full">
+                        {/* History icon (ฟ้า) */}
+                        <span className="shrink-0">
+                          <HistoryIcon sx={{ color: "#1E40AF", fontSize: 30 }} 
+                           onClick={() => handleShowHistory(item)}
+                          />
+                        </span>
+
+                        {/* กล่องอินพุต/แสดงค่า กินพื้นที่ที่เหลือ */}
+                        <div className="flex-1">
+                          {view ? (
                             <input
                               type="text"
-                              id={item.JobItemID+"/"+jobData.LINE_NAME}
+                              id={item.JobItemID}
+                              value={item.ActualValue+(item.Value && item.Value !==null?' , '+item.Value:"")}
+                              className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg
+                                        focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 cursor-default"
+                              disabled
+                              title="This is a tooltip"
+                              style={{ backgroundColor: getPastelColorForValue(item.ActualValue || "") }}
+                            />
+                          ) : item.input_type === "Numeric" ? (
+                            <input
+                              type="number"
+                              step="0.01"
+                              id={`${item.JobItemID}/${jobData.LINE_NAME}`}
                               defaultValue={item.ActualValue || ""}
                               onChange={(e) => handleInputChange(e, item)}
-                              className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                              className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1
+                                        focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
                               placeholder="Enter value"
                               onFocus={() => handleOnFocusItemInput(item)}
                               autoComplete="on"
                             />
-                          </div>
-                          <div
-                            id={"guide-input-panel-" + item.JobItemID}
-                            style={{ padding: "10px", display: "none" }}
-                          >
-                            <select
-                              className="mb-5"
-                              name="item-guide-select"
-                              id={'item-'+item.JobItemID}
-                              style={{
-                                padding: "5px",
-                                border: "1px solid green",
-                                borderRadius: "5px",
-                              }}
-                              onChange={(e) =>
-                                handleGuideItemSelected(e.target.value, item)
-                              }
-                            >
-                              <option value="เพิ่มเติม">--Select--</option>
-                              <option value="Pass">Pass</option>
-                              <option value="Fail">Fail</option>
-                              {item.guide_input.map((item) => (
-                                <option key={item} value={item}>
-                                  {item}
-                                </option>
-                              ))}
-                            </select>
-                            <span
-                              onClick={() => handleHiddenSelectGuideInput(item)}
-                              style={{
-                                paddingLeft: "10px",
-                                cursor: "default",
-                                color: "blue",
-                              }}
-                            >
-                              [hide]
-                            </span>
-                          </div>
+                          ) : (
+                            <input
+                              type="text"
+                              id={`${item.JobItemID}/${jobData.LINE_NAME}`}
+                              defaultValue={item.ActualValue || ""}
+                              onChange={(e) => handleInputChange(e, item)}
+                              className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1
+                                        focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
+                              placeholder="Enter value"
+                              onFocus={() => handleOnFocusItemInput(item)}
+                              autoComplete="on"
+                            />
+                          )}
                         </div>
-                      )
-                    
-                    }
 
-                    {view ? (
-                      item.Comment !== null ? (
-                        <ChatIcon
-                          className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
-                          onClick={() => handleShowComment(item)}
-                        />
-                      ) : (
-                        <div></div>
-                      )
-                    ) : (
-                      <ChatIcon
-                        className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
-                        onClick={() => toggleAddComment(item)}
-                      />
-                    )}
+                        {/* ไอคอนคอมเมนต์ด้านขวา */}
+                        <span className="shrink-0">
+                          {view ? (
+                            item.Comment !== null ? (
+                              <ChatIcon
+                                className="text-blue-600 size-6 cursor-pointer"
+                                onClick={() => handleShowComment(item)}
+                                title="Show comment"
+                              />
+                            ) : (
+                              <span className="w-6 h-6 inline-block" /> // เว้นช่องให้ layout คงที่
+                            )
+                          ) : (
+                            <ChatIcon
+                              className="text-blue-600 size-6 cursor-pointer"
+                              onClick={() => toggleAddComment(item)}
+                              title="Add comment"
+                            />
+                          )}
+                        </span>
+                      </div>
+
+                      {/* แผง select (ถ้ามี) แสดงด้านล่าง แยกบรรทัด เพื่อให้แถวบนคงที่และสวย */}
+                      <div
+                        id={`guide-input-panel-${item.JobItemID}`}
+                        style={{ padding: "10px", display: "none" }}
+                        className="w-full"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-1">
+                            <select
+                              id={`item-${item.JobItemID}`}
+                              name="item-guide-select"
+                              defaultValue=""
+                              onChange={(e) => handleGuideItemSelected(e.target.value, item)}
+                              className="
+                                w-full appearance-none rounded-lg border border-gray-300 bg-white
+                                px-3 py-2 pr-9 text-sm text-gray-900 shadow-sm
+                                outline-none transition
+                                hover:border-blue-400
+                                focus:border-blue-500 focus:ring-2 focus:ring-blue-200
+                                dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                                dark:focus:border-blue-500 dark:focus:ring-blue-400
+                              "
+                            >
+                              <option value="" disabled>— Select —</option>
+                              <option value="Pass">✅ Pass</option>
+                              <option value="Fail">❌ Fail</option>
+                              {item.guide_input?.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>                          
+                            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">▾</span>
+                          </div>
+                          <div className="relative flex-1">
+                             <input
+                                    type="text"
+                                    className="
+                                    w-full appearance-none rounded-lg border border-gray-300 bg-white
+                                    px-3 py-2 pr-9 text-sm text-gray-900 shadow-sm
+                                    outline-none transition
+                                    hover:border-blue-400
+                                    focus:border-blue-500 focus:ring-2 focus:ring-blue-200
+                                    dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700
+                                    dark:focus:border-blue-500 dark:focus:ring-blue-400
+                                  "
+                                  placeholder="Optional"
+                                  defaultValue={item.Value || ""}
+                                  onChange={(e) => handleOptionInputChange(e, item)}
+                                  //  className="bg-gray-100 w-[125px] border border-gray-100 text-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
+                                  // disabled
+                                  // title={"Lastest Update: " + item.LastestUpdate}
+                                  
+                                  />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleHiddenSelectGuideInput(item)}
+                            title="Hide panel"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md
+                                      bg-red-600 text-white text-sm font-medium shadow-sm
+                                      hover:bg-blue-700 active:scale-[0.98]
+                                      focus:outline-none focus:ring-2 focus:ring-red-300
+                                      cursor-pointer select-none"
+                          >
+                            X
+                          </button>
+
+                        </div>
+                      </div>
+
                   </td>
 
                   <td className="border py-2 relative">
-                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                    {item.IMG_ATTACH && (
-                      <img
-                        src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                        alt="Preview"
-                        width={200}
-                        className="mt-4"
-                        onClick={() =>
-                          onclicktoShow(
-                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
-                          )
-                        }
-                      />
-                    )}
+                      <center>
+                        {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                        {item.IMG_ATTACH && (
+                          <img
+                            src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
+                            alt="Preview"
+                            width={200}
+                            className="mt-4"
+                            onClick={() =>
+                              onclicktoShow(
+                                `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
+                              )
+                            }
+                          />
+                        )}
 
-                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                    {item.IMG_ATTACH_1 && (
-                      <img
-                        src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH_1} // ใช้เพียงชื่อไฟล์
-                        alt="Preview"
-                        width={200}
-                        className="mt-4"
-                        onClick={() =>
-                          onclicktoShow(
-                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH_1
-                          )
-                        }
-                      />
-                    )}
+                        {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
+                        {item.IMG_ATTACH_1 && (
+                          <img
+                            src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH_1} // ใช้เพียงชื่อไฟล์
+                            alt="Preview"
+                            width={200}
+                            className="mt-4"
+                            onClick={() =>
+                              onclicktoShow(
+                                `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH_1
+                              )
+                            }
+                          />
+                        )}
+                      </center>
+                        
 
                     <center>
                       {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}

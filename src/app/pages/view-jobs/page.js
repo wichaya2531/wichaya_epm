@@ -351,6 +351,20 @@ const getMachineID = () => {
 
   };
 
+  //const handleOptionInputChange
+    const handleOptionInputChange = (e, item) => {
+    //console.log('jobItems ',jobItems);
+    for (var t in jobItems) {
+      if (jobItems[t].JobItemID == item.JobItemID) {
+        //jobItems[t].value = e.target.value;
+        //jobItems[t].ActualValue=e.target.value;
+        jobItems[t].Value = e.target.value;
+      }
+    }
+    //console.log('jobItems after ',jobItems);
+
+  };
+
   const toggleJobItem = () => {
     setIsShowJobItem(!isShowJobItem);
   };
@@ -755,6 +769,7 @@ const getMachineID = () => {
         machines={machines}
         machineName={machineName}
         handleInputChange={handleInputChange}
+        handleOptionInputChange={handleOptionInputChange}
         handleBeforeValue={handleBeforeValue}
         handleWdChange={handleWdChange}
         handleSubmit={handleSubmit}

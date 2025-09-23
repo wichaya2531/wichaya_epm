@@ -15,7 +15,7 @@ const useFetchJobValue = (job_id, refresh=null) => {
             try {
                 const response = await fetch(`/api/job/get-job-value?job_id=${job_id}`, { next: { revalidate: 10 } });
                 const data = await response.json();
-                console.log("jobItemData...=>",data);
+                //console.log("jobItemData...=>",data);
                 //console.log('data.jobData',data.jobData);
                 if (data.status === 200) {
                     setJobData(data.jobData);
