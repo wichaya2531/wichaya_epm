@@ -149,6 +149,14 @@ const Page = () => {
           </button>
         ))}
       </div>
+      <div className="flex justify-start mb-4 space-x-4">
+          <Link
+            href={"/pages/report/dynamic"}
+            className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg duration-150 ease-in-out hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+          >
+            {"Dynamic Report"}
+          </Link>
+      </div>
       <div className="mb-4 p-4 bg-white rounded-xl">
         {/* {selectedChart === "BarChart" && <BarChart />}
         {selectedChart === "BarChart1" && <BarChart1 />}
