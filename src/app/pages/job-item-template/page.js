@@ -642,6 +642,7 @@ const handleCreateTemplate = async () => {
       </div>
 
       <div className="flex flex-col gap-4 mb-4 p-4 bg-white rounded-xl">
+<<<<<<< HEAD
         <div className="flex flex-col" style={{ position: 'relative' }}>
           {/* <label
             htmlFor="template-name-filter"
@@ -670,6 +671,28 @@ const handleCreateTemplate = async () => {
             Create 
           </button>
 
+=======
+        <div className="flex flex-col" style={{display:'none'}}>
+          <label
+            htmlFor="template-name-filter"
+            className="text-lg font-bold mb-2"
+          >
+            .
+          </label>
+              <select
+                id="template-name-filter"
+                className="w-64 ml-0 border border-gray-300 p-2 rounded" // ปรับให้ตัวเลือกอยู่ทางซ้าย
+                value={selectedTemplateName}
+                onChange={(e) => setSelectedTemplateName(e.target.value)}
+              >
+                <option value="">All</option>
+                {uniqueTemplateNames.map((templateName, index) => (
+                  <option key={index} value={templateName}>
+                    {templateName}
+                  </option>
+                ))}
+              </select>
+>>>>>>> 6bc8019 (update tb_job filter)
         </div>
         <TableComponent
           headers={jobItemTemplateHeader}

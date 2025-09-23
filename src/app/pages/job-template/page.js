@@ -457,7 +457,25 @@ const Page = () => {
             Manage Checklist Template and its items
           </p>
         </div>
+<<<<<<< HEAD
 
+=======
+        {/* Button Manage Line Name */}
+        <button 
+          className={`align-left text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mb-4 lg:mb-0 lg:ml-4 ${
+            !userEnableFunctions.some(
+              (action) => action._id === enabledFunction["manage-line-name"]
+            ) && "opacity-50 cursor-not-allowed"
+          }`}
+          onClick={togglePopup} // ใช้ฟังก์ชัน togglePopup เพื่อแสดงป๊อปอัป
+          style={{display:'none'}}
+        >
+          <div className="flex gap-3 items-center" style={{display:'none'}}>
+            <p>Manage Line Name</p>
+            <SettingsIcon />
+          </div>
+        </button>
+>>>>>>> 6bc8019 (update tb_job filter)
         {/* View All Checklist Templates Button */}
         <Link
           href="/pages/job-item-template"

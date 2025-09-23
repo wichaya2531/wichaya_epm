@@ -81,6 +81,9 @@ export const GET = async (req, res) => {
         // console.log("approvers",approvers);   
         
 
+=======
+        // console.log("approvers",approvers);   
+>>>>>>> Stashed changes
         const newID = await Status.findOne({ status_name: "new" });
         if (!newID) {
             return NextResponse.json({ status: 404, file: __filename, error: "Status not found" });
@@ -100,6 +103,9 @@ export const GET = async (req, res) => {
             PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE||false,
             AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK||false, 
         });
+
+        //console.log('job',job);
+
         await job.save();
         //console.log("current job Activate=>", jobTemplate);
         //2 update to jobtemplateactivate
@@ -116,8 +122,6 @@ export const GET = async (req, res) => {
         if (!jobItemTemplates) {
             return NextResponse.json({ status: 404, file: __filename, error: "Job item templates not found" });
         }
-
-
         //3.2 create job item
 
         var jobItemList=new Array();
@@ -178,6 +182,7 @@ export const GET = async (req, res) => {
             await jobItemTemplateActivate.save();
         }));
 
+<<<<<<< Updated upstream
         const link = `api/job/get-job-value?job_id=${job._id}`;
         
 

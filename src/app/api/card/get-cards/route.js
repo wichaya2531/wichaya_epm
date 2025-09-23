@@ -66,11 +66,14 @@ export const GET = async (req, res) => {
    
     await connectToDb();
     try {
-        const cards = await Card.find();
+        const cards = await Card.find().sort({ _id: 1 }); // Sorting by _id in descending order
+        //console.log("Card=>",cards);
+        
         return NextResponse.json({ status: 200, cards });
     } catch (err) {
-        return NextResponse.json({status: 500, file: __filename, error: err.message});
+        return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
 }
+
 
  

@@ -57,6 +57,7 @@ const JobsTable = ({ refresh }) => {
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
 
+<<<<<<< HEAD
   const [filterStatus, setFilterStatus] = useState("All");
   const [reloadKey, setReloadKey] = useState(0);
   
@@ -183,6 +184,9 @@ const JobsTable = ({ refresh }) => {
   };
 
   //console.log("jobs.=>", jobs);
+=======
+  //console.log("jobs=>", jobs);
+>>>>>>> 6bc8019 (update tb_job filter)
   const filteredJobs =
     jobs &&
     jobs.filter((job) => {

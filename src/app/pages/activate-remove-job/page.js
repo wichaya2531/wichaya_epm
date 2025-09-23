@@ -16,7 +16,20 @@ import Image from "next/image";
 import TableComponentAdmin from "@/components/TableComponentAdmin";
 import VerifiedIcon from '@mui/icons-material/Verified';
 
+<<<<<<< HEAD
 import JobsTable from "@/components/JobsTable";
+=======
+import SelectContainer from "@/components/SelectContainer.js";  // นำเข้า SelectContainer
+
+
+const jobTemplatesHeader = [
+  "ID",
+  "Checklist Template Name",
+  "Line Name",
+  "Created At",
+  "Action",
+];
+>>>>>>> 6bc8019 (update tb_job filter)
 
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
@@ -187,6 +200,7 @@ const Page = () => {
     //showInvalidLineNamePopup;
   };
 
+<<<<<<< HEAD
   const onLineNameSelected = async (linenameSelected, dataJobTemplate,event) => {
    // console.log('object',event);
    // return;     
@@ -203,6 +217,122 @@ const Page = () => {
       </div>
       `,
       icon: "question",
+=======
+  const handleActivate = async (requestData) => {
+    const lineNamesResponse = await fetch(
+      "/api/select-line-name/get-line-name"
+    );
+    const lineNamesData = await lineNamesResponse.json();
+
+    if (!lineNamesResponse.ok) {
+      console.error("Failed to fetch line names:", lineNamesData.error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถดึงข้อมูล line name ได้ กรุณาลองใหม่",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
+    const validLineNames = lineNamesData.selectLineNames.map((line) => ({
+      value: line.name,
+      label: line.name,
+    }));
+
+    if (
+      validLineNames.some((option) => option.value === requestData.LINE_NAME) ||
+      ["N/A", "NA", "na", "n/a", "Na"].includes(requestData.LINE_NAME)
+    ) {
+      if (
+        requestData.LINE_NAME &&
+        ["N/A", "NA", "na", "n/a", "Na"].includes(requestData.LINE_NAME)
+      ) {
+        showInvalidLineNamePopup(validLineNames, requestData);
+      } else {
+        // เปิดใช้งาน Checklist template
+        try {
+          const response = await fetch(
+            "/api/job/activate-job-template-manual",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                JobTemplateID: requestData.jobTemplateID,
+                JobTemplateCreateID: requestData.jobTemplateCreateID,
+                ACTIVATER_ID: requestData.ACTIVATER_ID,
+              }),
+            }
+          );
+          const responseData = await response.json();
+          if (responseData.status === 200) {
+            Swal.fire({
+              icon: "success",
+              title: "สำเร็จ",
+              text: "Checklist template ถูกเปิดใช้งานเรียบร้อยแล้ว",
+              confirmButtonText: "ตกลง",
+            }).then(async () => {
+              // ดึงข้อมูล jobs ใหม่
+              await fetchJobs(user.workgroup_id);
+            });
+          }
+        } catch (error) {
+          console.error(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถเปิดใช้งาน Checklist template ได้",
+            confirmButtonText: "ตกลง",
+          });
+        }
+      }
+    } else {
+      showInvalidLineNamePopup(validLineNames, requestData);
+    }
+  };
+
+  const showInvalidLineNamePopup = (validLineNames, requestData) => {
+    let selectedValue = null;
+
+
+    const customSelectStyles = () => ({
+      control: (base) => ({
+        ...base,
+        width: "400px",
+        padding: "8px",
+        borderRadius: "4px",
+        border: "1px solid #ccc",
+        boxShadow: "none",
+        "&:hover": {
+          borderColor: "#999",
+        },
+        height: "50px",
+      }),
+      menu: (base) => ({
+        ...base,
+        zIndex: 9999, // เพิ่มค่า z-index ให้สูงกว่า SweetAlert
+        maxHeight: "400px",
+        overflowY: "auto", // เพิ่มการเลื่อนแนวตั้งเมื่อมีตัวเลือกเยอะ
+      }),
+      option: (base, { isFocused }) => ({
+        ...base,
+        padding: "10px",
+        backgroundColor: isFocused ? "#f0f0f0" : "#fff", // เปลี่ยนสีเมื่อเลือก
+        cursor: "pointer",
+      }),
+    });
+
+    const selectContainer = document.createElement('div'); // ประกาศ selectContainer
+    selectContainer.id = 'select-container';
+    document.body.appendChild(selectContainer);  // เพิ่มเข้าไปใน document.body
+  
+    // เปิด SweetAlert popup
+    Swal.fire({
+      title: "",
+      html: "<div id='label-tag' style='height:50px;'></div>",
+>>>>>>> 6bc8019 (update tb_job filter)
       showCancelButton: true,
       confirmButtonText: "Yes, confirm!",
       cancelButtonText: "No, cancel!",
@@ -212,6 +342,7 @@ const Page = () => {
       if (!jobCount || jobCount < 1) {
         Swal.showValidationMessage("กรุณากรอกจำนวนงานที่ถูกต้อง (มากกว่า 0)");
         return false;
+<<<<<<< HEAD
       }
       return jobCount;
       }
@@ -233,6 +364,66 @@ const Page = () => {
         
   
 
+=======
+      },
+      willOpen: () => {
+        // เรนเดอร์ SelectContainer ลงใน selectContainer ที่ถูกสร้างใน document.body
+        const popup = Swal.getPopup();  // ดึง DOM ของ SweetAlert
+        const rect = popup.getBoundingClientRect();
+        const x = rect.left + window.scrollX;  // ตำแหน่ง X ของ SweetAlert
+        const y = rect.top + window.scrollY;   // ตำแหน่ง Y ของ SweetAlert
+
+
+        ReactDOM.render(
+          <SelectContainer 
+            validLineNames={validLineNames}
+            onSelect={(value) => selectedValue = value}             
+            position={{ x, y }}  // ส่งตำแหน่ง x, y ไปยัง SelectContainer 
+
+          />,
+          selectContainer,  // เรนเดอร์ SelectContainer ใน selectContainer
+          () => {
+            // Callback function นี้จะถูกเรียกเมื่อการเรนเดอร์เสร็จสมบูรณ์
+               // console.log('SelectContainer has been rendered');
+               setTimeout(() => {
+                      var labelTag = document.getElementById('label-tag');
+
+                      const labelTagRect = labelTag.getBoundingClientRect();
+                      const labelTagTop = labelTagRect.top + window.scrollY;
+                      const labelTagLeft = labelTagRect.left + window.scrollX;
+                      //console.log("Label Tag Position - Top:", labelTagTop, "Left:", labelTagLeft);
+                      try {
+                              var lineElement=document.getElementById('select-container-1');
+                              lineElement.style.top = labelTagTop + 'px';
+                              lineElement.style.left = labelTagLeft + 'px';
+                      } catch (error) {
+                        
+                      } 
+                }, 20);
+        
+          }
+            
+        );
+
+       
+
+
+       
+
+      },
+      willClose: () => {
+        // ลบ SelectContainer ออกจาก DOM เมื่อ SweetAlert ปิด
+        ReactDOM.unmountComponentAtNode(selectContainer);
+        document.body.removeChild(selectContainer);
+      }
+    }).then((result) => {
+            if (result.isConfirmed) {
+              // ส่งค่า line name ใหม่ไปที่ API
+              handleSubmitWithNewLineName(selectedValue, requestData);
+            }
+    });
+    
+>>>>>>> 6bc8019 (update tb_job filter)
   };
 
   function toogleAllLinePanel(b) {
