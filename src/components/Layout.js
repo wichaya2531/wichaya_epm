@@ -114,7 +114,8 @@ const Layout = ({ children, className = "" }) => {
       pathname === "/pages/dashboard" ||
       pathname.startsWith("/pages/view-jobs") ||
       pathname.startsWith("/pages/job-renew") ||
-      pathname.startsWith("/pages/job-review")
+      pathname.startsWith("/pages/job-review") ||
+      pathname.startsWith("/pages/report/dynamic")
     ) {
       isAuthorized = true;
     }
