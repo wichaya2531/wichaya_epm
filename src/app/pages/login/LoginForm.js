@@ -205,15 +205,12 @@ const Test2PoST = async () => {
             className="underline text-sm cursor-pointer hover:text-gray-400 absolute left-2 bottom-2"
           >
             Forgot Password?
-          </Link>
-
-
-     
+          </Link>     
         </div>
             
       </div>
       <div className="absolute bottom-1 text-white  right-2 text-gray-500 text-[18px] italic">
-            Rev. 23.09.25.T.11.17
+            Rev. 23.09.25.T.11.26
             {/* <div>
                   <button onClick={Test2PoST}>Test POST</button>
             </div> */}
