@@ -952,14 +952,23 @@ const Page = () => {
            <label className="inline-flex items-center space-x-2 select-none "
               style={{position:'absolute',right:'5px',top:'5px'}}
            >
-              <input
-                type="checkbox"
-               checked={showPlanningColumns}
-               onChange={() => setShowPlanningColumns(!showPlanningColumns)}
-                className="form-checkbox"
-              />
-              <span><p>Hide/Show</p>
-                 <p>Columns Plan</p></span>
+              <label
+                  className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium 
+                            text-gray-700 bg-blue-100 cursor-pointer select-none
+                            hover:bg-blue-500 hover:text-white
+                            focus:outline-none focus:ring-2 focus:ring-blue-400
+                            active:scale-95 transition-all duration-150 shadow-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={showPlanningColumns}
+                    onChange={() => setShowPlanningColumns(!showPlanningColumns)}
+                    className="hidden"
+                  />
+                  <span className="ml-2">Columns Plan</span>
+                </label>
+
+             
              </label>
         <TableComponent
           headers={jobTemplatesHeader}

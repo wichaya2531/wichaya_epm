@@ -22,6 +22,7 @@ const TableComponentAdmin = ({
 }) => {
 
   //console.log("datas.",datas);
+  //console.log("TableComponentAdmin user=>",user);
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
     try {

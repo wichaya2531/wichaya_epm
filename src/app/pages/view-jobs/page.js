@@ -191,6 +191,7 @@ const getMachineID = () => {
   const updateJobStatusToOngoing = async () => {
     const body = {
       JOB_ID: job_id,
+      user_id: user._id
     };
     try {
       const response = await fetch(`/api/job/update-job-status/`, {

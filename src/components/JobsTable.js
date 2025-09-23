@@ -51,6 +51,7 @@ const JobsTable = ({ refresh }) => {
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
   //console.log("****use JibsTable****");
   //console.log("JobsTable=>",refresh);
+
   //console.log(refresh);
   const { user, isLoading: userLoading } = useFetchUser(refresh);
 
@@ -220,8 +221,9 @@ const JobsTable = ({ refresh }) => {
     });
 
   const navigateToJob = (job_id, viewMode) => {
-    sessionStorage.setItem("viewMode", viewMode);
-    router.push("/pages/view-jobs?job_id=" + job_id);
+      // console.log("navigateToJob ",user);
+       sessionStorage.setItem("viewMode", viewMode);
+       router.push("/pages/view-jobs?job_id=" + job_id);
   };
 
   const handleSearch = (e) => {
@@ -272,7 +274,7 @@ const JobsTable = ({ refresh }) => {
 
                       } 
                       {
-                        (job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
+                        (job.JOB_VERIFY)?(
                             <VerifiedIcon color="white"  />                  
                         ):""
                       }

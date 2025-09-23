@@ -34,6 +34,7 @@ const jobSchema = new mongoose.Schema(
     },
     TIMEOUT: { type: String, required: true },
     SUBMITTED_BY: { type: userSchema, default: null },
+    LAST_GET_BY: { type: String, default: null },
     REVIEW_USER: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

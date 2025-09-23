@@ -114,6 +114,7 @@ export const GET = async (req, { params }) => {
                   VALUE_ITEM_ABNORMAL:job.VALUE_ITEM_ABNORMAL,
                   updatedAt: job.updatedAt,
                   SUBMITTED_DATE: job.SUBMITTED_DATE,
+                  JOB_VERIFY: job.IMAGE_FILENAME||job.IMAGE_FILENAME_2 ? true : false,
                   //await checkItemAbNormal(job._id),
                   //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };
