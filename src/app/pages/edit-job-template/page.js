@@ -6,7 +6,9 @@ import TableComponent from "@/components/TableComponent.js";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
+import ProfileGroup from "@/lib/models/ProfileGroup.js";
 import useFetchJobTemplate from "@/lib/hooks/useFetchJobTemplate.js";
+import useFetchProfiles from "@/lib/hooks/useFetchProfiles.js";
 // import useFetchUsers from "@/lib/hooks/useFetchUsers.js"; // ไม่ใช้
 import Swal from "sweetalert2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -110,6 +112,8 @@ const Page = ({ searchParams }) => {
     isLoading: isJobTemplateLoading,
     error: jobTemplateError,
   } = useFetchJobTemplate(jobTemplate_id, refresh);
+
+  const { profiles, loading: profilesLoading, error: profilesError } = useFetchProfiles(user?.workgroup_id);
 
   // เมื่อ jobTemplate มาแล้ว -> เซ็ตค่าเริ่มต้นทุกอย่าง (timeout ทำเฉพาะตอนยังไม่เคยแตะ)
   useEffect(() => {
@@ -711,6 +715,33 @@ const Page = ({ searchParams }) => {
           </div>
 
           <div className="flex flex-col items-start space-y-2 border-red-300" >
+            <label
+              htmlFor="profiles"
+              className="block mb-2 text-sm font-medium text-black"
+            >
+              Profiles
+            </label>
+            <select
+              id="profiles"
+              name="profiles"
+              className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+             // value={lineName}
+             // onChange={(e) => setLineName(e.target.value)}
+            >
+              {
+//  <              option value={jobTemplate?.LINE_NAME || ""}>
+//                 {jobTemplate?.LINE_NAME || "—"}
+//                 {" (Current) "}
+//               </option>
+              }
+
+              <option value="N/A">&nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;</option>
+               {profiles.map((ln) => (
+                <option key={ln._id} value={ln.PROFILE_NAME}>
+                  {ln.PROFILE_NAME}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Notify Active */}
