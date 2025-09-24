@@ -33,8 +33,10 @@ const jobSchema = new mongoose.Schema(
       required: true,
     },
     TIMEOUT: { type: String, required: true },
+    TYPE: { type: String, required: false },       // Shiftly, Daily, Weekly, Monthly, Yearly
     SUBMITTED_BY: { type: userSchema, default: null },
     LAST_GET_BY: { type: String, default: null },
+    LAST_GET_TIME: { type: Date, default: null },      // เวลา
     REVIEW_USER: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

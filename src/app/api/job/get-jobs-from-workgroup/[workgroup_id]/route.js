@@ -35,7 +35,7 @@ export const GET = async (req, { params }) => {
     async start(controller) {
       
       var gap=20;       // maximum record for query per round 
-      //var numTotal=0;
+      var numTotal=0;
       for (let i = 1; i <= 40; i++) {        
               var jobs,schedules;
               
@@ -97,6 +97,11 @@ export const GET = async (req, { params }) => {
                 //      io++;
                 //  }
 
+                 if(numTotal===0){
+                         console.log('job',job);
+                         numTotal++;
+                 }
+
                  //console.log("job",job);
                  
                  return {
@@ -115,6 +120,9 @@ export const GET = async (req, { params }) => {
                   updatedAt: job.updatedAt,
                   SUBMITTED_DATE: job.SUBMITTED_DATE,
                   JOB_VERIFY: job.IMAGE_FILENAME||job.IMAGE_FILENAME_2 ? true : false,
+                  LAST_GET_BY:job.LAST_GET_BY || "Unknown",
+                  LAST_GET_TIME:job.LAST_GET_TIME || "Unknown",
+                  TYPE:job.TYPE || "Unknown",
                   //await checkItemAbNormal(job._id),
                   //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };
@@ -153,6 +161,7 @@ export const GET = async (req, { params }) => {
                   JOB_TEMPLATE_NAME: schedule.JOB_TEMPLATE_NAME,
                   ACTIVATE_DATE: schedule.ACTIVATE_DATE,
                   SCHEDULE_STATUS: schedule.STATUS,
+
                 };
               });
               

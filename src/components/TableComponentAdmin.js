@@ -8,6 +8,7 @@ const TableComponentAdmin = ({
   headers,
   datas,
   searchColumn,
+  searchColumn1,
   filterColumn,
   TableName,
   PageSize,
@@ -30,6 +31,8 @@ const TableComponentAdmin = ({
     } catch (error) {}
   }, 1000);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm1, setSearchTerm1] = useState("");
+  const [filterMode,setFilterMode]=useState("||");
   const [pageSize, setPageSize] = useState(PageSize || 5);
   const [selectedFilter, setSelectedFilter] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -50,16 +53,41 @@ const TableComponentAdmin = ({
     });
   }, [data, sortConfig]);
 
-  const filteredData =
-    sortedData && sortedData.length > 0
-      ? sortedData.filter((item) =>
-          searchColumn
-            ? item[searchColumn]
-                ?.toLowerCase()
-                .includes(searchTerm.toLowerCase())
-            : item
-        )
-      : [];
+
+
+
+// ตัวช่วย
+const norm = (v) => (v ?? "").toString().toLowerCase().trim();
+const match = (item, col, term) =>
+  col && term ? norm(item?.[col]).includes(norm(term)) : false;
+
+// ตั้งค่าโหมดกรอง: "OR" หรือ "AND"
+//const filterMode = "AND"; // เปลี่ยนเป็น "OR" ได้
+
+// มีเงื่อนไขใดถูกระบุบ้างไหม (สำหรับโหมด OR)
+const anyTermProvided =
+  (!!searchColumn && !!searchTerm) || (!!searchColumn1 && !!searchTerm1);
+
+const filteredData = sortedData?.length
+  ? sortedData.filter((item) => {
+      if (filterMode === "&&") {
+        // ต้องตรงทุกเงื่อนไขที่กรอกไว้
+        return (
+          (searchColumn  && searchTerm  ? match(item, searchColumn,  searchTerm)  : true) &&
+          (searchColumn1 && searchTerm1 ? match(item, searchColumn1, searchTerm1) : true)
+        );
+      } else {
+        // OR: ตรงอย่างน้อยหนึ่งเงื่อนไข
+        return !anyTermProvided
+          ? true
+          : match(item, searchColumn,  searchTerm) ||
+            match(item, searchColumn1, searchTerm1);
+      }
+    })
+  : [];
+
+
+
 
   const finalFilteredData =
     filteredData && filteredData.length > 0
@@ -117,6 +145,10 @@ const TableComponentAdmin = ({
     setSearchTerm(event.target.value);
     onPageChange(1);
   };
+  const handleSearch1 = (event) => {
+    setSearchTerm1(event.target.value);
+    onPageChange(1);
+  };
 
   const handlePageSizeChange = (event) => {
     setPageSize(Number(event.target.value));
@@ -170,10 +202,24 @@ const TableComponentAdmin = ({
     }
   };
 
+
+const clearFilters = (e) => {
+  e?.stopPropagation?.(); // กัน event bubble (ถ้าวางใน element ที่มี onClick parent)
+  //setSearchColumn("");
+  setSearchTerm("");
+  //setSearchColumn1("");
+  setSearchTerm1("");
+  setFilterMode("||");    // ค่าเริ่มต้นที่ต้องการ
+};
+
+
   return (
     <div className="flex flex-col justify-center gap-5 items-center relative">
       <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left">
         <div className="flex flex-row gap-2 text-left max-w-full">
+          <div className="max-w-[20vw] inline-block font-medium text-black ">
+               Filter :
+          </div>
           <div className="max-w-[20vw] inline-block">
             <span>Rows:</span>
             <select
@@ -207,17 +253,53 @@ const TableComponentAdmin = ({
               </select>
             </div>
           )}
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          
           <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
             <input
-              className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
+              className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[180px]"
               type="text"
-              placeholder="Search..."
+              placeholder="by [Checklist Name]"
               value={searchTerm}
               onChange={handleSearch}
             />
             <SearchIcon className="absolute left-2 top-2 text-gray-500" />
           </div>
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+                   {/* Select โหมด AND/OR */}
+                  <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+                    {/* <label className="block text-xs text-gray-600 mb-1">Filter Mode</label> */}
+                    <select
+                      value={filterMode}
+                      onChange={(e) => setFilterMode(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm
+                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                                shadow-sm"
+                    >
+                      <option value="||">OR (match any)</option>
+                      <option value="&&">AND (match all)</option>
+                    </select>
+                  </div>
+          </div>
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+            <input
+              className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
+              type="text"
+              placeholder="by [Line Name]"
+              value={searchTerm1}
+              onChange={handleSearch1}
+            />
+            <SearchIcon className="absolute left-2 top-2 text-gray-500" />
+          </div>
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="px-3 py-2 text-sm rounded-lg border border-red-500 text-red-600 hover:bg-red-50"
+            >
+              Clear Filter
+            </button>
+          </div>
+
         </div>
       </div>
 

@@ -77,6 +77,9 @@ export const GET = async (req) => {
             abnormal_item:job.VALUE_ITEM_ABNORMAL||false, //await checkItemAbNormal(job._id)
             job_name:job.JOB_NAME,
             line_name:job.LINE_NAME,
+            last_get_by:job.LAST_GET_BY || "Unknown",
+            last_get_date: job.LAST_GET_TIME || "Unknown",
+
           };
 
           if (selectedType === "all" || event.status_name === selectedType) {

@@ -27,6 +27,7 @@ export const PUT = async (req, res) => {
     if (jobStatusName === "new" || jobStatusName === "renew") {
       job.JOB_STATUS_ID = ongoing_status._id;
       job.LAST_GET_BY = user.EMP_NAME || "Unknown"; // Set LAST_GET to current date and time
+      job.LAST_GET_TIME = new Date();
       await job.save();
     }
 

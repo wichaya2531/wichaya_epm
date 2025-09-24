@@ -7,6 +7,7 @@ import useFetchUsers from "@/lib/hooks/useFetchUsers";
 import useFetchCards from "@/lib/hooks/useFetchCards.js";
 import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import JobsTable from "@/components/JobsTable";
+import DashboardSummary from "@/components/DashboardSummary";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
@@ -107,7 +108,7 @@ const Page = () => {
 
         {/* Jobs table section */}
         <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
-          <JobsTable refresh={refresh} />
+          <DashboardSummary refresh={refresh} />
         </div>
       </div>
     </Layout>

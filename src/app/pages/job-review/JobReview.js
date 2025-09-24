@@ -83,7 +83,7 @@ const JobForm = ({
           title: "History",
           html: `
             <div style="text-align:left;font-size:14px;line-height:1.6">
-              <div><b>BeforeValue2:</b> ${safe(item.BeforeValue2)}</div>
+              <div style='display:none;'><b>BeforeValue2:</b> ${safe(item.BeforeValue2)}</div>
               <div><b>BeforeValue:</b> ${safe(item.BeforeValue)}</div>
               <div><b>LastestUpdate:</b> ${safe(item.LastestUpdate)}</div>
             </div>
