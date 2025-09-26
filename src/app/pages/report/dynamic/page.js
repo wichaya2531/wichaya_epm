@@ -4,17 +4,15 @@ import Layout from "@/components/Layout"
 import Link from "next/link";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import SheetSelection from "./SheetSelection";
-// import { reducer } from "./_state-managment/manage";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import LoadingComponent from "@/components/LoadingComponent";
 import JobItemsList from "./JobItemsList";
 import Swal from "sweetalert2";
 import ExportButtons from "@/components/ExportButtons";
 import ExportGroup from "./ExportGroup";
-import { Spreadsheet } from "spreadsheetjs-react";
-import { set } from "mongoose";
+import DynamicTemplate from "./Spreadsheet";
 
 const DynamicReportPage = () => {
 
@@ -98,21 +96,11 @@ const DynamicReportPage = () => {
                 currentSpreadsheetId={currentSpreadsheetId}
                 setCurrentSpreadsheetId={setCurrentSpreadsheetId}
                 />
-                {spreadsheetsData.find(s=>s.id===currentSpreadsheetId && s.is_fetched) && (
-                    <Spreadsheet
-                    cells={spreadsheetsData.find(s=>s.id===currentSpreadsheetId).cells}
-                    rows_height={spreadsheetsData.find(s=>s.id===currentSpreadsheetId).rows_height}
-                    cols_width={spreadsheetsData.find(s=>s.id===currentSpreadsheetId).cols_width}
-                    onChange={({cells, rows_height, cols_width})=>{
-                        setSpreadsheetsData(prev => prev.map(s=>s.id===currentSpreadsheetId ? {
-                            ...s,
-                            cells,
-                            rows_height,
-                            cols_width,
-                        } : s))
-                    }}
-                    />
-                )}
+                <DynamicTemplate
+                spreadsheetsData={spreadsheetsData}
+                setSpreadsheetsData={setSpreadsheetsData}
+                currentSpreadsheetId={currentSpreadsheetId}
+                />
                 <JobItemsList
                 user={user}
                 jobDatas={jobDatas}

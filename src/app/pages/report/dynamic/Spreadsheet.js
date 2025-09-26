@@ -1,192 +1,109 @@
-import React, { useRef, useEffect, useState } from "react";
-import { jspreadsheet, Spreadsheet, Worksheet } from "@jspreadsheet-ce/react";
+import LoadingComponent from "@/components/LoadingComponent"
+import { useMemo } from "react"
+import Spreadsheet from "spreadsheetjs-react"
+import Swal from "sweetalert2"
+import withReactContent from "sweetalert2-react-content"
 
-import "jspreadsheet-ce/dist/jspreadsheet.css";
-import "jsuites/dist/jsuites.css";
-import 'material-icons/iconfont/material-icons.css';
-import Swal from "sweetalert2";
-import { BeatLoader } from "react-spinners";
-import { applyWorkSheet } from "./_state-managment/spreadsheet";
-const JSpreadsheet = ({
+const DynamicTemplate = ({
     spreadsheetsData,
     setSpreadsheetsData,
     currentSpreadsheetId,
-    user,
 }) => {
 
-    const currentSpreadsheet = spreadsheetsData.find(s=>s.id===currentSpreadsheetId)
+    const currentSpreadsheetData = useMemo(() => spreadsheetsData.find(({id}) => id === currentSpreadsheetId), [
+        spreadsheetsData,
+        currentSpreadsheetId,
+    ])
 
-    const jRef = useRef(null);
-    const updateSheet = (elem) => {
-        const worksheet = elem.options
-        applyWorkSheet({
-            setSpreadsheetsData,
-            currentSpreadsheetId,
-            worksheet,
+    const reactSwal = withReactContent(Swal)
+    const Wrapper = ({children}) => (
+        <div className="flex justify-center items-center w-full h-80">
+            {children}
+        </div>
+    )
+
+    const overrideResizePrompt = async ({
+        type,
+    }) => {
+        const {isConfirmed, value} = await reactSwal.fire({
+            icon: "info",
+            title: type === "width" ? "Column Width" : "Row Height",
+            input: "text",
+            inputLabel: `Enter ${type === "width" ? "column width" : "row height"} in pixels`,
+            inputValue: type=== "width" ? "" : "",
+            showCancelButton: true,
+        })
+        if(isConfirmed) {
+            const v = parseInt(value)
+            if(v) {
+                return v
+            }
+            else {
+                await reactSwal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: `Invalid ${label}`,
+                })
+                return null
+            }
+        }
+        else {
+            return null
+        }
+    }
+
+    const overrideResizeColumnPrompt = () => {
+        return overrideResizePrompt({
+            type: "width",
+        })
+    }
+    
+    const overrideResizeRowPrompt = () => {
+        return overrideResizePrompt({
+            type: "height",
         })
     }
 
-    const SaveAllButton = () => {
-        const saveAll = async () => {
-            Swal.fire({
-                title: "Saving...",
-                didOpen: () => {
-                    Swal.showLoading()
-                }
-            })
-            const res = await fetch("/api/job-dynamic-template/save-all-job-dynamic-template", {
-                method: "POST",
-                body: JSON.stringify({
-                    user_id: user._id,
-                    spreadsheets: spreadsheetsData
-                })
-            })
-            if(res.ok){
-                const { status, message } = await res.json()
-                    Swal.close()
-                if(status===200){
-                    Swal.fire({
-                        icon: "success",
-                        title: "Success",
-                        text: "Saved All Successfully!",
-                    });
-                }
-                else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: message,
-                    });
-                }
+    if(currentSpreadsheetData) {
+        if(currentSpreadsheetData.is_fetched) {
+            return (
+                <Spreadsheet
+                cells={currentSpreadsheetData.cells}
+                rows_height={currentSpreadsheetData.rows_height}
+                cols_width={currentSpreadsheetData.cols_width}
+                onChange={({cells, rows_height, cols_width})=>{
+                    setSpreadsheetsData(prev => prev.map(s=>s.id===currentSpreadsheetData.id ? {
+                        ...s,
+                        cells,
+                        rows_height,
+                        cols_width,
+                    } : s))
+                }}
+                overrideResizeColumnPrompt={overrideResizeColumnPrompt}
+                overrideResizeRowPrompt={overrideResizeRowPrompt}
+                />
+            )
+        }
+        else {
+            if(currentSpreadsheetData.fetching) {
+                return (
+                    <Wrapper>
+                        <LoadingComponent/>
+                    </Wrapper>
+                )
+            }
+            else {
+                return (
+                    <Wrapper>Please pull data for the selected sheet</Wrapper>
+                )
             }
         }
+    }
+    else {
         return (
-            <div className="flex w-full justify-end mt-6 z-10000">
-                <button
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
-                onMouseUp={saveAll}
-                >
-                    Save All
-                </button>
-            </div>
+            <Wrapper>Please select a sheet</Wrapper>
         )
     }
-
-    useEffect(()=>{
-        if (!jRef.current.jspreadsheet && currentSpreadsheet.is_fetched) {
-            jspreadsheet(jRef.current, {
-                worksheets: [{
-                    data: currentSpreadsheet.data,
-                    columns: currentSpreadsheet.columns,
-                    rows: currentSpreadsheet.rows,
-                    minDimensions: currentSpreadsheet.minDimensions,
-                    style: currentSpreadsheet.style,
-                    mergeCells: currentSpreadsheet.mergeCells,
-                }],
-                toolbar: true,
-                // toolbar: [{
-                //     type: 'i',
-                //     content: 'undo',
-                //     onclick: () => {
-                //         table.undo();
-                //     },
-                // }, {
-                //     type: 'i',
-                //     content: 'redo',
-                //     onclick: () => {
-                //         table.redo();
-                //     }
-                // }, {
-                //     type: 'select',
-                //     k: 'font-family',
-                //     v: ['Arial','Verdana']
-                // }, {
-                //     type: 'select',
-                //     k: 'font-size',
-                //     v: ['9px','10px','11px','12px','13px','14px','15px','16px','17px','18px','19px','20px']
-                // }, {
-                //     type: 'i',
-                //     content: 'format_align_left',
-                //     k: 'text-align',
-                //     v: 'left'
-                // }, {
-                //     type:'i',
-                //     content:'format_align_center',
-                //     k:'text-align',
-                //     v:'center'
-                // }, {
-                //     type: 'i',
-                //     content: 'format_align_right', 
-                //     k: 'text-align',
-                //     v: 'right'
-                // }, {
-                //     type: 'color',
-                //     content: 'format_color_text',
-                //     k: 'color'
-                // }, {
-                //     type: 'color',
-                //     content: 'format_color_fill',
-                //     k: 'background-color'
-                // }],
-                onchange: updateSheet,
-                onchangestyle: updateSheet,
-                onresizecolumn: (elem) => {
-                    const prevConfig = elem.getConfig()
-                    elem.setConfig({
-                        ...prevConfig,
-                        columns: prevConfig.columns.map((column) => column.width>25 ? column : {
-                            ...column,
-                            width: 25
-                        })
-                    }, true)
-                }
-            });
-        }
-        
-        return () => {
-            if(jRef.current){
-                jRef.current.replaceChildren()
-            }
-        }
-    }, [currentSpreadsheetId, currentSpreadsheet.is_fetched])
-
-    return (
-        <>
-            <div
-            className="flex flex-col w-full"
-            > {
-                currentSpreadsheet.fetching ? (
-                    <div className="flex w-full min-h-60 justify-center items-center">
-                        <BeatLoader
-                            color={"navy"}
-                            loading={true}
-                            size={15}
-                            aria-label="Loading Spinner"
-                            data-testid="loader"
-                        />
-                    </div>
-                ) : (
-                    <>
-                        <div className={`min-h-60 ${!currentSpreadsheet.is_fetched && "hidden"}`}>
-                            <div
-                            ref={jRef}
-                            />
-                        </div>
-                        <div className={`
-                        flex w-full min-h-60 bg-gray-200/25 border border-gray-400/25 items-center justify-center
-                        ${currentSpreadsheet.is_fetched && "hidden"}
-                        `}
-                        >
-                            <small>
-                                Pull data above.
-                            </small>
-                        </div>
-                    </>
-                )
-            }</div>
-            {spreadsheetsData.some(s=>s.is_fetched) && <SaveAllButton/>}
-        </>
-    )
 }
 
-export default JSpreadsheet
+export default DynamicTemplate

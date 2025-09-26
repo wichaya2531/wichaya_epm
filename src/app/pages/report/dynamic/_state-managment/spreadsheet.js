@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import newSheetPrompt from "../NewSheet"
+import newSheetPrompt from "../_sheet-management/new"
 
 export const insertNewSheet = async ({
     spreadsheetsData,
@@ -82,15 +82,15 @@ export const fetchingSpreadsheetDataFailed = ({
     })
 }
 
-export const updateSheetName = ({
+export const editSheetName = ({
     setSpreadsheetsData,
     id,
-    newName
+    name
 }) => {
     setSpreadsheetsData((ss) => ss.map(s => (
         s.id === id ? {
             ...s,
-            name: newName
+            name,
         } : s
     )))
 }

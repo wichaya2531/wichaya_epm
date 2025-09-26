@@ -266,9 +266,8 @@ const JobItemsList = ({
 
     const TableContent = () => {
         const tdClass = ({ value, textLeft = false }) => `
-        px-4 py-2 border cursor-default text-sm text-gray-700
+        px-4 py-2 border cursor-default text-sm text-gray-700 group-hover:bg-gray-100
         ${textLeft ? "text-left" : "text-center"}
-        ${value === "Pass" ? "bg-green-300" : value === "Fail" ? "bg-red-300" : "bg-white"}
         `
         const Row = ({ children, index }) => (
             <tr className="group">
@@ -412,7 +411,7 @@ const JobItemsList = ({
                         type={"date"}
                         value={startDate.toISOString().split("T")[0]}
                         max={maxStartDate.toISOString().split("T")[0]}
-                        onChange={(e) => setStartDate(new Date(e.target.value))}
+                        onChange={(e) => setStartDate(prev => e.target.value ? new Date(e.target.value) : prev)}
                     />
                 </div>
                 <div>
@@ -431,8 +430,22 @@ const JobItemsList = ({
                         value={endDate.toISOString().split("T")[0]}
                         max={maxEndDate.toISOString().split("T")[0]}
                         min={startDate.toISOString().split("T")[0]}
-                        onChange={(e) => setEndDate(new Date(e.target.value))}
+                        onChange={(e) => setEndDate(prev => e.target.value ? new Date(e.target.value) : prev)}
                     />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        &nbsp;
+                    </label>
+                    <button
+                        className={`
+                            text-white font-bold px-4 py-2 rounded-md
+                            ${fetching ? "bg-gray-300" : "bg-green-500 hover:bg-green-600"}
+                        `}
+                        onClick={updateJobData}
+                    >
+                        Pull Data
+                    </button>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -451,20 +464,6 @@ const JobItemsList = ({
                         <option value="date">Date</option>
                         <option value="shift">Shift</option>
                     </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        &nbsp;
-                    </label>
-                    <button
-                        className={`
-                            text-white font-bold px-4 py-2 rounded-md
-                            ${fetching ? "bg-gray-300" : "bg-green-500 hover:bg-green-600"}
-                        `}
-                        onClick={updateJobData}
-                    >
-                        Pull Data
-                    </button>
                 </div>
             </div>
             <div className="w-full overflow-auto border">

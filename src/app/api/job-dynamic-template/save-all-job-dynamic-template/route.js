@@ -61,7 +61,7 @@ export const POST = async (req) => {
             new_id: Object.values(insertedIds).map(id=>id.toString())[index],
         }))
         await JobDynamic.bulkWrite([
-            ...existingSpreadsheets.filter(({is_fetched}) => is_fetched).map(({id, name}) => ({
+            ...existingSpreadsheets.map(({id, name}) => ({
                 updateOne: {
                     filter: {
                         USER_ID: user_id,
@@ -69,7 +69,7 @@ export const POST = async (req) => {
                     },
                     update: {
                         $set: {
-                            name,
+                            name: name,
                         },
                     },
                     upsert: true,

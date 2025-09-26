@@ -1,35 +1,38 @@
 import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const newSheetPrompt = async ({
     spreadsheetsData
 }) => {
-    const { value } = await Swal.fire({
+    const reactSwal = withReactContent(Swal)
+    const { value } = await reactSwal.fire({
         title: 'New Sheet',
-        html: `
-        <div class="flex flex-col justify-center">
-            <div class="flex justify-center">
-                <div>
+        icon: 'question',
+        html: (
+            <div class="flex flex-col justify-center">
+                <div class="flex justify-center">
                     <div>
-                        rows
+                        <div>
+                            rows
+                        </div>
+                        <div>
+                            <input id="prompt-sheet-rows" type="number" min="2" max="50" value="5" class="swal2-input" placeholder="Row" />
+                        </div>
                     </div>
                     <div>
-                        <input id="prompt-sheet-rows" type="number" min="2" max="50" value="5" class="swal2-input" placeholder="Row">
+                        <div>
+                            Columns
+                        </div>
+                        <div>
+                            <input id="prompt-sheet-cols" type="number" min="2" max="50" value="5" class="swal2-input" placeholder="Column" />
+                        </div>
                     </div>
                 </div>
                 <div>
-                    <div>
-                        Columns
-                    </div>
-                    <div>
-                        <input id="prompt-sheet-cols" type="number" min="2" max="50" value="5" class="swal2-input" placeholder="Column">
-                    </div>
+                    <input id="prompt-sheet-name" type="text" class="swal2-input" placeholder="Name"/>
                 </div>
             </div>
-            <div>
-                <input id="prompt-sheet-name" type="text" class="swal2-input" placeholder="Name"/>
-            </div>
-        </div>
-        `,
+        ),
         focusConfirm: false,
         confirmButtonText: 'Confirm',
             preConfirm: () => {
