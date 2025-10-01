@@ -328,7 +328,7 @@ const JobItemsList = ({
         `
         const Row = ({ children, index }) => (
             <tr className="group">
-                <td rowSpan={1} colSpan={1} className={`${tdClass({})} group-hover:bg-gray-100 sticky left-0 w-20`}>
+                <td rowSpan={1} colSpan={1} className={`${tdClass({})} bg-white group-hover:bg-gray-100 sticky left-0 w-20`}>
                     {index + 1}
                 </td>
                 {children}
