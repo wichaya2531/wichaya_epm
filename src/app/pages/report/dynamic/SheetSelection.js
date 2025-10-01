@@ -61,7 +61,7 @@ const SheetSelection = ({
     const [dropdownInputValue, setDropdownInputValue] = useState("")
 
     return (
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
             <DropDownSearch
                 arrayOfData={sheetNameList}
                 inputValue={dropdownInputValue}

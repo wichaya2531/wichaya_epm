@@ -1,4 +1,4 @@
-import { act, useEffect, useMemo, useState } from "react";
+import { act, Fragment, useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
@@ -13,9 +13,72 @@ const JobItemsList = ({
 }) => {
     const reactSwal = withReactContent(Swal)
 
+    
     const [reportType, setReportType] = useState("month")
+    const [sortOrder, setSortOrder] = useState("asc")
+    const [sortBy, setSortBy] = useState("wd_tag")
     const [isFetched, setIsFetched] = useState(null)
     const [fetching, setFetching] = useState(false)
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        rowsPerPage: 10,
+    })
+    const handleChangePage = (newPage) => {
+        setPagination(prev => ({
+            ...prev,
+            currentPage: newPage
+        }))
+    }
+    const handleChangeRowsPerPage = (newRowsPerPage) => {
+        setPagination(prev => ({
+            ...prev,
+            rowsPerPage: newRowsPerPage
+        }))
+    }
+    const formattedJobDatas = useMemo(() => {
+        console.log("jobDatas", jobDatas)
+        if (jobDatas) {
+            const flattenJobDatas = jobDatas.map(({ items, created_at, workgroup_id, wd_tag, line_name, job_name, doc_number }) => (
+                items.map(({ actual_value }) => ({
+                    created_at,
+                    workgroup_id,
+                    wd_tag,
+                    line_name,
+                    job_name,
+                    doc_number,
+                    actual_value,
+                }))
+            )).flat()
+            return flattenJobDatas.toSorted((a, b) => {
+                if (a[sortBy] === null) {
+                    return sortOrder === "asc" ? 1 : -1
+                }
+                else if (b[sortBy] === null) {
+                    return sortOrder === "asc" ? -1 : 1
+                }
+                else if (a[sortBy] < b[sortBy]) {
+                    return sortOrder === "asc" ? -1 : 1
+                }
+                else if (a[sortBy] > b[sortBy]) {
+                    return sortOrder === "asc" ? 1 : -1
+                }
+                else {
+                    return 0
+                }
+            })
+        }
+    }, [jobDatas, sortBy, sortOrder])
+    const jobDatasPaginated = useMemo(() => {
+        if (formattedJobDatas) {
+            const startIndex = (pagination.currentPage - 1) * pagination.rowsPerPage
+            return formattedJobDatas.slice(startIndex, startIndex + pagination.rowsPerPage)
+        }
+    }, [formattedJobDatas, pagination.currentPage, pagination.rowsPerPage])
+    const totalPages = useMemo(() => {
+        if (formattedJobDatas) {
+            return Math.ceil(formattedJobDatas.length / pagination.rowsPerPage)
+        }
+    }, [formattedJobDatas, pagination.rowsPerPage])
 
     const getMonthsArray = (startDate, endDate) => {
         const monthsDiff = (
@@ -124,20 +187,14 @@ const JobItemsList = ({
         }
         if (!fetching) {
             if (isFetched) {
-                const startDateString = `${
-                    isFetched.start_date.getDate()
-                }/${
-                    isFetched.start_date.getMonth() + 1
-                }/${
-                    isFetched.start_date.getFullYear()
-                }`
-                const endDateString = `${
-                    isFetched.end_date.getDate()
-                }/${
-                    isFetched.end_date.getMonth() + 1
-                }/${
-                    isFetched.end_date.getFullYear()
-                }`
+                const startDateString = `${isFetched.start_date.getDate()
+                    }/${isFetched.start_date.getMonth() + 1
+                    }/${isFetched.start_date.getFullYear()
+                    }`
+                const endDateString = `${isFetched.end_date.getDate()
+                    }/${isFetched.end_date.getMonth() + 1
+                    }/${isFetched.end_date.getFullYear()
+                    }`
                 const { value } = await reactSwal.fire({
                     title: "Warning",
                     html: <>
@@ -278,17 +335,11 @@ const JobItemsList = ({
             </tr>
         )
         const Content = () => {
-            if (jobDatas) {
-                const formattedJobDatas = jobDatas.map(({ created_at, items }) => (
-                    items.map(({ actual_value }) => ({
-                        created_at,
-                        actual_value,
-                    }))
-                )).flat()
+            if (jobDatasPaginated) {
                 switch (reportType) {
                     case "month":
                         return (
-                            formattedJobDatas.map(({
+                            jobDatasPaginated.map(({
                                 created_at,
                                 actual_value,
                             }, index) => (
@@ -309,7 +360,7 @@ const JobItemsList = ({
                             ))
                         )
                     case "week":
-                        return formattedJobDatas.map(({
+                        return jobDatasPaginated.map(({
                             created_at,
                             actual_value,
                         }, index) => (
@@ -329,7 +380,7 @@ const JobItemsList = ({
                             </Row>
                         ))
                     case "date":
-                        return formattedJobDatas.map(({
+                        return jobDatasPaginated.map(({
                             created_at,
                             actual_value,
                         }, index) => (
@@ -349,7 +400,7 @@ const JobItemsList = ({
                             </Row>
                         ))
                     case "shift":
-                        return formattedJobDatas.map(({
+                        return jobDatasPaginated.map(({
                             created_at,
                             actual_value,
                         }, index) => (
@@ -390,6 +441,50 @@ const JobItemsList = ({
             <tbody>
                 <Content />
             </tbody>
+        )
+    }
+
+    const PaginationSection = () => {
+        const btnClass = `bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded disabled:opacity-50 transition duration-300`
+        return (
+            <div className="flex justify-center items-center gap-2">
+                <button
+                    className={`${
+                        btnClass
+                    }`}
+                    onClick={() => handleChangePage(1)}
+                    disabled={pagination.currentPage === 1}
+                >
+                    First
+                </button>
+                <button
+                    className={`${
+                        btnClass
+                    }`}
+                    onClick={() => handleChangePage(pagination.currentPage - 1)}
+                    disabled={pagination.currentPage === 1}
+                >
+                    Prev
+                </button>
+                <button
+                    className={`${
+                        btnClass
+                    }`}
+                    onClick={() => handleChangePage(pagination.currentPage + 1)}
+                    disabled={pagination.currentPage === totalPages}
+                >
+                    Next
+                </button>
+                <button
+                    className={`${
+                        btnClass
+                    }`}
+                    onClick={() => handleChangePage(totalPages)}
+                    disabled={pagination.currentPage === totalPages}
+                >
+                    Last
+                </button>
+            </div>
         )
     }
 
@@ -454,15 +549,67 @@ const JobItemsList = ({
                     <select
                         className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400`}
                         value={reportType}
-                        onChange={(e) => {
-                            setReportType(e.target.value)
-                        }}
+                        onChange={(e) => setReportType(e.target.value)}
                         disabled={fetching}
                     >
                         <option value="month">Month</option>
                         <option value="week">Week</option>
                         <option value="date">Date</option>
                         <option value="shift">Shift</option>
+                    </select>
+                </div>
+            </div>
+            <div className="flex gap-4">
+                <div>
+                    <div
+                        className="text-sm font-medium text-gray-700 mb-1"
+                    >
+                        &nbsp; Rows:
+                    </div>
+                    <select
+                        onChange={(e) => handleChangeRowsPerPage(Number(e.target.value))}
+                        className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={15}>15</option>
+                        <option value={20}>20</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                </div>
+                <div>
+                    <div
+                        className="text-sm font-medium text-gray-700 mb-1"
+                    >
+                        &nbsp; Sort By
+                    </div>
+                    <select
+                    className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="wd_tag">WD Tag</option>
+                        <option value="workgroup_id">Workgroup</option>
+                        <option value="line_name">Line</option>
+                        <option value="job_name">Job Name</option>
+                        <option value="doc_number">Document Number</option>
+                    </select>
+                </div>
+                <div>
+                    <div
+                        className="text-sm font-medium text-gray-700 mb-1"
+                    >
+                        &nbsp; Order By
+                    </div>
+                    <select
+                        className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                    >
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
                     </select>
                 </div>
             </div>
@@ -479,6 +626,7 @@ const JobItemsList = ({
                     </div>
                 )}
             </div>
+            <PaginationSection />
         </>
     )
 }
