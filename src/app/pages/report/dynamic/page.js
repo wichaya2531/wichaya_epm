@@ -110,13 +110,6 @@ const DynamicReportPage = () => {
                 endDate={endDate}
                 setEndDate={setEndDate}
                 />
-                <ExportGroup
-                spreadsheetsData={spreadsheetsData}
-                currentSpreadsheetId={currentSpreadsheetId}
-                jobDatas={jobDatas}
-                startDate={startDate}
-                endDate={endDate}
-                />
             </div>
         </Layout>
     )

@@ -1,6 +1,7 @@
 import { act, Fragment, useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import ExportGroup from "./ExportGroup";
 
 const JobItemsList = ({
     user,
@@ -13,7 +14,6 @@ const JobItemsList = ({
 }) => {
     const reactSwal = withReactContent(Swal)
 
-    
     const [reportType, setReportType] = useState("month")
     const [sortOrder, setSortOrder] = useState("asc")
     const [sortBy, setSortBy] = useState("wd_tag")
@@ -23,6 +23,18 @@ const JobItemsList = ({
         currentPage: 1,
         rowsPerPage: 10,
     })
+    const startDateString = useMemo(() => isFetched ? (
+        `${isFetched.start_date.getDate().toString().padStart(2, "0")
+        }/${(isFetched.start_date.getMonth() + 1).toString().padStart(2, "0")
+        }/${isFetched.start_date.getFullYear()
+        }`
+    ) : null, [isFetched])
+    const endDateString = useMemo(() => isFetched ? (
+        `${isFetched.end_date.getDate().toString().padStart(2, "0")
+        }/${(isFetched.end_date.getMonth() + 1).toString().padStart(2, "0")
+        }/${isFetched.end_date.getFullYear()
+        }`
+    ) : null, [isFetched])
     const handleChangePage = (newPage) => {
         setPagination(prev => ({
             ...prev,
@@ -32,11 +44,11 @@ const JobItemsList = ({
     const handleChangeRowsPerPage = (newRowsPerPage) => {
         setPagination(prev => ({
             ...prev,
+            currentPage: 1,
             rowsPerPage: newRowsPerPage
         }))
     }
     const formattedJobDatas = useMemo(() => {
-        console.log("jobDatas", jobDatas)
         if (jobDatas) {
             const flattenJobDatas = jobDatas.map(({ items, created_at, workgroup_id, wd_tag, line_name, job_name, doc_number }) => (
                 items.map(({ actual_value }) => ({
@@ -50,16 +62,10 @@ const JobItemsList = ({
                 }))
             )).flat()
             return flattenJobDatas.toSorted((a, b) => {
-                if (a[sortBy] === null) {
-                    return sortOrder === "asc" ? 1 : -1
-                }
-                else if (b[sortBy] === null) {
+                if (b[sortBy] === null || a[sortBy] < b[sortBy]) {
                     return sortOrder === "asc" ? -1 : 1
                 }
-                else if (a[sortBy] < b[sortBy]) {
-                    return sortOrder === "asc" ? -1 : 1
-                }
-                else if (a[sortBy] > b[sortBy]) {
+                else if (a[sortBy] === null || a[sortBy] > b[sortBy]) {
                     return sortOrder === "asc" ? 1 : -1
                 }
                 else {
@@ -84,8 +90,8 @@ const JobItemsList = ({
         const monthsDiff = (
             endDate.getFullYear() - startDate.getFullYear()
         ) * 12 + (
-                endDate.getMonth() - startDate.getMonth()
-            )
+            endDate.getMonth() - startDate.getMonth()
+        )
         return Array.from({ length: monthsDiff + 1 }, (_, i) => {
             const d = new Date(startDate)
             d.setMonth(d.getMonth() + i)
@@ -187,14 +193,6 @@ const JobItemsList = ({
         }
         if (!fetching) {
             if (isFetched) {
-                const startDateString = `${isFetched.start_date.getDate()
-                    }/${isFetched.start_date.getMonth() + 1
-                    }/${isFetched.start_date.getFullYear()
-                    }`
-                const endDateString = `${isFetched.end_date.getDate()
-                    }/${isFetched.end_date.getMonth() + 1
-                    }/${isFetched.end_date.getFullYear()
-                    }`
                 const { value } = await reactSwal.fire({
                     title: "Warning",
                     html: <>
@@ -223,9 +221,6 @@ const JobItemsList = ({
             }
         }
     }
-
-    useEffect(() => {
-    }, [jobDatas])
 
     const TableHeader = () => {
         const thClass = "px-4 py-3 text-center border text-left font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white tracking-wider uppercase"
@@ -259,7 +254,7 @@ const JobItemsList = ({
                             />
                             {weeksArray.map(({ start_date, end_date }, week) => (
                                 <th className={thClass} rowSpan={1} colSpan={1}>
-                                    {`${String(start_date.getDate()).padStart(2, "0")}/${String(startDate.getMonth()).padStart(2, "0")}/${String(startDate.getFullYear()).padStart(4, "0")}`}
+                                    {`${String(start_date.getDate()).padStart(2, "0")}/${String(start_date.getMonth()).padStart(2, "0")}/${String(start_date.getFullYear()).padStart(4, "0")}`}
                                     {start_date.getTime() !== end_date.getTime() && (
                                         <>
                                             <br />
@@ -323,13 +318,13 @@ const JobItemsList = ({
 
     const TableContent = () => {
         const tdClass = ({ value, textLeft = false }) => `
-        px-4 py-2 border cursor-default text-sm text-gray-700 group-hover:bg-gray-100
+        px-4 py-2 border cursor-default text-sm text-gray-700 group-hover:bg-gray-100 bg-white
         ${textLeft ? "text-left" : "text-center"}
         `
         const Row = ({ children, index }) => (
             <tr className="group">
-                <td rowSpan={1} colSpan={1} className={`${tdClass({})} bg-white group-hover:bg-gray-100 sticky left-0 w-20`}>
-                    {index + 1}
+                <td rowSpan={1} colSpan={1} className={`${tdClass({})} group-hover:bg-gray-100 sticky left-0 w-20`}>
+                    {(pagination.currentPage - 1) * pagination.rowsPerPage + index + 1}
                 </td>
                 {children}
             </tr>
@@ -446,39 +441,35 @@ const JobItemsList = ({
 
     const PaginationSection = () => {
         const btnClass = `bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded disabled:opacity-50 transition duration-300`
-        return (
+        return jobDatas !== null && (
             <div className="flex justify-center items-center gap-2">
                 <button
-                    className={`${
-                        btnClass
-                    }`}
+                    className={`${btnClass
+                        }`}
                     onClick={() => handleChangePage(1)}
                     disabled={pagination.currentPage === 1}
                 >
                     First
                 </button>
                 <button
-                    className={`${
-                        btnClass
-                    }`}
+                    className={`${btnClass
+                        }`}
                     onClick={() => handleChangePage(pagination.currentPage - 1)}
                     disabled={pagination.currentPage === 1}
                 >
                     Prev
                 </button>
                 <button
-                    className={`${
-                        btnClass
-                    }`}
+                    className={`${btnClass
+                        }`}
                     onClick={() => handleChangePage(pagination.currentPage + 1)}
                     disabled={pagination.currentPage === totalPages}
                 >
                     Next
                 </button>
                 <button
-                    className={`${
-                        btnClass
-                    }`}
+                    className={`${btnClass
+                        }`}
                     onClick={() => handleChangePage(totalPages)}
                     disabled={pagination.currentPage === totalPages}
                 >
@@ -490,131 +481,143 @@ const JobItemsList = ({
 
     return (
         <>
-            <div className="flex gap-4">
-                <div>
-                    <label
-                        htmlFor="start-month"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Start Date
-                    </label>
-                    <input
-                        className={`
-                            border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400
-                            ${fetching ? "bg-gray-300 pointer-events-none text-gray-400" : ""}
-                        `}
-                        type={"date"}
-                        value={startDate.toISOString().split("T")[0]}
-                        max={maxStartDate.toISOString().split("T")[0]}
-                        onChange={(e) => setStartDate(prev => e.target.value ? new Date(e.target.value) : prev)}
-                    />
+            <div className="flex">
+                <div className="flex flex-col gap-4">
+                    <div className="flex gap-4">
+                        <div>
+                            <label
+                                htmlFor="start-month"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Start Date
+                            </label>
+                            <input
+                                className={`
+                                    border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400
+                                    ${fetching ? "bg-gray-300 pointer-events-none text-gray-400" : ""}
+                                `}
+                                type={"date"}
+                                value={startDate.toISOString().split("T")[0]}
+                                max={maxStartDate.toISOString().split("T")[0]}
+                                onChange={(e) => setStartDate(prev => e.target.value ? new Date(e.target.value) : prev)}
+                            />
+                        </div>
+                        <div>
+                            <label
+                                htmlFor="end-month"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                End Date
+                            </label>
+                            <input
+                                className={`
+                                    border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400
+                                    ${fetching ? "bg-gray-300 pointer-events-none text-gray-400" : ""}
+                                `}
+                                type={"date"}
+                                value={endDate.toISOString().split("T")[0]}
+                                max={maxEndDate.toISOString().split("T")[0]}
+                                min={startDate.toISOString().split("T")[0]}
+                                onChange={(e) => setEndDate(prev => e.target.value ? new Date(e.target.value) : prev)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                &nbsp;
+                            </label>
+                            <button
+                                className={`
+                                    text-white font-bold py-2 px-4 rounded-md transition duration-300 transform flex items-center justify-center space-x-2
+                                    ${fetching ? "bg-gray-300" : "bg-green-500 hover:bg-green-600 hover:scale-105"}
+                                `}
+                                onClick={updateJobData}
+                            >
+                                Pull Data
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <div>
+                            <div
+                                className="text-sm font-medium text-gray-700 mb-1"
+                            >
+                                &nbsp; Rows:
+                            </div>
+                            <select
+                                className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+                                onChange={(e) => handleChangeRowsPerPage(Number(e.target.value))}
+                                value={pagination.rowsPerPage}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={15}>15</option>
+                                <option value={20}>20</option>
+                                <option value={25}>25</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div
+                                className="text-sm font-medium text-gray-700 mb-1"
+                            >
+                                &nbsp; Sort By
+                            </div>
+                            <select
+                                className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                            >
+                                <option value="wd_tag">WD Tag</option>
+                                <option value="workgroup_id">Workgroup</option>
+                                <option value="line_name">Line</option>
+                                <option value="job_name">Job Name</option>
+                                <option value="doc_number">Document Number</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div
+                                className="text-sm font-medium text-gray-700 mb-1"
+                            >
+                                &nbsp; Order By
+                            </div>
+                            <select
+                                className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                            >
+                                <option value="asc">Ascending</option>
+                                <option value="desc">Descending</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                View Type
+                            </label>
+                            <select
+                                className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400`}
+                                value={reportType}
+                                onChange={(e) => setReportType(e.target.value)}
+                                disabled={fetching}
+                            >
+                                <option value="month">Month</option>
+                                <option value="week">Week</option>
+                                <option value="date">Date</option>
+                                <option value="shift">Shift</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label
-                        htmlFor="end-month"
-                        className="block text-sm font-medium text-gray-700 mb-1"
+                {isFetched && (
+                    <div
+                        className="ml-auto text-sm font-medium text-gray-700 flex items-end"
                     >
-                        End Date
-                    </label>
-                    <input
-                        className={`
-                            border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400
-                            ${fetching ? "bg-gray-300 pointer-events-none text-gray-400" : ""}
-                        `}
-                        type={"date"}
-                        value={endDate.toISOString().split("T")[0]}
-                        max={maxEndDate.toISOString().split("T")[0]}
-                        min={startDate.toISOString().split("T")[0]}
-                        onChange={(e) => setEndDate(prev => e.target.value ? new Date(e.target.value) : prev)}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        &nbsp;
-                    </label>
-                    <button
-                        className={`
-                            text-white font-bold px-4 py-2 rounded-md
-                            ${fetching ? "bg-gray-300" : "bg-green-500 hover:bg-green-600"}
-                        `}
-                        onClick={updateJobData}
-                    >
-                        Pull Data
-                    </button>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        View Type
-                    </label>
-                    <select
-                        className={`border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400`}
-                        value={reportType}
-                        onChange={(e) => setReportType(e.target.value)}
-                        disabled={fetching}
-                    >
-                        <option value="month">Month</option>
-                        <option value="week">Week</option>
-                        <option value="date">Date</option>
-                        <option value="shift">Shift</option>
-                    </select>
-                </div>
+                        Data below are in range of {`${startDateString} - ${endDateString}`}
+                    </div>
+                )}
             </div>
-            <div className="flex gap-4">
-                <div>
-                    <div
-                        className="text-sm font-medium text-gray-700 mb-1"
-                    >
-                        &nbsp; Rows:
-                    </div>
-                    <select
-                        onChange={(e) => handleChangeRowsPerPage(Number(e.target.value))}
-                        className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
-                    >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={15}>15</option>
-                        <option value={20}>20</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                    </select>
-                </div>
-                <div>
-                    <div
-                        className="text-sm font-medium text-gray-700 mb-1"
-                    >
-                        &nbsp; Sort By
-                    </div>
-                    <select
-                    className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    >
-                        <option value="wd_tag">WD Tag</option>
-                        <option value="workgroup_id">Workgroup</option>
-                        <option value="line_name">Line</option>
-                        <option value="job_name">Job Name</option>
-                        <option value="doc_number">Document Number</option>
-                    </select>
-                </div>
-                <div>
-                    <div
-                        className="text-sm font-medium text-gray-700 mb-1"
-                    >
-                        &nbsp; Order By
-                    </div>
-                    <select
-                        className="border border-gray-300 rounded-md py-2 px-3 w-full focus:border-blue-400"
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value)}
-                    >
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
-                </div>
-            </div>
-            <div className="w-full overflow-auto border">
-                <table className="w-max min-w-full border">
+            <div className="w-full overflow-auto">
+                <table id="job-items-list-table" className="w-max min-w-full">
                     <TableHeader />
                     <TableContent />
                 </table>
@@ -627,6 +630,16 @@ const JobItemsList = ({
                 )}
             </div>
             <PaginationSection />
+            <ExportGroup
+                jobDatas={jobDatas}
+                reportType={reportType}
+                monthsArray={monthsArray}
+                weeksArray={weeksArray}
+                datesArray={datesArray}
+                startDateString={startDateString}
+                endDateString={endDateString}
+                jobDatasPaginated={jobDatasPaginated}
+            />
         </>
     )
 }
