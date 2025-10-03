@@ -19,6 +19,7 @@ const JobItemSchema = new mongoose.Schema(
     },
 
     ACTUAL_VALUE: { type: String, default: null },
+    VALUE: { type: String, default: null },
     COMMENT: { type: String, default: null },
     JOB_ITEM_EXECUTE_DATE: { type: String, default: null },
     BEFORE_VALUE: { type: String, default: null },

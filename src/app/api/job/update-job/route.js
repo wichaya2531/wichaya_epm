@@ -200,11 +200,14 @@ export const POST = async (req) => {
 // ฟังก์ชันอัปเดต Job Items
 const updateJobItems = async (jobItemsData) => {
   const updatePromises = jobItemsData.map(async (jobItemData) => {
-    const jobItem = await JobItem.findOne({ _id: jobItemData.JobItemID });
 
+    
+    const jobItem = await JobItem.findOne({ _id: jobItemData.JobItemID });
+    
     if (jobItem) {
       // อัปเดตค่า ACTUAL_VALUE, COMMENT และ BEFORE_VALUE
       jobItem.ACTUAL_VALUE = jobItemData.value || jobItem.ACTUAL_VALUE; // อัปเดต ActualValue
+      jobItem.VALUE=jobItemData.Value;
       jobItem.COMMENT = jobItemData.Comment || jobItem.COMMENT; // อัปเดต Comment
       jobItem.BEFORE_VALUE =
         jobItemData.BeforeValue === "" || jobItemData.BeforeValue == null
@@ -217,6 +220,8 @@ const updateJobItems = async (jobItemsData) => {
       jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // รูปสำหรับ before 
       jobItem.IMG_ATTACH_1 = jobItemData.IMG_ATTACH_1 || jobItem.IMG_ATTACH_1; // รูปสำหรับ after
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
+
+      //console.log('jobItem to update',jobItem);
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
       //console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
     } else {

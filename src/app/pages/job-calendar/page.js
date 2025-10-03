@@ -18,7 +18,7 @@ import Link from "next/link";
 import VerifiedIcon from '@mui/icons-material/Verified';
 import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
 import { Alert } from "@mui/material";
-
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 moment.locale("en-GB");
 const localizer = momentLocalizer(moment);
 const Page = () => {
@@ -66,6 +66,7 @@ const Page = () => {
 
 const handleDeleteEventFromShowMoreData = async (events) => {
   close();
+
   //console.log("handleDeleteEventFromShowMoreData", events);
   try {
     const response = await fetch("/api/events/deletes", {
@@ -94,6 +95,7 @@ const handleDeleteEventFromShowMoreData = async (events) => {
 
 
 const handleshowOptionAfterClickEvent = async (b) => { 
+        //console.log('handleshowOptionAfterClickEvent',b) 
         //setDate(newDate);
             let data_lv1;
             try {
@@ -110,6 +112,15 @@ const handleshowOptionAfterClickEvent = async (b) => {
             //console.log('data',data);    
 
             let htmlBtn=``;
+            if(b.status_name==="ongoing"){
+                    htmlBtn+=`<div>Last_get_by: ${b.last_get_by}</div>`;
+                    if (b.last_get_date) {
+                      htmlBtn += `<div>Last_get_time: ${moment(b.last_get_date).format("YYYY-MM-DD HH:mm:ss")}</div>`;
+                    }
+                      //htmlBtn+=`<div>Last_get_time: ${b.last_get_date}</div>`;
+                    htmlBtn+=`<p>`; 
+             }
+            
               if(data_lv1.menu.includes('Get')){
                      htmlBtn+=`<button id="btn-get"   class="swal2-cancel swal2-styled" style="background-color:#FF9800;">Get</button>`;
               }
@@ -396,7 +407,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
     handleshowOptionAfterClickEvent(event);
 
     return ;  
-
+   
     if (router) {
       let viewMode = "";
       if (event.status_name === "plan") {
@@ -439,6 +450,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
     window.open(url, "_blank"); // เปิดหน้าใหม่ในแท็บใหม่
 
     }
+
   };
   const handleShowmore = (events, date) => {
     setEventData({ events, date: date.toString() });
@@ -502,6 +514,17 @@ const handleshowOptionAfterClickEvent = async (b) => {
       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1 }}>
         {event.title}
       </span>
+      {
+        event.status_name === "ongoing" && event.last_get_by && (
+          <AssignmentIndIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }}
+             onClick={(e) => {
+              e.stopPropagation();      // กัน bubble ไป parent
+              // e.preventDefault();    // ถ้าอยู่ใน <a> หรือ <button type="submit"> ให้เปิดบรรทัดนี้ด้วย
+              handleSelectEvent(event);
+            }}
+          />
+        )
+      }
       {
         event.abnormal_item===1&&(
           <NotificationImportantSharpIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
@@ -727,7 +750,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
         >
           <ShowmoreData 
           data={eventData} close={close}  
-          showOptionAfterClickEvent={handleshowOptionAfterClickEvent}
+           showOptionAfterClickEvent={handleshowOptionAfterClickEvent}
            handleDeleteEventFromShowMoreData={handleDeleteEventFromShowMoreData}
            loginUser={user}
            selectedWorkgroup={selectedWorkgroup}

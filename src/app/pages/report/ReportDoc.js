@@ -112,7 +112,7 @@ const ReportDoc = ({
   //}
 
  //setSelectedWorkgroups([workgroupOfUser]);
- // console.log('report',report);
+  console.log('report',report);
 
  //console.log('startDate',startDate);
  //console.log('endDate',endDate);
@@ -137,6 +137,7 @@ const ReportDoc = ({
         upper_lower:item.UPPER+" / "+item.LOWER || "Unknown",
         x: updatedAt.toISOString(),
         actualValue: item.ACTUAL_VALUE || "Unknown",
+        Value: item.VALUE || "Unknown",
         docNumber: item.DOC_NUMBER || "Unknown",
         Job_status:item.JOB_STATUS || "Unknown",
         Img_file:item.FILE||"Unknown",
@@ -160,6 +161,7 @@ const ReportDoc = ({
           x: curr.x,
           y: curr.y,
           actualValue: curr.actualValue,
+          Value: curr.Value,
           docNumber: curr.docNumber,
           wd_tag: curr.wd_tag,
           jobItemName: curr.jobItemName,
@@ -238,6 +240,7 @@ const ReportDoc = ({
             Job_status: item.Job_status,
             Img_file: item.Img_file,
             wd_tag: item.wd_tag,
+            Value: item.Value,
           })),
       };
     });
@@ -443,7 +446,7 @@ const ReportDoc = ({
             time,
             shift,
             item.actualValue ?? "-",
-          ];
+            item.Value ?? "-",];
         })
       );
 
@@ -536,8 +539,7 @@ const ReportDoc = ({
     const tableData = filteredData.flatMap((dataset) =>
 
       dataset.data.map((item) => {
-        console.log('item',item);
-
+        //console.log('item',item);
         const itemDate = new Date(item.x); // แปลงเป็น Date โดยใช้ UTC time (จาก item.x)
 
         // แปลงเวลาเป็น Local Time
@@ -570,6 +572,7 @@ const ReportDoc = ({
           Time: formattedTime,
           Shift: shift,
           ActualValue: item.actualValue ?? "-",    
+          Value: item.Value ?? "-",
           Job_status:item.Job_status,     
           Img_file:item.Img_file,            
 
@@ -649,6 +652,7 @@ const ReportDoc = ({
             Time: time,
             Shift: shift,
             ActualValue: item.actualValue ?? "-",
+            Value: item.Value ?? "-",
             Job_status:'B',
             Img_file:item.Img_file,
           };
@@ -926,7 +930,9 @@ const maxDateStr = tomorrow.toISOString().split("T")[0];
            <div className="mb-4">
            <label className="block p-2 font-semibold">DOC No.</label>
             <select
-              className="w-auto p-2 border rounded"
+              className={`w-auto p-2 border rounded ${
+                isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+              }`}
               value={selectedDocNumbers}
               onChange={(e) => handleDocNumberChange(e.target.value)}
             >
@@ -941,7 +947,9 @@ const maxDateStr = tomorrow.toISOString().split("T")[0];
             <div className="mb-4">
                 <label className="block p-2 font-semibold">WD_TAG</label>
                 <select
-                  className="w-auto p-2 border rounded"
+                  className={`w-auto p-2 border rounded ${
+                    isLoading ? "cursor-not-allowed bg-gray-100 text-gray-400" : ""
+                  }`}
                   value={selectedWDTag}
                   onChange={(e) => setSelectedWDTag(e.target.value)}
                 >

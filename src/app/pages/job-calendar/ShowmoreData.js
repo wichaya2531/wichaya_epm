@@ -7,8 +7,10 @@ import { useEffect, useState } from "react";
 import VerifiedIcon from '@mui/icons-material/Verified';
 import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
 import DeleteIcon from "@mui/icons-material/Delete";
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 
 const ShowmoreData = ({ data, close,showOptionAfterClickEvent ,handleDeleteEventFromShowMoreData,loginUser,selectedWorkgroup,workgroups}) => {
+  //console.log('ShowmoreData data',data);
   //console.log('loginUser=',loginUser);
   //console.log( "selectedWorkgroup=\""+selectedWorkgroup+"\"");
   var openOptionDeleteJob=false;
@@ -242,7 +244,11 @@ const handleDelete = () => {
                 }}
               >
                 {event.title}
-
+                {
+                  event.last_get_by && event.status_name=="ongoing" && (
+                    <AssignmentIndIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
+                  )
+                }
                 {event.abnormal_item === 1 && (
                   <NotificationImportantSharpIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
                 )}

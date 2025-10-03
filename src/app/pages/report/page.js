@@ -133,22 +133,35 @@ const Page = () => {
           Summarize the data.
         </h1>
       </div>
-      {/* ปุ่มสำหรับแสดงกราฟต่าง ๆ */}
       <div className="flex justify-start mb-4 space-x-4">
-        {chartButtons.map((button) => (
-          <button
-            key={button.value}
-            onClick={() => setSelectedChart(button.value)}
-            className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-150 ease-in-out ${
-              selectedChart === button.value
-                ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            } hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+        {/* ปุ่มสำหรับแสดงกราฟต่าง ๆ */}
+        <div id="1" className="flex space-x-4">
+          {chartButtons.map((button) => (
+            <button
+              key={button.value}
+              onClick={() => setSelectedChart(button.value)}
+              className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-150 ease-in-out ${
+                selectedChart === button.value
+                  ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              } hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+            >
+              {button.label}
+            </button>
+          ))}
+        </div>
+
+        <div id="2" className="flex">
+          <Link
+            href={"/pages/report/dynamic"}
+            className="px-6 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg transition-all duration-150 ease-in-out hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            {button.label}
-          </button>
-        ))}
+            {"Dynamic Report"}
+          </Link>
+        </div>
       </div>
+
+          
       <div className="mb-4 p-4 bg-white rounded-xl">
         {/* {selectedChart === "BarChart" && <BarChart />}
         {selectedChart === "BarChart1" && <BarChart1 />}

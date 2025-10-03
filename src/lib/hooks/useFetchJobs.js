@@ -144,7 +144,7 @@ const useFetchJobs = (params = null) => {
 
             try {
               const data = JSON.parse(line);
-              // console.log('data',data);
+              //console.log('data',data);
               sizeOfPack += line.length;
               const items = Array.isArray(data) ? data : [data];
               pushItems(items, controller);

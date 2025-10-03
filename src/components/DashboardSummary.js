@@ -3,6 +3,8 @@ import { useState, useEffect, use } from "react";
 import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
 import TableComponent from "./TableComponent";
 import TableComponentAdmin from "./TableComponentAdmin";
+import SummaryComponent from "./SummaryComponent";
+
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/navigation";
@@ -56,7 +58,7 @@ const statusOptions = [
   "Overdue",
 ];
 
-const JobsTable = ({ refresh }) => {
+const DashboardSummary = ({ refresh }) => {
   const router = useRouter();
   //console.log("refresh JobsTable=>",refresh);
  
@@ -580,36 +582,11 @@ const handleShowUser = (userName, datetime) => {
           </select>
         </div>
       </div>
-      {user.role === "Admin Group" || user.role === "Owner" ? (
-        <TableComponentAdmin
-          headers={jobsActiveHeaderAdmin}
-          datas={jobsActiveBody}
-          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
-          PageSize={5}
-          searchColumn={"Checklist Name"}
-          searchColumn1={"Line Name"}
-          searchHidden={true}
-          filteredJobs={filteredJobs}
-          selectedJobs={selectedJobs}
-          handleDeleteSelected={handleDeleteSelected}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-          setSelectedJobs={setSelectedJobs}
-        />
-      ) : (
-        <TableComponent
-          headers={jobsActiveHeader}
-          datas={jobsActiveBody}
-          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
-          PageSize={5}
-          searchColumn={"Checklist Name"}
-          searchHidden={true}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
-      )}
+      <hr></hr>
+      <SummaryComponent datas={jobs} />
+
     </div>
   );
 };
 
-export default JobsTable;
+export default DashboardSummary;

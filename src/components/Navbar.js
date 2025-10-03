@@ -252,7 +252,7 @@ const Navbar = ({ menu }) => {
                   <FaTimes size={24} />
                 </button>
                 <select
-                  className="font-sm p-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-[180px] font-sm p-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                   onChange={handleUserSelection}
                   value={selectedUserId}
                 >

@@ -121,6 +121,7 @@ export async function POST(req) {
       AGILE_SKIP_CHECK: jobTemplate.AGILE_SKIP_CHECK || false,
       SORT_ITEM_BY_POSITION: jobTemplate.SORT_ITEM_BY_POSITION || false,
       PUBLIC_EDIT_IN_WORKGROUP: jobTemplate.PUBLIC_EDIT_IN_WORKGROUP || false,
+      TYPE:jobTemplate.TYPE || "Unknown",
     };
 
     let createdJobs = [];
