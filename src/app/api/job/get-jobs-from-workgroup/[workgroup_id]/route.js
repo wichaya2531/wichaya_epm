@@ -6,6 +6,8 @@ import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
 import { JobTemplate } from "@/lib/models/JobTemplate";
+import { ProfileGroup } from "@/lib/models/ProfileGroup";
+
 export const dynamic = "force-dynamic";
 
 // code แบบ ดึงทีละหน่อย 
@@ -18,10 +20,19 @@ export const GET = async (req, { params }) => {
   // แปลงเป็น ISO string ถ้ามีค่า
   //const startTimeISO = startTime ? new Date(startTime).toISOString() : undefined;
   //const endTimeISO = endTime ? new Date(endTime).toISOString() : undefined;
+
+  const profileGroupsArr = await ProfileGroup.find().lean();
+  const profileGroups = profileGroupsArr.reduce((acc, group) => {
+    acc[group._id] = group.PROFILE_NAME;
+    return acc;
+  }, {});
+  //console.log("profileGroups", profileGroups);
+
+
   const { workgroup_id } = params;
   //
  // console.log("workgroup_id=>", workgroup_id, "startTime=>", startTime, "endTime=>", endTime);
-
+  
   //console.log("workgroup_id=>",workgroup_id);
   if (workgroup_id === "undefined") {
     return NextResponse.json({
@@ -97,10 +108,7 @@ export const GET = async (req, { params }) => {
                 //      io++;
                 //  }
 
-                 if(numTotal===0){
-                         console.log('job',job);
-                         numTotal++;
-                 }
+                
 
                  //console.log("job",job);
                  
@@ -123,6 +131,7 @@ export const GET = async (req, { params }) => {
                   LAST_GET_BY:job.LAST_GET_BY || "Unknown",
                   LAST_GET_TIME:job.LAST_GET_TIME || "Unknown",
                   TYPE:job.TYPE || "Unknown",
+                  PROFILE_GROUP: await profileGroups[job.PROFILE_GROUP] || "Unknown",
                   //await checkItemAbNormal(job._id),
                   //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };

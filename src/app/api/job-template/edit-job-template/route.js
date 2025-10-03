@@ -7,6 +7,7 @@ import { Notifies } from "@/lib/models/Notifies";
 import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
+import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
 
 
 
@@ -38,6 +39,7 @@ export const PUT = async (req, res) => {
     SORT_ITEM_BY_POSITION,
     PUBLIC_EDIT_IN_WORKGROUP,
     checklist_type,
+    profile_group,
   } = body;
 
    //console.log("timeout:", timeout);
@@ -46,7 +48,7 @@ export const PUT = async (req, res) => {
     const JobTemplateCreateID = await generateUniqueKey();
     const jobTemplate = await JobTemplate.findById(jobTemplateID);
 
-    console.log("jobTemplate found:", jobTemplate);
+   // console.log("jobTemplate found:", jobTemplate);
 
     const jobTemplateEdit = new JobTemplateEdit({
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
@@ -60,12 +62,15 @@ export const PUT = async (req, res) => {
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       TIMEOUT: jobTemplate.TIMEOUT,
       TYPE: jobTemplate.TYPE || "Null",
+      PROFILE_GROUP: jobTemplate?.PROFILE_GROUP 
+      ? new ObjectId(jobTemplate.PROFILE_GROUP) 
+      : "Null",
       PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
       AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK || false,
       SORT_ITEM_BY_POSITION:jobTemplate.SORT_ITEM_BY_POSITION|| false,
       PUBLIC_EDIT_IN_WORKGROUP:jobTemplate.PUBLIC_EDIT_IN_WORKGROUP||false
     });
-    console.log("jobTemplateEdit", jobTemplateEdit)
+    //console.log("jobTemplateEdit update", jobTemplateEdit)
     await jobTemplateEdit.save();
 
 
@@ -82,13 +87,14 @@ export const PUT = async (req, res) => {
     jobTemplate.WORKGROUP_ID = workgroup;
     jobTemplate.TIMEOUT = timeout;
     jobTemplate.TYPE = checklist_type || "Null";
+    jobTemplate.PROFILE_GROUP = new ObjectId(profile_group) || "Null";
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
     jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
     jobTemplate.AGILE_SKIP_CHECK=AGILE_SKIP_CHECK;
     jobTemplate.SORT_ITEM_BY_POSITION=SORT_ITEM_BY_POSITION;
     jobTemplate.PUBLIC_EDIT_IN_WORKGROUP=PUBLIC_EDIT_IN_WORKGROUP;
 
-    //console.log('jobTemplate after',jobTemplate);
+   // console.log('jobTemplate update',jobTemplate);
 
     await jobTemplate.save();
 

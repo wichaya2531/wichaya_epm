@@ -6,7 +6,7 @@ import TableComponent from "@/components/TableComponent.js";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
-import ProfileGroup from "@/lib/models/ProfileGroup.js";
+//import ProfileGroup from "@/lib/models/ProfileGroup.js";
 import useFetchJobTemplate from "@/lib/hooks/useFetchJobTemplate.js";
 import useFetchProfiles from "@/lib/hooks/useFetchProfiles.js";
 // import useFetchUsers from "@/lib/hooks/useFetchUsers.js"; // ไม่ใช้
@@ -72,6 +72,9 @@ const Page = ({ searchParams }) => {
 
   // checklist type ยังเก็บเป็นอ็อบเจ็กต์ได้ (ถ้าไม่เจอปัญหา)
   const [checklistType, setChecklistType] = useState(null);
+  // checklist type ยังเก็บเป็นอ็อบเจ็กต์ได้ (ถ้าไม่เจอปัญหา)
+  const [profileGroup, setProfileGroup] = useState("");
+  
 
   const [dueDate, setDueDate] = useState("");
   const [refresh, setRefresh] = useState(false);
@@ -144,6 +147,14 @@ const Page = ({ searchParams }) => {
       setNotifiesOverdue(jobTemplate.NotifyOverdueList || []);
     }
   }, [jobTemplate, isJobTemplateLoading]);
+
+
+    useEffect(() => {
+      if (!isJobTemplateLoading && jobTemplate) {
+          const pg = jobTemplate.PROFILE_GROUP ? String(jobTemplate.PROFILE_GROUP) : "";
+          setProfileGroup(pg);
+      }
+    }, [jobTemplate, isJobTemplateLoading]);
 
   // ดึงผู้ใช้ใน workgroup ของ user
   useEffect(() => {
@@ -396,6 +407,8 @@ const Page = ({ searchParams }) => {
         .filter((x) => !notifiesOverdue_id.includes(x._id))
         .map((x) => x._id) ?? [];
 
+     //console.log("profileGroup",profileGroup);
+
     const payload = {
       jobTemplateID,
       author,
@@ -407,6 +420,7 @@ const Page = ({ searchParams }) => {
       checklist_ver: checklistVer,
       timeout: timeoutValue || jobTemplate?.TIMEOUT || null, // ✅ ใช้สตริงจาก state
       checklist_type: checklistType?.value ?? jobTemplate?.TYPE ?? null,
+      profile_group: profileGroup || null,
       approvers_id,
       notifies_id,
       notifiesOverdue_id,
@@ -418,6 +432,10 @@ const Page = ({ searchParams }) => {
       SORT_ITEM_BY_POSITION: sortItemByPosition,
       PUBLIC_EDIT_IN_WORKGROUP: publicEditInWorkgroup,
     };
+
+    //console.log("payload monitor", payload);    
+   // return;
+
 
     try {
       const res = await fetch(`/api/job-template/edit-job-template`, {
@@ -714,35 +732,33 @@ const Page = ({ searchParams }) => {
 
           </div>
 
-          <div className="flex flex-col items-start space-y-2 border-red-300" >
-            <label
-              htmlFor="profiles"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Profiles
-            </label>
-            <select
-              id="profiles"
-              name="profiles"
-              className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-             // value={lineName}
-             // onChange={(e) => setLineName(e.target.value)}
-            >
-              {
-//  <              option value={jobTemplate?.LINE_NAME || ""}>
-//                 {jobTemplate?.LINE_NAME || "—"}
-//                 {" (Current) "}
-//               </option>
-              }
+            <div className="flex flex-col items-start space-y-2 border-red-300">
+              <label
+                htmlFor="profileGroup"
+                className="block mb-2 text-sm font-medium text-black"
+              >
+                Profiles
+              </label>
 
-              <option value="N/A">&nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;</option>
-               {profiles.map((ln) => (
-                <option key={ln._id} value={ln.PROFILE_NAME}>
-                  {ln.PROFILE_NAME}
-                </option>
-              ))}
-            </select>
-          </div>
+              <select
+                id="profileGroup"
+                name="profileGroup"
+                className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                value={profileGroup}
+                onChange={(e) => {
+                  //console.log("profileGroup changed:", e.target.value);
+                  setProfileGroup(e.target.value);
+                }}
+                disabled={profilesLoading}
+              >
+                <option value="">N/A</option>
+                {(profiles || []).map((ln) => (
+                  <option key={ln._id} value={String(ln._id)}>
+                    {ln.PROFILE_NAME}
+                  </option>
+                ))}
+              </select>
+            </div>
 
           {/* Notify Active */}
           <div className="flex flex-col gap-5 ">

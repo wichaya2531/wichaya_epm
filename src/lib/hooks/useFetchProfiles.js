@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 
 const useFetchProfiles = (workgroup_id) => {
 
-    console.log("useFetchProfiles");
-
     const [profiles, setProfiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,7 +19,7 @@ const useFetchProfiles = (workgroup_id) => {
                     }),
                     });
                 const data = await res.json();
-                console.log("data.profileGroup", data.profileGroup);
+                //console.log("data.profileGroup", data.profileGroup);
                 //console.log("แสดงจำนวนผู้ใช้งานทั้งหมดในระบบ users:",data);
                 setProfiles(data.profileGroup || []);
                 setLoading(false);

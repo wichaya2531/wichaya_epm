@@ -121,6 +121,7 @@ export const GET = async (req, { params }) => {
         WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
         TIMEOUT: jobTemplate.TIMEOUT,
         TYPE: jobTemplate.TYPE || "Null",
+        PROFILE_GROUP: jobTemplate.PROFILE_GROUP || "Null",
         createdAt: createdAt,
         ApproverList: (usersApprove || []).filter(Boolean),
         NotifyList: (usersNotifier || []).filter(Boolean),
