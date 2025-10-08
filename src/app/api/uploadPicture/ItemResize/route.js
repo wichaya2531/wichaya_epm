@@ -25,7 +25,6 @@ export const POST = async (req, res) => {
           .resize(1024, 1024, { fit: "inside" }) // จำกัดขนาดไม่เกิน 1024x1024 px
           .toFormat("jpeg", { quality: 80 }) // แปลงเป็น JPEG และลดคุณภาพลงเหลือ 80%
           .toBuffer();
-
         fs.writeFileSync(filePath, compressedBuffer);
       } else {
         fs.writeFileSync(filePath, buffer); // ถ้าไม่ใช่ไฟล์รูป ให้บันทึกตามปกติ
