@@ -110,6 +110,9 @@ const Page = () => {
         <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
           <DashboardSummary refresh={refresh} />
         </div>
+        {/* <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
+          <JobsTable refresh={refresh} />
+        </div>         */}
       </div>
     </Layout>
   );

@@ -210,7 +210,7 @@ const Test2PoST = async () => {
             
       </div>
       <div className="absolute bottom-1 text-white  right-2 text-gray-500 text-[18px] italic">
-            Rev. 13.10.25.T.14.35
+            Rev. 13.10.25.T.23.35
             {/* <div>
                   <button onClick={Test2PoST}>Test POST</button>
             </div> */}

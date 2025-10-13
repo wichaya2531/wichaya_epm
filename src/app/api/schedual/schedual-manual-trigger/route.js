@@ -72,7 +72,7 @@ export const POST = async (req, res) => {
     const scheduler = await Schedule.find({
         _id:new ObjectId(schedual_id)
     });
-    //console.log('schedual ที่ค้นเจอ ',scheduler);
+   // console.log('schedual ที่ค้นเจอ ',scheduler);
     // scheduler.map(async (schedulers) => {
     //             console.log('schedulers',schedulers);
     // });
@@ -122,6 +122,7 @@ export const POST = async (req, res) => {
 
         //1.3 create job
         const job = new Job({
+          JOB_TEMPLATE_ID: jobTemplate._id,
           JOB_NAME: jobTemplate.JOB_TEMPLATE_NAME,
           JOB_STATUS_ID: newID._id,
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
@@ -134,20 +135,27 @@ export const POST = async (req, res) => {
           PICTURE_EVEDENT_REQUIRE: jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
           AGILE_SKIP_CHECK : jobTemplate.AGILE_SKIP_CHECK || false,
           SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
+           PROFILE_GROUP: jobTemplate.PROFILE_GROUP || "Unknown",
         });
-
+         //console.log("job=>",job);
          await job.save();
-         
+         //return NextResponse.json({ status: 200 });
         //  //2 update to jobtemplateactivate
-        const jobTemplateActivate = new JobTemplateActivate({
-          JobTemplateID: jobTemplate._id,
-          JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
-          JOB_ID: job._id,
-        });
+        //try {
+          const jobTemplateActivate = new JobTemplateActivate({
+                JobTemplateID: jobTemplate._id,
+                JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
+                JOB_ID: job._id,
+              });
 
-        // console.log("jobTemplateActivate=>",jobTemplateActivate);
+              //console.log("jobTemplateActivate=>",jobTemplateActivate);
 
-        await jobTemplateActivate.save();
+              await jobTemplateActivate.save();
+              //console.log("jobTemplateActivate=>", jobTemplateActivate);  
+      // // } catch (error) {
+       //   console.error("Error saving jobTemplateActivate:", error);
+       // }
+
 
         //3 create job item
         //3.1 find job item template where jobtemplateid = jobtemplateid and jobtemplatecreateid = jobtemplatecreateid

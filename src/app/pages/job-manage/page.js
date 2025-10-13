@@ -14,7 +14,16 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
                     <h1 className="text-3xl font-bold text-slate-900">Create Checklist Template</h1>
                 </div> */
 }
-const Page = () => {
+async function Page() {
+  // const formData = await request.formData();
+  // const profile = formData.get("profile");
+  // const label = formData.get("label");
+  // const count = formData.get("count");
+  // const job = formData.get("job");
+  // const jobIds = formData.get("jobIds");
+
+  // console.log("POST received:", { profile, label, count, job, jobIds });
+
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: usersloading } = useFetchUser();
 
