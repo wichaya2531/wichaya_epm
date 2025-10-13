@@ -142,11 +142,11 @@ export const GET = async (req, { params }) => {
                 const status = await Status.findOne({ status_name: schedule.STATUS });
                 const statusColor = status?.color || "Unknown";
           
-                const LineName = await JobTemplate.findOne({
-                  JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
-                });
+                // const LineName = await JobTemplate.findOne({
+                //   JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
+                // });
           
-                const Line_Name = LineName?.LINE_NAME || "Unknown";
+                //const Line_Name = LineName?.LINE_NAME || "Unknown";
                 return {
                   _id: schedule._id,//schedule.JOB_TEMPLATE_ID,
                   //REVIEWS: "",
@@ -170,7 +170,8 @@ export const GET = async (req, { params }) => {
                   JOB_TEMPLATE_NAME: schedule.JOB_TEMPLATE_NAME,
                   ACTIVATE_DATE: schedule.ACTIVATE_DATE,
                   SCHEDULE_STATUS: schedule.STATUS,
-
+                  //PROFILE_GROUP: schedule.PROFILE_GROUP||"Unknown",
+                  PROFILE_GROUP: await profileGroups[schedule.PROFILE_GROUP] || "Unknown",
                 };
               });
               
@@ -192,7 +193,7 @@ export const GET = async (req, { params }) => {
               await new Promise(resolve => setTimeout(resolve, 500)); // delay 1 วิ
       }
       //console.log("จำนวนรอบที่ทำงานทั้งหมด numTotal="+numTotal);
-      controller.enqueue(encoder.encode( '" จบการส่งข้อมูล"\n'));
+      //controller.enqueue(encoder.encode( '" จบการส่งข้อมูล"\n'));
       controller.close();
 
     }

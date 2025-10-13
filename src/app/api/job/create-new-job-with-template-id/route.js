@@ -118,6 +118,7 @@ export const POST = async (req, res) => {
       CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       ACTIVATE_USER: ACTIVATER_ID,
+      PROFILE_GROUP:jobTemplate.PROFILE_GROUP,
       JOB_APPROVERS: approvers.map((approver) => approver.USER_ID),
       OVERDUE_NOTIFYS:notisOnOverdues.map((notisOnOverdue) => notisOnOverdue.USER_ID),
       OVERDUE_ACK:"",

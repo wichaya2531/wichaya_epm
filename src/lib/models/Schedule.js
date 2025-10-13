@@ -20,6 +20,7 @@ const scheduleSchema = new mongoose.Schema(
       required: true,
     },
     PLAN_TYPE: { type: String, default: "Unknown" },
+    PROFILE_GROUP: { type: String, default: null },
   },
   { timestamps: true }
 );
