@@ -1,10 +1,8 @@
 "use client";
 import { useState, useEffect, use } from "react";
-import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
+import useFetchJobsQuickView from "@/lib/hooks/useFetchJobsQuickView.js";
 import TableComponent from "./TableComponent";
 import TableComponentAdmin from "./TableComponentAdmin";
-import SummaryComponent from "./SummaryComponent";
-
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/navigation";
@@ -59,31 +57,16 @@ const statusOptions = [
 ];
 
 
-
-//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
-import mqtt from "mqtt";
-const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
-const options = {
-  username: process.env.NEXT_PUBLIC_MQT_USERNAME,
-  password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-}
-//---------------------------------------------->>
-
-
-const DashboardSummary = ({ refresh }) => {
+const JobsTableQuickView = ({ refresh,jobIds,handleEventToMqtt }) => {
   const router = useRouter();
   //console.log("refresh JobsTable=>",refresh);
  
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
-  //console.log("****DashboardSummary****");
-  //console.log("JobsTable=>",refresh);
-
+  //console.log("****JobsTableQuickView****");
+  //console.log("jobIds=>",jobIds);
   //console.log(refresh);
+
   const { user, isLoading: userLoading } = useFetchUser(refresh);
-
-
-
-
 
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
@@ -91,27 +74,11 @@ const DashboardSummary = ({ refresh }) => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [reloadKey, setReloadKey] = useState(0);
   
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  //-----------MQTT----------------------------------------->>
-  const mqttClient = mqtt.connect(connectUrl, options);
-  mqttClient.on("connect", () => {});
-  mqttClient.on("error", (err) => {
-    mqttClient.end();
-  });
-   mqttClient.on('message', (topic, message) => {
-      setTimeout(() => {
-         console.log("DashboardSummary ข้อมูลขาเข้า "+topic+" : "+message);
-         setReloadKey(prev => prev + 1); // เพิ่มค่า → ทำให้ useFetchJobs รันใหม่
-      }, 5000);  
-  });
-
-
   
-  const { jobs, setJobs, isLoading: jobsLoading, fetchJobs } =  useFetchJobs({
+  
+  const { jobs, setJobs, isLoading: jobsLoading, fetchJobs } =  useFetchJobsQuickView({
     refresh,
-    startTime: startDate,
-    endTime: endDate,
+    jobIds,    
     status: filterStatus,
     reloadKey,   // ส่งไปใน dependency
   });
@@ -120,24 +87,6 @@ const DashboardSummary = ({ refresh }) => {
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  
-
-
-
-
-useEffect(() => {
-  if (user?.workgroup_id){
-          //console.log(' user.workgroup_id', user.workgroup_id);
-            mqttClient.subscribe(user.workgroup_id, (err) => {
-            if (!err) {
-            } else {
-              console.error("Subscription error: ", err);
-            }
-          });
-  } 
-}, [user]);
-
-  //------------------------------------------------------->>
 
 
  // useEffect(() => {
@@ -232,6 +181,7 @@ useEffect(() => {
             prevJobs.filter((job) => !selectedJobs.includes(job._id))
           );
           setSelectedJobs([]);
+          handleEventToMqtt();
         } else {
           Swal.fire(
             "Error!",
@@ -292,7 +242,6 @@ useEffect(() => {
 
   const handleSearch = (e) => {
     //console.log("use search");
-    //console.log('e.target.value',e.target.value);
     setSearchQuery(e.target.value);
   };
 
@@ -532,11 +481,13 @@ const handleShowUser = (userName, datetime) => {
     setEndDate(end.toISOString().slice(0, 10));
   }, []);
 
+  
+  refresh=false;
   return (
     <div className="w-full flex flex-col mt-5">
       <div className="flex flex-wrap mb-4 justify-start items-center gap-4">
       
-          <div className="flex flex-row gap-4">
+          {/* <div className="flex flex-row gap-4">
             <div className="flex-2 w-1/2 font-medium text-black ">
                   Pull:
             </div>
@@ -573,12 +524,12 @@ const handleShowUser = (userName, datetime) => {
                 className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
               />
             </div>
-          </div>
+          </div> */}
    
 
 
 
-        <div className="flex-2">
+        {/* <div className="flex-2">
          
         </div>
         <div className="flex-1.5">
@@ -607,8 +558,8 @@ const handleShowUser = (userName, datetime) => {
               onChange={handleSearch}
             />
           </div>
-        </div>
-        <div className="flex-2">
+        </div> */}
+        {/* <div className="flex-2">
           <label
             htmlFor="statusFilter"
             className="block text-sm font-medium text-black"
@@ -630,13 +581,38 @@ const handleShowUser = (userName, datetime) => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
       </div>
-      <hr></hr>
-      <SummaryComponent datas={jobs} refresh={refresh} />
-
+      {user.role === "Admin Group" || user.role === "Owner" ? (
+        <TableComponentAdmin
+          headers={jobsActiveHeaderAdmin}
+          datas={jobsActiveBody}
+          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
+          PageSize={5}
+          searchColumn={"Checklist Name"}
+          searchColumn1={"Line Name"}
+          searchHidden={true}
+          filteredJobs={filteredJobs}
+          selectedJobs={selectedJobs}
+          handleDeleteSelected={handleDeleteSelected}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          setSelectedJobs={setSelectedJobs}
+        />
+      ) : (
+        <TableComponent
+          headers={jobsActiveHeader}
+          datas={jobsActiveBody}
+          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
+          PageSize={5}
+          searchColumn={"Checklist Name"}
+          searchHidden={true}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+        />
+      )}
     </div>
   );
 };
 
-export default DashboardSummary;
+export default JobsTableQuickView;

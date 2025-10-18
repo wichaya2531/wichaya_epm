@@ -200,7 +200,7 @@ const useFetchJobs = (params = null) => {
         if (abortRef.current === controller) setError(e);
       } finally {
         if (abortRef.current === controller) {
-          console.log("[useFetchJobs] sizeOfPack:", sizeOfPack);
+          //console.log("[useFetchJobs] sizeOfPack:", sizeOfPack);
           setIsLoading(false);
         }
       }

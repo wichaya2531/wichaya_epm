@@ -22,6 +22,18 @@ import SelectContainer from "@/components/SelectContainer.js"; // นำเข�
 import { toggleButtonClasses } from "@mui/material";
 
 
+//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
+import mqtt from "mqtt";
+const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
+const options = {
+  username: process.env.NEXT_PUBLIC_MQT_USERNAME,
+  password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
+}
+//---------------------------------------------->>
+
+
+
+
 
 const Page = () => {
 
@@ -40,6 +52,30 @@ const Page = () => {
   const [currentPageJobTemplate, setCurrentPageJobTemplate] = useState(1);
 
   const [showPlanningColumns, setShowPlanningColumns] = useState(false);
+
+   
+
+  //-----------MQTT----------------------------------------->>
+  const mqttClient = mqtt.connect(connectUrl, options);
+  mqttClient.on("connect", () => {});
+  mqttClient.on("error", (err) => {
+    mqttClient.end();
+  });
+  // mqttClient.on('message', (topic, message) => {
+  //      console.log("active-remove-job ข้อมูลขาเข้า "+topic+" : "+message);
+  //      //setReloadKey(prev => prev + 1); // เพิ่มค่า → ทำให้ useFetchJobs รันใหม่
+  // });
+
+    const handleEventToMqtt = async () => {
+            try{
+                mqttClient.publish(user?.workgroup_id, "refresh");
+            }catch(err){
+                 console.err(err);
+            }                
+                  //alert('handleEventToMqtt');    
+    }
+
+
 
    //---------------------------------------------------------------->>
     const jobTemplatesHeader = [
@@ -320,6 +356,7 @@ const Page = () => {
                 //await fetchJobs(user.workgroup_id);
                 //setRefresh(true);
                 setRefresh((prev) => !prev);
+                handleEventToMqtt();
         });
       }
     } catch (error) {
@@ -1036,7 +1073,7 @@ const Page = () => {
 
         } */}
         <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
-          <JobsTable refresh={refresh} />
+          <JobsTable refresh={refresh} handleEventToMqtt={handleEventToMqtt} />
         </div>
 
       </div>
@@ -1046,6 +1083,7 @@ const Page = () => {
           data={planData}
           onClose={() => setIsShowPlan(false)} // Close modal handler
           setRefresh={setRefresh}
+          handleEventToMqtt={handleEventToMqtt}
         />
       )}
     </Layout>

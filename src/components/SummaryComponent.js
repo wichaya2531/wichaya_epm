@@ -130,164 +130,143 @@ const ProfileCardsWithPie = ({ datas = [], groupField = DEFAULT_GROUP_FIELD, onS
   // ฟังก์ชันสำหรับคลิกที่ slice ของ Pie // NEW
   function handleSliceClick({ profileName, label, count, jobsOfSlice, chartData }) {
     // ยิงออกไปให้ parent ถ้าต้องการใช้งานต่อ // NEW
-    if (typeof onSliceClick === "function") {
-      try {
-        onSliceClick({
-          profileName,
-          label,
-          count,
-          jobs: jobsOfSlice,   // รายการ jobs ที่อยู่ใน slice นี้
-          chartData,           // data object ของ chart ณ การ์ดนี้
-        });
-      } catch (e) {
-        console.error("onSliceClick error:", e);
-      }
-    }
+   //console.log('jobsOfSlice',jobsOfSlice); 
 
-    try {
-      // สร้าง form แบบ POST แล้ว submit เพื่อไปยัง /pages/job-manage/
+//   return;
+
+
+  try {
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "/pages/job-manage/";
+      form.action = "/pages/job-manage/api/"; // ปลายทางที่คุณต้องการส่งไป
       form.style.display = "none";
 
       const addField = (name, value) => {
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = name;
-      input.value = String(value ?? "");
-      form.appendChild(input);
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = String(value ?? "");
+        form.appendChild(input);
       };
 
-      addField("profile", profileName ?? "");
-      addField("label", label ?? "");
-      addField("count", String(count ?? 0));
 
-      const firstJob = jobsOfSlice?.[0];
-      if (firstJob) {
-      const id = firstJob?.JOB_CODE ?? firstJob?._id ?? firstJob?.JOB_NAME ?? "";
-      if (id) addField("job", id);
-      }
 
-      // ถ้าต้องการ ส่งรายการ job ids ทั้งหมด แบบ comma-separated
-      const jobIds = (jobsOfSlice || [])
-      .map((j) => j?.JOB_CODE ?? j?._id ?? j?.JOB_NAME ?? "")
-      .filter(Boolean)
-      .join(",");
-      if (jobIds) addField("jobIds", jobIds);
+      // ตัวอย่าง: jobsOfSlice คือ Array ของ object
+      // const jobsOfSlice = [
+      //   { _id: "68ed1d5a265771bc0bcf4f28" },
+      //   { _id: "68ed1d5a265771bc0bcf4f29" },
+      // ];
 
+      // ส่งเป็น JSON string (array จริง)
+      addField("jobIds", JSON.stringify(jobsOfSlice.map(j => j._id)));
       document.body.appendChild(form);
       form.submit();
     } catch (err) {
-      console.error("POST navigation error:", err);
+      console.error("POST redirect error:", err);
     }
-    // console.log('jobsOfSlice', jobsOfSlice);
-    // console.log('label', label);
-    // console.log('count', count);
-    // console.log('profileName', profileName);
-    // console.log('chartData', chartData);
-    return; 
+
+    // return; 
 
 
-    // แสดง Swal // NEW
-    const listHtml = jobsOfSlice
-      .slice(0, 10) // โชว์ตัวอย่างไม่เกิน 10 แถว (กันยาวเกิน)
-      .map((j, i) => {
-        const code = j?.JOB_CODE ?? j?.JOB_NAME ?? "(no id)";
-        const created = j?.createdAt ? new Date(j.createdAt).toLocaleString() : "-";
-        return `<li><b>${i + 1}.</b> ${code} <span style="color:#64748b">(${created})</span></li>`;
-      })
-      .join("");
+    // // แสดง Swal // NEW
+    // const listHtml = jobsOfSlice
+    //   .slice(0, 10) // โชว์ตัวอย่างไม่เกิน 10 แถว (กันยาวเกิน)
+    //   .map((j, i) => {
+    //     const code = j?.JOB_CODE ?? j?.JOB_NAME ?? "(no id)";
+    //     const created = j?.createdAt ? new Date(j.createdAt).toLocaleString() : "-";
+    //     return `<li><b>${i + 1}.</b> ${code} <span style="color:#64748b">(${created})</span></li>`;
+    //   })
+    //   .join("");
 
-    const tableHtml = (jobsOfSlice || [])
-      .map((j, i) => {
+    // const tableHtml = (jobsOfSlice || [])
+    //   .map((j, i) => {
 
-      console.log('j', j);
+    //   console.log('j', j);
 
-      const code = j?.JOB_CODE ?? j?.JOB_NAME ?? "(no id)";
-      const status = j?.STATUS_NAME ? j.STATUS_NAME : "-";
-      return `
-        <tr>
-        <td style="padding:6px 8px;border-bottom:1px solid #eee">${i + 1}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid #eee">${code}</td>
-        <td style="padding:6px 8px;border-bottom:1px solid #eee">
-            <div    
-            style="cursor:default;text-align:center;border-radius:0.25em;color:white;background-color: ${j?.STATUS_COLOR || '#6b7280'}"       
-            className="py-1 px-8 select-none rounded-xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
-            >
-              ${status}
-            </div>
-        </td>
-        <td style="padding:6px 8px;border-bottom:1px solid #eee">
-          <button class="swal-row-btn" data-idx="${i}" style="padding:6px 8px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer">
-          View
-          </button>
-        </td>
-        </tr>
-      `;
-      })
-      .join("") || `<tr><td colspan="4" style="padding:8px">No items</td></tr>`;
+    //   const code = j?.JOB_CODE ?? j?.JOB_NAME ?? "(no id)";
+    //   const status = j?.STATUS_NAME ? j.STATUS_NAME : "-";
+    //   return `
+    //     <tr>
+    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">${i + 1}</td>
+    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">${code}</td>
+    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">
+    //         <div    
+    //         style="cursor:default;text-align:center;border-radius:0.25em;color:white;background-color: ${j?.STATUS_COLOR || '#6b7280'}"       
+    //         className="py-1 px-8 select-none rounded-xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
+    //         >
+    //           ${status}
+    //         </div>
+    //     </td>
+    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">
+    //       <button class="swal-row-btn" data-idx="${i}" style="padding:6px 8px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer">
+    //       View
+    //       </button>
+    //     </td>
+    //     </tr>
+    //   `;
+    //   })
+    //   .join("") || `<tr><td colspan="4" style="padding:8px">No items</td></tr>`;
 
-    Swal.fire({
-      title: `${profileName} – ${label}`,
-      html: `
-      <div style="text-align:left;font-size:15px;line-height:1.6">
-        <div><b>Count:</b> ${count}</div>
+    // Swal.fire({
+    //   title: `${profileName} – ${label}`,
+    //   html: `
+    //   <div style="text-align:left;font-size:15px;line-height:1.6">
+    //     <div><b>Count:</b> ${count}</div>
        
-        <div style="max-height:280px;overflow:auto;margin-top:6px">
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-          <tr>
-            <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">#</th>
-            <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Job</th>
-            <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Status</th>
-            <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Action</th>
-          </tr>
-          </thead>
-          <tbody>
-          ${tableHtml}
-          </tbody>
-        </table>
-        </div>
-      </div>
-      `,
-      icon: "info",
-      showCancelButton: true,
-      confirmButtonText: "Close",
-      cancelButtonText: "Cancel",
-      width: 700,
-      didOpen: (popup) => {
-      // attach click handlers to row buttons
-      popup.querySelectorAll(".swal-row-btn").forEach((btn) => {
-        btn.addEventListener("click", (ev) => {
-        const idx = Number(btn.getAttribute("data-idx"));
-        const job = jobsOfSlice?.[idx];
-        // if parent provided onSliceClick, call it with the single job
-        if (typeof onSliceClick === "function") {
-          try {
-          onSliceClick({
-            profileName,
-            label,
-            count,
-            jobs: [job],
-            job,
-            chartData,
-          });
-          } catch (e) {
-          console.error("onSliceClick error:", e);
-          }
-        }
-        // show quick detail for the job
-        Swal.fire({
-          title: job?.JOB_CODE ?? job?._id ?? "Job detail",
-          html: `<pre style="text-align:left;white-space:pre-wrap">${JSON.stringify(job, null, 2)}</pre>`,
-          width: 800,
-          confirmButtonText: "OK",
-        });
-        });
-      });
-      },
-    });
+    //     <div style="max-height:280px;overflow:auto;margin-top:6px">
+    //     <table style="width:100%;border-collapse:collapse">
+    //       <thead>
+    //       <tr>
+    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">#</th>
+    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Job</th>
+    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Status</th>
+    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Action</th>
+    //       </tr>
+    //       </thead>
+    //       <tbody>
+    //       ${tableHtml}
+    //       </tbody>
+    //     </table>
+    //     </div>
+    //   </div>
+    //   `,
+    //   icon: "info",
+    //   showCancelButton: true,
+    //   confirmButtonText: "Close",
+    //   cancelButtonText: "Cancel",
+    //   width: 700,
+    //   didOpen: (popup) => {
+    //   // attach click handlers to row buttons
+    //   popup.querySelectorAll(".swal-row-btn").forEach((btn) => {
+    //     btn.addEventListener("click", (ev) => {
+    //     const idx = Number(btn.getAttribute("data-idx"));
+    //     const job = jobsOfSlice?.[idx];
+    //     // if parent provided onSliceClick, call it with the single job
+    //     if (typeof onSliceClick === "function") {
+    //       try {
+    //       onSliceClick({
+    //         profileName,
+    //         label,
+    //         count,
+    //         jobs: [job],
+    //         job,
+    //         chartData,
+    //       });
+    //       } catch (e) {
+    //       console.error("onSliceClick error:", e);
+    //       }
+    //     }
+    //     // show quick detail for the job
+    //     Swal.fire({
+    //       title: job?.JOB_CODE ?? job?._id ?? "Job detail",
+    //       html: `<pre style="text-align:left;white-space:pre-wrap">${JSON.stringify(job, null, 2)}</pre>`,
+    //       width: 800,
+    //       confirmButtonText: "OK",
+    //     });
+    //     });
+    //   });
+    //   },
+    // });
   }
 
   return (

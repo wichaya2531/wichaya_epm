@@ -5,7 +5,7 @@ import { getSession } from "@/lib/utils/utils";
 import HelpIcon from "@mui/icons-material/Help";
 import ChatIcon from "@mui/icons-material/Chat";
 
-const JobPlan = ({ data, onClose, setRefresh }) => {
+const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
  // console.log('job plan',data);
   const [dateType, setDateType] = useState("");
   const [showRecurring, setShowRecurring] = useState(false);
@@ -211,6 +211,7 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       });
       onClose();
       setRefresh((prev) => !prev);
+      handleEventToMqtt();
     } catch (error) {
       console.error(error);
       Swal.fire({

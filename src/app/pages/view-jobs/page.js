@@ -10,10 +10,11 @@ import ItemInformationModal from "@/components/ItemInformationModal";
 import AddCommentModal from "@/components/AddCommentModal";
 import { useRouter } from "next/navigation";
 import JobForm from "./JobForm";
-import mqtt from "mqtt";
+//import mqtt from "mqtt";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
-import { setTime } from "@syncfusion/ej2-react-schedule";
-import { set } from "mongoose";
+//import { setTime } from "@syncfusion/ej2-react-schedule";
+//import { set } from "mongoose";
+import Cookies from "js-cookie";
 //import { typeOf } from "tls";
 // import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 // import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
@@ -21,13 +22,45 @@ import { set } from "mongoose";
 // import Select from "react-select";
 // import CameraAltIcon from "@mui/icons-material/CameraAlt";
 
+// const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
+// const options = {
+//   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
+//   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
+// };
+
+//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
+import mqtt from "mqtt";
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-};
+}
+//---------------------------------------------->>
+
 
 const Page = ({ searchParams }) => {
+  //-----------MQTT----------------------------------------->>
+  const mqttClient = mqtt.connect(connectUrl, options);
+  mqttClient.on("connect", () => {});
+  // mqttClient.on("error", (err) => {
+  //   mqttClient.end();
+  // });
+  //  mqttClient.on('message', (topic, message) => {
+  //      console.log("่page/job-manage ข้อมูลขาเข้า "+topic+" : "+message);
+  //      //setRefresh(true);
+  //      //setTimeout(() => {
+  //            //setRefresh(false);
+  //      //}, 3000);
+  // });
+
+ //-------------------------------------------------------->>
+
+ useEffect(() => {
+      //Cookies.set("history_page", window.location.href, { expires: 1 }); // ตั้งค่า cookie ให้หมดอายุใน 1 วัน
+      const prevHistory = Cookies.get("history_page");
+      console.log("history_page:", prevHistory);       
+  }, []);
+   
 
   //console.log("Page on view jobs");
   const router = useRouter();
@@ -59,7 +92,7 @@ const Page = ({ searchParams }) => {
   // const { status } = useFetchStatus(refresh);
   const [machineName, setMachineName] = useState(null);
   const [showDetail, setShowDetail] = useState(null);
-   const mqttClient = mqtt.connect(connectUrl, options);
+   //const mqttClient = mqtt.connect(connectUrl, options);
   //const [selectedFile, setSelectedFile] = useState(null);
   const [wdtagImg_1, setWdtagImg_1] = useState(null);
   const [wdtagImg_2, setWdtagImg_2] = useState(null);
@@ -206,6 +239,12 @@ const getMachineID = () => {
       if (!response.ok) {
         console.log("Error:", response.statusText);
       }
+
+      //try{
+        mqttClient.publish(user?.workgroup_id, "refresh");
+      //}catch(err){
+      //    console.err(err);
+      //} 
     } catch (err) {
       console.error("Error:", err);
     }
@@ -259,7 +298,9 @@ const getMachineID = () => {
               setView(false);
               try{
                 updateJobStatusToOngoing();
+
               }catch(err){}
+              
               
               //console.log("B");
             }
@@ -273,31 +314,32 @@ const getMachineID = () => {
         }
       }
 
-      mqttClient.on("connect", () => {});
-      mqttClient.on("error", (err) => {
-        mqttClient.end();
-      });
+      // mqttClient.on("connect", () => {});
+      // mqttClient.on("error", (err) => {
+      //   mqttClient.end();
+      // });
 
-      jobItems.forEach((item) => {
-        //console.log("mqttClient item ",item);
-        //console.log("Line name of this job", jobData.LINE_NAME);
-        //console.log("scribed ",item.JobItemTemplateMqtt+"/"+jobData.LINE_NAME);
-        mqttClient.subscribe(item.JobItemTemplateMqtt+"/"+jobData.LINE_NAME /*item.JobItemID*/, (err) => {
-          if (!err) {
-          } else {
-            console.error("Subscription error: ", err);
-          }
-        });
+      // jobItems.forEach((item) => {
+      //   //console.log("mqttClient item ",item);
+      //   //console.log("Line name of this job", jobData.LINE_NAME);
+      //   //console.log("scribed ",item.JobItemTemplateMqtt+"/"+jobData.LINE_NAME);
+      //   mqttClient.subscribe(item.JobItemTemplateMqtt+"/"+jobData.LINE_NAME /*item.JobItemID*/, (err) => {
+      //     if (!err) {
+      //     } else {
+      //       console.error("Subscription error: ", err);
+      //     }
+      //   });
 
-      });
+      // });
+
     };
 
     asyncEffect();
 
     return () => {
-      if (mqttClient) {
-        mqttClient.end();
-      }
+      // if (mqttClient) {
+      //   //mqttClient.end();
+      // }
     };
   }, [jobItems, user, jobData]);
 
@@ -307,20 +349,20 @@ const getMachineID = () => {
   //   }
   // }, [view]);
   
-  mqttClient.on("message", (topic, message) => {
-    //console.log("message","topic="+topic+":message="+message);  
-    jobItems.forEach(element => {
-          if ((element.JobItemTemplateMqtt+"/"+jobData.LINE_NAME)==topic) {
-             try{
-                  document.getElementById(element.JobItemID.toString()+"/"+jobData.LINE_NAME).placeholder = message.toString();
-             }catch(err){
-                 //console.log(err);
-             } 
+  // mqttClient.on("message", (topic, message) => {
+  //   //console.log("message","topic="+topic+":message="+message);  
+  //   jobItems.forEach(element => {
+  //         if ((element.JobItemTemplateMqtt+"/"+jobData.LINE_NAME)==topic) {
+  //            try{
+  //                 document.getElementById(element.JobItemID.toString()+"/"+jobData.LINE_NAME).placeholder = message.toString();
+  //            }catch(err){
+  //                //console.log(err);
+  //            } 
           
-          }
-    });
+  //         }
+  //   });
     
-  });
+  // });
 
   const toggleJobInfo = () => {
     setIsShowJobInfo(!isShowJobInfo);
@@ -657,8 +699,17 @@ const getMachineID = () => {
                 if (result.isConfirmed) {
                   window.history.replaceState({}, "", "/pages/dashboard");
                   if (router) {
-                    router.push("/pages/dashboard");   // ปิดเพื่อทดสอบ
+                        //router.push("/pages/dashboard");   // ปิดเพื่อทดสอบ
+                        if (Cookies.get("history_page")) {
+                              const prevHistory = Cookies.get("history_page");
+                              //console.log("history_page:", prevHistory);
+                              router.push(prevHistory);  // กลับไปหน้าที่แล้วทำงานต่อ
+                        }
                   }
+                      try{
+                          mqttClient.publish(user?.workgroup_id, "refresh");
+                      }catch(err){}
+                                
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
                   // เมื่อกด Reuse this page
                   //Swal.fire("You chose to reuse this page!", "", "info");
@@ -686,7 +737,7 @@ const getMachineID = () => {
                              const new_job_id=data.response._id;
                              //console.log('new_job_id',new_job_id);   
                              setTimeout(() => {
-                              router.push("/pages/view-jobs?job_id="+new_job_id);  // เปิด job ใหม่                              
+                                  router.push("/pages/view-jobs?job_id="+new_job_id);  // เปิด job ใหม่                              
                              }, 1000);                           
                           }
                           //console.log('data',data);

@@ -56,7 +56,7 @@ const statusOptions = [
   "Overdue",
 ];
 
-const JobsTable = ({ refresh }) => {
+const JobsTable = ({ refresh,handleEventToMqtt }) => {
   const router = useRouter();
   //console.log("refresh JobsTable=>",refresh);
  
@@ -181,6 +181,13 @@ const JobsTable = ({ refresh }) => {
             prevJobs.filter((job) => !selectedJobs.includes(job._id))
           );
           setSelectedJobs([]);
+          
+          {
+                  // flush message to mqtt
+                  handleEventToMqtt();
+          }
+
+
         } else {
           Swal.fire(
             "Error!",
@@ -234,9 +241,16 @@ const JobsTable = ({ refresh }) => {
     });
 
   const navigateToJob = (job_id, viewMode) => {
-      // console.log("navigateToJob ",user);
+        // console.log("navigateToJob ",user);
        sessionStorage.setItem("viewMode", viewMode);
-       router.push("/pages/view-jobs?job_id=" + job_id);
+     //  setTimeout(() => {
+        router.push("/pages/view-jobs?job_id=" + job_id);
+      // }, 1000);
+       
+
+
+
+      
   };
 
   const handleSearch = (e) => {
