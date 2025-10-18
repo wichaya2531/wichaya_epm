@@ -10,7 +10,6 @@ export const GET = async (req,res) => {
     
     //const filePath = path.join('c:\\imagedownload', fileName);
     const filePath = "c:\\ePM_PictureUpload\\Item\\"+fileName; // หรือคุณสามารถใช้ path.join() ถ้าจำเป็น
-
     try {
         // อ่านไฟล์แบบ async
         const data = await fs.readFile(filePath);

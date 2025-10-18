@@ -33,6 +33,9 @@ function asInt(v, def = 1) {
 }
 
 export async function POST(req) {
+
+   console.log("flush from activate-job-template-manual");
+
   await connectToDb();
 
   let body;
@@ -121,7 +124,11 @@ export async function POST(req) {
       AGILE_SKIP_CHECK: jobTemplate.AGILE_SKIP_CHECK || false,
       SORT_ITEM_BY_POSITION: jobTemplate.SORT_ITEM_BY_POSITION || false,
       PUBLIC_EDIT_IN_WORKGROUP: jobTemplate.PUBLIC_EDIT_IN_WORKGROUP || false,
+      TYPE:jobTemplate.TYPE || "Unknown",
+      PROFILE_GROUP:jobTemplate.PROFILE_GROUP || "Unknown",
     };
+    
+    //console.log("baseJobDoc for create new ",baseJobDoc);  
 
     let createdJobs = [];
     if (jobCount > 1) {

@@ -136,6 +136,7 @@ export const GET = async (req, res) => {
           BeforeValue: jobItem.BEFORE_VALUE,
           BeforeValue2: jobItem.BEFORE_VALUE2,
           ActualValue: jobItem.ACTUAL_VALUE,
+          Value: jobItem.VALUE,
           Comment: jobItem.COMMENT,
           RealTimeValue: jobItem.REAL_TIME_VALUE,
           TestLocationName: location ? location.LocationName : "",

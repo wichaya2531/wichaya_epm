@@ -27,7 +27,8 @@ import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
 import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
-// import mongoose from 'mongoose';
+ import mongoose from 'mongoose';
+import { ProfileGroup } from "@/lib/models/ProfileGroup";
 
 // const scheduleSchema = new mongoose.Schema({
 //     JOB_TEMPLATE_ID : { type: mongoose.Schema.Types.ObjectId, ref: 'JobTemplate', required: true },
@@ -79,6 +80,13 @@ export const POST = async (req, res) => {
 
   try {
     const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
+    
+    //console.log('jobTemplate.PROFILE_GROUP',jobTemplate.PROFILE_GROUP );
+
+    //const profileGroups=await ProfileGroup.findById(jobTemplate.PROFILE_GROUP);
+   
+    //console.log('profileGroups.PROFILE_NAME',profileGroups.PROFILE_NAME );
+    
     if (!jobTemplate) {
       return NextResponse.json({
         status: 404,
@@ -170,6 +178,8 @@ export const POST = async (req, res) => {
         AdvanceActivationDate.getHours() -
           parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
       );
+
+     // console.log("plan jobTemplate ",jobTemplate);
       const schedulePromises = LINE_NAME.map(async (lineName) => {
         const schedule1 = new Schedule({
           JOB_TEMPLATE_ID: jobTemplate._id,//new ObjectId(),
@@ -179,7 +189,8 @@ export const POST = async (req, res) => {
           LINE_NAME: lineName,
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
           WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
-          PLAN_TYPE:recurrence,          
+          PLAN_TYPE:recurrence,        
+          PROFILE_GROUP: jobTemplate.PROFILE_GROUP || "Unknown",
         });
         //console.log(`Saving Schedule `, schedule1);
         //console.log(`Saving Schedule for lineName: ${lineName}`, schedule1);

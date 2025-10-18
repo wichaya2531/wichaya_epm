@@ -9,7 +9,19 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import VerifiedIcon from '@mui/icons-material/Verified';
+import PersonIcon from '@mui/icons-material/Person';
+
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import Person2Icon from '@mui/icons-material/Person2';
+import Person3Icon from '@mui/icons-material/Person3';
+import BadgeIcon from '@mui/icons-material/Badge';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import GroupIcon from '@mui/icons-material/Group';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+
 import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
+
 
 const jobsActiveHeader = [
   "ID",
@@ -51,6 +63,7 @@ const JobsTable = ({ refresh }) => {
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
   //console.log("****use JibsTable****");
   //console.log("JobsTable=>",refresh);
+
   //console.log(refresh);
   const { user, isLoading: userLoading } = useFetchUser(refresh);
 
@@ -211,7 +224,8 @@ const JobsTable = ({ refresh }) => {
       // Filter by search query
       if (
         searchQuery &&
-        !job.JOB_NAME.toLowerCase().includes(searchQuery.toLowerCase())
+        !(job.JOB_NAME ?? "").toString().toLowerCase()
+          .includes(searchQuery.toString().toLowerCase())
       ) {
         return false;
       }
@@ -220,14 +234,37 @@ const JobsTable = ({ refresh }) => {
     });
 
   const navigateToJob = (job_id, viewMode) => {
-    sessionStorage.setItem("viewMode", viewMode);
-    router.push("/pages/view-jobs?job_id=" + job_id);
+      // console.log("navigateToJob ",user);
+       sessionStorage.setItem("viewMode", viewMode);
+       router.push("/pages/view-jobs?job_id=" + job_id);
   };
 
   const handleSearch = (e) => {
     //console.log("use search");
     setSearchQuery(e.target.value);
   };
+
+
+const handleShowUser = (userName, datetime) => {
+  const name = userName ?? "Unknown";
+
+  // แปลงเวลาเป็นสตริงอ่านง่าย (ถ้าไม่มีให้เป็น "-")
+  const timeStr = datetime
+    ? new Date(datetime).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })
+    : "-";
+
+  Swal.fire({
+    title: "Information",
+    html: `
+      <div style="text-align:left;font-size:16px;line-height:1.6">
+        <div><b>Last Get By:</b> ${name}</div>
+        <div><b>Time:</b> ${timeStr}</div>
+      </div>
+    `,
+    icon: "info",
+    confirmButtonText: "OK",
+  });
+};
 
   const jobsActiveBody =
     filteredJobs &&
@@ -255,14 +292,30 @@ const JobsTable = ({ refresh }) => {
         }),
         ID: index + 1,
         "Checklist Name": job.JOB_NAME,
-        "Document no.": job.LINE_NAME,
+        "Line Name": job.LINE_NAME,
         Status: (
           <div
             style={{ backgroundColor: statusColor,position:'relative' }}
             className="py-1 px-8 select-none rounded-xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
             
           >
-            {job.STATUS_NAME ? job.STATUS_NAME : "pending"}&nbsp;&nbsp;&nbsp;{  
+            
+          <div style={{position:'absolute',left:'5px'}}>
+                  {/* ถ้ามี job.LAST_GET_BY */}
+                  {  job.STATUS_NAME  &&  job.LAST_GET_BY && job.STATUS_NAME =="ongoing" && (
+                    <AssignmentIndIcon         
+                      className="w-6 h-6 mr-2"
+                      style={{ fontSize: 24, color: "#fafbff" }}
+                      onClick={() => handleShowUser(job.LAST_GET_BY,job.LAST_GET_TIME)} // << ส่งค่าไปด้วย
+                    />
+                  )}
+          </div>
+            
+          
+            
+           
+
+            {job.STATUS_NAME ? job.STATUS_NAME : "pending"} {  
                 //(job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
                   <div style={{position:'absolute',right:'1px'}}> 
                       {
@@ -272,7 +325,7 @@ const JobsTable = ({ refresh }) => {
 
                       } 
                       {
-                        (job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
+                        (job.JOB_VERIFY)?(
                             <VerifiedIcon color="white"  />                  
                         ):""
                       }
@@ -432,6 +485,9 @@ const JobsTable = ({ refresh }) => {
       <div className="flex flex-wrap mb-4 justify-start items-center gap-4">
       
           <div className="flex flex-row gap-4">
+            <div className="flex-2 w-1/2 font-medium text-black ">
+                  Pull:
+            </div>
             <div className="flex-2 w-1/2">
               <label
                 htmlFor="startDate"
@@ -488,12 +544,12 @@ const JobsTable = ({ refresh }) => {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <SearchIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <SearchIcon className="w-4 h-4 " />
             </div>
             <input
               type="search"
               id="search"
-              className="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block w-full p-2.5 pl-10 text-sm border border-gray-300 rounded-lg bg-white-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search"
               required
               onChange={handleSearch}
@@ -531,6 +587,7 @@ const JobsTable = ({ refresh }) => {
           TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
           PageSize={5}
           searchColumn={"Checklist Name"}
+          searchColumn1={"Line Name"}
           searchHidden={true}
           filteredJobs={filteredJobs}
           selectedJobs={selectedJobs}

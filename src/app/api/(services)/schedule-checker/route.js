@@ -276,10 +276,10 @@ export const POST = async (req, res) => {
 
     const now = new Date(); // เวลาปัจจุบัน
     const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
-    startTime.setMinutes(now.getMinutes() - 60); // ลบ 60 นาที
+    startTime.setMinutes(now.getMinutes() - 800); // ลบ 60 นาที
     
     const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
-    endTime.setMinutes(now.getMinutes() + 600); // เพิ่ม 60 นาที
+    endTime.setMinutes(now.getMinutes() + 60); // เพิ่ม 60 นาที
     //console.log("scheduler startTime:",startTime);  
     //console.log("scheduler endTime:",endTime);  
     
@@ -294,7 +294,9 @@ export const POST = async (req, res) => {
     }).limit(60);
    
     console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
-    //return NextResponse.json({ status: 200 });
+    
+    //  return NextResponse.json({ status: 200 });
+
     scheduler.map(async (schedulers) => {
       //console.log("scheduler=>",scheduler);
       //if (
@@ -369,8 +371,9 @@ export const POST = async (req, res) => {
           PICTURE_EVEDENT_REQUIRE: jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
           AGILE_SKIP_CHECK : jobTemplate.AGILE_SKIP_CHECK || false,
           SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
+          PROFILE_GROUP: schedulers.PROFILE_GROUP || "Unknown",
         });
-
+         //console.log("New job=>",job);
          await job.save();
 
         //console.log("Submit job Done. JOB_APPROVERS=>",job.JOB_APPROVERS);

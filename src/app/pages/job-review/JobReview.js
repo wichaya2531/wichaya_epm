@@ -13,6 +13,8 @@ import { Img } from "@chakra-ui/react";
 import Swal from "sweetalert2";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import HistoryIcon from '@mui/icons-material/History';
+
 
 const JobForm = ({
   jobData,
@@ -72,6 +74,26 @@ const JobForm = ({
     ]);
     return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
   };
+
+
+   function handleShowHistory(item) {
+        const safe = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
+  
+        Swal.fire({
+          title: "History",
+          html: `
+            <div style="text-align:left;font-size:14px;line-height:1.6">
+              <div style='display:none;'><b>BeforeValue2:</b> ${safe(item.BeforeValue2)}</div>
+              <div><b>BeforeValue:</b> ${safe(item.BeforeValue)}</div>
+              <div><b>LastestUpdate:</b> ${safe(item.LastestUpdate)}</div>
+            </div>
+          `,
+          icon: "info",
+          showCloseButton: true,
+          confirmButtonText: "Close",
+          width: 420,
+        });
+      }
 
   return (
     <form className="flex flex-col gap-8" onSubmit={handleApprove}>
@@ -579,7 +601,7 @@ const JobForm = ({
                                     Test Method
                                 </th> */}
                 <th className="w-[50px] px-4 py-2">{process.env.NEXT_PUBLIC_UPPER_SPEC+"/"+  process.env.NEXT_PUBLIC_LOWER_SPEC}</th>
-                <th className="w-[50px] px-4 py-2">Before Value</th>
+                {/* <th className="w-[50px] px-4 py-2">Before Value</th> */}
                 <th className="w-[150px] py-2">Actual Value</th>
                 <th className="w-[150px] px-4 py-2">Attach</th>
                 {/* <th className="w-[5px] px-2 py-2">See images</th> */}
@@ -625,7 +647,7 @@ const JobForm = ({
                       {item.LowerSpec}
                     </div>
                   </td>
-                  <td className="border px-4 py-2">
+                  {/* <td className="border px-4 py-2">
                     <input
                       type="text"
                       id={`before_value_${item.JobItemID}`}
@@ -638,12 +660,17 @@ const JobForm = ({
                         ),
                       }}
                     />
-                  </td>
+                  </td> */}
                   <td className="border  py-2 relative">
+                    <span className="shrink-0" style={{padding:'5px'}}>
+                      <HistoryIcon sx={{ color: "#1E40AF", fontSize: 30 }} 
+                        onClick={() => handleShowHistory(item)}
+                      />
+                    </span>
                     <input
                       type="text"
                       id={`actual_value_${item.JobItemID}`}
-                      value={item.ActualValue}
+                      value={item.ActualValue+(item.Value && item.Value !==null?' , '+item.Value:"")}
                       className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
                       disabled
                       style={{
@@ -653,13 +680,17 @@ const JobForm = ({
                       }}
                     />
                     {item.Comment !== null ? (
-                      <ChatIcon
-                        className="absolute right-1 top-0 text-blue-600 size-6 cursor-pointer "
-                        // style={{ display: "none" }}
-                        onClick={() => handleShowComment(item)}
-                      />
+                      <span style={{padding:'5px'}}>
+                          <ChatIcon
+                            className=" right-1 top-0 text-blue-600 size-6 cursor-pointer "
+                            // style={{ display: "none" }}
+                            onClick={() => handleShowComment(item)}
+                          />
+                      </span>
+                     
+
                     ) : (
-                      <div></div>
+                      <span></span>
                     )}
                   </td>
                   <td className="border px-4 py-2 relative">

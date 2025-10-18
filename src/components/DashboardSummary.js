@@ -1,0 +1,592 @@
+"use client";
+import { useState, useEffect, use } from "react";
+import useFetchJobs from "@/lib/hooks/useFetchJobs.js";
+import TableComponent from "./TableComponent";
+import TableComponentAdmin from "./TableComponentAdmin";
+import SummaryComponent from "./SummaryComponent";
+
+import Link from "next/link";
+import SearchIcon from "@mui/icons-material/Search";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import useFetchUser from "@/lib/hooks/useFetchUser";
+import VerifiedIcon from '@mui/icons-material/Verified';
+import PersonIcon from '@mui/icons-material/Person';
+
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import Person2Icon from '@mui/icons-material/Person2';
+import Person3Icon from '@mui/icons-material/Person3';
+import BadgeIcon from '@mui/icons-material/Badge';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import GroupIcon from '@mui/icons-material/Group';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+
+import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
+
+
+const jobsActiveHeader = [
+  "ID",
+  "Checklist Name",
+  "Line Name",
+  // "Document no.",
+  "Status",
+  "Active",
+  "Submitted By",
+  "Action",
+];
+const jobsActiveHeaderAdmin = [
+  "",
+  "ID",
+  "Checklist Name",
+  "Line Name",
+  // "Document no.",
+  "Status",
+  "Active",
+  "Submitted By",
+  "Action",
+];
+
+const statusOptions = [
+  "All",
+  "New",
+  "Ongoing",
+  "Plan",
+  "Waiting for approval",
+  "Complete",
+  "Renew",
+  "Overdue",
+];
+
+const DashboardSummary = ({ refresh }) => {
+  const router = useRouter();
+  //console.log("refresh JobsTable=>",refresh);
+ 
+  //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
+  //console.log("****use JibsTable****");
+  //console.log("JobsTable=>",refresh);
+
+  //console.log(refresh);
+  const { user, isLoading: userLoading } = useFetchUser(refresh);
+
+  const [startDate, setStartDate] = useState(null); // Default start date as null
+  const [endDate, setEndDate] = useState(null); // Default end date as null
+
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [reloadKey, setReloadKey] = useState(0);
+  
+  
+  
+  const { jobs, setJobs, isLoading: jobsLoading, fetchJobs } =  useFetchJobs({
+    refresh,
+    startTime: startDate,
+    endTime: endDate,
+    status: filterStatus,
+    reloadKey,   // ส่งไปใน dependency
+  });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedJobs, setSelectedJobs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+
+
+ // useEffect(() => {
+  //   if (fetchJobs) {
+  //     fetchJobs({
+  //       refresh,
+  //       startTime: startDate,
+  //       endTime: endDate,
+  //       status: filterStatus,
+  //     });
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [startDate, endDate]);
+      // useEffect(() => {
+
+      //   let total_byte_counter=0;
+      //   const interval = setInterval(() => {
+      //     const fetchStream = async (workgroup_id) => {
+      //       try {
+      //         const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
+      //         const reader = res.body?.getReader();
+      //         const decoder = new TextDecoder();
+      //         let buffer = '';
+      //         // Optional: handle streaming data here
+      //         while (true) {
+      //           const { done, value } = await reader.read();
+      //           if (done) break;
+      //           buffer += decoder.decode(value, { stream: true });
+      //           // คุณสามารถแยกข้อมูล JSON แล้ว update state ได้ที่นี่
+      //         }
+
+      //         // ตัวอย่าง: แสดง log ข้อมูลที่อ่านได้
+      //         if (total_byte_counter!=buffer.length) {
+                
+      //         }
+              
+      //             total_byte_counter
+              
+      //         console.log("Received stream:", buffer.length);
+      //       } catch (error) {
+      //         console.error("Stream error:", error);
+      //       }
+      //     };
+
+      //     // เรียกฟังก์ชันและส่ง workgroup_id ที่คุณมี
+      //     if (user?.workgroup_id) {
+      //       fetchStream(user.workgroup_id);
+      //     }
+      //   }, 5000);
+
+      //   return () => clearInterval(interval);
+      // }, [user?.workgroup_id]); // เพิ่ม dependency เพื่อให้แน่ใจว่า user พร้อม
+
+
+
+  const handleSelectJob = (jobId) => {
+    //console.log("JobTable handleSelectJob");
+    setSelectedJobs((prevSelected) =>
+      prevSelected.includes(jobId)
+        ? prevSelected.filter((id) => id !== jobId)
+        : [...prevSelected, jobId]
+    );
+  };
+
+  // ฟังก์ชันลบงานที่เลือก
+  const handleDeleteSelected = async () => {
+    //alert('Delete');
+    if (selectedJobs.length === 0) return;
+
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete them!",
+      cancelButtonText: "No, cancel!",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`/api/job/remove-job`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_ids: selectedJobs }), // ส่ง array
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          Swal.fire("Deleted!", "Selected jobs have been deleted.", "success");
+          setJobs((prevJobs) =>
+            prevJobs.filter((job) => !selectedJobs.includes(job._id))
+          );
+          setSelectedJobs([]);
+        } else {
+          Swal.fire(
+            "Error!",
+            result.error || "Failed to delete jobs.",
+            "error"
+          );
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error!", "Failed to delete jobs.", "error");
+      }
+    }
+  };
+
+  //console.log("jobs.=>", jobs);
+  const filteredJobs =
+    jobs &&
+    jobs.filter((job) => {
+      //console.log("filterxxx");
+       //if(job.JOB_NAME==='wichaya_for_test'){
+       //     console.log(' job.JOB_NAME ',job);
+       //}     
+      // Filter by status
+      if (
+        filterStatus !== "All" &&
+        job.STATUS_NAME !== filterStatus.toLowerCase()
+      ) {
+        return false;
+      }
+
+      // Filter by start date
+      // if (startDate && new Date(job.createdAt) < new Date(startDate)) {
+      //   return false;
+      // }
+
+      // // Filter by end date
+      // if (endDate && new Date(job.createdAt) > new Date(endDate)) {
+      //   return false;
+      // }
+
+      // Filter by search query
+      if (
+        searchQuery &&
+        !(job.JOB_NAME ?? "").toString().toLowerCase()
+          .includes(searchQuery.toString().toLowerCase())
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+  const navigateToJob = (job_id, viewMode) => {
+      // console.log("navigateToJob ",user);
+       sessionStorage.setItem("viewMode", viewMode);
+       router.push("/pages/view-jobs?job_id=" + job_id);
+  };
+
+  const handleSearch = (e) => {
+    //console.log("use search");
+    setSearchQuery(e.target.value);
+  };
+
+
+const handleShowUser = (userName, datetime) => {
+  const name = userName ?? "Unknown";
+
+  // แปลงเวลาเป็นสตริงอ่านง่าย (ถ้าไม่มีให้เป็น "-")
+  const timeStr = datetime
+    ? new Date(datetime).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })
+    : "-";
+
+  Swal.fire({
+    title: "Information",
+    html: `
+      <div style="text-align:left;font-size:16px;line-height:1.6">
+        <div><b>Last Get By:</b> ${name}</div>
+        <div><b>Time:</b> ${timeStr}</div>
+      </div>
+    `,
+    icon: "info",
+    confirmButtonText: "OK",
+  });
+};
+
+  const jobsActiveBody =
+    filteredJobs &&
+    filteredJobs.map((job, index) => {
+      let statusColor = job.STATUS_COLOR;
+      // ตรวจสอบค่า Active ตาม STATUS_NAME
+      const activeValue =
+        job.STATUS_NAME === "complete"
+          ? job.SUBMITTED_DATE
+            ? new Date(job.SUBMITTED_DATE).toLocaleString()
+            : "Not Active"
+          : job.createdAt
+          ? new Date(job.createdAt).toLocaleString()
+          : "Not Active";
+      return {
+        ...( (user.role === "Admin Group" || user.role === "Owner")  && {
+          checkbox: (
+            <input
+              className="w-5 h-5"
+              type="checkbox"
+              checked={selectedJobs.includes(job._id)}
+              onChange={() => handleSelectJob(job._id)}
+            />
+          ),
+        }),
+        ID: index + 1,
+        "Checklist Name": job.JOB_NAME,
+        "Line Name": job.LINE_NAME,
+        Status: (
+          <div
+            style={{ backgroundColor: statusColor,position:'relative' }}
+            className="py-1 px-8 select-none rounded-xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
+            
+          >
+            
+          <div style={{position:'absolute',left:'5px'}}>
+                  {/* ถ้ามี job.LAST_GET_BY */}
+                  {  job.STATUS_NAME  &&  job.LAST_GET_BY && job.STATUS_NAME =="ongoing" && (
+                    <AssignmentIndIcon         
+                      className="w-6 h-6 mr-2"
+                      style={{ fontSize: 24, color: "#fafbff" }}
+                      onClick={() => handleShowUser(job.LAST_GET_BY,job.LAST_GET_TIME)} // << ส่งค่าไปด้วย
+                    />
+                  )}
+          </div>
+            
+          
+            
+           
+
+            {job.STATUS_NAME ? job.STATUS_NAME : "pending"} {  
+                //(job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
+                  <div style={{position:'absolute',right:'1px'}}> 
+                      {
+                        (job.ITEM_ABNORMAL===1)?(
+                                <NotificationImportantSharpIcon color="white"  />
+                        ):""
+
+                      } 
+                      {
+                        (job.JOB_VERIFY)?(
+                            <VerifiedIcon color="white"  />                  
+                        ):""
+                      }
+                  </div>  
+                                   
+               // ):""                
+            }
+
+            {/*
+            job.ITEM_ABNORMAL===false?(
+                <div>
+                    <div style={{position:'absolute',right:'10px',top:'0px'}}> 
+                         <NotificationImportantSharpIcon color="white"  />
+                    </div> 
+                </div>
+            ):""
+              */
+            }
+
+          </div>
+        ),
+        Active: activeValue, // ใช้ activeValue ที่ได้จากการตรวจสอบ
+        "Submitted By": job.SUBMITTED_BY ? job.SUBMITTED_BY.EMP_NAME : "-",
+        Action: (
+          <div>
+            {job.STATUS_NAME === "complete" || job.STATUS_NAME === "waiting for approval" ? (
+               <div className="flex gap-2 items-center justify-center">
+                    
+                    {job.STATUS_NAME === "waiting for approval" && ( user.emp_number===job.SUBMITTED_BY.EMP_NUMBER || job.PUBLIC_EDIT_IN_WORKGROUP===true)  ?(
+                        <div
+                          className={`text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer`}
+                          onClick={() => {
+                            navigateToJob(job._id, false);
+                          }}
+                        >
+                          Edit
+                        </div>                      
+                    ):""}
+                        
+
+
+                    <div
+                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                      onClick={() => {
+                        navigateToJob(job._id, true);
+                      }}
+                    >
+                      View 
+                    </div>
+               </div>              
+            ) : job.STATUS_NAME !== "overdue" ? (
+              <>
+                {job.STATUS_NAME === "ongoing" ||
+                job.STATUS_NAME === "new" ||
+                job.STATUS_NAME === "renew"  ? (
+                  <div className="flex gap-2 items-center justify-center">
+                    <div
+                      className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                      onClick={() => {
+                        navigateToJob(job._id, false);
+                      }}
+                    >
+                      Get
+                    </div>
+                    <div
+                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                      onClick={() => {
+                        navigateToJob(job._id, true);
+                      }}
+                    >
+                      View
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-not-allowed cursor-pointer"
+                    disabled
+                  >
+                    unavailable now
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-not-allowed cursor-pointer"
+                disabled
+              >
+                overdue
+              </button>
+            )}
+          </div>
+        ),
+        
+      };
+    });
+
+  //console.log("jobsActiveBody=>",jobsActiveBody);
+
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value;
+    setStartDate(newStartDate);
+
+    if (endDate && newStartDate) {
+      const start = new Date(newStartDate);
+      const end = new Date(endDate);
+      const diffDays = Math.abs((end - start) / (1000 * 60 * 60 * 24));
+      if (diffDays > 90) {
+        Swal.fire({
+          icon: "warning",
+          title: "Date range too large",
+          text: "Start Date and End Date must be within 90 days.",
+        });
+        // ปรับ startDate ให้ไม่เกิน 90 วันจาก endDate
+        const maxStart = new Date(end);
+        maxStart.setDate(end.getDate() - 90);
+        setStartDate(maxStart.toISOString().slice(0, 10));
+      }
+    }
+  };
+
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value;
+    setEndDate(newEndDate);
+
+    if (startDate && newEndDate) {
+      const start = new Date(startDate);
+      const end = new Date(newEndDate);
+      const diffDays = Math.abs((end - start) / (1000 * 60 * 60 * 24));
+      if (diffDays > 90) {
+        Swal.fire({
+          icon: "warning",
+          title: "Date range too large",
+          text: "Start Date and End Date must be within 90 days.",
+        });
+        // ปรับ endDate ให้ไม่เกิน 90 วันจาก startDate
+        const maxEnd = new Date(start);
+        maxEnd.setDate(start.getDate() + 90);
+        setEndDate(maxEnd.toISOString().slice(0, 10));
+      }
+    }
+  };
+
+  // Set default startDate and endDate to today -3 and today +3
+  useEffect(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - 3);
+    const end = new Date(today);
+    end.setDate(today.getDate() + 3);
+
+    setStartDate(start.toISOString().slice(0, 10));
+    setEndDate(end.toISOString().slice(0, 10));
+  }, []);
+
+  return (
+    <div className="w-full flex flex-col mt-5">
+      <div className="flex flex-wrap mb-4 justify-start items-center gap-4">
+      
+          <div className="flex flex-row gap-4">
+            <div className="flex-2 w-1/2 font-medium text-black ">
+                  Pull:
+            </div>
+            <div className="flex-2 w-1/2">
+              <label
+                htmlFor="startDate"
+                className="block text-sm font-medium text-black"
+              >
+                Start Date
+              </label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                value={startDate || ""}
+                onChange={handleStartDateChange}
+                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+              />
+            </div>
+
+            <div className="flex-2 w-1/2">
+              <label
+                htmlFor="endDate"
+                className="block text-sm font-medium text-gray-900"
+              >
+                End Date
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                value={endDate || ""}
+                onChange={handleEndDateChange}
+                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+              />
+            </div>
+          </div>
+   
+
+
+
+        <div className="flex-2">
+         
+        </div>
+        <div className="flex-1.5">
+          <label
+            htmlFor="statusFilter"
+            className="block text-sm font-medium  text-black"
+          >
+            Search Checklist
+          </label>
+          <label
+            htmlFor="search"
+            className="mb-2 text-sm font-medium text-black sr-only"
+          >
+            Search
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <SearchIcon className="w-4 h-4 " />
+            </div>
+            <input
+              type="search"
+              id="search"
+              className="block w-full p-2.5 pl-10 text-sm border border-gray-300 rounded-lg bg-white-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Search"
+              required
+              onChange={handleSearch}
+            />
+          </div>
+        </div>
+        <div className="flex-2">
+          <label
+            htmlFor="statusFilter"
+            className="block text-sm font-medium text-black"
+          >
+            Filter by Status
+          </label>
+          <select
+            id="statusFilter"
+            className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            {statusOptions.map((option) => (
+              <option
+                key={option}
+                value={option === "All" ? "All" : option.toLowerCase()}
+              >
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <hr></hr>
+      <SummaryComponent datas={jobs} />
+
+    </div>
+  );
+};
+
+export default DashboardSummary;

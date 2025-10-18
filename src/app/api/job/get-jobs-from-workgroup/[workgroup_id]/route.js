@@ -6,6 +6,8 @@ import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
 import { JobTemplate } from "@/lib/models/JobTemplate";
+import { ProfileGroup } from "@/lib/models/ProfileGroup";
+
 export const dynamic = "force-dynamic";
 
 // code แบบ ดึงทีละหน่อย 
@@ -18,10 +20,19 @@ export const GET = async (req, { params }) => {
   // แปลงเป็น ISO string ถ้ามีค่า
   //const startTimeISO = startTime ? new Date(startTime).toISOString() : undefined;
   //const endTimeISO = endTime ? new Date(endTime).toISOString() : undefined;
+
+  const profileGroupsArr = await ProfileGroup.find().lean();
+  const profileGroups = profileGroupsArr.reduce((acc, group) => {
+    acc[group._id] = group.PROFILE_NAME;
+    return acc;
+  }, {});
+  //console.log("profileGroups", profileGroups);
+
+
   const { workgroup_id } = params;
   //
  // console.log("workgroup_id=>", workgroup_id, "startTime=>", startTime, "endTime=>", endTime);
-
+  
   //console.log("workgroup_id=>",workgroup_id);
   if (workgroup_id === "undefined") {
     return NextResponse.json({
@@ -35,7 +46,7 @@ export const GET = async (req, { params }) => {
     async start(controller) {
       
       var gap=20;       // maximum record for query per round 
-      //var numTotal=0;
+      var numTotal=0;
       for (let i = 1; i <= 40; i++) {        
               var jobs,schedules;
               
@@ -97,6 +108,8 @@ export const GET = async (req, { params }) => {
                 //      io++;
                 //  }
 
+                
+
                  //console.log("job",job);
                  
                  return {
@@ -114,6 +127,11 @@ export const GET = async (req, { params }) => {
                   VALUE_ITEM_ABNORMAL:job.VALUE_ITEM_ABNORMAL,
                   updatedAt: job.updatedAt,
                   SUBMITTED_DATE: job.SUBMITTED_DATE,
+                  JOB_VERIFY: job.IMAGE_FILENAME||job.IMAGE_FILENAME_2 ? true : false,
+                  LAST_GET_BY:job.LAST_GET_BY || "Unknown",
+                  LAST_GET_TIME:job.LAST_GET_TIME || "Unknown",
+                  TYPE:job.TYPE || "Unknown",
+                  PROFILE_GROUP: await profileGroups[job.PROFILE_GROUP] || "Unknown",
                   //await checkItemAbNormal(job._id),
                   //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };
@@ -124,11 +142,11 @@ export const GET = async (req, { params }) => {
                 const status = await Status.findOne({ status_name: schedule.STATUS });
                 const statusColor = status?.color || "Unknown";
           
-                const LineName = await JobTemplate.findOne({
-                  JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
-                });
+                // const LineName = await JobTemplate.findOne({
+                //   JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
+                // });
           
-                const Line_Name = LineName?.LINE_NAME || "Unknown";
+                //const Line_Name = LineName?.LINE_NAME || "Unknown";
                 return {
                   _id: schedule._id,//schedule.JOB_TEMPLATE_ID,
                   //REVIEWS: "",
@@ -152,6 +170,8 @@ export const GET = async (req, { params }) => {
                   JOB_TEMPLATE_NAME: schedule.JOB_TEMPLATE_NAME,
                   ACTIVATE_DATE: schedule.ACTIVATE_DATE,
                   SCHEDULE_STATUS: schedule.STATUS,
+                  //PROFILE_GROUP: schedule.PROFILE_GROUP||"Unknown",
+                  PROFILE_GROUP: await profileGroups[schedule.PROFILE_GROUP] || "Unknown",
                 };
               });
               
@@ -173,7 +193,7 @@ export const GET = async (req, { params }) => {
               await new Promise(resolve => setTimeout(resolve, 500)); // delay 1 วิ
       }
       //console.log("จำนวนรอบที่ทำงานทั้งหมด numTotal="+numTotal);
-      controller.enqueue(encoder.encode( '" จบการส่งข้อมูล"\n'));
+      //controller.enqueue(encoder.encode( '" จบการส่งข้อมูล"\n'));
       controller.close();
 
     }

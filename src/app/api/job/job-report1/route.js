@@ -104,6 +104,7 @@ export const GET = async (req, res) => {
                     JOB_ITEM_TITLE: "$jobItems.JOB_ITEM_TITLE",
                     jobItemsUpdatedAt: "$jobItems.updatedAt",
                     ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
+                    VALUE: "$jobItems.VALUE",
                     UPPER:"$jobItems.UPPER_SPEC",
                     LOWER:"$jobItems.LOWER_SPEC",
                     FILE:"$jobItems.IMG_ATTACH",
