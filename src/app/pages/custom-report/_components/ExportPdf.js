@@ -1,10 +1,28 @@
+import JsPDFWithThaiLang from "@/lib/utils/JsPDFWithThaiLang";
+import jsPDF from "jspdf";
 import {FaFilePdf} from "react-icons/fa";
 
 const ExportPdf = ({
-
+    header,
+    body,
+    fileName,
 }) => {
     const exportToPdf = () => {
-
+        const pdf = new JsPDFWithThaiLang()
+        pdf.setFontSize(16)
+        body.reduce((accItemsHeight, items, itemsIndex) => {
+            if(itemsIndex !== 0 && itemsIndex % 3 === 0) {
+                pdf.addPage()
+            }
+            const newHeight = items.reduce((accHeight, item, index) => {
+                pdf.text(`${header[index]}: ${item}`, 5, accHeight)
+                return accHeight + 10
+            }, itemsIndex % 3 === 0 ? 10 : accItemsHeight) + 10
+            return newHeight
+        }, 10)
+        pdf.save(fileName)
+        // const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"})
+        // FileSaver.saveAs(blob, fileName)
     }
     return (
         <button
