@@ -115,12 +115,12 @@ export const POST = async (req) => {
         // clean up deleted table that store images
         const fsPath = path.join("C:", "ePM_CustomReport")
         await Promise.all(deletedTableIds.map(async (table_id) => {
-            const dir = `${path.join(fsPath, "table_assets", "images", table_id)}`;
+            const dir = path.join(fsPath, "table_assets", "images", table_id);
             await fs.rm(dir, { recursive: true, force: true })
         }))
         const tableIdsInDeletedProfiles = deletedProfiles.map(({custom_report_table_ids}) => custom_report_table_ids.toString()).flat()
         await Promise.all(tableIdsInDeletedProfiles.map(async (table_id) => {
-            const dir = `${path.join(fsPath, "table_assets", "images", table_id)}`;
+            const dir = path.join(fsPath, "table_assets", "images", table_id);
             await fs.rm(dir, { recursive: true, force: true })
         }))
         return NextResponse.json({

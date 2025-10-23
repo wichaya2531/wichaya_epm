@@ -13,7 +13,7 @@ const isSameImages = async (image1_blob, image2_blob) => {
 export const POST = async (req, { params }) => {
     const { table_id } = params;
     const fsPath = path.join("C:", "ePM_CustomReport")
-    const dir = `${path.join(fsPath, "table_assets", "images", table_id)}`;
+    const dir = path.join(fsPath, "table_assets", "images", table_id);
     const formData = await req.formData()
     const images = Array.from(formData.entries(), ([id, blob]) => ({
         id,
