@@ -6,7 +6,6 @@ const ExportCsv = ({
     fileName,
 }) => {
     const exportToCsv = () => {
-        console.log(body)
         const csvContent = [
             header.join(","),
             ...body

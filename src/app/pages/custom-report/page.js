@@ -114,8 +114,6 @@ const DynamicReportPage = () => {
         customReportProfiles
     ])
 
-    useEffect(() => console.log({allTableWithImages, customReportProfiles}), [allTableWithImages])
-
     const profilesWithImageIds = useMemo(() => (
         customReportProfiles?.map(profile => ({
             ...profile,

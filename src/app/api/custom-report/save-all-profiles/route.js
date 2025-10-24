@@ -9,7 +9,6 @@ export const POST = async (req) => {
     await connectToDb()
     const body = await req.json()
     const { user_id, profiles } = body
-    console.log(profiles)
     try {
         const allProfileIds = profiles.map(({id}) => id)
         const allDbProfiles = (await CustomReportProfile.find({
@@ -24,7 +23,7 @@ export const POST = async (req) => {
         const notInDbTableIds = allTableIds.filter(id => !allDbTableIds.includes(id))
         const deletedTableIds = allDbTableIds.filter(id => !allTableIds.includes(id))
         const exceptTableIds = allDbProfiles.filter(({_id}) => exceptProfileIds.includes(_id.toString())).map(({custom_report_table_ids}) => custom_report_table_ids.map(id=>id.toString())).flat()
-        console.log({allProfileIds, allDbProfiles, notInDbProfileIds, deletedProfiles, exceptProfileIds, allTableIds, allDbTableIds, inDbTableIds, notInDbTableIds, deletedTableIds, exceptTableIds})
+        // console.log({allProfileIds, allDbProfiles, notInDbProfileIds, deletedProfiles, exceptProfileIds, allTableIds, allDbTableIds, inDbTableIds, notInDbTableIds, deletedTableIds, exceptTableIds})
         const {insertedIds} = await CustomReportTable.bulkWrite([
             {
                 deleteMany: {
