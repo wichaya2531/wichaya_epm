@@ -80,7 +80,7 @@
     "html-to-image": "^1.11.13",
     "postcss": "^8",
     "rimraf": "^6.0.1",
-    "spreadsheetjs-react": "^1.0.0-alpha.12",
+    "spreadsheetjs-react": "^1.0.0-alpha.13",
     "supertest": "^7.0.0",
     "swagger-autogen": "^2.23.7",
     "tailwindcss": "^3.4.1"
