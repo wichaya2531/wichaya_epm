@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import Spreadsheet from "spreadsheetjs-react"
 
 const CustomReportDisplayMode = ({
@@ -11,38 +11,42 @@ const CustomReportDisplayMode = ({
     const formattedTables = useMemo(() => (
         currentCustomReportProfile?.customReportTables.map(table => ({
             ...table,
-            cells: table.cells.map(row=>row.map(col=>({
-                style: col.style,
-                value: col.job_template && report!==null ? (() => {
+            cells: table.cells.map(row=>row.map(cell=>({
+                ...Object.fromEntries(
+                  Object.entries({ ...cell }).filter(
+                    ([key]) => key !== "image_id" || true,
+                  ),
+                ),
+                value: cell.job_template && report!==null ? (() => {
                     const data = report.job_items.filter(({
                         job_item_template_id,
                         created_at,
                     }) => (
-                        job_item_template_id === col.job_template.job_item_template.id && (
-                            col.job_template.job_item_template.time.shift_index === 2 ? ((
+                        job_item_template_id === cell.job_template.job_item_template.id && (
+                            cell.job_template.job_item_template.time.shift_index === 2 ? ((
                                 new Date(
                                     report.year,
                                     report.month - 1,
-                                    col.job_template.job_item_template.time.day
+                                    cell.job_template.job_item_template.time.day
                                 ) <= created_at
                             ) && (
                                 created_at < new Date(
                                     report.year,
                                     report.month,
-                                    col.job_template.job_item_template.time.day
+                                    cell.job_template.job_item_template.time.day
                                 )
                             )) : (() => {
                                 const halfDate = new Date(
                                     report.year,
                                     report.month - 1,
-                                    col.job_template.job_item_template.time.day
+                                    cell.job_template.job_item_template.time.day
                                 )
                                 halfDate.setHours(halfDate.getHours() + 12)
-                                return col.job_template.job_item_template.time.shift_index === 0 ? ((
+                                return cell.job_template.job_item_template.time.shift_index === 0 ? ((
                                     new Date(
                                         report.year,
                                         report.month - 1,
-                                        col.job_template.job_item_template.time.day
+                                        cell.job_template.job_item_template.time.day
                                     ) <= created_at
                                 ) && (
                                     created_at < halfDate
@@ -52,17 +56,17 @@ const CustomReportDisplayMode = ({
                                     created_at < new Date(
                                         report.year,
                                         report.month,
-                                        col.job_template.job_item_template.time.day
+                                        cell.job_template.job_item_template.time.day
                                     )
                                 ))
                             })()
                         )
                     ))
                     return data.length > 0 ? (
-                        col.job_template.job_item_template.expected_value_index === 0
+                        cell.job_template.job_item_template.expected_value_index === 0
                     ) ? data[0].actual_value : data[0].comment : "-"
-                 })() : col.value,
-                ...(col.image && {image: col.image})
+                 })() : cell.value,
+                ...(cell.image && {image: cell.image})
             })))
         }))
     ), [
