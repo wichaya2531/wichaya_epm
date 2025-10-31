@@ -42,7 +42,7 @@ export const PUT = async (req, res) => {
     profile_group,
   } = body;
 
-   //console.log("timeout:", timeout);
+  // console.log("approvers_id:", approvers_id);
 
   try {
     const JobTemplateCreateID = await generateUniqueKey();
@@ -75,7 +75,8 @@ export const PUT = async (req, res) => {
 
 
     //console.log('jobTemplate before',jobTemplate);
-
+    //console.log('profile_group',profile_group);
+  
 
     //update job template
     jobTemplate.JOB_TEMPLATE_NAME = job_template_name;
@@ -87,17 +88,24 @@ export const PUT = async (req, res) => {
     jobTemplate.WORKGROUP_ID = workgroup;
     jobTemplate.TIMEOUT = timeout;
     jobTemplate.TYPE = checklist_type || "Null";
-    jobTemplate.PROFILE_GROUP = new ObjectId(profile_group) || "Null";
+    if (profile_group && ObjectId.isValid(profile_group)) {
+      jobTemplate.PROFILE_GROUP = new ObjectId(profile_group);
+    } else {
+      jobTemplate.PROFILE_GROUP = new ObjectId("000000000000000000000000");
+    }
+     //   jobTemplate.PROFILE_GROUP = new ObjectId(profile_group) || new ObjectId("0000000000");
+
     jobTemplate.JobTemplateCreateID = JobTemplateCreateID;
     jobTemplate.PICTURE_EVEDENT_REQUIRE=PICTURE_EVEDENT_REQUIRE;
     jobTemplate.AGILE_SKIP_CHECK=AGILE_SKIP_CHECK;
     jobTemplate.SORT_ITEM_BY_POSITION=SORT_ITEM_BY_POSITION;
     jobTemplate.PUBLIC_EDIT_IN_WORKGROUP=PUBLIC_EDIT_IN_WORKGROUP;
 
-   // console.log('jobTemplate update',jobTemplate);
-
+    //console.log('jobTemplate update',jobTemplate);
+    //return;
     await jobTemplate.save();
 
+  
 
     const newApprovers = approvers_id.map((approver_id) => {
       return new Approves({
@@ -180,7 +188,11 @@ export const PUT = async (req, res) => {
 
     return NextResponse.json({ status: 200, jobTemplateEdit });
   } catch (err) {
-    console.log("Edit Error=>", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 057");
+            
+            console.log("Edit Error=>", err);
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

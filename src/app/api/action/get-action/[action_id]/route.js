@@ -14,6 +14,9 @@ export const GET = async (req, {params}) => {
         }
         return NextResponse.json({ message: "Action found", action });
     } catch (err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 006");
+        }
         return NextResponse.json({ message: "Action retrieval failed", file: __filename, error: err.message });
     }
 

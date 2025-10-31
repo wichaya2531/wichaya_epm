@@ -188,7 +188,10 @@ export const GET = async (req, { params }) => {
 
     return NextResponse.json({ status: 200, jobs: jobsWithActivater });
   } catch (err) {
-    console.log("Error", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error", err);
+            console.log("Error Code : 031");
+     }
     return NextResponse.json({ status: 500, error: err.message });
   }
 };

@@ -128,6 +128,9 @@ const handleDeleteProfile = async (profile) => {
             }
             alert(data.message);
           }catch(err){
+                      console.log("Error Code : 128");
+
+                 console.error("📄 Stack trace:\n", err.stack);
                 console.log(err);
           }
 };
@@ -167,7 +170,9 @@ const handleRenameProfile = async (profile) => {
             const data = await res.json();
             console.log('data',data);
           }catch(err){
+                      console.log("Error Code : 129");
 
+                 console.error("📄 Stack trace:\n", err.stack);
           }
       // try {
       //   const res = await fetch(`/api/profile-group/update-profile-group`, {

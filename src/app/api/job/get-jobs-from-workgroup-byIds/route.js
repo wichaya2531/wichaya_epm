@@ -57,7 +57,8 @@ function streamResponse(stream) {
 }
 
 // enrich/mapping ให้หน้าบ้าน
-async function mapJobsAndSchedules({ jobs, schedules, profileNameById }) {
+async function mapJobsAndSchedules({ jobs, schedules, profileNameById,user_id }) {
+  //console.log("...................................");
   const jobStatusIds = [
     ...new Set(jobs.map((j) => String(j.JOB_STATUS_ID)).filter(Boolean)),
   ];
@@ -69,7 +70,8 @@ async function mapJobsAndSchedules({ jobs, schedules, profileNameById }) {
   ];
   const users = await User.find({ _id: { $in: userIds } }).lean();
   const userMap = users.reduce((acc, u) => ((acc[String(u._id)] = u), acc), {});
-
+  
+  //let i=0;
   const jobRows = jobs.map((job) => {
     const user = userMap[String(job.ACTIVATE_USER)];
     const st = statusMap[String(job.JOB_STATUS_ID)];
@@ -78,7 +80,15 @@ async function mapJobsAndSchedules({ jobs, schedules, profileNameById }) {
         job.SUBMITTED_BY_NAME ??
         job.SUBMITTED_BY?.EMP_NAME ??
         "-",
+      EMP_NUMBER:
+        job.SUBMITTED_BY?.EMP_NUMBER ??
+        "-", // ✅ เพิ่มฟิลด์ EMP_NUMBE
     };
+    //  if(i==0){
+    //          //console.log('job',job);
+    //          //console.log('st',st);
+    //  }
+    //  i++;  
     return {
       _id: job._id,
       SUBMITTED_BY: submit_name,
@@ -86,6 +96,7 @@ async function mapJobsAndSchedules({ jobs, schedules, profileNameById }) {
       JOB_NAME: job.JOB_NAME,
       ACTIVATE_USER: job.ACTIVATE_USER,
       createdAt: job.createdAt,
+      APPROVE_ALLOW : job.JOB_APPROVERS?.includes(user_id) && ((st?.status_name || "Unknown") && st.status_name=="waiting for approval"  ),
       ACTIVATER_NAME: user?.EMP_NAME || "Unknown",
       STATUS_NAME: st?.status_name || "Unknown",
       STATUS_COLOR: st?.color || "Unknown",
@@ -100,7 +111,7 @@ async function mapJobsAndSchedules({ jobs, schedules, profileNameById }) {
       PROFILE_GROUP: profileNameById[job.PROFILE_GROUP] || "Unknown",
     };
   });
-
+ 
   const scheduleStatusNames = [
     ...new Set(schedules.map((s) => s.STATUS).filter(Boolean)),
   ];
@@ -138,8 +149,9 @@ async function mapJobsAndSchedules({ jobs, schedules, profileNameById }) {
 
 // ---------- POST ----------
 export const POST = async (req, { params }) => {
-  console.log("✅ POST /get-jobs-from-workgroup-byIds called");
 
+  //console.log("✅ POST /get-jobs-from-workgroup-byIds called");
+  //console.log('req',req);
   let body = {};
   try {
     body = await req.json();
@@ -147,11 +159,13 @@ export const POST = async (req, { params }) => {
     return NextResponse.json({ status: 400, error: "Invalid JSON body" });
   }
 
-  const { jobIds } = body || {};
+  const { jobIds,user_id } = body || {};
   if (!jobIds) {
     return NextResponse.json({ status: 400, error: "Missing jobIds" });
   }
 
+  //console.log('user_id',user_id);
+   
   await connectToDb();
   const ids = normalizeJobIds(jobIds);
   if (!ids.length) {
@@ -168,7 +182,7 @@ export const POST = async (req, { params }) => {
       Schedule.find({ _id: { $in: ids } }).sort({ updatedAt: -1 }).lean(),
     ]);
 
-    const merged = await mapJobsAndSchedules({ jobs, schedules, profileNameById });
+    const merged = await mapJobsAndSchedules({ jobs, schedules, profileNameById,user_id });
     push(merged);
   });
 

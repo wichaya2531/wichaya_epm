@@ -36,7 +36,10 @@ export const POST = async (req, res) => {
             updatedJobItemTemplate: jobItemTemplate 
         });
     } catch (err) {
-        console.error("Error=>", err.message);
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 046");
+                console.error("Error=>", err.message);
+         }
 
         return NextResponse.json({
             status: 500,

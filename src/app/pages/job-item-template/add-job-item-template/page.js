@@ -17,16 +17,16 @@ import * as XLSX from "xlsx";
 import { FaFileCsv, FaDownload } from "react-icons/fa";
 
 const jobItemTemplateHeader = [
-  "Pos.",
+  "ID",
   // "Job Title"
-  process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE,
+  "Title" /*process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE */,
   //"Job Name",
-  process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME,
+  "Name" ,
   //"Upper/Lower ",
-  process.env.NEXT_PUBLIC_UPPER_SPEC+"/"+  process.env.NEXT_PUBLIC_LOWER_SPEC,
+  "Upper_Lower",
   //"Test Method",
-  process.env.NEXT_PUBLIC_TEST_METHODE,
-  "input type",
+  "Test_Method",
+  "input_type",
   "Create At",
   "Action",
 ];
@@ -320,6 +320,7 @@ const Page = ({ searchParams }) => {
           document.execCommand("copy");
           Swal.fire("Copied!", "ID has been copied to clipboard.", "success");
         } catch (err) {
+          console.log("Error Code : 119");
           Swal.fire("Oops!", "Failed to copy ID.", "error");
         }
         document.body.removeChild(textArea);
@@ -357,6 +358,7 @@ const Page = ({ searchParams }) => {
 
         setRefresh((prev) => !prev);
       } catch (err) {
+        console.log("Error Code : 120");
         console.log("Error", err);
         Swal.fire("Error!", "Failed to delete the item.", "error");
       }

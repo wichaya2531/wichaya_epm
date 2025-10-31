@@ -145,8 +145,11 @@ export const GET = async (req) => {
 
         controller.close();
       } catch (err) {
-        console.error("Stream error", err);
-        controller.error(err);
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 028");
+                 console.error("Stream error", err);
+                 controller.error(err);
+         }
       }
     },
   });

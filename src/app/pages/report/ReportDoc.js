@@ -112,7 +112,7 @@ const ReportDoc = ({
   //}
 
  //setSelectedWorkgroups([workgroupOfUser]);
-  console.log('report',report);
+  //console.log('report',report);
 
  //console.log('startDate',startDate);
  //console.log('endDate',endDate);

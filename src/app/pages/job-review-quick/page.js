@@ -6,7 +6,7 @@ import { config } from "@/config/config.js";
 import Swal from "sweetalert2";
 import TestMethodDescriptionModal from "@/components/TestMethodDescriptionModal";
 import ItemInformationModal from "@/components/ItemInformationModal";
-import JobReview from "./JobReview";
+//import JobReview from "./JobReview";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import { useRouter } from "next/navigation";
 import CommentReview from "@/components/CommentReview";
@@ -67,9 +67,9 @@ const Page = ({ searchParams }) => {
          try{
              mqttClient.publish(user?.workgroup_id, "refresh");
          }catch(err){
-               console.error("📄 Stack trace:\n", err.stack);
-                         console.log("Error Code : 122");
+                    console.log("Error Code : 123");
 
+                console.error("📄 Stack trace:\n", err.stack); 
                console.err(err);
          }                
                //alert('handleEventToMqtt');    
@@ -83,6 +83,7 @@ const Page = ({ searchParams }) => {
              mqttClient.subscribe(user.workgroup_id, (err) => {
              if (!err) {
              } else {
+               console.error("📄 Stack trace:\n", err.stack);
                console.error("Subscription error: ", err);
              }
            });
@@ -182,8 +183,8 @@ const Page = ({ searchParams }) => {
   };
 
   const handleApprove = async (isApproved, comment = null) => {
-     // alert('Approved');
-     // return;
+    //  alert('Approved');
+    //  return;
     var disapprove_reason="";
     if(!isApproved){
        
@@ -233,9 +234,10 @@ const Page = ({ searchParams }) => {
           setTimeout(() => {
                   handleEventToMqtt();
           }, 1000);  
-          setTimeout(() => {
-                router.push("/pages/job-approve");
-          }, 1500);
+
+          //setTimeout(() => {
+          //      router.push("/pages/job-approve");
+          //}, 1500);
 
           
         });

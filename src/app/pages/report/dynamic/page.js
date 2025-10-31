@@ -13,7 +13,7 @@ import JobItemsList from "./JobItemsList";
 import Swal from "sweetalert2";
 import ExportButtons from "@/components/ExportButtons";
 import ExportGroup from "./ExportGroup";
-import { Spreadsheet } from "spreadsheetjs-react";
+//import { Spreadsheet } from "spreadsheetjs-react";
 import { set } from "mongoose";
 
 const DynamicReportPage = () => {
@@ -72,63 +72,7 @@ const DynamicReportPage = () => {
         <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6"
         >
             <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
-            <div className="flex items-center gap-4">
-                <Link href="/pages/report">
-                <ArrowBackIosNewIcon />
-                </Link>
-                <Image
-                src="/assets/card-logo/report.png"
-                alt="wd logo"
-                width={50}
-                height={50}
-                />
-                <h1 className="text-3xl font-bold text-slate-900">
-                    Dynamic ChecklistPM-Report
-                </h1>
-            </div>
-            <h1 className="text-sm font-bold text-secondary flex items-center">
-                Summarize the data.
-            </h1>
-            </div>
-            <div className="flex flex-col mb-4 p-4 bg-white rounded-xl gap-4">
-                <SheetSelection
-                user={user}
-                spreadsheetsData={spreadsheetsData}
-                setSpreadsheetsData={setSpreadsheetsData}
-                currentSpreadsheetId={currentSpreadsheetId}
-                setCurrentSpreadsheetId={setCurrentSpreadsheetId}
-                />
-                {spreadsheetsData.find(s=>s.id===currentSpreadsheetId && s.is_fetched) && (
-                    <Spreadsheet
-                    cells={spreadsheetsData.find(s=>s.id===currentSpreadsheetId).cells}
-                    rows_height={spreadsheetsData.find(s=>s.id===currentSpreadsheetId).rows_height}
-                    cols_width={spreadsheetsData.find(s=>s.id===currentSpreadsheetId).cols_width}
-                    onChange={({cells, rows_height, cols_width})=>{
-                        setSpreadsheetsData(prev => prev.map(s=>s.id===currentSpreadsheetId ? {
-                            ...s,
-                            cells,
-                            rows_height,
-                            cols_width,
-                        } : s))
-                    }}
-                    />
-                )}
-                <JobItemsList
-                user={user}
-                jobDatas={jobDatas}
-                setJobDatas={setJobDatas}
-                startDate={startDate}
-                setStartDate={setStartDate}
-                endDate={endDate}
-                setEndDate={setEndDate}
-                />
-                <ExportGroup
-                spreadsheetsData={spreadsheetsData}
-                currentSpreadsheetId={currentSpreadsheetId}
-                jobDatas={jobDatas}
-                startDate={startDate}
-                endDate={endDate}
-                />
+            
             </div>
         </Layout>
     )

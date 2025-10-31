@@ -81,6 +81,9 @@ export const POST = async (req, res) => {
 
     return NextResponse.json({ status: 200, jobTemplate });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 056");
+     }
     console.error("Error creating job template:", err);
     return NextResponse.json({
       status: 500,

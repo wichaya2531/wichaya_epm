@@ -23,6 +23,10 @@ export const GET = async (req,res) => {
         });
     } catch (err) {
         // ถ้าเกิดข้อผิดพลาด (เช่น ไฟล์ไม่เจอ) ให้ส่งสถานะ 404 กลับไป
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 096");
+         }
+
         return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 };

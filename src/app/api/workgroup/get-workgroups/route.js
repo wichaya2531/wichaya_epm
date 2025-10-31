@@ -11,6 +11,9 @@ export const GET = async (req) => {
       workgroups,
     });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.log("Error Code : 104");
+     }
     return NextResponse.json({
       message: "Read all workgroups failed",
       file: __filename,

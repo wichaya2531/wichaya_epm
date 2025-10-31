@@ -132,6 +132,8 @@ const handleDeleteUserInProfile = async (u) => {
     }
   } catch (err) {
     console.error(err);
+              console.log("Error Code : 130");
+
     Swal.fire({ icon: "error", title: "เกิดข้อผิดพลาด", text: err.message });
   }
 };
@@ -158,6 +160,8 @@ const handleDeleteUserInProfile = async (u) => {
         }
       } catch (err) {
         console.error(err);
+                  console.log("Error Code : 130");
+
         Swal.fire({ icon: "error", title: "เกิดข้อผิดพลาด", text: err.message });
       }
 

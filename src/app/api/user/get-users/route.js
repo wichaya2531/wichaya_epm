@@ -70,6 +70,9 @@ export const GET = async (req, paramress) => {
     );
     return NextResponse.json({ status: 200, users: data });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 091");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

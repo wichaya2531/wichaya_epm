@@ -30,7 +30,11 @@ export const POST = async (req, res) => {
         await _emailStacker.save();
         //console.log("บันทึกสำเร็จ");
   }catch(err){
-    console.error(err);
+    if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 021");
+    }
+    console.error("📄 Stack trace:\n", err.stack);
+    //console.error(err);
   }
   
   return NextResponse.json({status: 200 /*, message: "Pending..." */ });

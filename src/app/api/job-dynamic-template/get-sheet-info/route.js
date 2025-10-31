@@ -15,6 +15,9 @@ export const POST = async (req) => {
         }))
         return NextResponse.json({ status: 200, spreadsheets });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 040");
+         }
         return NextResponse.json({
             status: 500,
             file: __filename,

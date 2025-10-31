@@ -1,6 +1,7 @@
 "use client";
 import Swal from "sweetalert2";
 import React, { useMemo } from "react";
+import Cookies from "js-cookie";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -9,10 +10,17 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { Pie } from "react-chartjs-2";
+import { useRouter } from "next/navigation";
+//import { Router } from "express";
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 // ===== Utils =====
+function abbreviate(label, maxLen = 8) {
+  if (!label) return "(unknown)";
+  return label.length > maxLen ? label.slice(0, maxLen) + "…" : label;
+}
+
 function getProfileName(it) {
   return String(it?.PROFILE_NAME ?? it?.PROFILE_GROUP ?? "(no profile)");
 }
@@ -27,7 +35,14 @@ const DEFAULT_GROUP_FIELD = "STATUS_NAME";
 
 // เพิ่ม prop onSliceClick เพื่อยิงพารามิเตอร์ออกไปภายนอก // NEW
 const ProfileCardsWithPie = ({ datas = [], groupField = DEFAULT_GROUP_FIELD, onSliceClick }) => {
+   const router = useRouter();
   //console.log('datas', datas);
+    // วนลูปใน array แล้วอัปเดต field ในแต่ละ object
+    datas.forEach(item => {
+      if (item.STATUS_NAME) {
+        item.STATUS_NAME = abbreviate(item.STATUS_NAME, 10);
+      }
+    });  
   // Group jobs ตาม PROFILE_NAME
   const groupedByProfile = useMemo(() => {
     const map = new Map();
@@ -39,81 +54,83 @@ const ProfileCardsWithPie = ({ datas = [], groupField = DEFAULT_GROUP_FIELD, onS
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [datas]);
 
-  const buildChartData = (jobs) => {
-    // ปิด tooltips ของ Chart.js แบบ global (ถ้ามี)
-    try {
-      if (ChartJS && ChartJS.defaults && ChartJS.defaults.plugins) {
-        ChartJS.defaults.plugins.tooltip = ChartJS.defaults.plugins.tooltip || {};
-        ChartJS.defaults.plugins.tooltip.enabled = false;
-      }
-    } catch (e) {
-      // ignore
-    }
+const buildChartData = (jobs) => {
+  const countMap = new Map();
+  for (const j of jobs) {
+    const label = String(j?.[groupField] ?? "(unknown)");
+    const current = countMap.get(label) || { count: 0, color: undefined };
+    const color = current.color ?? j?.STATUS_COLOR ?? undefined;
+    countMap.set(label, { count: current.count + 1, color });
+  }
 
-    const countMap = new Map();
-    for (const j of jobs) {
-      const label = String(j?.[groupField] ?? "(unknown)");
-      const current = countMap.get(label) || { count: 0, color: undefined };
-      const color = current.color ?? j?.STATUS_COLOR ?? undefined;
-      countMap.set(label, { count: current.count + 1, color });
-    }
-    const labels = Array.from(countMap.keys());
-    const values = labels.map((l) => countMap.get(l).count);
-    const backgroundColor = labels.map((_, idx) => {
-      const c = countMap.get(labels[idx]).color;
-      return c || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
-    });
-    return {
-      data: {
-        labels,
-        datasets: [
-          {
-            label: `Jobs by ${groupField}`,
-            data: values,
-            backgroundColor,
-          },
-        ],
-      },
-      total: jobs.length,
-    };
-  };
+  // ✅ ใช้ entries เพื่อ map label เดิม + ชื่อย่อ
+  const entries = Array.from(countMap.entries()).map(([label, { count, color }], i) => ({
+    label,                                // label เดิม
+    display: label /*abbreviate(label, 8)*/,        // label ที่ตัดเหลือ 8 ตัว
+    count,
+    color: color || FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+  }));
 
-  // === Base chart options (ไม่มี onClick ที่ผูกกับแต่ละการ์ด) ===
-  const baseChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: "bottom" },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => {
-            const label = ctx?.label ?? "";
-            const v = ctx?.parsed ?? 0;
-            const total = ctx?.dataset?.data?.reduce?.((s, x) => s + x, 0) || 0;
-            const pct = total ? ((v / total) * 100).toFixed(1) : "0.0";
-            return `${label}: ${v} (${pct}%)`;
-          },
+  return {
+    data: {
+      labels: entries.map((e) => e.display), // แสดงชื่อที่ย่อแล้ว
+      datasets: [
+        {
+          label: `Jobs by ${groupField}`,
+          data: entries.map((e) => e.count),
+          backgroundColor: entries.map((e) => e.color),
         },
-      },
-      datalabels: {
-        color: "#fff",
-        font: { weight: "bold", size: 12 },
-        formatter: (value) => value, // แสดงตัวเลขตรงๆ
+      ],
+    },
+    total: jobs.length,
+    meta: { entries },
+  };
+};
+
+// === Base chart options ===
+const baseChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: "bottom",          // ✅ อยู่ด้านล่าง
+      align: "center",             // ✅ เรียงแนวนอนตรงกลาง
+      labels: {
+        boxWidth: 12,
+        padding: 10,
+        font: { size: 11 },
       },
     },
-  };
+    tooltip: {
+      callbacks: {
+        label: (ctx) => {
+          const label = ctx?.label ?? "";
+          const v = ctx?.parsed ?? 0;
+          const total = ctx?.dataset?.data?.reduce?.((s, x) => s + x, 0) || 0;
+          const pct = total ? ((v / total) * 100).toFixed(1) : "0.0";
+          return `${label}: ${v} (${pct}%)`;
+        },
+      },
+    },
+    datalabels: {
+      color: "#fff",
+      font: { weight: "bold", size: 12 },
+      formatter: (value) => value,
+    },
+  },
+};
 
   if (groupedByProfile.length === 0) {
     return (
       <div className="p-4 text-sm text-gray-500 bg-white rounded-2xl shadow">
-        No data.
+       ......
       </div>
     );
   }
 
   // ฟังก์ชันสำหรับแสดง Swal รวม (badge {total} jobs) – ของเดิม
   function handleShowTotalJobs(profileName, total, jobs) {
-    console.log('jobs', jobs);
+    //console.log('jobs', jobs);
     Swal.fire({
       title: "Job Summary",
       html: `
@@ -130,148 +147,69 @@ const ProfileCardsWithPie = ({ datas = [], groupField = DEFAULT_GROUP_FIELD, onS
   // ฟังก์ชันสำหรับคลิกที่ slice ของ Pie // NEW
   function handleSliceClick({ profileName, label, count, jobsOfSlice, chartData }) {
     // ยิงออกไปให้ parent ถ้าต้องการใช้งานต่อ // NEW
-   //console.log('jobsOfSlice',jobsOfSlice); 
-
-//   return;
-
-
-  try {
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = "/pages/job-manage/api/"; // ปลายทางที่คุณต้องการส่งไป
-      form.style.display = "none";
-
-      const addField = (name, value) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = String(value ?? "");
-        form.appendChild(input);
-      };
+   //console.log(' handleSliceClick jobsOfSlice',jobsOfSlice); 
+   //router.push("/pages/job-manage/"); // ไปยังหน้า dashboard
+   //console.log('messageFromLayout', messageFromLayout);
+   //return;
+    
 
 
+    const jobIds = jobsOfSlice.map(j => j._id);
+    sessionStorage.setItem("jobIds", JSON.stringify(jobIds));
+    // Navigate ไปยังหน้าถัดไป
+    router.push("/pages/job-manage");
+  // return;
 
-      // ตัวอย่าง: jobsOfSlice คือ Array ของ object
-      // const jobsOfSlice = [
-      //   { _id: "68ed1d5a265771bc0bcf4f28" },
-      //   { _id: "68ed1d5a265771bc0bcf4f29" },
-      // ];
-
-      // ส่งเป็น JSON string (array จริง)
-      addField("jobIds", JSON.stringify(jobsOfSlice.map(j => j._id)));
-      document.body.appendChild(form);
-      form.submit();
-    } catch (err) {
-      console.error("POST redirect error:", err);
-    }
-
-    // return; 
+  // try {
+  //     const form = document.createElement("form");
+  //     //jmp:1
+  //     //Cookies.set("jobTable_quickview_current_page", pageNumber, { expires: 1 / (24 * 60) }); // มีอายุ 1 นาที 
+  //     // Router.push({
+  //     //   pathname: "/pages/job-manage",
+  //     // }); 
+  //     // return;
 
 
-    // // แสดง Swal // NEW
-    // const listHtml = jobsOfSlice
-    //   .slice(0, 10) // โชว์ตัวอย่างไม่เกิน 10 แถว (กันยาวเกิน)
-    //   .map((j, i) => {
-    //     const code = j?.JOB_CODE ?? j?.JOB_NAME ?? "(no id)";
-    //     const created = j?.createdAt ? new Date(j.createdAt).toLocaleString() : "-";
-    //     return `<li><b>${i + 1}.</b> ${code} <span style="color:#64748b">(${created})</span></li>`;
-    //   })
-    //   .join("");
+      
+  //     form.method = "POST";
+  //     form.action = "/pages/job-manage/api/"; // ปลายทางที่คุณต้องการส่งไป
+  //     form.style.display = "none";
 
-    // const tableHtml = (jobsOfSlice || [])
-    //   .map((j, i) => {
+  //     const addField = (name, value) => {
+  //       const input = document.createElement("input");
+  //       input.type = "hidden";
+  //       input.name = name;
+  //       input.value = String(value ?? "");
+  //       form.appendChild(input);
+  //     };
 
-    //   console.log('j', j);
 
-    //   const code = j?.JOB_CODE ?? j?.JOB_NAME ?? "(no id)";
-    //   const status = j?.STATUS_NAME ? j.STATUS_NAME : "-";
-    //   return `
-    //     <tr>
-    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">${i + 1}</td>
-    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">${code}</td>
-    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">
-    //         <div    
-    //         style="cursor:default;text-align:center;border-radius:0.25em;color:white;background-color: ${j?.STATUS_COLOR || '#6b7280'}"       
-    //         className="py-1 px-8 select-none rounded-xl text-white font-bold shadow-xl text-[12px] ipadmini:text-sm flex justify-center items-center px-5"
-    //         >
-    //           ${status}
-    //         </div>
-    //     </td>
-    //     <td style="padding:6px 8px;border-bottom:1px solid #eee">
-    //       <button class="swal-row-btn" data-idx="${i}" style="padding:6px 8px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer">
-    //       View
-    //       </button>
-    //     </td>
-    //     </tr>
-    //   `;
-    //   })
-    //   .join("") || `<tr><td colspan="4" style="padding:8px">No items</td></tr>`;
 
-    // Swal.fire({
-    //   title: `${profileName} – ${label}`,
-    //   html: `
-    //   <div style="text-align:left;font-size:15px;line-height:1.6">
-    //     <div><b>Count:</b> ${count}</div>
-       
-    //     <div style="max-height:280px;overflow:auto;margin-top:6px">
-    //     <table style="width:100%;border-collapse:collapse">
-    //       <thead>
-    //       <tr>
-    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">#</th>
-    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Job</th>
-    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Status</th>
-    //         <th style="text-align:left;padding:6px 8px;border-bottom:2px solid #e5e7eb">Action</th>
-    //       </tr>
-    //       </thead>
-    //       <tbody>
-    //       ${tableHtml}
-    //       </tbody>
-    //     </table>
-    //     </div>
-    //   </div>
-    //   `,
-    //   icon: "info",
-    //   showCancelButton: true,
-    //   confirmButtonText: "Close",
-    //   cancelButtonText: "Cancel",
-    //   width: 700,
-    //   didOpen: (popup) => {
-    //   // attach click handlers to row buttons
-    //   popup.querySelectorAll(".swal-row-btn").forEach((btn) => {
-    //     btn.addEventListener("click", (ev) => {
-    //     const idx = Number(btn.getAttribute("data-idx"));
-    //     const job = jobsOfSlice?.[idx];
-    //     // if parent provided onSliceClick, call it with the single job
-    //     if (typeof onSliceClick === "function") {
-    //       try {
-    //       onSliceClick({
-    //         profileName,
-    //         label,
-    //         count,
-    //         jobs: [job],
-    //         job,
-    //         chartData,
-    //       });
-    //       } catch (e) {
-    //       console.error("onSliceClick error:", e);
-    //       }
-    //     }
-    //     // show quick detail for the job
-    //     Swal.fire({
-    //       title: job?.JOB_CODE ?? job?._id ?? "Job detail",
-    //       html: `<pre style="text-align:left;white-space:pre-wrap">${JSON.stringify(job, null, 2)}</pre>`,
-    //       width: 800,
-    //       confirmButtonText: "OK",
-    //     });
-    //     });
-    //   });
-    //   },
-    // });
+  //     // ตัวอย่าง: jobsOfSlice คือ Array ของ object
+  //     // const jobsOfSlice = [
+  //     //   { _id: "68ed1d5a265771bc0bcf4f28" },
+  //     //   { _id: "68ed1d5a265771bc0bcf4f29" },
+  //     // ];
+
+  //     // ส่งเป็น JSON string (array จริง)
+  //     addField("jobIds", JSON.stringify(jobsOfSlice.map(j => j._id)));
+      
+  //     console.log('form',form);
+  //     return;
+  //     document.body.appendChild(form);
+  //     form.submit();
+  //   } catch (err) {
+  //     console.error("POST redirect error:", err);
+  //   }
+
+    
   }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4">
       {groupedByProfile.map(([profileName, jobs]) => {
+        //console.log('profileName' ,profileName);
+        //console.log('jobs' ,jobs);
         const { data, total } = buildChartData(jobs);
         const latest = jobs
           .map((j) => new Date(j?.updatedAt || j?.createdAt || 0).getTime())
@@ -316,9 +254,9 @@ const ProfileCardsWithPie = ({ datas = [], groupField = DEFAULT_GROUP_FIELD, onS
                 <h3 className="text-lg font-semibold text-gray-800">
                   {profileName}
                 </h3>
-                <div className="text-xs text-gray-500">
+                {/* <div className="text-xs text-gray-500">
                   Group by: <span className="font-medium">{groupField}</span>
-                </div>
+                </div> */}
               </div>
               <span
                 className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 cursor-pointer select-none"
@@ -329,9 +267,9 @@ const ProfileCardsWithPie = ({ datas = [], groupField = DEFAULT_GROUP_FIELD, onS
             </div>
 
             {/* Pie chart */}
-            <div className="w-40 h-40 mx-auto cursor-pointer"> {/* NEW: cursor-pointer */}
-              <Pie data={data} options={optionsForThisCard} />
-            </div>
+           <div className="w-60 h-56 mx-auto cursor-pointer">
+            <Pie data={data} options={optionsForThisCard} />
+          </div>
 
             {/* Footer */}
             <div className="text-xs text-gray-500">

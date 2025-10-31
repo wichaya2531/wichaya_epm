@@ -10,6 +10,9 @@ export const DELETE = async (req, {params}) => {
         await Role.findByIdAndDelete(role_id);
         return NextResponse.json({ message: "Role deleted successfully" });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 070");
+         }
         return NextResponse.json({ message: "Role deletion failed", file: __filename, error: err.message });
     }
 

@@ -21,6 +21,9 @@ export const DELETE = async (req) => {
       message: "Notifier removed successfully.",
     });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 062");
+     }
     return NextResponse.json({
       status: 500,
       error: err.message,

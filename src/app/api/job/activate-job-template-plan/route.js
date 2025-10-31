@@ -254,7 +254,10 @@ export const POST = async (req, res) => {
       message: "Jobs activated successfully",
     });
   } catch (err) {
-    console.log("Error", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error", err);
+            console.log("Error Code : 023");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

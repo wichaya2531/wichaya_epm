@@ -29,6 +29,9 @@ export const POST = async (req, res) => {
 
         return NextResponse.json({ status: 200, results });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 068");
+         }
         return NextResponse.json({ message: "Action addition to role failed", file: __filename, error: err.message, status: 500 });
     }
 };

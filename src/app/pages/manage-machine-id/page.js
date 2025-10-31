@@ -47,6 +47,8 @@ const Page = () => {
         const data = await res.json();
         setMachines(data.machines);
       } catch (err) {
+                  console.log("Error Code : 127");
+
         setError(err);
       } finally {
         setLoading(false);

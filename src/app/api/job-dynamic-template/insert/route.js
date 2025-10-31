@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { JobDynamicTemplate } from "@/lib/models/JobDynamicTemplate";
 import mongoose from "mongoose";
-import { emptyCell } from "@/app/pages/report/dynamic/_state-managment/manage";
+//import { emptyCell } from "@/app/pages/report/dynamic/_state-managment/manage";
 import { JobDynamic } from "@/lib/models/JobDynamic";
 
 export const POST = async (req) => {
@@ -70,6 +70,9 @@ export const POST = async (req) => {
         
         
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 041");
+         }
         const { code } = err
         if(code === 11000) {
             return NextResponse.json({

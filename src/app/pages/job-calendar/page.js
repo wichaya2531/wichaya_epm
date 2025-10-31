@@ -215,7 +215,11 @@ const handleshowOptionAfterClickEvent = async (b) => {
                           alert(data.message);
                           //console.log('data',data);
                     }catch(err){
+                       if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                            console.log("Error Code : 110");
+                            console.error("📄 Stack trace:\n", err.stack);
                             console.error("Error update job:", err); 
+                       }
                     }
                  
 
@@ -278,7 +282,11 @@ const handleshowOptionAfterClickEvent = async (b) => {
                                     alert(data.message);
                                     //console.log('data',data);
                               }catch(err){
+                                 if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                                       console.error("📄 Stack trace:\n", err.stack);
+                                       console.log("Error Code : 111");
                                       console.error("Error update job:", err); 
+                                 }
                               }
 
 
@@ -315,7 +323,11 @@ const handleshowOptionAfterClickEvent = async (b) => {
                                     }
                                     alert(data.message);
                               }catch(err){
+                                 if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                                      console.log("Error Code : 112");
+                                       console.error("📄 Stack trace:\n", err.stack);
                                       console.error("Error deleting job:", error); 
+                                 }
                               }
                           }else{
                               try{
@@ -333,7 +345,11 @@ const handleshowOptionAfterClickEvent = async (b) => {
                                     }
                                     //console.log('data',data);
                               }catch(err){
-                                      console.error("Error deleting job:", error); 
+                                 if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                                    console.log("Error Code : 113");
+                                    console.error("📄 Stack trace:\n", err.stack);
+                                    console.error("Error deleting job:", error); 
+                                 }
                               }
                           }
                           
@@ -476,7 +492,11 @@ const handleshowOptionAfterClickEvent = async (b) => {
                     document.getElementById('plan-type-panel').style.display='none';
             }
       }catch(err){
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+              console.log("Error Code : 114");
+              console.error("📄 Stack trace:\n", err.stack);
               console.log(err);
+         }
       }
 
 

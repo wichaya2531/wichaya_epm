@@ -47,7 +47,12 @@ const saveDatatoEmailStack = async (emailList,jobDataInfo) => {
           await _emailStacker.save();
           //console.log("บันทึกสำเร็จ");
     }catch(err){
-      console.error(err);
+               ///console.error("📄 Stack trace:\n", err.stack);
+                if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                    console.log("Error Code : 077"); 
+                    console.error(err);
+                }
+
     }
 }
 
@@ -295,7 +300,10 @@ export const POST = async (req, res) => {
         // jobItemData: jobItemData,
       });
   } catch (err) {
-      console.log(err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 078");
+            console.log(err);
+     }
       return NextResponse.json({
         status: 500,      
         error: err.message,

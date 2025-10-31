@@ -16,6 +16,9 @@ export const GET = async (req) => {
        // console.log('data action list',data);
         return NextResponse.json({ actions:data , status: "200" });
     } catch (err) {
+      if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+          console.log("Error Code : 007");
+      }
         return NextResponse.json({ message: "Read all actions failed", file: __filename, error: err.message });
     }
 };

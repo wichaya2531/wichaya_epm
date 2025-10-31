@@ -12,6 +12,10 @@ export const POST = async (req, res) => {
         const action = await Action.create({ ACTION_NAME });
         return NextResponse.json({ message: "Action created successfully", action });
     } catch(err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){    
+            console.log("Error Code : 004");    
+            console.error("📄 Stack trace:\n", err.stack);    
+        }    
         return NextResponse.json({ message: "Action creation failed", file: __filename, error: err.message });
     }
 };

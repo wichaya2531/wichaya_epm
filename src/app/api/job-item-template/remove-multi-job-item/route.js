@@ -54,6 +54,9 @@ export const DELETE = async (req) => {
       message: "Jobs and associated images removed successfully",
     });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 053");
+     }
     return NextResponse.json({
       status: 500,
       error: err.message,

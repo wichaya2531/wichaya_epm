@@ -13,7 +13,7 @@ import useFetchUser from "@/lib/hooks/useFetchUser.js";
 import useFetchUsers from "@/lib/hooks/useFetchUsers";
 import { useRouter } from "next/navigation";
 
-const Navbar = ({ menu }) => {
+const Navbar = ({ menu,mqttStatus }) => {
   // console.log("*****************Navbar**************");
 
   const [refresh, setRefresh] = useState(false);
@@ -174,7 +174,18 @@ const Navbar = ({ menu }) => {
             width={150}
             height={150}
             className=""
-          />
+                      />
+            {mqttStatus ? (
+              <>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full"></span>
+              </>
+            ) : (
+              <>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full"></span>
+              </>
+            )}
         </Link>
       </div>
 

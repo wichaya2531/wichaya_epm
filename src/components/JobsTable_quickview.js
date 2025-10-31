@@ -10,7 +10,7 @@ import Swal from "sweetalert2";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PersonIcon from '@mui/icons-material/Person';
-
+import JobReview from  '@/components/JobReview';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Person2Icon from '@mui/icons-material/Person2';
@@ -19,9 +19,9 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import GroupIcon from '@mui/icons-material/Group';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-
+import { createRoot } from 'react-dom/client';
 import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
-
+import Cookies from "js-cookie";
 
 const jobsActiveHeader = [
   "ID",
@@ -56,6 +56,15 @@ const statusOptions = [
   "Overdue",
 ];
 
+//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
+import mqtt from "mqtt";
+const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
+const options = {
+  username: process.env.NEXT_PUBLIC_MQT_USERNAME,
+  password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
+}
+//---------------------------------------------->>
+
 
 const JobsTableQuickView = ({ refresh,jobIds,handleEventToMqtt }) => {
   const router = useRouter();
@@ -63,8 +72,15 @@ const JobsTableQuickView = ({ refresh,jobIds,handleEventToMqtt }) => {
  
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
   //console.log("****JobsTableQuickView****");
-  //console.log("jobIds=>",jobIds);
+  //console.log("JobsTableQuickView jobIds=>",jobIds);
   //console.log(refresh);
+
+ 
+
+
+
+
+  const [disabledJobs, setDisabledJobs] = useState({}); // เก็บสถานะ disable ของแต่ละ job_id
 
   const { user, isLoading: userLoading } = useFetchUser(refresh);
 
@@ -81,65 +97,72 @@ const JobsTableQuickView = ({ refresh,jobIds,handleEventToMqtt }) => {
     jobIds,    
     status: filterStatus,
     reloadKey,   // ส่งไปใน dependency
+    user,
   });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
+//-----------MQTT----------------------------------------->>
+  const mqttClient = mqtt.connect(connectUrl, options);
+  mqttClient.on("connect", () => {});
+  mqttClient.on("error", (err) => {
+    mqttClient.end();
+  });
+   mqttClient.on('message', (topic, message) => {
+      setTimeout(() => {
+         //console.log("DashboardSummary ข้อมูลขาเข้า "+topic+" : "+message);
+         setReloadKey(prev => prev + 1); // เพิ่มค่า → ทำให้ useFetchJobs รันใหม่
+      }, 3000);  
+  });
 
 
- // useEffect(() => {
-  //   if (fetchJobs) {
-  //     fetchJobs({
-  //       refresh,
-  //       startTime: startDate,
-  //       endTime: endDate,
-  //       status: filterStatus,
-  //     });
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [startDate, endDate]);
-      // useEffect(() => {
+useEffect(() => {
+  if (user?.workgroup_id){
+          //console.log(' user.workgroup_id', user.workgroup_id);
+            mqttClient.subscribe(user.workgroup_id, (err) => {
+            if (!err) {
+            } else {
+              console.error("Subscription error: ", err);
+            }
+          });
+  } 
+}, [user]);
 
-      //   let total_byte_counter=0;
-      //   const interval = setInterval(() => {
-      //     const fetchStream = async (workgroup_id) => {
-      //       try {
-      //         const res = await fetch(`/api/job/get-jobs-from-workgroup/${workgroup_id}`);
-      //         const reader = res.body?.getReader();
-      //         const decoder = new TextDecoder();
-      //         let buffer = '';
-      //         // Optional: handle streaming data here
-      //         while (true) {
-      //           const { done, value } = await reader.read();
-      //           if (done) break;
-      //           buffer += decoder.decode(value, { stream: true });
-      //           // คุณสามารถแยกข้อมูล JSON แล้ว update state ได้ที่นี่
-      //         }
+  //------------------------------------------------------->>
 
-      //         // ตัวอย่าง: แสดง log ข้อมูลที่อ่านได้
-      //         if (total_byte_counter!=buffer.length) {
-                
-      //         }
-              
-      //             total_byte_counter
-              
-      //         console.log("Received stream:", buffer.length);
-      //       } catch (error) {
-      //         console.error("Stream error:", error);
-      //       }
-      //     };
+  useEffect(() => {
+    //jmp:1
+       const dataCurrentPage = Cookies.get("jobTable_quickview_current_page");      
+       if(dataCurrentPage){
+              //console.log('jobTable_quickview_current_page',dataCurrentPage);
+              setCurrentPage(dataCurrentPage);
+       }else{
+             // console.log('dataCurrentPage เป็นค่าว่าง ตั้งค่าเริ่มต้นไปที่ 1 ');
+              setCurrentPage(1);  
+       }
+       // Loop สำหรับการทำงานครั้งเดียว ตอน load หน้า  
+       //Cookies.set("history_page", window.location.href, { expires: 1 }); // ตั้งค่า cookie ให้หมดอายุใน 1 วัน
+       //const prevHistory = Cookies.get("history_page");
+       //console.log("history_page:", prevHistory);       
+   }, []);
 
-      //     // เรียกฟังก์ชันและส่ง workgroup_id ที่คุณมี
-      //     if (user?.workgroup_id) {
-      //       fetchStream(user.workgroup_id);
-      //     }
-      //   }, 5000);
 
-      //   return () => clearInterval(interval);
-      // }, [user?.workgroup_id]); // เพิ่ม dependency เพื่อให้แน่ใจว่า user พร้อม
+const handleClick = (job_id) => {
+  // ถ้าปุ่มนี้ถูก disable อยู่แล้ว ไม่ให้กดซ้ำ
+  if (disabledJobs[job_id]) return;
 
+  // เซตสถานะ disable ของ job_id นี้เป็น true
+  setDisabledJobs((prev) => ({ ...prev, [job_id]: true }));
+
+  // เรียกฟังก์ชันหลัก
+  navigateToJobForApprove(job_id, true);
+  // ✅ เปิดปุ่มกลับหลัง 5 วินาที
+  setTimeout(() => {
+    setDisabledJobs((prev) => ({ ...prev, [job_id]: false }));
+  }, 15000);
+};
 
 
   const handleSelectJob = (jobId) => {
@@ -234,11 +257,179 @@ const JobsTableQuickView = ({ refresh,jobIds,handleEventToMqtt }) => {
       return true;
     });
 
+//----------------------------Review Function --------------
+
+  const handleApprove = async (job_id,isApproved, comment = null) => {
+
+    var disapprove_reason="";
+    if(!isApproved){
+       
+        const { value: disapprove_reason_1,isDismissed } = await Swal.fire({
+        title: "Please provide a reason",
+        input: "textarea",
+        inputPlaceholder: "Enter your reason here...",
+        inputAttributes: {
+          "aria-label": "Enter your reason here",
+        },
+        showCancelButton: true,
+        confirmButtonText: "Submit",
+        cancelButtonText: "Cancel",
+      });
+      if (isDismissed) {
+        return;
+      }
+      disapprove_reason=disapprove_reason_1;
+    }
+
+
+
+   // console.log('isApproved',isApproved);
+  //  return;
+    
+
+    try {
+      const response = await fetch(`/api/approval/approve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          job_id: job_id,
+          user_id: user._id,
+          isApproved,
+          comment,
+          disapprove_reason,
+        }),
+        next: { revalidate: 10 },
+      });
+      const data = await response.json();
+      if (data.status === 200) {
+       Swal.fire({
+         title: "Success",
+         text: data.message,
+         icon: "success",
+         confirmButtonText: "OK",
+        }).then(() => {
+          //setRefresh(!refresh);
+          setTimeout(() => {
+                  handleEventToMqtt();
+          }, 1000);  
+
+        
+          //setTimeout(() => {
+          //      router.push("/pages/job-approve");
+          //}, 1500);
+          setTimeout(() => {
+            setDisabledJobs((prev) => ({ ...prev, [job_id]: false }));
+          }, 15000);
+          
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: data.error,
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Something went wrong",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  //------------------------------------------
+
+    const handleSetCurrentPage = (pageNumber) => {
+          //jmp:1
+          setCurrentPage(pageNumber);          
+          // ✅ ตั้งค่า cookie ให้หมดอายุภายใน 30 นาที
+          Cookies.set("jobTable_quickview_current_page", pageNumber, { expires: 30 / (24 * 60) }); //
+
+    }
+
+
+
   const navigateToJob = (job_id, viewMode) => {
       // console.log("navigateToJob ",user);
-       sessionStorage.setItem("viewMode", viewMode);
-       router.push("/pages/view-jobs?job_id=" + job_id);
+        // เก็บค่าที่ต้องใช้ในหน้าใหม่
+        sessionStorage.setItem("viewMode", viewMode);
+
+        // เปิดแท็บใหม่ โดยส่ง job_id เป็น query parameter
+        const url = `/pages/view-jobs?job_id=${encodeURIComponent(job_id)}`;
+        window.open(url, "_blank"); // ✅ "_blank" = new tab
   };
+ 
+
+const JobReviewComponent = ({ job_id }) => (
+  <div style={{ width: '100%', height: '100%', padding: 20 }}>
+    {/* <h2 className="text-lg font-bold mb-4">Job Review</h2> */}
+    {/* <p>กำลังเปิด Job ID: <b>{job_id}</b></p> */}
+    {/* <p>เนื้อหาใน component นี้สามารถเป็น table, form หรือ dashboard ได้เลย</p> */}
+      <JobReview
+        job_id={job_id}
+       
+        //  jobData={jobData}
+        //  jobItems={jobItems}
+          handleApprove={handleApprove}
+        //  handleShowJobItemDescription={handleShowJobItemDescription}
+        //  handleShowTestMethodDescription={handleShowTestMethodDescription}
+        //  toggleJobItem={toggleJobItem}
+        //  isShowJobItem={isShowJobItem}
+        //  toggleJobInfo={toggleJobInfo}
+        //  isShowJobInfo={isShowJobInfo}
+        //  toggleAddComment={toggleAddComment}
+        //  view={view}
+        //  preview_1={preview_1}
+        //  preview_2={preview_2}        
+        //  onclicktoShow={handleToShowOnClick}
+        //  handleUploadFileToJob={handleUploadFileToJob}
+        //  user={user}
+       />
+  </div>
+
+  
+);
+
+ const navigateToJobForApprove = (job_id, viewMode) => {
+  //sessionStorage.setItem('approveMode', true);
+
+  let root; // เก็บไว้ unmount เวลา close
+  Swal.fire({
+    html: '<div id="swal-react-root" style="height:100%"></div>',
+    width: '70vw',
+    heightAuto: false,
+    showConfirmButton: false,
+    showCloseButton: true,
+    allowOutsideClick: false,
+    didOpen: () => {
+      const popup = Swal.getPopup();
+      popup.style.height = '70vh';
+      const htmlBox = popup.querySelector('.swal2-html-container');
+      if (htmlBox) {
+        htmlBox.style.margin = '0';
+        htmlBox.style.padding = '0';
+        htmlBox.style.height = '100%';
+      }
+      const mount = document.getElementById('swal-react-root');
+      root = createRoot(mount);
+      root.render(<JobReviewComponent job_id={job_id}  />);
+    },
+    willClose: () => {
+      if (root) root.unmount();
+    },
+  });
+};
+  // const navigateToJobForApprove = (job_id, viewMode) => {
+  //       window.open("/pages/job-review?job_id=" + job_id, "_blank");
+  //       sessionStorage.setItem("approveMode", true);
+  // }
+
 
   const handleSearch = (e) => {
     //console.log("use search");
@@ -270,7 +461,8 @@ const handleShowUser = (userName, datetime) => {
   const jobsActiveBody =
     filteredJobs &&
     filteredJobs.map((job, index) => {
-      let statusColor = job.STATUS_COLOR;
+      //console.log('job',job);
+      let statusColor = job.STATUS_COLOR; 
       // ตรวจสอบค่า Active ตาม STATUS_NAME
       const activeValue =
         job.STATUS_NAME === "complete"
@@ -366,8 +558,6 @@ const handleShowUser = (userName, datetime) => {
                         </div>                      
                     ):""}
                         
-
-
                     <div
                       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
                       onClick={() => {
@@ -376,6 +566,26 @@ const handleShowUser = (userName, datetime) => {
                     >
                       View 
                     </div>
+                    {
+                      job.APPROVE_ALLOW && (
+                                  <div
+                                    className={`text-white font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer 
+                                      ${
+                                        disabledJobs[job._id]
+                                          ? "bg-gray-400 cursor-not-allowed"
+                                          : "hover:bg-blue-800"
+                                      }`}
+                                    style={{
+                                      backgroundColor: disabledJobs[job._id] ? "#BDBDBD" : "#FF9800",
+                                    }}
+                                    onClick={
+                                      !disabledJobs[job._id] ? () => handleClick(job._id) : undefined
+                                    }
+                                  >
+                                    {disabledJobs[job._id] ? "Please wait..." : "Approve"}
+                                  </div>
+                      )
+                    }
                </div>              
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
@@ -596,7 +806,8 @@ const handleShowUser = (userName, datetime) => {
           selectedJobs={selectedJobs}
           handleDeleteSelected={handleDeleteSelected}
           currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
+          //onPageChange={(page) => setCurrentPage(page)}
+          onPageChange={(page) => handleSetCurrentPage(page)}
           setSelectedJobs={setSelectedJobs}
         />
       ) : (
@@ -608,7 +819,8 @@ const handleShowUser = (userName, datetime) => {
           searchColumn={"Checklist Name"}
           searchHidden={true}
           currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
+           onPageChange={(page) => handleSetCurrentPage(page)}
+          //onPageChange={(page) => setCurrentPage(page)}
         />
       )}
     </div>

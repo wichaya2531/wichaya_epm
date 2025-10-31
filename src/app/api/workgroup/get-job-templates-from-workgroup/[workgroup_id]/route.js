@@ -4,6 +4,7 @@ import { JobTemplate } from "@/lib/models/JobTemplate";
 import { Machine } from "@/lib/models/Machine";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
+import { ProfileGroup } from '@/lib/models/ProfileGroup';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +23,23 @@ async function getPlaningInfomation(job_id) {
 
 }
 
+async function loadProfileGroupsMap() {
+  const arr = await ProfileGroup.find().lean();
+  return arr.reduce((acc, g) => {
+    acc[g._id] = g.PROFILE_NAME;
+    return acc;
+  }, {});
+}
+
+
 export const GET = async (req, {params}) => {
     await connectToDb();
     const { workgroup_id } = params;
+
+    const _profileGroups=await loadProfileGroupsMap();
+    //console.log('_profileGroups',_profileGroups);
+    
+
     try {
         const allJobTemplates = await JobTemplate.find();
         const jobTemplates = allJobTemplates.filter(jobTemplate => jobTemplate.WORKGROUP_ID === workgroup_id);
@@ -47,6 +62,7 @@ export const GET = async (req, {params}) => {
                 WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
                 createdAt: createdAt,
                 createdAtSort:jobTemplate.createdAt,
+                PROFILE_GROUP:_profileGroups[jobTemplate?.PROFILE_GROUP] || "Unknown",
                 onPlanStatus: await getPlaningInfomation(jobTemplate._id)
             };
         }));
@@ -60,6 +76,10 @@ export const GET = async (req, {params}) => {
         return NextResponse.json({ status: 200, jobTemplates: data });
     }
     catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                    console.log(err);
+                    console.log("Error Code : 101");
+         }
         return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
       

@@ -71,7 +71,10 @@ export const PUT = async (req, res) => {
       return NextResponse.json({ status: 200 });
     }
   } catch (err) {
-    console.error("Error processing request:", err);
+            if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+              console.error("Error processing request:", err);
+              console.log("Error Code : 013");
+            }
     return NextResponse.json({ status: 500, error: err.message });
   }
 };

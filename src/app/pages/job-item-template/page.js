@@ -15,7 +15,7 @@ const jobItemTemplateHeader = [
   "Checklist Template Name",
   "Document no.",
   "Version.",
-  "Created At",
+  //"Created At",
   "Action",
 ];
 
@@ -87,6 +87,7 @@ const Page = () => {
         setJobTemplates(data.jobTemplates);
       }
     } catch (err) {
+      console.log("Error Code : 115");
       console.log("err", err);
     }
   };
@@ -134,6 +135,7 @@ const Page = () => {
               setRefresh((prev) => !prev);
             }
           } catch (err) {
+            console.log("Error Code : 116");
             console.error("Error deleting Checklist template:", err);
           }
         } else if (
@@ -192,6 +194,7 @@ const Page = () => {
           document.execCommand("copy");
           Swal.fire("Copied!", "ID has been copied to clipboard.", "success");
         } catch (err) {
+          console.log("Error Code : 117");
           Swal.fire("Oops!", "Failed to copy ID.", "error");
         }
         document.body.removeChild(textArea);
@@ -241,6 +244,7 @@ const Page = () => {
           document.execCommand("copy");
           Swal.fire("Copied!", "ID has been copied to clipboard.", "success");
         } catch (err) {
+          console.log("Error Code : 118");
           Swal.fire("Oops!", "Failed to copy ID.", "error");
         }
         document.body.removeChild(textArea);

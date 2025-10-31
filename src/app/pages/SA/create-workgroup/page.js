@@ -8,7 +8,7 @@ import MessageBox from "@/components/MessageBox";
 import { config } from "../../../../config/config.js";
 import Swal from "sweetalert2";
 
-const headers = ["ID", "WorkGroup", "Action"];
+const headers = ["id", "Workgroup", "Action"];
 
 const Page = () => {
   const [workgroups, setWorkgroups] = useState([]);
@@ -48,10 +48,12 @@ const Page = () => {
     }
   };
 
+     // console.log('workgroups.',workgroups);
   const data = workgroups.map((workgroup, index) => ({
+
     id: index + 1,
     Workgroup: workgroup.WORKGROUP_NAME,
-    action: [
+    Action: [
       <span className="pl-4">
         <Link
           id="1"

@@ -30,6 +30,9 @@ export const GET = async (req, res) => {
     );
     return NextResponse.json({ status: 200, jobTemplates: data });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 059");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

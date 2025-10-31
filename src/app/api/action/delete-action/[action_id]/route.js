@@ -13,6 +13,9 @@ export const DELETE = async (req, {params}) => {
         }
         return NextResponse.json({ message: "Action deleted successfully", action });
     } catch (err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){    
+            console.log("Error Code : 005");
+        }
         return NextResponse.json({ message: "Action deletion failed", file: __filename, error: err.message });
     }
 

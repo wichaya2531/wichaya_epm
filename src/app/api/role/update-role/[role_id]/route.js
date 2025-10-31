@@ -14,6 +14,9 @@ export const PUT = async (req, {params}) => {
         }
         return NextResponse.json({ message: "Role updated successfully", role });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 075");
+         }
         return NextResponse.json({ message: "Role update failed", file: __filename, error: err.message });
     }
 

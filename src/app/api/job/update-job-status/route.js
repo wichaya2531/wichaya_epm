@@ -19,10 +19,12 @@ export const PUT = async (req, res) => {
   try {
 
     const job = await Job.findOne({ _id: JOB_ID });
+    //console.log("monitor job ", job);
+
     const jobStatus = await Status.findOne({ _id: job.JOB_STATUS_ID });
     const jobStatusName = jobStatus.status_name;
     const ongoing_status = await Status.findOne({ status_name: "ongoing" });
-
+    
     // Update the job status to ongoing if the current status is new
     if (jobStatusName === "new" || jobStatusName === "renew") {
       job.JOB_STATUS_ID = ongoing_status._id;
@@ -33,6 +35,10 @@ export const PUT = async (req, res) => {
 
     return NextResponse.json({ status: 200 });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 037");
+            console.log('JOB_ID',JOB_ID);
+     }
     console.error("Error occurred:", err); // Log the error
     return NextResponse.json({
       status: 500,

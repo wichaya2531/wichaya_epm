@@ -14,6 +14,6 @@ export async function POST(req) {
 
   // redirect พร้อมแนบ array (เข้ารหัส Base64 กัน URL ยาว)
   const encoded = Buffer.from(JSON.stringify(jobIds)).toString("base64");
-  const redirectUrl = new URL(`/pages/job-manage?jobs=${encoded}`, req.url);
+  const redirectUrl = new URL(process.env.NEXT_PUBLIC_HOST_LINK+`/pages/job-manage?jobs=${encoded}`, req.url);
   return NextResponse.redirect(redirectUrl, { status: 303 });
 }

@@ -8,10 +8,10 @@ const useFetchJobs = (params = null) => {
   const parsed =
     typeof params === "object" && params !== null
       ? params
-      : { startTime: null, endTime: null, status: null };
+      : { startTime: null, endTime: null, status: null, profileSelected: null };
 
   // ดึงเฉพาะคีย์หลักที่ API ใช้ และรวบรวม "คีย์อื่น ๆ" ที่อยากให้กระตุ้น re-fetch
-  const { startTime, endTime, status, ...others } = parsed;
+  const { startTime, endTime, status, profileSelected, ...others } = parsed;
 
   const { user } = useFetchUser();
 
@@ -53,19 +53,14 @@ const useFetchJobs = (params = null) => {
   }, []);
 
   const fetchStream = useCallback(
-    async ({ workgroup_id, startTime, endTime, status }) => {
+    async ({ workgroup_id, startTime, endTime, status, profileSelected,user_id }) => {
       // trim + normalize อีกชั้น
       workgroup_id = normalize(workgroup_id)?.toString().trim();
       startTime = normalize(startTime)?.toString().trim();
       endTime = normalize(endTime)?.toString().trim();
-      status = normalize(status);
 
-      //   console.log("[useFetchJobs] fetchStream params:", {
-      //   workgroup_id,
-      //   startTime,
-      //   endTime,
-      //   status,
-      // });
+      status = normalize(status);
+      profileSelected = normalize(profileSelected);
 
       if (!workgroup_id || !startTime || !endTime) {
         console.warn("[useFetchJobs] ❗️skip: missing params");
@@ -85,18 +80,19 @@ const useFetchJobs = (params = null) => {
       let sizeOfPack = 0;
 
       try {
+        // อย่าส่ง profile ถ้าไม่มีค่า
         const q = new URLSearchParams({
           starttime: startTime,
           endtime: endTime,
+          ...(profileSelected ? { profile: profileSelected } : {}),
           ...(status && status !== "All" ? { status } : {}),
+          ...(user_id ? { user_id } : {}),  // ✅ เพิ่มบรรทัดนี้
         });
 
         // กันแคช + รองรับสตรีม (NDJSON/SSE)
         const url = `/api/job/get-jobs-from-workgroup/${encodeURIComponent(
           workgroup_id
         )}?${q.toString()}&t=${Date.now()}`;
-
-        // console.log("[useFetchJobs] GET:", url);
 
         const res = await fetch(url, {
           cache: "no-store",
@@ -125,7 +121,7 @@ const useFetchJobs = (params = null) => {
           const { value, done } = await reader.read();
 
           if (abortRef.current !== controller) {
-            console.warn("[useFetchJobs] reader loop aborted by newer call");
+            console.warn("[useFetchJobs] reader loop aborted by newer call]");
             try {
               reader.cancel();
             } catch {}
@@ -144,7 +140,6 @@ const useFetchJobs = (params = null) => {
 
             try {
               const data = JSON.parse(line);
-              //console.log('data',data);
               sizeOfPack += line.length;
               const items = Array.isArray(data) ? data : [data];
               pushItems(items, controller);
@@ -155,7 +150,6 @@ const useFetchJobs = (params = null) => {
                 const payload = line.slice(idx + 5).trim();
                 try {
                   const data = JSON.parse(payload);
-                 // console.log('data',data);
                   sizeOfPack += payload.length;
                   const items = Array.isArray(data) ? data : [data];
                   pushItems(items, controller);
@@ -171,7 +165,6 @@ const useFetchJobs = (params = null) => {
               try {
                 const data = JSON.parse(last);
                 sizeOfPack += last.length;
-                //console.log('data',data);
                 const items = Array.isArray(data) ? data : [data];
                 pushItems(items, controller);
               } catch {
@@ -180,7 +173,6 @@ const useFetchJobs = (params = null) => {
                   const payload = last.slice(idx + 5).trim();
                   try {
                     const data = JSON.parse(payload);
-                    
                     sizeOfPack += payload.length;
                     const items = Array.isArray(data) ? data : [data];
                     pushItems(items, controller);
@@ -200,7 +192,6 @@ const useFetchJobs = (params = null) => {
         if (abortRef.current === controller) setError(e);
       } finally {
         if (abortRef.current === controller) {
-          //console.log("[useFetchJobs] sizeOfPack:", sizeOfPack);
           setIsLoading(false);
         }
       }
@@ -209,24 +200,24 @@ const useFetchJobs = (params = null) => {
   );
 
   // 👉 จุดสำคัญ: ทำคีย์ dependency จาก "ทุกค่าที่ควรกระตุ้นการโหลดใหม่"
-  // - รวม startTime/endTime/status
-  // - รวม others (เช่น refresh, reloadKey หรืออะไรก็แล้วแต่ที่ผู้ใช้ส่งมา)
-  // - รวม workgroup_id ปัจจุบัน
   const depsKey = useMemo(() => {
     return JSON.stringify({
       startTime,
       endTime,
       status,
+      profileSelected, // ✅ ใส่เพื่อให้เปลี่ยนแล้ว re-fetch
       others, // อาจมี refresh, reloadKey, อื่น ๆ
       workgroup_id: user?.workgroup_id ?? null,
+      user_id:user?._id,
     });
-  }, [startTime, endTime, status, others, user?.workgroup_id]);
+  }, [startTime, endTime, status, profileSelected, others, user?.workgroup_id,user?._id]);
 
   // auto-fetch เมื่อ ready หรือเมื่อค่าใน depsKey เปลี่ยน (ครอบคลุม refresh/reloadKey ด้วย)
   useEffect(() => {
     const wg = normalize(user?.workgroup_id);
     const st = normalize(startTime);
     const et = normalize(endTime);
+    const uid = normalize(user?._id);
 
     if (wg && st && et) {
       fetchStream({
@@ -234,6 +225,8 @@ const useFetchJobs = (params = null) => {
         startTime: st,
         endTime: et,
         status,
+        profileSelected,
+        user_id:uid,
       });
     }
 
@@ -249,17 +242,30 @@ const useFetchJobs = (params = null) => {
       const st = normalize(override.startTime) ?? normalize(startTime);
       const et = normalize(override.endTime) ?? normalize(endTime);
       const stt = normalize(override.status) ?? status;
+      const prof =
+        normalize(override.profileSelected) ?? normalize(profileSelected);
       const wg =
         normalize(override.workgroup_id) ?? normalize(user?.workgroup_id);
+
 
       return fetchStream({
         workgroup_id: wg,
         startTime: st,
         endTime: et,
         status: stt,
+        profileSelected: prof, // ✅ ส่งต่อไป API
+        user_id,
       });
     },
-    [startTime, endTime, status, user?.workgroup_id, fetchStream]
+    [
+      startTime,
+      endTime,
+      status,
+      profileSelected,
+      user?.workgroup_id,
+      user?._id,
+      fetchStream,
+    ]
   );
 
   return { jobs, setJobs, isLoading, error, fetchJobs };

@@ -43,14 +43,14 @@ async function getApproversUserEmail(job) {
 }
 
 export const POST = async (req, res) => {
-  console.log("Activate Job Template By Manual");  // เปิดเพื่อทดสอบ
+  //console.log("Activate Job Template By Manual");  // เปิดเพื่อทดสอบ
   await connectToDb();
   const body = await req.json();
   const JobTemplateID = body.template_id;
   const LINE_NAME = body.linename;
   const ACTIVATER_ID = body.activate_user_id;
-  console.log("JobTemplateID",JobTemplateID);
-  console.log("LINE_NAME",LINE_NAME);
+  //console.log("JobTemplateID",JobTemplateID);
+  //console.log("LINE_NAME",LINE_NAME);
   //const { JobTemplateID, ACTIVATER_ID, JobTemplateCreateID, LINE_NAME } = body;
     
 
@@ -248,8 +248,10 @@ export const POST = async (req, res) => {
 
     return NextResponse.json({ status: 200, response: job });
   } catch (err) {
-    console.error("Error in activating job template:", err);
-  
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 026");
+            console.error("Error in activating job template:", err);
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

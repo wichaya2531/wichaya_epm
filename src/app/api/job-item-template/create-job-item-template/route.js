@@ -83,8 +83,10 @@ export const POST = async (req) => {
 
     return NextResponse.json({ status: 200, jobItemTemplate });
   } catch (err) {
-    console.error("jobItemTemplate save Error : "+err.message);
-
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.error("jobItemTemplate save Error : "+err.message);
+        console.log("Error Code : 043");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

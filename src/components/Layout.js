@@ -9,6 +9,17 @@ import { usePathname } from "next/navigation";
 import Denied from "./Denied";
 import LoadingComponent from "./LoadingComponent";
 
+import {  useRef, useCallback } from "react";
+//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
+import mqtt from "mqtt";
+const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
+const options = {
+  username: process.env.NEXT_PUBLIC_MQT_USERNAME,
+  password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
+  reconnectPeriod: 2000,
+};
+//---------------------------------------------->>
+
 const Layout = ({ children, className = "" }) => {
   const [refresh, setRefresh] = useState(false);
   const [menus, setMenus] = useState([]);
@@ -16,6 +27,36 @@ const Layout = ({ children, className = "" }) => {
   const pathname = usePathname();
   const [authorized, setAuthorized] = useState(true);
   const [authCheckComplete, setAuthCheckComplete] = useState(false);
+
+  const [mqttConnected, setMqttConnected] = useState(false);
+ 
+
+
+//-----------MQTT----------------------------------------->>
+const mqttClient = useRef(null);
+useEffect(() => {
+  const client = mqtt.connect(connectUrl, options);
+  mqttClient.current = client;
+
+  const onConnect = () => {
+    console.log("✅ MQTT Connected");
+    setMqttConnected(true);   
+  };
+  client.on("connect", onConnect);
+  client.on("error", (err) => console.error("❌ MQTT Error:", err));
+  client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
+  client.on("message", (t, m) => {
+    console.log("📩", t, m.toString());
+    setRefresh(true);
+  });
+
+  return () => {
+    client.end(true);
+    mqttClient.current = null;
+  };
+}, []);
+
+//------------------------------------------------------->>
 
   // useEffect(() => {
   //   const updateMenus = () => {
@@ -71,7 +112,7 @@ const Layout = ({ children, className = "" }) => {
           path: "/pages/dashboard",
         },
       ];
-
+     
       // ตรวจสอบว่ามี cards และเป็น array ก่อนใช้ .map()
       if (Array.isArray(cards) && cards.length > 0) {
         updatedMenus.push(
@@ -141,8 +182,8 @@ const Layout = ({ children, className = "" }) => {
       className="flex flex-col min-h-screen"
       style={{ backgroundColor: "#f5f5f7" }}
     >
-      <Navbar menu={menus} />
-      <div className={`flex-1 ${className} pt-24 pb-36`}>{children}</div>
+      <Navbar menu={menus} mqttStatus={mqttConnected} />
+      { <div className={`flex-1 ${className} pt-24 pb-36`}>{children}</div>}
       <Footer />
     </div>
   );

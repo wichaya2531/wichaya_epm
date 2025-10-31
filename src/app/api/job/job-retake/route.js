@@ -77,7 +77,10 @@ export const PUT = async (req, res) => {
 
         return NextResponse.json({ status: 200 });
     } catch (err) {
-        console.error("Error occurred:", err); // Log the error
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 032");
+                console.error("Error occurred:", err); // Log the error
+         }
         return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
 };

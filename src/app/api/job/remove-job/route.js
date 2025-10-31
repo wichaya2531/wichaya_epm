@@ -77,6 +77,9 @@ export const DELETE = async (req, res) => {
     });
   } catch (err) {
     //console.log("❌ Error deleting jobs:", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 033");
+     }
     return NextResponse.json({ status: 500, error: err.message });
   }
 };

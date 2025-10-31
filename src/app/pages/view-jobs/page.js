@@ -693,28 +693,38 @@ const getMachineID = () => {
                 text: "Checklist updated successfully!",
                 icon: "success",
                 showCancelButton: true,
-                confirmButtonText: "OK & Done",
+                confirmButtonText: "Done/Close",
                 cancelButtonText: "Reuse",   // ปุ่มเพิ่มใหม่
               }).then(async (result) => {
                 if (result.isConfirmed) {
-                  window.history.replaceState({}, "", "/pages/dashboard");
-                  if (router) {
-                        //router.push("/pages/dashboard");   // ปิดเพื่อทดสอบ
-                        if (Cookies.get("history_page")) {
-                              const prevHistory = Cookies.get("history_page");
-                              //console.log("history_page:", prevHistory);
-                              router.push(prevHistory);  // กลับไปหน้าที่แล้วทำงานต่อ
-                        }
+                        // window.history.replaceState({}, "", "/pages/dashboard");
+                        // if (router) {
+                        //       //router.push("/pages/dashboard");   // ปิดเพื่อทดสอบ
+                        //       if (Cookies.get("history_page")) {
+                        //             const prevHistory = Cookies.get("history_page");
+                                    
+                        //             //console.log("history_page:", prevHistory);
+                        //             router.push(prevHistory);  // กลับไปหน้าที่แล้วทำงานต่อ
+                        //       }
+                        // }
+                  setTimeout(() => {
+                         window.close(); 
+                  }, 1500);     
+                       
+                  
+                  try{
+                      mqttClient.publish(user?.workgroup_id, "refresh");
+                  }catch(err){
+                              console.log("Error Code : 131");
+
+                         console.error("📄 Stack trace:\n", err.stack);
                   }
-                      try{
-                          mqttClient.publish(user?.workgroup_id, "refresh");
-                      }catch(err){}
-                                
+                            
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
                   // เมื่อกด Reuse this page
                   //Swal.fire("You chose to reuse this page!", "", "info");
-                  console.log('jobData',jobData);
-                  console.log('user ',user);
+                  //console.log('jobData',jobData);
+                  //console.log('user ',user);
                   // goto step 
                   //1.ส่งคำสั่งเพื่อขอเปิด  new job
                   // เปิด job ใหม่ โดยใช้ template เดิม
@@ -742,10 +752,22 @@ const getMachineID = () => {
                           }
                           //console.log('data',data);
                     }catch(err){
+                                console.log("Error Code : 133");
+
+                             console.error("📄 Stack trace:\n", err.stack);
                             console.error("Error update job:", err); 
                     }
 
                   //2.reload หน้านี้ด้วย job_id ที่เปิดใหม่   
+                  try{
+                      mqttClient.publish(user?.workgroup_id, "refresh");
+                  }catch(err){
+                              console.log("Error Code : 132");
+
+                         console.error("📄 Stack trace:\n", err.stack);
+                  }   
+
+
                 }
               });
 
@@ -756,6 +778,9 @@ const getMachineID = () => {
               }, 2000);
             }
           } catch (err) {
+                      console.log("Error Code : 134");
+
+             console.error("📄 Stack trace:\n", err.stack);
             console.error("Error:", err);
             Swal.fire({
               title: "Error!",

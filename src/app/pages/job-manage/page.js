@@ -10,92 +10,95 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-import Cookies from "js-cookie";
-
-{
-  /* <div className="flex items-center gap-4 mb-4 p-4 bg-white ">
-                    <Image src="/assets/card-logo/template.png" alt="wd logo" width={50} height={50} className="rounded-full" />
-                    <h1 className="text-3xl font-bold text-slate-900">Create Checklist Template</h1>
-                </div> */
-}
-// app/pages/job-manage/page.js
-
+import {  useRef, useCallback } from "react";
 //------------------สำหรับการ เชื่อมต่อ MQTT ------->>
 import mqtt from "mqtt";
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-}
+  reconnectPeriod: 2000,
+};
 //---------------------------------------------->>
 export default function Page() {
-
- useEffect(() => {
-      Cookies.set("history_page", window.location.href, { expires: 1 }); // ตั้งค่า cookie ให้หมดอายุใน 1 วัน
-      //const prevHistory = Cookies.get("history_page");
-      //console.log("history_page:", prevHistory);       
-  }, []);
-
-
-  const params = useSearchParams();
   const [jobIds, setJobIds] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: usersloading } = useFetchUser();
 
-
-  //-----------MQTT----------------------------------------->>
-  const mqttClient = mqtt.connect(connectUrl, options);
-  mqttClient.on("connect", () => {});
-  mqttClient.on("error", (err) => {
-    mqttClient.end();
-  });
-   mqttClient.on('message', (topic, message) => {
-       console.log("่page/job-manage ข้อมูลขาเข้า "+topic+" : "+message);
-       setRefresh(true);
-       //setTimeout(() => {
-             //setRefresh(false);
-       //}, 3000);
-  });
-    const handleEventToMqtt = async () => {
-        try{
-            mqttClient.publish(user?.workgroup_id, "refresh");
-        }catch(err){
-              console.err(err);
-        }                
-              //alert('handleEventToMqtt');    
-    }
-           
-  
-
-useEffect(() => {
-  if (user?.workgroup_id){
-          //console.log(' user.workgroup_id', user.workgroup_id);
-            mqttClient.subscribe(user.workgroup_id, (err) => {
-            if (!err) {
-            } else {
-              console.error("Subscription error: ", err);
-            }
-          });
-  } 
-}, [user]);
-
-  //------------------------------------------------------->>
+  const [refreshSkip, setRefreshSkip] = useState(false);
+ 
 
   useEffect(() => {
-    // รันครั้งเดียวตอน mount เท่านั้น
-    const encoded = params.get("jobs") ?? "";
-    try {
-      const decoded = JSON.parse(atob(encoded));
-      setJobIds(decoded);
-      //console.log("jobIds", decoded);
-    } catch {
-      console.warn("ไม่สามารถ decode jobs ได้");
-      setJobIds([]);
+    const stored = sessionStorage.getItem("jobIds");
+    if (stored) {
+      try {
+        setJobIds(JSON.parse(stored));
+      } catch {
+        console.error("Invalid JSON in sessionStorage");
+      }
     }
-  }, []); // 👈 ใส่ [] เพื่อให้รันครั้งเดียว
+  }, []);
 
+//-----------MQTT----------------------------------------->>
+const mqttClient = useRef(null);
+useEffect(() => {
+  const client = mqtt.connect(connectUrl, options);
+  mqttClient.current = client;
 
+  const onConnect = () => {
+    console.log("✅ MQTT Connected");
+    if (user?.workgroup_id) client.subscribe(user.workgroup_id);
+  };
+  client.on("connect", onConnect);
+  client.on("error", (err) => console.error("❌ MQTT Error:", err));
+  client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
+  client.on("message", (t, m) => {
+    console.log("📩", t, m.toString());
+    if(!refreshSkip){
+         setRefresh(true);
+    }
+    
+  });
 
+  return () => {
+    client.end(true);
+    mqttClient.current = null;
+  };
+}, []);
+
+// ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
+useEffect(() => {
+  if (user?.workgroup_id && mqttClient.current?.connected) {
+    mqttClient.current.subscribe(user.workgroup_id, (err) =>
+      err ? console.error("Subscription error:", err)
+          : console.log("📡 Subscribed:", user.workgroup_id)
+    );
+  }
+}, [user?.workgroup_id]);
+
+// ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
+const handleEventToMqtt = useCallback(() => {
+  setRefreshSkip(true); 
+  setTimeout(() => {
+           setRefreshSkip(false); 
+  }, 3000);
+
+  const c = mqttClient.current;
+  if (!c || c.disconnected) {
+    console.warn("MQTT not connected");
+    return;
+  }
+  if (!user?.workgroup_id) {
+    console.warn("No topic");
+    return;
+  }
+  try {
+    c.publish(user.workgroup_id, "refresh");
+  } catch (err) {
+    console.error("Error Code: 121\n", err?.stack ?? err);
+  }
+}, [user?.workgroup_id]);
+//------------------------------------------------------->>
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
@@ -135,7 +138,7 @@ useEffect(() => {
           <JobsTableQuickView 
               refresh={refresh}
               jobIds={jobIds}
-              handleEventToMqtt={handleEventToMqtt}
+              handleEventToMqtt={handleEventToMqtt}              
           />
         </div>
       </div>

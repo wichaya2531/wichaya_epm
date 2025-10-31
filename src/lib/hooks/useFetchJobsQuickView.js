@@ -56,7 +56,7 @@ const useFetchJobsQuickView = (params = null) => {
 
   // ===== สตรีมด้วย POST ไปยัง route เดิมที่มี [workgroup_id] และส่ง body แค่ { jobIds } =====
   const fetchStream = useCallback(
-    async ({ workgroup_id, jobIds }) => {
+    async ({ workgroup_id, jobIds,user_id }) => {
       workgroup_id = normalize(workgroup_id);
       jobIds = normalize(jobIds);
       
@@ -66,6 +66,7 @@ const useFetchJobsQuickView = (params = null) => {
         console.warn("[useFetchJobs] ❗️skip: missing workgroup_id");
         return;
       }
+
       //console.log('OK ฉันทำงานแล้ว B');  
 
       // สร้างคีย์กันเรียกซ้ำ
@@ -90,9 +91,10 @@ const useFetchJobsQuickView = (params = null) => {
       let sizeOfPack = 0;
 
       try {
-        //console.log('OK ฉันทำงานแล้ว try');  
+        //console.log('OK ฉันทำงานแล้ว user.....',user);  
+        //var user_id=user._id;
         const url = `../api/job/get-jobs-from-workgroup-byIds`;
-
+      
         const res = await fetch(url, {
           method: "POST",
           cache: "no-store",
@@ -101,7 +103,10 @@ const useFetchJobsQuickView = (params = null) => {
             "Cache-Control": "no-cache",
             Accept: "application/x-ndjson, text/event-stream, application/json",
           },
-          body: JSON.stringify({ jobIds }), // ✅ ส่งเฉพาะ jobIds
+          body: JSON.stringify({ 
+            jobIds,     // ✅ ส่ง jobIds เดิม
+            user_id     // ✅ เพิ่ม user เข้าไปใน body
+          }),
           signal: controller.signal,
           keepalive: true,
         });
@@ -212,12 +217,14 @@ const useFetchJobsQuickView = (params = null) => {
   // auto-fetch เมื่อ ready
   useEffect(() => {
     const wg = normalize(user?.workgroup_id);
+    const user_id = normalize(user?._id);
 
     if (wg) {
       Promise.resolve().then(() =>
         fetchStream({
           workgroup_id: wg,
           jobIds,
+          user_id,
         })
       );
     }
@@ -232,14 +239,16 @@ const useFetchJobsQuickView = (params = null) => {
   const fetchJobs = useCallback(
     (override = {}) => {
       const wg = normalize(override.workgroup_id) ?? normalize(user?.workgroup_id);
-      const jids = normalize(override.jobIds) ?? normalize(jobIds);
-
+      const jids = normalize(override.jobIds) ?? normalize(jobIds); 
+      const user_id = normalize(override.user_id) ?? normalize(user?._id);
+      //console.log('user_id',user_id);
       return fetchStream({
         workgroup_id: wg,
         jobIds: jids,
+        user_id:user_id
       });
     },
-    [jobIds, user?.workgroup_id, fetchStream]
+    [jobIds, user?.workgroup_id,user?._id, fetchStream]
   );
 
   return { jobs, setJobs, isLoading, error, fetchJobs };

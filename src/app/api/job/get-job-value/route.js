@@ -201,7 +201,10 @@ export const GET = async (req, res) => {
       jobItemData: jobItemData,
     });
   } catch (err) {
-    console.log(err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log(err);
+            console.log("Error Code : 029");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

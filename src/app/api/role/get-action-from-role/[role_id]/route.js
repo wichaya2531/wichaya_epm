@@ -39,6 +39,9 @@ export const GET = async (req, {params}) => {
         
         return NextResponse.json({ status: 200, role_actions: data });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 071");
+         }
         return NextResponse.json({ message: "Role retrieval failed", file: __filename, error: err.message });
     }
 };

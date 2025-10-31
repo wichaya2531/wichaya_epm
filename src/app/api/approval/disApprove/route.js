@@ -37,6 +37,9 @@ export const POST = async (req, res) => {
     });
   } catch (err) {
     // จัดการข้อผิดพลาด
+    if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 011");
+    }
     return NextResponse.json({
       status: 500,
       file: __filename,

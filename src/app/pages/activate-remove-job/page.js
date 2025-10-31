@@ -11,16 +11,18 @@ import Swal from "sweetalert2";
 import JobPlan from "@/components/JobPlan";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+//import useFetchProfiles from "@/lib/hooks/useFetchProfiles.js";
 import Link from "next/link";
 import Image from "next/image";
 import TableComponentAdmin from "@/components/TableComponentAdmin";
 import VerifiedIcon from '@mui/icons-material/Verified';
+import DashboardSummary from "@/components/DashboardSummary";
 
 import JobsTable from "@/components/JobsTable";
 
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
-
+import Cookies from "js-cookie";
 
 //------------------สำหรับการ เชื่อมต่อ MQTT ------->>
 import mqtt from "mqtt";
@@ -30,10 +32,6 @@ const options = {
   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
 }
 //---------------------------------------------->>
-
-
-
-
 
 const Page = () => {
 
@@ -52,8 +50,23 @@ const Page = () => {
   const [currentPageJobTemplate, setCurrentPageJobTemplate] = useState(1);
 
   const [showPlanningColumns, setShowPlanningColumns] = useState(false);
+  const [viewMode,setviewMode]=useState(false);
+  
+  //const { profiles, loading: profilesLoading, error: profilesError } = useFetchProfiles(user?.workgroup_id);
+  
+// ----------------Cookie---------------------
+useEffect(() => {
+  const v = Cookies.get("manageJobPage_summaryView"); // "true" | "false" | undefined
+  setviewMode(v === "true");
+}, []);
 
-   
+const handleClickViewMode = (checked) => {
+  setviewMode(checked);
+  Cookies.set("manageJobPage_summaryView", String(checked), { expires: 365 });
+};
+// -------------------------------------------
+
+
 
   //-----------MQTT----------------------------------------->>
   const mqttClient = mqtt.connect(connectUrl, options);
@@ -70,7 +83,11 @@ const Page = () => {
             try{
                 mqttClient.publish(user?.workgroup_id, "refresh");
             }catch(err){
+               if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                 console.log("Error Code : 107");
+                 console.error("📄 Stack trace:\n", err.stack);
                  console.err(err);
+               }
             }                
                   //alert('handleEventToMqtt');    
     }
@@ -84,7 +101,7 @@ const Page = () => {
       "Checklist Template Name",
       "Version",
       "Line Name",
-      "Create At",
+      "Profile Group",      
       "Action",
     ];
 
@@ -218,7 +235,10 @@ const Page = () => {
       //console.log('active-remove-job template data',data);
 
     } catch (err) {
-      console.log("err", err);
+       if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 108");
+            console.log("err", err);
+       }
     }
     //showInvalidLineNamePopup;
   };
@@ -523,6 +543,12 @@ const Page = () => {
     setPlanData(data);
     setIsShowPlan((prev) => !prev);
   };
+  const handleSelectProfileGroup = (value) => {
+    //setPlanData(data);
+    //setIsShowPlan((prev) => !prev);
+    alert('handleSelectProfileGroup',value); 
+  };
+
 
   // const fetchJobs = async (workgroup_id) => {
   //           setJobs([]);  
@@ -672,7 +698,10 @@ const Page = () => {
           );
         }
       } catch (err) {
-        console.error(err);
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+              console.error(err);
+              console.log("Error Code : 109");
+         }
         Swal.fire("Error!", "Failed to delete jobs.", "error");
       }
     }
@@ -686,11 +715,11 @@ const Page = () => {
       jobTemplateName:jobTemplate.JOB_TEMPLATE_NAME,
       jobTemplateCreateID: jobTemplate.JobTemplateCreateID,
       ACTIVATER_ID: user._id,
-      LINE_NAME: jobTemplate.LINE_NAME,
+      LINE_NAME: jobTemplate.LINE_NAME,     
     };
 
     //console.log("allLineNamev=>", allLineName);
-     //console.log("jobTemplate=>", jobTemplate);
+    // console.log("jobTemplate=>", jobTemplate);
     const planStart =jobTemplate.onPlanStatus.start ?  new Date(jobTemplate.onPlanStatus.start).toISOString().split('T')[0] : "";
     const planEnd = jobTemplate.onPlanStatus.end ? new Date(jobTemplate.onPlanStatus.end).toISOString().split('T')[0] : "";
 
@@ -706,7 +735,8 @@ const Page = () => {
       "Checklist Template Name": jobTemplate.JOB_TEMPLATE_NAME,
       "Version":jobTemplate.CHECKLIST_VERSION,
       "Line Name": jobTemplate.LINE_NAME,
-      "Create At": jobTemplate.createdAt,
+      //"Create At": jobTemplate.createdAt,
+      "Profile Group":jobTemplate?.PROFILE_GROUP||"Unknow",
       Action: (
         <div
           className="flex gap-1 items-center justify-center"
@@ -979,12 +1009,8 @@ const Page = () => {
         />
         WorkGroup: {user?.workgroup}{" "}
       </h1>
-      <div className="mb-4 p-4 bg-white rounded-xl" style={{position:'relative'}}>
-        <h1 className="text-2xl font-bold">Checklist Templates 
-          
-         
-               
-        </h1> 
+      <div className="mb-4 p-2 bg-white rounded-xl" style={{position:'relative'}}>
+        <h1 className="text-2xl font-bold">Checklist Templates</h1> 
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  
            <label className="inline-flex items-center space-x-2 select-none "
               style={{position:'absolute',right:'5px',top:'5px'}}
@@ -1006,75 +1032,52 @@ const Page = () => {
                 </label>
 
              
-             </label>
+             </label>   
         <TableComponent
           headers={jobTemplatesHeader}
           datas={jobTemplatesBody}
           TableName="Checklist Templates"
           searchColumn="Checklist Template Name"
           filterColumn="Line Name"
+          filterColumn1="Profile Group"
           //onPageChange={handleOnpageChange}
-
+          handleSelectProfileGroup={handleSelectProfileGroup}
           onPageChange={(page) => setCurrentPageJobTemplate(page)}
           currentPage={currentPageJobTemplate}
         />
       </div>
-
+      
       <div className="mb-4 p-4 bg-white rounded-xl">
-        {/* <h1 className="mb-4 text-2xl font-bold">Active Jobs</h1> */}
-        {/* ฟิลเตอร์สถานะ */}
-        
-        {/* <div className="flex items-center">
-          <label htmlFor="status-filter" className="mr-2 font-semibold">
-            Filter by Status:
-          </label>
-          <select
-            id="status-filter"
-            className="border border-gray-300 rounded p-2 "
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            {statusOptions.map((status, index) => (
-              <option key={index} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </div> */}
-
-
-        {/* { user.role==="Admin Group" || user.role === "Owner" ? (
-                 <TableComponentAdmin
-                 headers={jobsHeader}
-                 datas={jobsBody}
-                 TableName="Active Checklist"
-                 PageSize={5}
-                 searchColumn={"Checklist Name"}
-                 filterColumn="Line Name"
-                 searchHidden={true}
-                 filteredJobs={filteredJobs}
-                 selectedJobs={selectedJobs}
-                 handleDeleteSelected={handleDeleteSelected}
-                 currentPage={currentPageJob}
-                 onPageChange={(page) => setCurrentPageJob(page)}
-                 setSelectedJobs={setSelectedJobs}
-               />
-              ) : (
-                <TableComponent
-                    headers={jobsHeader}
-                    datas={jobsBody}
-                    TableName="Active Checklist"
-                    searchColumn="Checklist Name"
-                    filterColumn="Line Name"
-                    currentPage={currentPageJob}
-                    onPageChange={(page) => setCurrentPageJob(page)}
-                  />
-              )
-
-        } */}
-        <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
-          <JobsTable refresh={refresh} handleEventToMqtt={handleEventToMqtt} />
-        </div>
+      <span>
+                <label htmlFor="summaryView" style={{ paddingRight: "5px", cursor: "pointer" }}>
+                  Summary View&nbsp;:
+                </label>
+                &nbsp;&nbsp;
+                <input
+                  id="summaryView"                     // ✅ ใช้ id เพื่อเชื่อมกับ label
+                  type="checkbox"
+                  checked={viewMode}
+                  onChange={(e) => handleClickViewMode(e.target.checked)}
+                  style={{
+                    transform: "scale(1.8)",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }}
+                />
+          </span>     
+         {viewMode===true ? (
+            <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
+              <DashboardSummary refresh={refresh} />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
+              <JobsTable
+                  refresh={refresh} 
+                  handleEventToMqtt={handleEventToMqtt}
+              />
+              
+            </div>
+          )} 
 
       </div>
       {isShowDetail && <ShowDetailModal />}

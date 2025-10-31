@@ -134,6 +134,9 @@ export const GET = async (req, { params }) => {
     //console.log('data',data);
     return NextResponse.json({ status: 200, jobTemplate: data });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 058");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

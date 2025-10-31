@@ -14,6 +14,9 @@ export const DELETE = async (req, res) => {
     });
     return NextResponse.json({ status: 200 });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 074");
+     }
     return NextResponse.json({
       message: "Action removal from role failed",
       file: __filename,

@@ -14,9 +14,15 @@ export const dynamic = "force-dynamic";
 
 export const GET = async (req, { params }) => {
   await connectToDb();
+  //console.log('flush from get job from workgroup ');
   // รับค่า starttime และ endtime จาก query string
   const startTime = req.nextUrl.searchParams.get("starttime")+"T00:00:00Z";
   const endTime = req.nextUrl.searchParams.get("endtime")+"T23:59:59Z";
+  const profile = req.nextUrl.searchParams.get("profile");
+  const user_id = req.nextUrl.searchParams.get("user_id");
+  //console.log('user_id',user_id);
+  
+  // console.log('profile ที่ส่งมา Query',profile);
   // แปลงเป็น ISO string ถ้ามีค่า
   //const startTimeISO = startTime ? new Date(startTime).toISOString() : undefined;
   //const endTimeISO = endTime ? new Date(endTime).toISOString() : undefined;
@@ -26,6 +32,7 @@ export const GET = async (req, { params }) => {
     acc[group._id] = group.PROFILE_NAME;
     return acc;
   }, {});
+
   //console.log("profileGroups", profileGroups);
 
 
@@ -50,41 +57,68 @@ export const GET = async (req, { params }) => {
       for (let i = 1; i <= 40; i++) {        
               var jobs,schedules;
               
-                // สร้าง filter สำหรับ jobs โดยใช้ startTime และ endTime ถ้ามีค่า
-                const jobFilter = { WORKGROUP_ID: workgroup_id };
-                if (startTime) {
-                jobFilter.updatedAt = { ...jobFilter.updatedAt, $gte: new Date(startTime) };
-                }
-                if (endTime) {
-                jobFilter.updatedAt = { ...jobFilter.updatedAt, $lte: new Date(endTime) };
-                }
-                jobs = await Job.find(jobFilter)
-                .sort({ createdAt: -1 })
-                .skip((i - 1) * gap)
-                .limit(gap);
+                  // 🔸 สร้าง filter สำหรับ jobs
+                  const jobFilter = { WORKGROUP_ID: workgroup_id };
+
+                  if (startTime) {
+                    jobFilter.updatedAt = {
+                      ...jobFilter.updatedAt,
+                      $gte: new Date(startTime),
+                    };
+                  }
+                  if (endTime) {
+                    jobFilter.updatedAt = {
+                      ...jobFilter.updatedAt,
+                      $lte: new Date(endTime),
+                    };
+                  }
+
+                  // ✅ เพิ่ม filter PROFILE_GROUP ถ้ามี profile
+                  if (profile && profile !== "null") {
+                    jobFilter.PROFILE_GROUP = profile;
+                  }
+
+                  jobs = await Job.find(jobFilter)
+                    .sort({ createdAt: -1 })
+                    .skip((i - 1) * gap)
+                    .limit(gap);
               
               //if(jobs.length<=0){
               //  break;
               //}   
-                // กรอง schedules ด้วย startTime และ endTime ถ้ามีค่า
-                const scheduleFilter = { WORKGROUP_ID: workgroup_id };
-                if (startTime) {
-                  scheduleFilter.ACTIVATE_DATE = { ...scheduleFilter.ACTIVATE_DATE, $gte: new Date(startTime) };
-                }
-                if (endTime) {
-                  scheduleFilter.ACTIVATE_DATE = { ...scheduleFilter.ACTIVATE_DATE, $lte: new Date(endTime) };
-                }
-                schedules = await Schedule.find(scheduleFilter)
-                .sort({ createdAt: -1 })
-                .skip((i - 1) * gap)
-                .limit(gap);
+                    // 🔸 สร้าง filter สำหรับ schedules
+                    const scheduleFilter = { WORKGROUP_ID: workgroup_id };
+
+                    if (startTime) {
+                      scheduleFilter.ACTIVATE_DATE = {
+                        ...scheduleFilter.ACTIVATE_DATE,
+                        $gte: new Date(startTime),
+                      };
+                    }
+                    if (endTime) {
+                      scheduleFilter.ACTIVATE_DATE = {
+                        ...scheduleFilter.ACTIVATE_DATE,
+                        $lte: new Date(endTime),
+                      };
+                    }
+
+                    // ✅ เพิ่ม filter PROFILE_GROUP ถ้ามี profile
+                    if (profile && profile !== "null") {
+                      scheduleFilter.PROFILE_GROUP = profile;
+                    }
+
+                    schedules = await Schedule.find(scheduleFilter)
+                      .sort({ createdAt: -1 })
+                      .skip((i - 1) * gap)
+                      .limit(gap);
+
                 if(jobs.length<=0 && schedules.length<=0){
                   break;
                 }
 
 
                 //console.log("i="+i+",gap="+gap+",length="+jobs.length);                
-              var io=0;
+             // var io=0;
               const activaterPromises = jobs.map(async (job) => {
                 const user = await User.findOne({ _id: job.ACTIVATE_USER });
                 const status = await Status.findOne({ _id: job.JOB_STATUS_ID });
@@ -108,7 +142,10 @@ export const GET = async (req, { params }) => {
                 //      io++;
                 //  }
 
-                
+               // if(io==0){
+                //       console.log('job',job);
+               //       io=1;
+               // }
 
                  //console.log("job",job);
                  
@@ -118,6 +155,8 @@ export const GET = async (req, { params }) => {
                   SUBMITTED_BY: submit_name,
                   LINE_NAME:job.LINE_NAME,
                   JOB_NAME:job.JOB_NAME,
+                  JOB_APPROVERS: job.JOB_APPROVERS,
+                  APPROVE_ALLOW : job.JOB_APPROVERS?.includes(user_id) && ((statusName || "Unknown") && statusName=="waiting for approval"  ),
                   ACTIVATE_USER:job.ACTIVATE_USER,
                   createdAt:job.createdAt,
                   ACTIVATER_NAME: activaterName,
@@ -133,7 +172,7 @@ export const GET = async (req, { params }) => {
                   TYPE:job.TYPE || "Unknown",
                   PROFILE_GROUP: await profileGroups[job.PROFILE_GROUP] || "Unknown",
                   //await checkItemAbNormal(job._id),
-                  //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
+                  PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
                 };
               });
           
@@ -185,6 +224,8 @@ export const GET = async (req, { params }) => {
               jobsWithActivater.sort((a, b) => {
                 return new Date(b.updatedAt) - new Date(a.updatedAt);
               });
+
+
              // numTotal+=jobsWithActivater.length;
               //------------------------------------------>>
               const json = JSON.stringify(jobsWithActivater);      // แปลงเป็น string
@@ -281,7 +322,10 @@ export const GET = async (req, { params }) => {
 
     return NextResponse.json({ status: 200, jobs: jobsWithActivater });
   } catch (err) {
-    console.log("Error", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.log("Error", err);
+        console.log("Error Code : 030");
+     }
     return NextResponse.json({ status: 500, error: err.message });
   }
 };

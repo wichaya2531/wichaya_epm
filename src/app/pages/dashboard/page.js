@@ -14,6 +14,8 @@ import { useFormState } from "react-dom";
 import { login } from "@/lib/utils/utils.js";
 import { FaTimes } from "react-icons/fa";
 
+import Cookies from "js-cookie";
+
 // const sendData = async () => {
 //   try {
 //     const response = await fetch(
@@ -45,21 +47,27 @@ import { FaTimes } from "react-icons/fa";
 
 const Page = () => {
   //console.log('flush from Page dashboard');
+  const [viewMode,setviewMode]=useState(false);
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: userloading } = useFetchUser(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
-
-
   //console.log("refresh",refresh);
+// ----------------Cookie---------------------
+useEffect(() => {
+  const v = Cookies.get("dashboardPage_summaryView"); // "true" | "false" | undefined
+  setviewMode(v === "true");
+}, []);
+
+const handleClickViewMode = (checked) => {
+  setviewMode(checked);
+  Cookies.set("dashboardPage_summaryView", String(checked), { expires: 365 });
+};
+// -------------------------------------------
 
 
 
 
-
-  const handleClcik = () => {
-    // sendData();
-  };
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
@@ -105,15 +113,46 @@ const Page = () => {
             })}
         </div>
 
-        <hr className="border-gray-300 my-10" />
-
+        <div 
+            style={{
+              display:'inline-block',
+              width:'20vw',
+              backgroundColor:'white',
+              padding:'4px',
+              borderRadius:'4px', 
+            }}
+        >
+          <span>
+            <label htmlFor="summaryView" style={{ paddingRight: "5px", cursor: "pointer" }}>
+              Summary View&nbsp;:
+            </label>
+            &nbsp;&nbsp;
+            <input
+              id="summaryView"                     // ✅ ใช้ id เพื่อเชื่อมกับ label
+              type="checkbox"
+              checked={viewMode}
+              onChange={(e) => handleClickViewMode(e.target.checked)}
+              style={{
+                transform: "scale(1.8)",
+                padding: "10px",
+                cursor: "pointer",
+              }}
+            />
+          </span>
+        </div>    
         {/* Jobs table section */}
+
+      {viewMode===true ? (
         <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
           <DashboardSummary refresh={refresh} />
         </div>
-        {/* <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
+      ) : (
+        <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
           <JobsTable refresh={refresh} />
-        </div>         */}
+        </div>
+      )}                       
+
+
       </div>
     </Layout>
   );

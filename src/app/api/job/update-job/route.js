@@ -22,8 +22,13 @@ export const POST = async (req) => {
       //const _Job= await Job.findById(jobData.JobID);
       //console.log('_Job',_Job);
       //console.log('Approve',_Job.JOB_APPROVERS);
-      //console.log('jobData',jobData);
-       
+     const form = await req.formData();
+    //console.log("form=>",form);
+
+    // รับ jobData และ jobItemsData จาก FormData
+    const jobData = JSON.parse(form.get("jobData"));
+    const jobItemsData = JSON.parse(form.get("jobItemsData"));
+    //console.log('jobData=>',jobData);   
       //console.log(' this is test function !!!');
 
 
@@ -31,13 +36,6 @@ export const POST = async (req) => {
     // เชื่อมต่อฐานข้อมูล
     await connectToDb();
     //console.log("Database connected");
-
-    const form = await req.formData();
-    //console.log("form=>",form);
-
-    // รับ jobData และ jobItemsData จาก FormData
-    const jobData = JSON.parse(form.get("jobData"));
-    const jobItemsData = JSON.parse(form.get("jobItemsData"));
     //console.log("jobData:", jobData);
     //console.log("jobItemsData:", jobItemsData);
 
@@ -129,6 +127,7 @@ export const POST = async (req) => {
       return NextResponse.json({ status: 404, message: "Status not found." });
     }
     
+
     job.JOB_STATUS_ID = statusAssigned._id;
     job.SUBMITTED_BY = submittedUser;
     job.SUBMITTED_DATE = new Date();
@@ -166,7 +165,10 @@ export const POST = async (req) => {
       jobData,
     });
   } catch (err) {
-    console.error("Error occurred:", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.error("Error occurred:", err);
+        console.log("Error Code : 036");
+     }
     return NextResponse.json({
       status: 500,
       message: "An error occurred while updating the job.",

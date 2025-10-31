@@ -40,7 +40,10 @@ export const POST = async (req, res) => {
 
     // return NextResponse.json({ status: 200, result: "Hello World",path:responsePath });
   } catch (err) {
-    console.log("Error: ", err.message);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 084");
+           console.log("Error: ", err.message);
+     }
     return NextResponse.json({
       result: false,
       file: __filename,

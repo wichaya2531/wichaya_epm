@@ -625,31 +625,43 @@ const TableReportDoc = ({
                        var ampm_am,value_am,ampm_pm,value_pm,amValue,pmValue;
                        try{
                           ampm_am = dateData ? dateData.ampm_am : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                         
                        try{
                           value_am = dateData ? dateData.actualValue_am : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                         
                        
                        //const time_pm = dateData ? dateData.time_pm : "-";
                        try{
                           ampm_pm = dateData ? dateData.ampm_pm : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                         
                        try{
                             value_pm = dateData ? dateData.actualValue_pm : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                        
                         
 
                       // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
                       try{
                        amValue = ampm_am !== "-" ? value_am : ampm_am;
-                      }catch(err){}
+                      }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                      }
                       try{
                            pmValue = ampm_pm !== "-" ? value_pm : ampm_pm;  
-                      }catch(err){}
+                      }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                      }
                       
                        //console.log(date+"  # "+ampmValue+" # "+ampm); 
                        return (

@@ -84,11 +84,11 @@ const Page = () => {
         </h1>
       </div>
       <div className="mb-4 p-4 bg-white rounded-xl">
-        <h1 className="text-md font-bold text-secondary flex items-center">
+        {/* <h1 className="text-md font-bold text-secondary flex items-center">
           There are {Array.isArray(jobApproves) ? jobApproves.length : 0}{" "}
           submitted jobs, that you need to be reviewed.
-        </h1>
-        <hr className="border-gray-300 mt-4" />
+        </h1> */}
+        {/* <hr className="border-gray-300 mt-4" /> */}
         <TableComponent
           headers={jobApprovesHeader}
           datas={jobApprovesBody}

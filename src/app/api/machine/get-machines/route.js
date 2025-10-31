@@ -91,6 +91,9 @@ export const GET = async (req, res) => {
    // console.log('data',data.length);  
     return NextResponse.json({ status: 200, machines: data });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 067");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

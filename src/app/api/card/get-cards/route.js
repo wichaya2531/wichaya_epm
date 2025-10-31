@@ -69,6 +69,9 @@ export const GET = async (req, res) => {
         const cards = await Card.find();
         return NextResponse.json({ status: 200, cards });
     } catch (err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 020");
+        }
         return NextResponse.json({status: 500, file: __filename, error: err.message});
     }
 }

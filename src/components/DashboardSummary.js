@@ -59,16 +59,16 @@ const statusOptions = [
 ];
 
 
-
+import {  useRef, useCallback } from "react";
 //------------------สำหรับการ เชื่อมต่อ MQTT ------->>
 import mqtt from "mqtt";
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-}
+  reconnectPeriod: 2000,
+};
 //---------------------------------------------->>
-
 
 const DashboardSummary = ({ refresh }) => {
   const router = useRouter();
@@ -81,10 +81,6 @@ const DashboardSummary = ({ refresh }) => {
   //console.log(refresh);
   const { user, isLoading: userLoading } = useFetchUser(refresh);
 
-
-
-
-
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
 
@@ -93,20 +89,61 @@ const DashboardSummary = ({ refresh }) => {
   
   const [refreshKey, setRefreshKey] = useState(0);
 
-  //-----------MQTT----------------------------------------->>
-  const mqttClient = mqtt.connect(connectUrl, options);
-  mqttClient.on("connect", () => {});
-  mqttClient.on("error", (err) => {
-    mqttClient.end();
-  });
-   mqttClient.on('message', (topic, message) => {
-      setTimeout(() => {
-         console.log("DashboardSummary ข้อมูลขาเข้า "+topic+" : "+message);
-         setReloadKey(prev => prev + 1); // เพิ่มค่า → ทำให้ useFetchJobs รันใหม่
-      }, 5000);  
+//-----------MQTT----------------------------------------->>
+const mqttClient = useRef(null);
+useEffect(() => {
+  const client = mqtt.connect(connectUrl, options);
+  mqttClient.current = client;
+
+  const onConnect = () => {
+    console.log("✅ MQTT Connected");
+    if (user?.workgroup_id) client.subscribe(user.workgroup_id);
+  };
+  client.on("connect", onConnect);
+  client.on("error", (err) => console.error("❌ MQTT Error:", err));
+  client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
+  client.on("message", (t, m) => {
+    console.log("📩", t, m.toString());
+    setReloadKey(true);
+    setTimeout(() => {
+          setReloadKey(false);
+    }, 3000);
   });
 
+  return () => {
+    client.end(true);
+    mqttClient.current = null;
+  };
+}, []);
 
+// ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
+useEffect(() => {
+  if (user?.workgroup_id && mqttClient.current?.connected) {
+    mqttClient.current.subscribe(user.workgroup_id, (err) =>
+      err ? console.error("Subscription error:", err)
+          : console.log("📡 Subscribed:", user.workgroup_id)
+    );
+  }
+}, [user?.workgroup_id]);
+
+// ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
+const handleEventToMqtt = useCallback(() => {
+  const c = mqttClient.current;
+  if (!c || c.disconnected) {
+    console.warn("MQTT not connected");
+    return;
+  }
+  if (!user?.workgroup_id) {
+    console.warn("No topic");
+    return;
+  }
+  try {
+    c.publish(user.workgroup_id, "refresh");
+  } catch (err) {
+    console.error("Error Code: 121\n", err?.stack ?? err);
+  }
+}, [user?.workgroup_id]);
+//------------------------------------------------------->>
   
   const { jobs, setJobs, isLoading: jobsLoading, fetchJobs } =  useFetchJobs({
     refresh,
@@ -120,22 +157,6 @@ const DashboardSummary = ({ refresh }) => {
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  
-
-
-
-
-useEffect(() => {
-  if (user?.workgroup_id){
-          //console.log(' user.workgroup_id', user.workgroup_id);
-            mqttClient.subscribe(user.workgroup_id, (err) => {
-            if (!err) {
-            } else {
-              console.error("Subscription error: ", err);
-            }
-          });
-  } 
-}, [user]);
 
   //------------------------------------------------------->>
 

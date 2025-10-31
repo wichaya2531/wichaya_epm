@@ -67,7 +67,11 @@ export const POST = async (req, res) => {
               }  
               await job.save();  
           }catch(err){
-                console.log("update job with pm sticker error :: ",err);
+                 //console.error("📄 Stack trace:\n", err.stack);
+                  if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                    console.log("Error Code : 001");
+                    console.log("update job with pm sticker error :: ",err);
+                  }
           }
         }
 
@@ -81,7 +85,11 @@ export const POST = async (req, res) => {
 
     // return NextResponse.json({ status: 200, result: "Hello World",path:responsePath });
   } catch (err) {
-    console.log("Error: ", err.message);
+    //console.log("Error: ", err.message);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.log("Error Code : 080");
+        console.error("📄 Stack trace:\n", err.stack);
+     }
     return NextResponse.json({
       result: false,
       file: __filename,

@@ -31,6 +31,9 @@ export const GET = async (req, res) => {
         return NextResponse.json({ message: "User logged in", session });
         
     } catch (err) {
+              if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 014");
+              }
         return NextResponse.json({ message: "Get session failed", file: __filename, error: err.message });
     }
 };

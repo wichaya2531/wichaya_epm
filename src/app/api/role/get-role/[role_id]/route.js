@@ -14,6 +14,9 @@ export const GET = async (req, {params}) => {
         }
         return NextResponse.json({ message: "Role found", name: role.ROLE_NAME, _id: role._id, actionList: role.ACTION_LIST});
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 072");
+         }
         return NextResponse.json({ message: "Role retrieval failed", file: __filename, error: err.message });
     }
 

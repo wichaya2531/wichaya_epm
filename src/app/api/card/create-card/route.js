@@ -95,6 +95,9 @@ export const POST = async (req, res) => {
         await card.save();
         return NextResponse.json({ status: 200, card });
     } catch (err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 019");
+        }
         return NextResponse.json({status: 500, file: __filename, error: err.message});
     }
 }

@@ -34,7 +34,7 @@ function asInt(v, def = 1) {
 
 export async function POST(req) {
 
-   console.log("flush from activate-job-template-manual");
+  //console.log("flush from activate-job-template-manual");
 
   await connectToDb();
 
@@ -74,12 +74,12 @@ export async function POST(req) {
       return NextResponse.json({ status: 404, error: "Status 'new' not found" });
     }
 
-    const approverUserIds = (approves || [])
-      .map(a => toObjectId(a?.USER_ID))
-      .filter(Boolean);
+   const approverUserIds = (approves || [])
+    .map(a => a?.USER_ID)
+    .filter(Boolean);
 
     const overdueNotifyUserIds = (overdueNotifies || [])
-      .map(n => toObjectId(n?.USER_ID))
+      .map(n => n?.USER_ID)
       .filter(Boolean);
 
     const jobItemTemplates = await JobItemTemplate.find({ JOB_TEMPLATE_ID: JobTemplateID }).lean();
@@ -106,6 +106,7 @@ export async function POST(req) {
       initialBeforeValueByTemplate.set(key, latestByTemplate.get(key) ?? "None");
     }
 
+    //console.log('approverUserIds',approverUserIds);
     // ----- phase 3: create jobs -----
     const baseJobDoc = {
       JOB_TEMPLATE_ID: jobTemplate._id,
@@ -238,7 +239,10 @@ export async function POST(req) {
       },
     });
   } catch (err) {
-    console.error("[activate-job-template-manual] error:", err);
+    if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 022");
+            console.error("[activate-job-template-manual] error:", err);
+    }
     return NextResponse.json({
       status: 500,
       error: err?.message ?? "Internal Server Error",

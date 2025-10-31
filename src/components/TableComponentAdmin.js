@@ -22,7 +22,7 @@ const TableComponentAdmin = ({
   setSelectedJobs,
 }) => {
 
-  //console.log("datas.",datas);
+  //console.log("currentPage",currentPage);
   //console.log("TableComponentAdmin user=>",user);
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
@@ -397,7 +397,7 @@ const clearFilters = (e) => {
               key={page}
               onClick={() => goToPage(page)}
               className={`py-2 px-4 rounded-lg font-semibold transition duration-300 ${
-                currentPage === page
+                currentPage == page
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 hover:bg-blue-200"
               }`}
