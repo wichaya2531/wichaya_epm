@@ -96,18 +96,25 @@ useEffect(() => {
   mqttClient.current = client;
 
   const onConnect = () => {
-    console.log("✅ MQTT Connected");
+    console.log("✅ MQTT Connected on Page Dashboard Summary");
     if (user?.workgroup_id) client.subscribe(user.workgroup_id);
   };
+
   client.on("connect", onConnect);
   client.on("error", (err) => console.error("❌ MQTT Error:", err));
   client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
   client.on("message", (t, m) => {
+         try {
+          if (document.getElementById('page-expire').innerHTML==='true'){ 
+                      console.log('Block by page expire!!');
+                      return;
+          }
+        } catch (error) {
+                console.error("Error Code: 120\n", error?.stack ?? error);
+        }     
     console.log("📩", t, m.toString());
-    setReloadKey(true);
-    setTimeout(() => {
-          setReloadKey(false);
-    }, 3000);
+    setReloadKey(prev => prev + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs
+    
   });
 
   return () => {

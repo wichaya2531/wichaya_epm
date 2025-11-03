@@ -46,17 +46,26 @@ useEffect(() => {
   mqttClient.current = client;
 
   const onConnect = () => {
-    console.log("✅ MQTT Connected");
+    console.log("✅ MQTT Connected on Page Job Manage");
     if (user?.workgroup_id) client.subscribe(user.workgroup_id);
   };
   client.on("connect", onConnect);
   client.on("error", (err) => console.error("❌ MQTT Error:", err));
   client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
   client.on("message", (t, m) => {
+        try {
+          if (document.getElementById('page-expire').innerHTML==='true'){ 
+                      console.log('Block by page expire!!');
+                      return;
+          }
+        } catch (error) {
+                console.error("Error Code: 120\n", error?.stack ?? error);
+        }     
     console.log("📩", t, m.toString());
-    if(!refreshSkip){
-         setRefresh(true);
-    }
+    setRefresh((prev) => !prev);
+    //if(!refreshSkip){
+         //setRefresh(true);  
+   // }
     
   });
 
@@ -78,10 +87,10 @@ useEffect(() => {
 
 // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
 const handleEventToMqtt = useCallback(() => {
-  setRefreshSkip(true); 
-  setTimeout(() => {
-           setRefreshSkip(false); 
-  }, 3000);
+ // setRefreshSkip(true); 
+ // setTimeout(() => {
+  //         setRefreshSkip(false); 
+ // }, 3000);
 
   const c = mqttClient.current;
   if (!c || c.disconnected) {

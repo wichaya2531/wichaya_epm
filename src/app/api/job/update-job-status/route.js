@@ -33,7 +33,7 @@ export const PUT = async (req, res) => {
       await job.save();
     }
 
-    return NextResponse.json({ status: 200 });
+    return NextResponse.json({ status: 200 ,infojson:job});
   } catch (err) {
      if(process.env.NEXT_PUBLIC_DEBUG=="true"){
             console.log("Error Code : 037");

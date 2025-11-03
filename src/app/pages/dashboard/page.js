@@ -14,36 +14,8 @@ import { useFormState } from "react-dom";
 import { login } from "@/lib/utils/utils.js";
 import { FaTimes } from "react-icons/fa";
 
+
 import Cookies from "js-cookie";
-
-// const sendData = async () => {
-//   try {
-//     const response = await fetch(
-//       "http://10.171.134.51:3000/api/elasticsearch/push/",
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           exec_time: "your_exec_time",
-//           name: "your_name",
-//           date: "your_date",
-//         }),
-//       }
-//     );
-
-//     if (!response.ok) {
-//       throw new Error(`Error: ${response.statusText}`);
-//     }
-
-//     const data = await response.json();
-//     console.log("data",data);
-//   } catch (error) {
-//     console.error("Error sending data:", error);
-//   }
-// };
-
 
 const Page = () => {
   //console.log('flush from Page dashboard');
@@ -52,8 +24,21 @@ const Page = () => {
   const { user, isLoading: userloading } = useFetchUser(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
   const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
+  const [pageExpire,setPageExpire]=useState(false);
   //console.log("refresh",refresh);
-// ----------------Cookie---------------------
+//  useEffect(() => {
+//    setInterval(() => {  
+//              //var timerOnPage=document.getElementById('timeout-monitor').innerHTML;
+//              //console.log("Dashboard Page Timeout Monitor:",timerOnPage);
+//              var _pageExpire=document.getElementById('page-expire').innerHTML;
+//              console.log("Dashboard Page Expire Monitor:",_pageExpire); 
+
+             
+//    }, 5000);
+
+//  }, []);
+  
+// ----------------Cookie ---------------------
 useEffect(() => {
   const v = Cookies.get("dashboardPage_summaryView"); // "true" | "false" | undefined
   setviewMode(v === "true");
@@ -64,10 +49,6 @@ const handleClickViewMode = (checked) => {
   Cookies.set("dashboardPage_summaryView", String(checked), { expires: 365 });
 };
 // -------------------------------------------
-
-
-
-
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
@@ -148,7 +129,7 @@ const handleClickViewMode = (checked) => {
         </div>
       ) : (
         <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
-          <JobsTable refresh={refresh} />
+          <JobsTable refresh={refresh} pageExpire={pageExpire} />
         </div>
       )}                       
 

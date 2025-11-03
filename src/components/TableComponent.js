@@ -16,10 +16,12 @@ const TableComponent = ({
   onPageChange,
   disablePageSize,
   disableFilter,
+  refreshEvent,
+  isLoading,
  // handleSelectProfileGroup,
 }) => {
 
- // console.log('datas in table component',datas);
+  //console.log('refreshEvent',refreshEvent);
   // -------------------- State --------------------
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(PageSize || 5);
@@ -346,8 +348,7 @@ const TableComponent = ({
                   </td>
                 ))}
               </tr>
-            ))}
-
+            ))}           
             {/* ไม่มีข้อมูล */}
             {currentPageData.length === 0 && (
               <tr>

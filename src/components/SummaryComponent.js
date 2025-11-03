@@ -123,7 +123,10 @@ const baseChartOptions = {
   if (groupedByProfile.length === 0) {
     return (
       <div className="p-4 text-sm text-gray-500 bg-white rounded-2xl shadow">
-       ......
+                  <div className="flex items-center justify-center text-lg" style={{border:'1px solid none',width:'100%'}}>
+                      <span className="animate-pulse mr-2">⏳</span>
+                      Please wait...
+                    </div>
       </div>
     );
   }

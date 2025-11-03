@@ -8,6 +8,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 export const POST = async (req, res) => {
    await connectToDb();
+
   const body = await req.json();
   const { username, password } = body;
  // console.log("body:", body);

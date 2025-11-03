@@ -60,18 +60,20 @@ const statusOptions = [
   "Overdue",
 ];
 
+import {  useRef, useCallback } from "react";
 //------------------สำหรับการ เชื่อมต่อ MQTT ------->>
 import mqtt from "mqtt";
 const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
 const options = {
   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-}
+  reconnectPeriod: 2000,
+};
 //---------------------------------------------->>
 
 const JobsTable = ({ refresh,handleEventToMqtt }) => {
   const router = useRouter();
-  //console.log('profiles',profiles);
+  //console.log('pageExpire',pageExpire);
   //console.log("refresh JobsTable=>",refresh);
  
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
@@ -103,43 +105,98 @@ const JobsTable = ({ refresh,handleEventToMqtt }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+//---------------------upsert job status to ongoing  when user click get job ----------------->>
+// ถ้ายังไม่มี ฟังก์ชัน upsert ให้ประกาศไว้ด้านบนไฟล์ (นอก on("message"))
+const upsertJobs = (jobs, infos, { sortByUpdatedAt = true } = {}) => {
+  // รองรับทั้ง object เดี่ยวและ array
+  const arr = Array.isArray(infos) ? infos : [infos];
+
+  // ใช้ Map ช่วยจับคู่ตาม _id
+  const infoMap = new Map(arr.map(i => [String(i._id), i]));
+
+  // อัปเดตตัวที่มีอยู่แล้ว (merge)
+  const merged = jobs.map(j => {
+    const hit = infoMap.get(String(j._id));
+    return hit ? { ...j, ...hit } : j;
+  });
+
+  // เติมตัวที่ยังไม่มีใน jobs
+  const existingIdSet = new Set(merged.map(j => String(j._id)));
+  const newOnes = arr.filter(i => !existingIdSet.has(String(i._id)));
+
+  let result = [...newOnes, ...merged];
+
+  // จัดเรียงใหม่ (ถ้าต้องการ)
+  if (sortByUpdatedAt) {
+    result = result.sort((a, b) => {
+      const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return tb - ta; // ใหม่อยู่บน
+    });
+  }
+
+  return result;
+};
 
 //-----------MQTT----------------------------------------->>
-  const mqttClient = mqtt.connect(connectUrl, options);
-  mqttClient.on("connect", () => {});
-  mqttClient.on("error", (err) => {
-    mqttClient.end();
-  });
-   mqttClient.on('message', (topic, message) => {
-      setTimeout(() => {
-         //console.log("DashboardSummary ข้อมูลขาเข้า "+topic+" : "+message);
-         setReloadKey(prev => prev + 1); // เพิ่มค่า → ทำให้ useFetchJobs รันใหม่
-      }, 3000);  
-  });
+   const mqttClient = useRef(null);
+   useEffect(() => {
+     const client = mqtt.connect(connectUrl, options);
+     mqttClient.current = client;
+   
+     const onConnect = () => {
+       console.log("✅ MQTT Connected on JobsTable component");
+       if (user?.workgroup_id) client.subscribe(user.workgroup_id);
+     };
 
-
-useEffect(() => {
-  if (user?.workgroup_id){
-          //console.log(' user.workgroup_id', user.workgroup_id);
-            mqttClient.subscribe(user.workgroup_id, (err) => {
-            if (!err) {
-            } else {
-              console.error("Subscription error: ", err);
-            }
-          });
-  } 
-    //console.log('profiles',profiles);
-}, [user]);
-const handleEventToMqttLocal = async () => {
-    try{
-        mqttClient.publish(user?.workgroup_id, "refresh");
-    }catch(err){
-
-          console.error("📄 Stack trace:\n", err.stack);
-    }                
-          //alert('handleEventToMqtt');    
-}
-
+     client.on("connect", onConnect);
+     client.on("error", (err) => console.error("❌ MQTT Error:", err));
+     client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
+     client.on("message", async (t, m) => {        
+        try {
+          if (document.getElementById('page-expire').innerHTML==='true'){ 
+                      console.log('Block by page expire!!');
+                      return;
+          }
+        } catch (error) {
+                console.error("Error Code: 120\n", error?.stack ?? error);
+        }            
+        setReloadKey(currentPage => currentPage + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs        
+     });
+   
+     return () => {
+       client.end(true);
+       mqttClient.current = null;
+     };
+   }, []);
+   
+   // ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
+   useEffect(() => {
+     if (user?.workgroup_id && mqttClient.current?.connected) {
+       mqttClient.current.subscribe(user.workgroup_id, (err) =>
+         err ? console.error("Subscription error:", err)
+             : console.log("📡 Subscribed:", user.workgroup_id)
+       );
+     }
+   }, [user?.workgroup_id]);
+   
+   // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
+   const handleEventToMqttLocal = useCallback(() => {
+     const c = mqttClient.current;
+     if (!c || c.disconnected) {
+       console.warn("MQTT not connected");
+       return;
+     }
+     if (!user?.workgroup_id) {
+       console.warn("No topic");
+       return;
+     }
+     try {
+       c.publish(user.workgroup_id, "refresh");
+     } catch (err) {
+       console.error("Error Code: 121\n", err?.stack ?? err);
+     }
+   }, [user?.workgroup_id]);
 
 //----------------------------Review Function --------------
 
@@ -371,7 +428,7 @@ useEffect(() => {
           {
                   // flush message to mqtt
                 try{
-                       handleEventToMqtt();
+                       handleEventToMqtt("refresh");
                 }catch(err){
                        console.error("📄 Stack trace:\n", err.stack);
                       handleEventToMqttLocal();
@@ -826,7 +883,13 @@ const handleShowUser = (userName, datetime) => {
         <TableComponentAdmin
           headers={jobsActiveHeaderAdmin}
           datas={jobsActiveBody}
-          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
+          TableName={
+              <>
+                Checklist Jobs [{jobsActiveBody.length}
+                {jobsLoading && <span className="animate-pulse ml-3">..... ⏳</span>}
+                ]
+              </>
+          }
           PageSize={5}
           searchColumn={"Checklist Name"}
           searchColumn1={"Line Name"}
@@ -837,12 +900,19 @@ const handleShowUser = (userName, datetime) => {
           currentPage={currentPage}
           onPageChange={(page) => setCurrentPage(page)}
           setSelectedJobs={setSelectedJobs}
+          isLoading={jobsLoading}
         />
       ) : (
         <TableComponent
           headers={jobsActiveHeader}
           datas={jobsActiveBody}
-          TableName={"Checklist Jobs ["+jobsActiveBody.length+"]"}
+           TableName={
+              <>
+                Checklist Jobs [{jobsActiveBody.length}
+                {jobsLoading && <span className="animate-pulse ml-3">..... ⏳</span>}
+                ]
+              </>
+          }
           PageSize={5}
           searchColumn={"Checklist Name"}
           searchHidden={true}

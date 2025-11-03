@@ -600,7 +600,7 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             className="text-sm ipadmini:text-md font-bold text-gray-600"
           >
             {/* WD Tag / Machine ID */}
-            {process.env.NEXT_PUBLIC_LABEL_WD_TAG}
+            {process.env.NEXT_PUBLIC_LABEL_WD_TAG}[{machines.length===0?" (No Machine Data)":machines.length}]
           </label>
           {view ? (
             /* view mode และมีข้อมูล WD tag อยู่แล้ว */    

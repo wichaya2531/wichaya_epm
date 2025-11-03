@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { FaSpinner } from "react-icons/fa";
 
 
 const TableComponentAdmin = ({
@@ -20,6 +21,7 @@ const TableComponentAdmin = ({
   currentPage,
   onPageChange,
   setSelectedJobs,
+  isLoading,
 }) => {
 
   //console.log("currentPage",currentPage);
@@ -366,17 +368,16 @@ const clearFilters = (e) => {
             {currentPageData.map((item) => (
               <tr
                 key={item.ID}
-                className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"               
+                className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
-                {Object.keys(item).map((key) => (
-                  <td key={`${item.id}-${key}`} className="px-4 py-3">
-                    
-                    {item[key] ? item[key] : "N/A"}
-                  
-                  </td>
-                ))}
-              </tr>
-            ))}
+                  {Object.keys(item).map((key) => (
+                    <td key={`${item.id}-${key}`} className="px-4 py-3">
+                      {item[key] ? item[key] : "N/A"}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            {/* )} */}
           </tbody>
         </table>
       </div>

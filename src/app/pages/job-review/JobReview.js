@@ -35,11 +35,23 @@ const JobForm = ({
   user
 }) => {
 
-
+  const [isWaiting, setIsWaiting] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
   //console.log("jobData.=>", jobData);
   //console.log("jobItems.=>", jobItems);
   //console.log(jobData.IMAGE_FILENAME);
+
+  const onApproveClick = async () => {
+    setIsWaiting(true); // 🔹 เปลี่ยนสถานะปุ่มเป็น "Wait..."
+    try {
+      await handleApprove(true);
+    } finally {
+      // 🔹 รอให้ทำงานเสร็จก่อนค่อยกลับมาเป็นปกติ
+      setIsWaiting(false);
+    }
+  };
+
+
   const handleShowComment = (item) => {
     Swal.fire({
       title: "Comment",
@@ -758,16 +770,19 @@ const JobForm = ({
           <div className="flex justify-end gap-4 mt-4">
             {/* ปุ่ม Approve */}
             <button
-              type="button"
-              name="action"
-              value="approve"
-              variant="contained"
-              color="primary"
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() => handleApprove(true)}
-            >
-              Approve
-            </button>
+                  type="button"
+                  name="action"
+                  value="approve"
+                  disabled={isWaiting}
+                  className={`font-bold py-2 px-4 rounded text-white transition ${
+                    isWaiting
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-500 hover:bg-green-700"
+                  }`}
+                  onClick={onApproveClick}
+                >
+                  {isWaiting ? "Wait..." : "Approve"}
+                </button>
 
             {/* ปุ่ม Disapprove */}
             <button
