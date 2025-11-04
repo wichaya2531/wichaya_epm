@@ -1,11 +1,10 @@
 import Spreadsheet from "../../../../../../spreadsheetjs-react"
 import createFirstTable from "./_utils/createFirstTable"
-import {useEffect, useMemo, useState} from "react"
+import {useMemo, useState} from "react"
 import EditReference from "./_utils/EditReference"
 import deleteTable from "@/app/pages/custom-report/_design/_utils/deleteTable";
 import createTable from "@/app/pages/custom-report/_design/_utils/createTable";
 import Swal from "sweetalert2";
-import mongoose from "mongoose";
 import resizeImage from "@/app/pages/custom-report/_utils/resizeImage";
 
 const CustomReportManipulation = ({
@@ -160,18 +159,6 @@ const CustomReportManipulation = ({
                                         allowOutsideClick: false,
                                         allowEscapeKey: false,
                                     })
-                                    // const imageIds = cells.map(row => row.map(cell => cell.image?.id)).flat().filter(id => id)
-                                    // const generatedId = (() => {
-                                    //     const generateId = () => {
-                                    //         const id = new mongoose.Types.ObjectId().toHexString()
-                                    //         if (imageIds.includes(id)) {
-                                    //             return generateId()
-                                    //         } else {
-                                    //             return id
-                                    //         }
-                                    //     }
-                                    //     return generateId()
-                                    // })()
                                     const resizedImage = await resizeImage({
                                         blob,
                                         cells,
@@ -180,34 +167,6 @@ const CustomReportManipulation = ({
                                         Swal.close()
                                     }
                                     return resizedImage
-                                    // const response = await fetch("/api/custom-report/resize-image", {
-                                    //     method: "POST",
-                                    //     body: blob,
-                                    // })
-                                    // if (response.ok) {
-                                    //     const imageIds = cells.map(row => row.map(cell => cell.image?.id)).flat().filter(id => id)
-                                    //     const generatedId = (() => {
-                                    //         const generateId = () => {
-                                    //             const id = new mongoose.Types.ObjectId().toHexString()
-                                    //             if (imageIds.includes(id)) {
-                                    //                 return generateId()
-                                    //             } else {
-                                    //                 return id
-                                    //             }
-                                    //         }
-                                    //         return generateId()
-                                    //     })()
-                                    //     const newBlob = await response.blob()
-                                    //     Swal.close()
-                                    //     return {
-                                    //         blob: newBlob,
-                                    //         path: URL.createObjectURL(newBlob),
-                                    //         id: generatedId,
-                                    //     }
-                                    // } else {
-                                    //     Swal.close()
-                                    //     return null
-                                    // }
                                 }}
                             />
                         </div>
