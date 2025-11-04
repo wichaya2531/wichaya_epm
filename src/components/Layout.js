@@ -88,8 +88,8 @@ const Layout = ({ children, className = "" }) => {
           clearInterval(timer);
           import("sweetalert2").then((Swal) => {
             Swal.default.fire({
-              title: "เวลาหมด!",
-              text: "กรุณารีเฟรชหน้าเว็บเพื่อดำเนินการต่อ",
+              title: "Session Timeout!",
+              text: "Please refresh the webpage to continue.",
               icon: "warning",
               showCancelButton: false,
               allowOutsideClick: false,

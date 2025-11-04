@@ -348,7 +348,7 @@ const Page = ({ searchParams }) => {
                 <p><strong>Description&nbsp;:&nbsp;</strong> ${
                   item.description || ""
                 }</p>
-                <p><strong>Test Location&nbsp;:&nbsp;</strong> ${
+                <p style="display:none;"><strong>Test Location&nbsp;:&nbsp;</strong> ${
                   item.TestLocationName
                 }</p>
                 <p><strong>Test Method&nbsp;:&nbsp;</strong> ${

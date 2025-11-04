@@ -172,6 +172,7 @@ const upsertJobs = (jobs, infos, { sortByUpdatedAt = true } = {}) => {
    
    // ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
    useEffect(() => {
+     //console.log('xxx');
      if (user?.workgroup_id && mqttClient.current?.connected) {
        mqttClient.current.subscribe(user.workgroup_id, (err) =>
          err ? console.error("Subscription error:", err)
@@ -252,9 +253,9 @@ const upsertJobs = (jobs, infos, { sortByUpdatedAt = true } = {}) => {
           confirmButtonText: "OK",
         }).then(() => {
          //. setRefresh(!refresh);
-          setTimeout(() => {
-                  handleEventToMqttLocal();
-          }, 1000);  
+          //setTimeout(() => {
+          //        handleEventToMqtt();
+         // }, 1000);  
           //setTimeout(() => {
           //      router.push("/pages/job-approve");
           //}, 1500);
@@ -424,20 +425,6 @@ useEffect(() => {
             prevJobs.filter((job) => !selectedJobs.includes(job._id))
           );
           setSelectedJobs([]);
-          
-          {
-                  // flush message to mqtt
-                try{
-                       handleEventToMqtt("refresh");
-                }catch(err){
-                       console.error("📄 Stack trace:\n", err.stack);
-                      handleEventToMqttLocal();
-                }
-                 
-          
-          }
-
-
         } else {
           Swal.fire(
             "Error!",

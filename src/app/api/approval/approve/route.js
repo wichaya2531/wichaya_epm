@@ -5,6 +5,11 @@ import { NextResponse } from 'next/server';
 import { JobApproves } from "@/lib/models/JobApprove";
 import { User } from "@/lib/models/User.js";
 
+//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
+import mqtt from "mqtt";
+import { once } from "events";
+//---------------------------------------------->>
+
 export const POST = async (req, res) => {
     await connectToDb();
     const body = await req.json();
@@ -35,6 +40,46 @@ export const POST = async (req, res) => {
         });
 
         await jobApprove.save();
+        
+
+        try{
+                    const MQTT_URL = process.env.MQTT_URL || process.env.NEXT_PUBLIC_MQT_URL; // แล้วแต่คุณตั้ง env
+                    const MQTT_USERNAME = process.env.MQTT_USERNAME || process.env.NEXT_PUBLIC_MQT_USERNAME;
+                    const MQTT_PASSWORD = process.env.MQTT_PASSWORD || process.env.NEXT_PUBLIC_MQT_PASSWORD;
+        
+                    function connectMqtt() {
+                      const client = mqtt.connect(MQTT_URL, {
+                        username: MQTT_USERNAME,
+                        password: MQTT_PASSWORD,
+                        reconnectPeriod: 0, // ฟังก์ชันสั้น ๆ ไม่ต้อง reconnect
+                      });
+                      return client;
+                    }
+        
+                    function publishAsync(client, topic, payload, opts = { qos: 1, retain: false }) {
+                      return new Promise((resolve, reject) => {
+                        client.publish(topic, payload, opts, (err) => (err ? reject(err) : resolve()));
+                      });
+                    }
+                    // ------------------------------------------------        
+                    // ... ใน POST handler ของคุณ (ท้าย ๆ ก่อน return)        
+                   // console.log("workgroup id ที่ต้องส่ง  mqtt update ", workgroup_id_list);        
+                    // สร้าง client และรอ connected
+                    const mqttClient = connectMqtt();
+                    await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน        
+                    // ส่งทีละอัน (แปลง ObjectId → string)
+                        //console.log("MQTT ===>>"+job.WORKGROUP_ID);
+                        await publishAsync(mqttClient,job.WORKGROUP_ID, "refresh"); // ✅ รอให้ publish เสร็จ
+        
+                    // ปิด connection แบบรอส่งค้างให้ครบ
+                    await new Promise((resolve) => mqttClient.end(false, resolve));
+              
+            }catch(err){
+                  console.log("MQTT error ",err);
+                  console.log("schedual-checker error");
+            }    
+
+
         return NextResponse.json({ status: 200,  message: isApproved ? "Job has been approved" : "Job has been rejected" });
     }
     catch (err) {

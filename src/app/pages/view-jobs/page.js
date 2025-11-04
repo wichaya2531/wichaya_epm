@@ -70,20 +70,6 @@ const Page = ({ searchParams }) => {
   const [preview_1, setPreview_1] = useState(null);
   const [preview_2, setPreview_2] = useState(null);
 
-
- useEffect(() => {
-   setInterval(() => {  
-             var timerOnPage=document.getElementById('timeout-monitor').innerHTML;
-             console.log("Dashboard Page Timeout Monitor:",timerOnPage);
-             if (timerOnPage<=0){
-                console.log("Page Expire - mqtt is disabled");
-                setPageExpire(true);
-             }
-   }, 5000);
-
- }, []);
-
-
 //-----------MQTT----------------------------------------->>
 const mqttClient = useRef(null);
 useEffect(() => {
@@ -864,7 +850,7 @@ const getMachineID = () => {
         <p><strong>Description&nbsp;:&nbsp;</strong> ${
           item.description || ""
         }</p>
-        <p><strong>Test Location&nbsp;:&nbsp;</strong> ${
+        <p style="display:none;" ><strong>Test Location&nbsp;:&nbsp;</strong> ${
           item.TestLocationName
         }</p>
         <p><strong>Test Method&nbsp;:&nbsp;</strong> ${item.TestMethod}</p>

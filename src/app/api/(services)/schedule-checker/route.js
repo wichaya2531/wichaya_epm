@@ -509,7 +509,7 @@ export const POST = async (req, res) => {
     });
 
 
-    {
+    try{
             const MQTT_URL = process.env.MQTT_URL || process.env.NEXT_PUBLIC_MQT_URL; // แล้วแต่คุณตั้ง env
             const MQTT_USERNAME = process.env.MQTT_USERNAME || process.env.NEXT_PUBLIC_MQT_USERNAME;
             const MQTT_PASSWORD = process.env.MQTT_PASSWORD || process.env.NEXT_PUBLIC_MQT_PASSWORD;
@@ -555,6 +555,8 @@ export const POST = async (req, res) => {
             // ปิด connection แบบรอส่งค้างให้ครบ
             await new Promise((resolve) => mqttClient.end(false, resolve));
       
+    }catch(err){
+          console.log("schedual-checker error");
     }
 
     // console.log("workgroup id ที่ต้องส่ง  mqtt update ",workgroup_id_list); 
