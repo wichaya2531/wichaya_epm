@@ -51,7 +51,6 @@ const DynamicTemplatePosition = ({
     const onMouseDownTable = (e, index) => {
         e.preventDefault()
         if(containerRef.current.children[index].contains(e.target)) {
-            const rect = containerRef.current.getBoundingClientRect()
             setCurrentPositionOfTables(js => js.map((j, i) => i === index ? {
                 client: {
                     x: e.clientX,
@@ -74,7 +73,20 @@ const DynamicTemplatePosition = ({
                     ...profile,
                     ...(profile.id === currentCustomReportProfile.id && {
                         height: newHeight,
-                    })
+                    }),
+                    customReportTables: profile.customReportTables.map((table, tableIndex) => ({
+                        ...table,
+                        position: {
+                            ...table.position,
+                            y: Math.max(
+                                0,
+                                Math.min(
+                                    table.position.y,
+                                    containerRef.current.clientHeight - containerRef.current.children[tableIndex].clientHeight
+                                )
+                            ),
+                        }
+                    }))
                 })))
             }
             if (resizingWidth) {
@@ -84,7 +96,20 @@ const DynamicTemplatePosition = ({
                     ...profile,
                     ...(profile.id === currentCustomReportProfile.id && {
                         width: newWidth,
-                    })
+                    }),
+                    customReportTables: profile.customReportTables.map((table, tableIndex) => ({
+                        ...table,
+                        position: {
+                            ...table.position,
+                            x: Math.max(
+                                0,
+                                Math.min(
+                                    table.position.x,
+                                    containerRef.current.clientWidth - containerRef.current.children[tableIndex].clientWidth
+                                )
+                            ),
+                        }
+                    }))
                 })))
             }
             if (positionChanging !== -1) {
