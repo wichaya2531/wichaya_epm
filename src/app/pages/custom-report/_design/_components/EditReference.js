@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import SweetAlert2Component from "../_components/SweetAlert2";
+import SweetAlert2Component from "./SweetAlert2";
 import { Circle } from "@mui/icons-material";
 
 const EditReference =  ({
@@ -25,7 +25,7 @@ const EditReference =  ({
     selectedCells,
     tableEditingIndex,
 }) => {
-    
+
     const jobItemTemplates = useMemo(() => (
         jobTemplates.find(jt => jt.id === selectedJobTemplateId)?.job_item_templates || null
     ), [jobTemplates, selectedJobTemplateId])
