@@ -1,11 +1,13 @@
 import Spreadsheet from "../../../../../../spreadsheetjs-react"
 import createFirstTable from "./_utils/createFirstTable"
 import {useMemo, useState} from "react"
-import EditReference from "./_utils/EditReference"
+import EditReference from "./_components/EditReference"
 import deleteTable from "@/app/pages/custom-report/_design/_utils/deleteTable";
 import createTable from "@/app/pages/custom-report/_design/_utils/createTable";
 import Swal from "sweetalert2";
 import resizeImage from "@/app/pages/custom-report/_utils/resizeImage";
+import { Tag } from "@mui/icons-material";
+import editJobTemplateReference from "./_utils/editJobTemplateReference";
 
 const CustomReportManipulation = ({
     customReportProfiles,
@@ -48,6 +50,29 @@ const CustomReportManipulation = ({
     })
 
     const [tableEditingIndex, setTableEditingIndex] = useState(null)
+
+    const editReference = (draggingStartCellValue, selectedCellsValue, tableIndex) => {
+        setDraggingStartCells(draggingStartCellValue)
+        setSelectedCells(selectedCellsValue)
+        setTableEditingIndex(tableIndex)
+        setShowEditReferenceDialog(true)
+        const { job_template } = currentCustomReportProfile.customReportTables[tableIndex]?.cells[draggingStartCellValue.y][draggingStartCellValue.x]
+        setSelectedJobTemplateId(
+            job_template?.id || jobTemplates[0].id
+        )
+        setSelectedJobItemTemplateId(
+            job_template?.job_item_template.id || jobTemplates[0].job_item_templates[0].id
+        )
+        setSelectedJobItemTemplateExpectedValueIndex(
+            job_template?.job_item_template.expected_value_index || 0
+        )
+        setSelectedJobItemTemplateDay(
+            job_template?.job_item_template.time.day || 1
+        )
+        setSelectedJobItemTemplateDayShiftIndex(
+            job_template?.job_item_template.time.shift_index || 2
+        )
+    }
 
     return jobTemplates && (
         <>
@@ -125,30 +150,47 @@ const CustomReportManipulation = ({
                                         )
                                     ))
                                 }}
-                                appendCellMenus={[{
+                                appendCellMenu={[{
                                     label: "Edit Job Template Reference",
-                                    onClick: ({cells, rows_height, cols_width}, draggingStartCellValue, selectedCellsValue) => {
-                                        setDraggingStartCells(draggingStartCellValue)
-                                        setSelectedCells(selectedCellsValue)
-                                        setTableEditingIndex(index)
-                                        setShowEditReferenceDialog(true)
-                                        const { job_template } = currentCustomReportProfile.customReportTables[index]?.cells[draggingStartCellValue.y][draggingStartCellValue.x]
-                                        setSelectedJobTemplateId(
-                                            job_template?.id || jobTemplates[0].id
-                                        )
-                                        setSelectedJobItemTemplateId(
-                                            job_template?.job_item_template.id || jobTemplates[0].job_item_templates[0].id
-                                        )
-                                        setSelectedJobItemTemplateExpectedValueIndex(
-                                            job_template?.job_item_template.expected_value_index || 0
-                                        )
-                                        setSelectedJobItemTemplateDay(
-                                            job_template?.job_item_template.time.day || 1
-                                        )
-                                        setSelectedJobItemTemplateDayShiftIndex(
-                                            job_template?.job_item_template.time.shift_index || 2
-                                        )
-                                    }
+                                    onClick: (_, draggingStartCellValue, selectedCellsValue) => editJobTemplateReference({
+                                        draggingStartCellValue,
+                                        selectedCellsValue,
+                                        tableIndex: index,
+                                        setDraggingStartCells,
+                                        setSelectedCells,
+                                        setTableEditingIndex,
+                                        setShowEditReferenceDialog,
+                                        currentCustomReportProfile,
+                                        jobTemplates,
+                                        setSelectedJobTemplateId,
+                                        setSelectedJobItemTemplateId,
+                                        setSelectedJobItemTemplateExpectedValueIndex,
+                                        setSelectedJobItemTemplateDay,
+                                        setSelectedJobItemTemplateDayShiftIndex,
+                                    })
+                                }]}
+                                appendToolbar={[{
+                                    name: "Job Template",
+                                    tools: [[{
+                                        children: <Tag />,
+                                        description: "Edit Reference",
+                                        onClick: (_, draggingStartCellValue, selectedCellsValue) => editJobTemplateReference({
+                                            draggingStartCellValue,
+                                            selectedCellsValue,
+                                            tableIndex: index,
+                                            setDraggingStartCells,
+                                            setSelectedCells,
+                                            setTableEditingIndex,
+                                            setShowEditReferenceDialog,
+                                            currentCustomReportProfile,
+                                            jobTemplates,
+                                            setSelectedJobTemplateId,
+                                            setSelectedJobItemTemplateId,
+                                            setSelectedJobItemTemplateExpectedValueIndex,
+                                            setSelectedJobItemTemplateDay,
+                                            setSelectedJobItemTemplateDayShiftIndex,
+                                        })
+                                    }]]
                                 }]}
                                 preAddImage={async (blob) => {
                                     Swal.fire({
