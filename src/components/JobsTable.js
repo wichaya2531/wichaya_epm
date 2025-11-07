@@ -71,9 +71,9 @@ const options = {
 };
 //---------------------------------------------->>
 
-const JobsTable = ({ refresh,handleEventToMqtt }) => {
+const JobsTable = ({ refresh=true,handleEventToMqtt }) => {
   const router = useRouter();
-  //console.log('pageExpire',pageExpire);
+  //console.log('JobsTable');
   //console.log("refresh JobsTable=>",refresh);
  
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
@@ -81,6 +81,8 @@ const JobsTable = ({ refresh,handleEventToMqtt }) => {
   //console.log("JobsTable=>",refresh);
 
   //console.log(refresh);
+  const [disabledIds, setDisabledIds] = useState(new Set());
+  
   const [disabledJobs, setDisabledJobs] = useState({}); // เก็บสถานะ disable ของแต่ละ job_id
   const { user, isLoading: userLoading } = useFetchUser(refresh);
   const [profiles, setProfiles] = useState([]); // Default end date as null
@@ -107,38 +109,23 @@ const JobsTable = ({ refresh,handleEventToMqtt }) => {
   const [currentPage, setCurrentPage] = useState(1);
 //---------------------upsert job status to ongoing  when user click get job ----------------->>
 // ถ้ายังไม่มี ฟังก์ชัน upsert ให้ประกาศไว้ด้านบนไฟล์ (นอก on("message"))
-const upsertJobs = (jobs, infos, { sortByUpdatedAt = true } = {}) => {
-  // รองรับทั้ง object เดี่ยวและ array
-  const arr = Array.isArray(infos) ? infos : [infos];
-
-  // ใช้ Map ช่วยจับคู่ตาม _id
-  const infoMap = new Map(arr.map(i => [String(i._id), i]));
-
-  // อัปเดตตัวที่มีอยู่แล้ว (merge)
-  const merged = jobs.map(j => {
-    const hit = infoMap.get(String(j._id));
-    return hit ? { ...j, ...hit } : j;
-  });
-
-  // เติมตัวที่ยังไม่มีใน jobs
-  const existingIdSet = new Set(merged.map(j => String(j._id)));
-  const newOnes = arr.filter(i => !existingIdSet.has(String(i._id)));
-
-  let result = [...newOnes, ...merged];
-
-  // จัดเรียงใหม่ (ถ้าต้องการ)
-  if (sortByUpdatedAt) {
-    result = result.sort((a, b) => {
-      const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-      const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-      return tb - ta; // ใหม่อยู่บน
-    });
-  }
-
-  return result;
-};
-
+function upsertJobs(list, incoming) {
+  const id = String(incoming._id);
+  const idx = list.findIndex(j => String(j._id) === id);
+  if (idx === -1) return [...list, incoming]; // ถ้าไม่เจอ เพิ่มท้าย
+  const updated = [...list];
+  updated[idx] = { ...updated[idx], ...incoming }; // merge ข้อมูลใหม่เข้า
+  return updated;
+}
 //-----------MQTT----------------------------------------->>
+const jobsRef = useRef([]); // ✅ สร้าง ref เก็บค่า jobs ล่าสุด
+
+// อัปเดตค่า ref ทุกครั้งที่ state jobs เปลี่ยน
+useEffect(() => {
+  jobsRef.current = jobs;
+}, [jobs]);
+
+
    const mqttClient = useRef(null);
    useEffect(() => {
      const client = mqtt.connect(connectUrl, options);
@@ -152,7 +139,9 @@ const upsertJobs = (jobs, infos, { sortByUpdatedAt = true } = {}) => {
      client.on("connect", onConnect);
      client.on("error", (err) => console.error("❌ MQTT Error:", err));
      client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
-     client.on("message", async (t, m) => {        
+     client.on("message", async (t, m) => {    
+        console.log("inbound message : "+m);    
+        //const msgStr = m.toString();        
         try {
           if (document.getElementById('page-expire').innerHTML==='true'){ 
                       console.log('Block by page expire!!');
@@ -160,9 +149,64 @@ const upsertJobs = (jobs, infos, { sortByUpdatedAt = true } = {}) => {
           }
         } catch (error) {
                 console.error("Error Code: 120\n", error?.stack ?? error);
-        }            
-        setReloadKey(currentPage => currentPage + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs        
-     });
+        } 
+
+
+        if(m=="refresh"){
+                 setTimeout(() => {
+                    setReloadKey(reloadKey => reloadKey + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs                  
+                 }, 3500);    
+                return;
+        }
+                
+              setTimeout(async () => {
+                try {
+                  // 1️⃣ แปลง buffer เป็น string
+                  const msgStr = m.toString();
+
+                  // 2️⃣ ถ้า payload ยังเป็น '...' ให้เปลี่ยนเป็น JSON ถูกต้อง
+                  const jsonText = msgStr.replaceAll("'", '"');
+                  const dataJson = JSON.parse(jsonText);
+                  //console.log("dataJson:", dataJson);
+                  //console.log("jobs:", jobs);
+
+                  // 3️⃣ ตรวจสอบว่า JOB_ID มีจริงก่อน
+                  if (!dataJson?.JOB_ID) {
+                    console.warn("❌ ไม่มี JOB_ID ใน message:", msgStr);
+                    return;
+                  }
+
+                  // 4️⃣ ดึงข้อมูลจาก API
+                  const response = await fetch(`/api/job/get-job-by-id?job_id=${dataJson.JOB_ID}`, {
+                    method: "GET",
+                    next: { revalidate: 10 },
+                  });
+
+                  if (!response.ok) throw new Error(`Failed to fetch job info (${response.status})`);
+
+                  const data = await response.json();
+                  console.log("✅ Job data:", data);
+                  
+
+                    const found = jobsRef.current.some(j => j._id === data.jobData._id);
+
+                    if (found) {
+                      console.log("✅ พบ job ที่มี id เหมือนกัน");
+                      setJobs(prev => upsertJobs(prev, data.jobData));
+
+                      // ✅ หยุด interval หลังอัปเดตเสร็จ
+                      //learInterval(intervalId);
+                    } else {
+                      console.log("ℹ️ ไม่พบ job id นี้ใน list");
+                    }
+                  //}, 1000);
+                        
+                } catch (err) {
+                  console.error("❌ Error in MQTT message handler:", err);
+                }
+              }, 3000);
+
+      });
    
      return () => {
        client.end(true);
@@ -259,8 +303,7 @@ const upsertJobs = (jobs, infos, { sortByUpdatedAt = true } = {}) => {
           //setTimeout(() => {
           //      router.push("/pages/job-approve");
           //}, 1500);
-
-          
+           //  setReloadKey(currentPage => currentPage + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs                  
         });
       } else {
         Swal.fire({
@@ -331,6 +374,12 @@ const handleClick = (job_id) => {
 
  const navigateToJobForApprove = (job_id, viewMode) => {
   //sessionStorage.setItem('approveMode', true);
+
+  //jmp:1234    
+  //setTimeout(() => {
+  //     setReloadKey(currentPage => currentPage + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs                        
+ // }, 5000);
+
 
   let root; // เก็บไว้ unmount เวลา close
   Swal.fire({
@@ -425,6 +474,10 @@ useEffect(() => {
             prevJobs.filter((job) => !selectedJobs.includes(job._id))
           );
           setSelectedJobs([]);
+
+            //  setReloadKey(currentPage => currentPage + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs                  
+      
+
         } else {
           Swal.fire(
             "Error!",
@@ -473,14 +526,31 @@ useEffect(() => {
       ) {
         return false;
       }
-
       return true;
     });
 
 const navigateToJob = (job_id, viewMode) => {
   // เก็บค่าที่ต้องใช้ในหน้าใหม่
-  sessionStorage.setItem("viewMode", viewMode);
+  //  setTimeout(() => {
+  //     setReloadKey(currentPage => currentPage + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs                      
+  //  }, 5000);
+   //console.log('viewMode',viewMode);
+  //  if(!viewMode){
+  //       try{
+  //             document.getElementById('get-'+job_id).style.backgroundColor='gray';
+  //             document.getElementById('get-'+job_id).innerHTML="Wait....";
+  //             document.getElementById('get-'+job_id).disabled=true;
+  //       }catch(err){
 
+  //       }
+                   
+  //       // setTimeout(() => {
+  //       //       setReloadKey(reloadKey => !reloadKey); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs                              
+  //       // }, 10000);
+  //  }
+  
+ 
+  sessionStorage.setItem("viewMode", viewMode);
   // เปิดแท็บใหม่ โดยส่ง job_id เป็น query parameter
   const url = `/pages/view-jobs?job_id=${encodeURIComponent(job_id)}`;
   window.open(url, "_blank"); // ✅ "_blank" = new tab
@@ -516,7 +586,7 @@ const handleShowUser = (userName, datetime) => {
   const jobsActiveBody =
     filteredJobs &&
     filteredJobs.map((job, index) => {
-      //console.log("job",job);
+     // console.log("job",job);
       let statusColor = job.STATUS_COLOR;
       // ตรวจสอบค่า Active ตาม STATUS_NAME
       const activeValue =
@@ -611,10 +681,7 @@ const handleShowUser = (userName, datetime) => {
                         >
                           Edit
                         </div>                      
-                    ):""}
-                        
-
-
+                    ):""}                        
                     <div
                       className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
                       onClick={() => {
@@ -653,6 +720,7 @@ const handleShowUser = (userName, datetime) => {
                 job.STATUS_NAME === "renew"  ? (
                   <div className="flex gap-2 items-center justify-center">
                     <div
+                      //id={'get-'+job._id}
                       className="text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
                       onClick={() => {
                         navigateToJob(job._id, false);

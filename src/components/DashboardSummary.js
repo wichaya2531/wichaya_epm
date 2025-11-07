@@ -70,7 +70,7 @@ const options = {
 };
 //---------------------------------------------->>
 
-const DashboardSummary = ({ refresh }) => {
+const DashboardSummary = ({ refresh=true }) => {
   const router = useRouter();
   //console.log("refresh JobsTable=>",refresh);
  
@@ -91,36 +91,96 @@ const DashboardSummary = ({ refresh }) => {
 
 //-----------MQTT----------------------------------------->>
 const mqttClient = useRef(null);
+// อัปเดตค่า ref ทุกครั้งที่ state jobs เปลี่ยน
 useEffect(() => {
-  const client = mqtt.connect(connectUrl, options);
-  mqttClient.current = client;
+  jobsRef.current = jobs;
+}, [jobs]);
 
-  const onConnect = () => {
-    console.log("✅ MQTT Connected on Page Dashboard Summary");
-    if (user?.workgroup_id) client.subscribe(user.workgroup_id);
-  };
 
-  client.on("connect", onConnect);
-  client.on("error", (err) => console.error("❌ MQTT Error:", err));
-  client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
-  client.on("message", (t, m) => {
-         try {
-          if (document.getElementById('page-expire').innerHTML==='true'){ 
-                      console.log('Block by page expire!!');
+useEffect(() => {
+      const client = mqtt.connect(connectUrl, options);
+      mqttClient.current = client;
+
+      const onConnect = () => {
+        console.log("✅ MQTT Connected on Page Dashboard Summary");
+        if (user?.workgroup_id) client.subscribe(user.workgroup_id);
+      };
+
+      client.on("connect", onConnect);
+      client.on("error", (err) => console.error("❌ MQTT Error:", err));
+      client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
+      client.on("message", (t, m) => {
+              console.log("inbound message : "+m);    
+
+              try {
+                if (document.getElementById('page-expire').innerHTML==='true'){ 
+                            console.log('Block by page expire!!');
+                            return;
+                }
+              } catch (error) {
+                      console.error("Error Code: 120\n", error?.stack ?? error);
+              }     
+
+              if(m=="refresh"){
+                      setTimeout(() => {
+                          setReloadKey(reloadKey => reloadKey + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs                  
+                      }, 3500);    
                       return;
-          }
-        } catch (error) {
-                console.error("Error Code: 120\n", error?.stack ?? error);
-        }     
-    console.log("📩", t, m.toString());
-    setReloadKey(prev => prev + 1); // เปลี่ยนค่าเพื่อ trigger useEffect ใน useFetchJobs
-    
-  });
+              }
 
-  return () => {
-    client.end(true);
-    mqttClient.current = null;
-  };
+setTimeout(async () => {
+                try {
+                  // 1️⃣ แปลง buffer เป็น string
+                  const msgStr = m.toString();
+
+                  // 2️⃣ ถ้า payload ยังเป็น '...' ให้เปลี่ยนเป็น JSON ถูกต้อง
+                  const jsonText = msgStr.replaceAll("'", '"');
+                  const dataJson = JSON.parse(jsonText);
+                  //console.log("dataJson:", dataJson);
+                  //console.log("jobs:", jobs);
+
+                  // 3️⃣ ตรวจสอบว่า JOB_ID มีจริงก่อน
+                  if (!dataJson?.JOB_ID) {
+                    console.warn("❌ ไม่มี JOB_ID ใน message:", msgStr);
+                    return;
+                  }
+
+                  // 4️⃣ ดึงข้อมูลจาก API
+                  const response = await fetch(`/api/job/get-job-by-id?job_id=${dataJson.JOB_ID}`, {
+                    method: "GET",
+                    next: { revalidate: 10 },
+                  });
+
+                  if (!response.ok) throw new Error(`Failed to fetch job info (${response.status})`);
+
+                  const data = await response.json();
+                  console.log("✅ Job data:", data);
+                  
+
+                    const found = jobsRef.current.some(j => j._id === data.jobData._id);
+
+                    if (found) {
+                      console.log("✅ พบ job ที่มี id เหมือนกัน");
+                      setJobs(prev => upsertJobs(prev, data.jobData));
+
+                      // ✅ หยุด interval หลังอัปเดตเสร็จ
+                      //learInterval(intervalId);
+                    } else {
+                      console.log("ℹ️ ไม่พบ job id นี้ใน list");
+                    }
+                  //}, 1000);
+                        
+                } catch (err) {
+                  console.error("❌ Error in MQTT message handler:", err);
+                }
+              }, 3000);
+
+      });
+
+      return () => {
+        client.end(true);
+        mqttClient.current = null;
+      };
 }, []);
 
 // ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม

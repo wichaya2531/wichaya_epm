@@ -115,40 +115,40 @@ useEffect(() => {
 
 // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น
 const handleEventToMqtt = useCallback(
-  (payload = { type: "refresh" }) => {
-    const c = mqttClient.current;
-    if (!c || c.disconnected) {
-      console.warn("MQTT not connected");
-      return;
-    }
-    if (!user?.workgroup_id) {
-      console.warn("No topic");
-      return;
-    }
+  // (payload = { type: "refresh" }) => {
+  //   const c = mqttClient.current;
+  //   if (!c || c.disconnected) {
+  //     console.warn("MQTT not connected");
+  //     return;
+  //   }
+  //   if (!user?.workgroup_id) {
+  //     console.warn("No topic");
+  //     return;
+  //   }
 
-    // ตรวจสอบ/แปลงให้เป็น JSON
-    let message;
-    try {
-      // รับได้ทั้ง object และสตริงที่เป็น JSON อยู่แล้ว
-      message = typeof payload === "string" ? payload : JSON.stringify(payload);
-    } catch (e) {
-      console.error("Invalid payload, cannot JSON.stringify:", e);
-      return;
-    }
+  //   // ตรวจสอบ/แปลงให้เป็น JSON
+  //   let message;
+  //   try {
+  //     // รับได้ทั้ง object และสตริงที่เป็น JSON อยู่แล้ว
+  //     message = typeof payload === "string" ? payload : JSON.stringify(payload);
+  //   } catch (e) {
+  //     console.error("Invalid payload, cannot JSON.stringify:", e);
+  //     return;
+  //   }
 
-    const topic = user.workgroup_id; // หรือจะเพิ่ม suffix เช่น `${user.workgroup_id}/events`
-    try {
-      c.publish(
-        topic,
-        message,
-        { qos: 1, retain: false }, // เปลี่ยนได้ตามต้องการ
-        (err) => err && console.error("MQTT publish error:", err)
-      );
-    } catch (err) {
-      console.error("Error Code: 121\n", err?.stack ?? err);
-    }
-  },
-  [user?.workgroup_id]
+  //   const topic = user.workgroup_id; // หรือจะเพิ่ม suffix เช่น `${user.workgroup_id}/events`
+  //   try {
+  //     c.publish(
+  //       topic,
+  //       message,
+  //       { qos: 1, retain: false }, // เปลี่ยนได้ตามต้องการ
+  //       (err) => err && console.error("MQTT publish error:", err)
+  //     );
+  //   } catch (err) {
+  //     console.error("Error Code: 121\n", err?.stack ?? err);
+  //   }
+  // },
+  // [user?.workgroup_id]
 );
 
  //-------------------------------------------------------->>

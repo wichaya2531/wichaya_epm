@@ -21,6 +21,9 @@ const checkItemAbNormal = async (_id) => {
 
 
 export const GET = async (req) => {
+
+  console.time("fetch-jobs");         
+
   await connectToDb();
   const searchParams = req.nextUrl.searchParams;
 
@@ -87,8 +90,6 @@ export const GET = async (req) => {
           }
         }
 
-
-
       const query = {};
 
       // กำหนดเงื่อนไข WORKGROUP_ID
@@ -110,9 +111,6 @@ export const GET = async (req) => {
         //   workgroup_id === "all"
         //     ? await Schedule.find()
         //     : await Schedule.find({ WORKGROUP_ID: new ObjectId(workgroup_id)/*,PLAN_TYPE:selectedType*/ });
-
-
-
 
         for (const schedule of schedules) {
           const status = statusMap[schedule.STATUS] || {
@@ -144,6 +142,8 @@ export const GET = async (req) => {
         }
 
         controller.close();
+        console.timeEnd("fetch-jobs");  // จะแสดงเวลาใน milliseconds
+
       } catch (err) {
          if(process.env.NEXT_PUBLIC_DEBUG=="true"){
                 console.log("Error Code : 028");
@@ -153,6 +153,8 @@ export const GET = async (req) => {
       }
     },
   });
+
+
 
   return new NextResponse(stream, {
     headers: {

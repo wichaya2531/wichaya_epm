@@ -42,7 +42,8 @@ const Page = () => {
     selectedWorkgroup,
     selectedType,
     selectedPlanType,
-    refresh
+    refresh,
+    date
   );
 
   const [open, setOpen] = useState(false);

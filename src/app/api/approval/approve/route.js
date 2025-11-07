@@ -69,7 +69,8 @@ export const POST = async (req, res) => {
                     await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน        
                     // ส่งทีละอัน (แปลง ObjectId → string)
                         //console.log("MQTT ===>>"+job.WORKGROUP_ID);
-                        await publishAsync(mqttClient,job.WORKGROUP_ID, "refresh"); // ✅ รอให้ publish เสร็จ
+                        const msgPck=`{\'JOB_ID\':\'${job_id}\'}`;
+                        await publishAsync(mqttClient,job.WORKGROUP_ID, msgPck); // ✅ รอให้ publish เสร็จ
         
                     // ปิด connection แบบรอส่งค้างให้ครบ
                     await new Promise((resolve) => mqttClient.end(false, resolve));

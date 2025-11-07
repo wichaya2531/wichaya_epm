@@ -129,8 +129,10 @@ export const GET = async (req, { params }) => {
                // console.log("job.SUBMITTED_BY.EMP_NAME",job.SUBMITTED_BY.EMP_NAME);
 
                  // บางเรคคอร์ดใช้ฟิลด์แยกชื่อ/อีเมล
+                //console.log("งานที่ค้นเจอคือ .... ",job);
                 const submit_name = {
                   EMP_NAME:  job.SUBMITTED_BY_NAME  ?? job.SUBMITTED_BY?.EMP_NAME  ?? "-",
+                  EMP_NUMBER: job.SUBMITTED_BY?.EMP_NUMBER  ?? "-",      
                  // EMP_EMAIL: job.SUBMITTED_BY_EMAIL ?? job.SUBMITTED_BY?.EMP_EMAIL ?? "",
                 };
                 //if(job){
@@ -147,7 +149,7 @@ export const GET = async (req, { params }) => {
                //       io=1;
                // }
 
-                 //console.log("job",job);
+                
                  
                  return {
                   //...job.toObject(),

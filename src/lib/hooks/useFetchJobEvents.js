@@ -3,10 +3,13 @@ import { useState, useEffect } from "react";
 import { config } from "@/config/config.js";
 
 
-const useFetchJobEvents = (workgroup_id,selectedType,selectedPlanType,refresh = null) => {
+const useFetchJobEvents = (workgroup_id,selectedType,selectedPlanType,refresh = null,date = null) => {
     const [events, setEvents] = useState([]);
     const [eventLoading, setEventLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    console.log("dateSelected",date);
+    
 
     // useEffect(() => {
 
@@ -46,7 +49,8 @@ const useFetchJobEvents = (workgroup_id,selectedType,selectedPlanType,refresh = 
                     let buffer = '';
 
                     if (!reader) throw new Error("ไม่สามารถอ่าน stream ได้");
-
+                    
+                    
                     while (true) {
                         const { value, done } = await reader.read();
                         if (done) break;
@@ -61,7 +65,11 @@ const useFetchJobEvents = (workgroup_id,selectedType,selectedPlanType,refresh = 
                         if (chunk) {
                             try {
                             const data = JSON.parse(chunk);
-                           // console.log('data.',data);
+                           // if(preload){
+                             //   preload=!preload;
+                             //   console.log('data.',data);
+                           // }
+                            
                             if (Array.isArray(data)) {
                                 setEvents(prev => [...prev, ...data]); // เพิ่มทีละก้อน
                             }
@@ -73,6 +81,9 @@ const useFetchJobEvents = (workgroup_id,selectedType,selectedPlanType,refresh = 
                     }
 
                     setEventLoading(false);
+
+                        console.log('final events',events);   
+
                     } catch (error) {
                     console.error("โหลด stream ล้มเหลว", error);
                     setError(error);

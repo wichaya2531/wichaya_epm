@@ -125,11 +125,11 @@ const handleClickViewMode = (checked) => {
 
       {viewMode===true ? (
         <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
-          <DashboardSummary refresh={refresh} />
+          <DashboardSummary  />
         </div>
       ) : (
         <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
-          <JobsTable refresh={refresh} pageExpire={pageExpire} />
+          <JobsTable   />
         </div>
       )}                       
 

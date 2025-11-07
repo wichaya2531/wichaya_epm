@@ -21,7 +21,7 @@ const TableComponent = ({
  // handleSelectProfileGroup,
 }) => {
 
-  //console.log('refreshEvent',refreshEvent);
+  //console.log('datas',datas);
   // -------------------- State --------------------
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(PageSize || 5);

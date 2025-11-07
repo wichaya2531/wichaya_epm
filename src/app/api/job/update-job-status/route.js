@@ -19,7 +19,7 @@ export const PUT = async (req, res) => {
   const user = await User.findOne({ _id: user_id });
   //console.log("user", user);
   //return NextResponse.json({ status: 200 });
-  
+  const msgPck=`{\'JOB_ID\':\'${JOB_ID}\'}`;
     try{
        const job = await Job.findOne({ _id: JOB_ID });
       //console.log('workgroup_id',workgroup_id);
@@ -50,8 +50,10 @@ export const PUT = async (req, res) => {
           const mqttClient = connectMqtt();
           await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน        
               // ส่งทีละอัน (แปลง ObjectId → string)
-              //console.log("MQTT ===>>"+job.WORKGROUP_ID);
-              await publishAsync(mqttClient,job.WORKGROUP_ID, "refresh"); // ✅ รอให้ publish เสร็จ
+          //const msg=`{\'JOB_ID\':\'${JOB_ID}\',\'EVENT\':\'UPDATE-JOB\'}`;
+          //msg = msg.replaceAll('"', "\""); 
+          //console.log('msg',msg);
+          await publishAsync(mqttClient,job.WORKGROUP_ID, msgPck); // ✅ รอให้ publish เสร็จ
           // ปิด connection แบบรอส่งค้างให้ครบ
           await new Promise((resolve) => mqttClient.end(false, resolve));
   }catch(err){

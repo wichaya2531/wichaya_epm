@@ -62,7 +62,11 @@ useEffect(() => {
                 console.error("Error Code: 120\n", error?.stack ?? error);
         }     
     console.log("📩", t, m.toString());
-    setRefresh((prev) => !prev);
+    setTimeout(() => {
+       setRefresh((prev) => !prev);
+    }, 3000);    
+     
+    
     //if(!refreshSkip){
          //setRefresh(true);  
    // }

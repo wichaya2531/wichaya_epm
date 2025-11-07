@@ -278,7 +278,7 @@ export const POST = async (req, res) => {
 
     const now = new Date(); // เวลาปัจจุบัน
     const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
-    startTime.setMinutes(now.getMinutes() - 120); // ลบ 60 นาที
+    startTime.setMinutes(now.getMinutes() - 240); // ลบ 60 นาที
     
     const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
     endTime.setMinutes(now.getMinutes() + 60); // เพิ่ม 60 นาที
@@ -295,11 +295,11 @@ export const POST = async (req, res) => {
       STATUS:"plan", 
     }).limit(60);
    
-      //  console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
-      //  console.log("***********schedual ที่ค้นเจอ**********************");
-      //          console.log('scheduler',scheduler);
-      //  console.log("************************************************");
-     //   return NextResponse.json({ status: 200 });// เปิด เพื่อทำการทดสอบ
+    console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
+    //  console.log("***********schedual ที่ค้นเจอ**********************");
+    //          console.log('scheduler',scheduler);
+    //  console.log("************************************************");
+    //  return NextResponse.json({ status: 200 });// เปิด เพื่อทำการทดสอบ
     var workgroup_id_list=new Array();
 
     scheduler.map(async (schedulers) => {
@@ -509,55 +509,55 @@ export const POST = async (req, res) => {
     });
 
 
-    try{
-            const MQTT_URL = process.env.MQTT_URL || process.env.NEXT_PUBLIC_MQT_URL; // แล้วแต่คุณตั้ง env
-            const MQTT_USERNAME = process.env.MQTT_USERNAME || process.env.NEXT_PUBLIC_MQT_USERNAME;
-            const MQTT_PASSWORD = process.env.MQTT_PASSWORD || process.env.NEXT_PUBLIC_MQT_PASSWORD;
+    // try{
+    //         const MQTT_URL = process.env.MQTT_URL || process.env.NEXT_PUBLIC_MQT_URL; // แล้วแต่คุณตั้ง env
+    //         const MQTT_USERNAME = process.env.MQTT_USERNAME || process.env.NEXT_PUBLIC_MQT_USERNAME;
+    //         const MQTT_PASSWORD = process.env.MQTT_PASSWORD || process.env.NEXT_PUBLIC_MQT_PASSWORD;
 
-            function connectMqtt() {
-              const client = mqtt.connect(MQTT_URL, {
-                username: MQTT_USERNAME,
-                password: MQTT_PASSWORD,
-                reconnectPeriod: 0, // ฟังก์ชันสั้น ๆ ไม่ต้อง reconnect
-              });
-              return client;
-            }
+    //         function connectMqtt() {
+    //           const client = mqtt.connect(MQTT_URL, {
+    //             username: MQTT_USERNAME,
+    //             password: MQTT_PASSWORD,
+    //             reconnectPeriod: 0, // ฟังก์ชันสั้น ๆ ไม่ต้อง reconnect
+    //           });
+    //           return client;
+    //         }
 
-            function publishAsync(client, topic, payload, opts = { qos: 1, retain: false }) {
-              return new Promise((resolve, reject) => {
-                client.publish(topic, payload, opts, (err) => (err ? reject(err) : resolve()));
-              });
-            }
-            // ------------------------------------------------
+    //         function publishAsync(client, topic, payload, opts = { qos: 1, retain: false }) {
+    //           return new Promise((resolve, reject) => {
+    //             client.publish(topic, payload, opts, (err) => (err ? reject(err) : resolve()));
+    //           });
+    //         }
+    //         // ------------------------------------------------
 
-            // ... ใน POST handler ของคุณ (ท้าย ๆ ก่อน return)
+    //         // ... ใน POST handler ของคุณ (ท้าย ๆ ก่อน return)
 
-           // console.log("workgroup id ที่ต้องส่ง  mqtt update ", workgroup_id_list);
+    //        // console.log("workgroup id ที่ต้องส่ง  mqtt update ", workgroup_id_list);
 
-            // สร้าง client และรอ connected
-            const mqttClient = connectMqtt();
-            await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน
+    //         // สร้าง client และรอ connected
+    //         const mqttClient = connectMqtt();
+    //         await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน
 
-            // ส่งทีละอัน (แปลง ObjectId → string)
-            for (const element of workgroup_id_list) {
-              const topic = String(element);
-              try {
-                await publishAsync(mqttClient, topic, "refresh"); // ✅ รอให้ publish เสร็จ
-                // console.log("published to", topic);
-              } catch (err) {
-                if(process.env.NEXT_PUBLIC_DEBUG=="true"){
-                  console.log("Error Code : 003");
-                  console.error("MQTT publish error:", err); // ✅ พิมพ์ให้ถูก: console.error
-                }
-              }
-            }
+    //         // ส่งทีละอัน (แปลง ObjectId → string)
+    //         for (const element of workgroup_id_list) {
+    //           const topic = String(element);
+    //           try {
+    //             await publishAsync(mqttClient, topic, "refresh"); // ✅ รอให้ publish เสร็จ
+    //             // console.log("published to", topic);
+    //           } catch (err) {
+    //             if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+    //               console.log("Error Code : 003");
+    //               console.error("MQTT publish error:", err); // ✅ พิมพ์ให้ถูก: console.error
+    //             }
+    //           }
+    //         }
 
-            // ปิด connection แบบรอส่งค้างให้ครบ
-            await new Promise((resolve) => mqttClient.end(false, resolve));
+    //         // ปิด connection แบบรอส่งค้างให้ครบ
+    //         await new Promise((resolve) => mqttClient.end(false, resolve));
       
-    }catch(err){
-          console.log("schedual-checker error");
-    }
+    // }catch(err){
+    //       console.log("schedual-checker error");
+    // }
 
     // console.log("workgroup id ที่ต้องส่ง  mqtt update ",workgroup_id_list); 
     // workgroup_id_list.forEach(element => {

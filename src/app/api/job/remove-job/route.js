@@ -81,10 +81,15 @@ export const DELETE = async (req, res) => {
                   // console.log("workgroup id ที่ต้องส่ง  mqtt update ", workgroup_id_list);        
                   // สร้าง client และรอ connected
                   const mqttClient = connectMqtt();
-                  await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน        
+                  //await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน        
                       // ส่งทีละอัน (แปลง ObjectId → string)
                       //console.log("MQTT ===>>"+job.WORKGROUP_ID);
-                      await publishAsync(mqttClient,workgroup_id, "refresh"); // ✅ รอให้ publish เสร็จ
+                   //const msgPck=`{\'JOB_ID\':\'${job_ids}\'}`;
+                  //   const stringJobsIds = job_ids.join(",");
+                  //   const msgPck = `{\'JOB_ID\':\'${stringJobsIds}\'}`;
+                    //const msgPck=`{\'JOB_ID\':\'${stringJobsIds}\'}`;            
+                   // await publishAsync(mqttClient,workgroup_id, msgPck); // ✅ รอให้ publish เสร็จ 
+                   await publishAsync(mqttClient,workgroup_id, "refresh"); // ✅ รอให้ publish เสร็จ
                   // ปิด connection แบบรอส่งค้างให้ครบ
                   await new Promise((resolve) => mqttClient.end(false, resolve));
           }catch(err){
