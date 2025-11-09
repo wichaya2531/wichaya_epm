@@ -71,9 +71,16 @@ const options = {
 };
 //---------------------------------------------->>
 
-const JobsTable = ({ refresh=true,handleEventToMqtt }) => {
+const JobsTable = ({ refresh=true,
+                        date_range=3 ,
+                            jobFileterStatus="All",
+                                filterStatusDisable=false ,
+                                    editBtnDisable=false,
+                                        viewBtnDisable=false,
+                                              approveByNavigate=false,
+                                                  handleJobReviewByNavigate }) => {
   const router = useRouter();
-  //console.log('JobsTable');
+  //console.log('jobFileterStatus',jobFileterStatus);
   //console.log("refresh JobsTable=>",refresh);
  
   //console.log(process.env.NEXT_PUBLIC_NOTIFY_NEW_USER);
@@ -90,7 +97,7 @@ const JobsTable = ({ refresh=true,handleEventToMqtt }) => {
   const [startDate, setStartDate] = useState(null); // Default start date as null
   const [endDate, setEndDate] = useState(null); // Default end date as null
   
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterStatus, setFilterStatus] = useState(jobFileterStatus);
   const [reloadKey, setReloadKey] = useState(0);
 
   const [profileSelected, setProfileSelected] = useState(null);
@@ -119,11 +126,15 @@ function upsertJobs(list, incoming) {
 }
 //-----------MQTT----------------------------------------->>
 const jobsRef = useRef([]); // ✅ สร้าง ref เก็บค่า jobs ล่าสุด
+const userRef = useRef([]); // ✅ สร้าง ref เก็บค่า users ล่าสุด
 
 // อัปเดตค่า ref ทุกครั้งที่ state jobs เปลี่ยน
 useEffect(() => {
   jobsRef.current = jobs;
 }, [jobs]);
+useEffect(() => {
+  userRef.current = user;
+}, [user]);
 
 
    const mqttClient = useRef(null);
@@ -177,7 +188,7 @@ useEffect(() => {
                   }
 
                   // 4️⃣ ดึงข้อมูลจาก API
-                  const response = await fetch(`/api/job/get-job-by-id?job_id=${dataJson.JOB_ID}`, {
+                  const response = await fetch(`/api/job/get-job-by-id?job_id=${dataJson.JOB_ID}&user_id=${userRef.current._id}`, {
                     method: "GET",
                     next: { revalidate: 10 },
                   });
@@ -226,22 +237,22 @@ useEffect(() => {
    }, [user?.workgroup_id]);
    
    // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
-   const handleEventToMqttLocal = useCallback(() => {
-     const c = mqttClient.current;
-     if (!c || c.disconnected) {
-       console.warn("MQTT not connected");
-       return;
-     }
-     if (!user?.workgroup_id) {
-       console.warn("No topic");
-       return;
-     }
-     try {
-       c.publish(user.workgroup_id, "refresh");
-     } catch (err) {
-       console.error("Error Code: 121\n", err?.stack ?? err);
-     }
-   }, [user?.workgroup_id]);
+  //  const handleEventToMqttLocal = useCallback(() => {
+  //    const c = mqttClient.current;
+  //    if (!c || c.disconnected) {
+  //      console.warn("MQTT not connected");
+  //      return;
+  //    }
+  //    if (!user?.workgroup_id) {
+  //      console.warn("No topic");
+  //      return;
+  //    }
+  //    try {
+  //      c.publish(user.workgroup_id, "refresh");
+  //    } catch (err) {
+  //      console.error("Error Code: 121\n", err?.stack ?? err);
+  //    }
+  //  }, [user?.workgroup_id]);
 
 //----------------------------Review Function --------------
 
@@ -364,9 +375,14 @@ const handleClick = (job_id) => {
   // เซตสถานะ disable ของ job_id นี้เป็น true
   setDisabledJobs((prev) => ({ ...prev, [job_id]: true }));
 
-  // เรียกฟังก์ชันหลัก
-  navigateToJobForApprove(job_id, true);
-  // ✅ เปิดปุ่มกลับหลัง 5 วินาที
+  if (approveByNavigate && handleJobReviewByNavigate) {
+    handleJobReviewByNavigate(job_id);
+  }else{
+      // เรียกฟังก์ชันหลัก
+      navigateToJobForApprove(job_id, true);
+      // ✅ เปิดปุ่มกลับหลัง 5 วินาที
+  }
+  
   setTimeout(() => {
     setDisabledJobs((prev) => ({ ...prev, [job_id]: false }));
   }, 15000);
@@ -469,7 +485,7 @@ useEffect(() => {
 
         const result = await response.json();
         if (response.ok) {
-          Swal.fire("Deleted!", "Selected jobs have been deleted.", "success");
+          Swal.fire("Deleted!", "Selected jobs have been deleted. " + selectedJobs.length + " items", "success");
           setJobs((prevJobs) =>
             prevJobs.filter((job) => !selectedJobs.includes(job._id))
           );
@@ -628,11 +644,6 @@ const handleShowUser = (userName, datetime) => {
                     />
                   )}
           </div>
-            
-          
-            
-           
-
             {job.STATUS_NAME ? job.STATUS_NAME : "pending"} {  
                 //(job.IMAGE_FILENAME || job.IMAGE_FILENAME_2)?(
                   <div style={{position:'absolute',right:'1px'}}> 
@@ -669,10 +680,9 @@ const handleShowUser = (userName, datetime) => {
         "Submitted By": job.SUBMITTED_BY ? job.SUBMITTED_BY.EMP_NAME : "-",
         Action: (
           <div>
-            {job.STATUS_NAME === "complete" || job.STATUS_NAME === "waiting for approval" ? (
-               <div className="flex gap-2 items-center justify-center">
-                    
-                    {job.STATUS_NAME === "waiting for approval" && ( user.emp_number===job.SUBMITTED_BY.EMP_NUMBER || job.PUBLIC_EDIT_IN_WORKGROUP===true)  ?(
+            {job.STATUS_NAME === "complete" || job.STATUS_NAME === "waiting for approval" ? (     
+                   <div className="flex gap-2 items-center justify-center">
+                    {!editBtnDisable && job.STATUS_NAME === "waiting for approval" && ( user.emp_number===job.SUBMITTED_BY.EMP_NUMBER || job.PUBLIC_EDIT_IN_WORKGROUP===true)  ? (
                         <div
                           className={`text-white bg-yellow-500 hover:bg-yellow-600 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer`}
                           onClick={() => {
@@ -681,17 +691,21 @@ const handleShowUser = (userName, datetime) => {
                         >
                           Edit
                         </div>                      
-                    ):""}                        
-                    <div
-                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
-                      onClick={() => {
-                        navigateToJob(job._id, true);
-                      }}
-                    >
-                      View 
-                    </div>
+
+                    ):""}
                     {
-                      job.APPROVE_ALLOW && (
+                      !viewBtnDisable  ? (<div
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer"
+                        onClick={() => {
+                          navigateToJob(job._id, true);
+                        }}
+                      >
+                        View 
+                      </div>
+                      ):""  
+                    }
+                      
+                    {  job.APPROVE_ALLOW && (
                                   <div
                                     className={`text-white font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center cursor-pointer 
                                       ${
@@ -710,8 +724,6 @@ const handleShowUser = (userName, datetime) => {
                                   </div>
                       )
                     }
-
-
                </div>              
             ) : job.STATUS_NAME !== "overdue" ? (
               <>
@@ -810,13 +822,13 @@ const handleShowUser = (userName, datetime) => {
   useEffect(() => {
     const today = new Date();
     const start = new Date(today);
-    start.setDate(today.getDate() - 3);
+    start.setDate(today.getDate() - date_range);
     const end = new Date(today);
-    end.setDate(today.getDate() + 3);
+    end.setDate(today.getDate() + date_range);
 
     setStartDate(start.toISOString().slice(0, 10));
     setEndDate(end.toISOString().slice(0, 10));
-  }, []);
+  }, [date_range]);
 
   return (
     <div className="w-full flex flex-col mt-5">
@@ -826,27 +838,37 @@ const handleShowUser = (userName, datetime) => {
             <div className="flex-2 w-1/2 font-medium text-black ">
                   Pull:
             </div>
-            <div className="flex-2 w-1/2" >
-              <label
+           <div className="relative w-1/2">
+             <label
                 htmlFor="startDate"
-                className="block text-sm font-medium text-black"
+                className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 Start Date
-              </label>
+              </label>           
               <input
                 type="date"
                 id="startDate"
                 name="startDate"
                 value={startDate || ""}
                 onChange={handleStartDateChange}
-                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                required
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               />
+             
             </div>
 
-            <div className="flex-2 w-1/2" >
+            <div className="relative flex-2 w-1/2" >
               <label
                 htmlFor="endDate"
-                className="block text-sm font-medium text-gray-900"
+                //className="block text-sm font-medium text-gray-900"
+                          className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 End Date
               </label>
@@ -856,13 +878,15 @@ const handleShowUser = (userName, datetime) => {
                 name="endDate"
                 value={endDate || ""}
                 onChange={handleEndDateChange}
-                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                //className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
         <div className="flex-2">         
         </div>
-        <div className="flex-1.5">
+        <div className="relative flex-1.5">
           {/* <label
             htmlFor="statusFilter"
             className="block text-sm font-medium  text-black"
@@ -891,13 +915,19 @@ const handleShowUser = (userName, datetime) => {
 
          <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium  text-black"
+            //className="block text-sm font-medium  text-black"
+            className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Profile Groups
           </label>
           <select
             id="profile-group-filter"
-            className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            //className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             onChange={(e) => setProfileSelected(e.target.value)}
           >
             <option value="">All</option>
@@ -910,28 +940,44 @@ const handleShowUser = (userName, datetime) => {
 
         </div>
         
-        <div className="flex-2">
-          <label
-            htmlFor="statusFilter"
-            className="block text-sm font-medium text-black"
-          >
-            Filter by Status
-          </label>
-          <select
-            id="statusFilter"
-            className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            {statusOptions.map((option) => (
-              <option
-                key={option}
-                value={option === "All" ? "All" : option.toLowerCase()}
-              >
-                {option}
-              </option>
-            ))}
-          </select>
+        <div className="relative flex-2">
+          {filterStatusDisable==false ? (
+            <div>
+                <label
+                  htmlFor="statusFilter"
+                  //className="block text-sm font-medium text-black"
+                   className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
+                >
+                  Filter by Status
+                </label>
+                <select
+                  id="statusFilter"
+                  //className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                >
+                  {statusOptions.map((option) => (
+                    <option
+                      key={option}
+                      defaultValue={jobFileterStatus}
+                      //value={option === "All" ? "All" : option.toLowerCase()}
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
+            </div>
+          ) : (
+            <div></div>
+          )}
+
+         
+
         </div>
       </div>
       {user.role === "Admin Group" || user.role === "Owner" ? (

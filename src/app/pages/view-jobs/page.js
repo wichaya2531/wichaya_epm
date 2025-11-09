@@ -297,7 +297,7 @@ const getMachineID = () => {
       
         const msg = await response.json();
         console.log("Job status updated to Ongoing successfully", msg);
-        handleEventToMqtt("refresh");
+       // handleEventToMqtt("refresh");
     } catch (err) {
       console.error("Error:", err);
     }
@@ -590,46 +590,7 @@ const getMachineID = () => {
             return;
           }
                     
-          //console.log('wdTag',wdTag);
-          //return;  
-
-
-          //console.log("wdtagImg_1",wdtag`Img`_1);
-
-       // console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);    
-        //console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);    
-        //await setWdtagImg_1(jobData.IMAGE_FILENAME);
-       // await setWdtagImg_2(jobData.IMAGE_FILENAME_2);
-        
           
-       // if(jobData.IMAGE_FILENAME_2 && jobData.IMAGE_FILENAME){
-                // มี Attach ไฟล์ อยู่แล้ว  
-                //console.log("มี Attach file อยู่แล้ว ");
-                // await setWdtagImg_1(jobData.IMAGE_FILENAME);
-                // await setWdtagImg_2(jobData.IMAGE_FILENAME_2);
-                // console.log('wdtagImg_1',wdtagImg_1);
-                // console.log('wdtagImg_2',wdtagImg_2);
-                // console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);
-                // console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);
-                //console.log("jobData.IMAGE_FILENAME 1,2 A");
-                //wdtagImg_1=jobData.IMAGE_FILENAME;
-                //wdtagImg_2=jobData.IMAGE_FILENAME_2;
-               
-
-      //  }else{
-                 //console.log("ไม่มี Attach file  ");
-                // ไม่มี Attach ไฟล์ 
-                //console.log("jobData.IMAGE_FILENAME 1,2 B");
-                /*if (jobData.PICTURE_EVEDENT_REQUIRE===true && (wdtagImg_1==null || wdtagImg_2==null) ) {
-                  Swal.fire({
-                    title: "Error!",
-                    text: "Please upload Evident picture.",
-                    icon: "error",
-                  });
-                  return;
-                }*/
-
-       // }   
 
         var fillAllItems = true;
         var valueItemABnormal=false;
@@ -647,17 +608,7 @@ const getMachineID = () => {
 
         } 
        
-        //console.log('jobItems',jobItems);
-
-
-       // console.log('valueItemABnormal',valueItemABnormal);
-        
-        //console.log('jobData.IMAGE_FILENAME_2',jobData.IMAGE_FILENAME_2);
-        //console.log('jobData.IMAGE_FILENAME',jobData.IMAGE_FILENAME);
-        //alert('555++');  
-       // return;
-        
-        //   console.log("fillAllItems", fillAllItems);
+       
         if(fillAllItems==false){
             // You have not entered all items completely.
             Swal.fire({
@@ -668,30 +619,6 @@ const getMachineID = () => {
             return;
         }
 
-          //console.log("jobItems=>",jobItems);
-          
-
-
-        // return ;
-
-          //ตรวจสอบว่า inputValues มีข้อมูลหรือไม่
-          
-          // if (!Array.isArray(inputValues) || inputValues.length === 0) {
-          //   Swal.fire({
-          //     title: "Error!",
-          //     text: "Please add at least one job item.",
-          //     icon: "error",
-          //   });
-          //   return;
-          // }
-          // Swal.fire({
-          //   title: "Done!",
-          //   text: "มีข้อมูล.",
-          //   icon: "error",
-          // });
-
-         
-
 
           const jobInfo = {
             JobID: jobData.JobID,
@@ -701,12 +628,7 @@ const getMachineID = () => {
             wdtagImage_2: wdtagImg_2||jobData.IMAGE_FILENAME_2,
             valueItemABnormal:valueItemABnormal,
           };
-          // console.log("----------JobInfo----------");
-          // console.log('jobData',jobData);
-          // console.log('jobInfo',jobInfo);
-
-          //return ;  
-
+          
 
 
           const formData = new FormData();
@@ -766,7 +688,7 @@ const getMachineID = () => {
                        
                   
                   try{
-                      handleEventToMqtt("refresh");
+                      //handleEventToMqtt("refresh");
                   }catch(err){
                               console.log("Error Code : 131");
 
@@ -813,7 +735,7 @@ const getMachineID = () => {
 
                   //2.reload หน้านี้ด้วย job_id ที่เปิดใหม่   
                   try{
-                     handleEventToMqtt("refresh");
+                     //handleEventToMqtt("refresh");
                   }catch(err){
                               console.log("Error Code : 132");
 

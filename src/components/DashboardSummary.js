@@ -89,7 +89,32 @@ const DashboardSummary = ({ refresh=true }) => {
   
   const [refreshKey, setRefreshKey] = useState(0);
 
+
+  
+  const { jobs, setJobs, isLoading: jobsLoading, fetchJobs } =  useFetchJobs({
+    refresh,
+    startTime: startDate,
+    endTime: endDate,
+    status: filterStatus,
+    reloadKey,   // ส่งไปใน dependency
+  });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedJobs, setSelectedJobs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+//----------- ฟังก์ชันเพิ่ม/อัปเดต job ใน list ---------->>  
+// ถ้ายังไม่มี ฟังก์ชัน upsert ให้ประกาศไว้ด้านบนไฟล์ (นอก on("message"))
+function upsertJobs(list, incoming) {
+  const id = String(incoming._id);
+  const idx = list.findIndex(j => String(j._id) === id);
+  if (idx === -1) return [...list, incoming]; // ถ้าไม่เจอ เพิ่มท้าย
+  const updated = [...list];
+  updated[idx] = { ...updated[idx], ...incoming }; // merge ข้อมูลใหม่เข้า
+  return updated;
+}
+
 //-----------MQTT----------------------------------------->>
+const jobsRef = useRef([]); // ✅ สร้าง ref เก็บค่า jobs ล่าสุด
 const mqttClient = useRef(null);
 // อัปเดตค่า ref ทุกครั้งที่ state jobs เปลี่ยน
 useEffect(() => {
@@ -146,7 +171,7 @@ setTimeout(async () => {
                   }
 
                   // 4️⃣ ดึงข้อมูลจาก API
-                  const response = await fetch(`/api/job/get-job-by-id?job_id=${dataJson.JOB_ID}`, {
+                  const response = await fetch(`/api/job/get-job-by-id?job_id=${dataJson.JOB_ID}&user_id=${user._id}`, {
                     method: "GET",
                     next: { revalidate: 10 },
                   });
@@ -210,23 +235,7 @@ const handleEventToMqtt = useCallback(() => {
     console.error("Error Code: 121\n", err?.stack ?? err);
   }
 }, [user?.workgroup_id]);
-//------------------------------------------------------->>
-  
-  const { jobs, setJobs, isLoading: jobsLoading, fetchJobs } =  useFetchJobs({
-    refresh,
-    startTime: startDate,
-    endTime: endDate,
-    status: filterStatus,
-    reloadKey,   // ส่งไปใน dependency
-  });
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedJobs, setSelectedJobs] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-
-
-  //------------------------------------------------------->>
-
+//------------------------------------------------------->>  
 
  // useEffect(() => {
   //   if (fetchJobs) {
@@ -628,10 +637,14 @@ const handleShowUser = (userName, datetime) => {
             <div className="flex-2 w-1/2 font-medium text-black ">
                   Pull:
             </div>
-            <div className="flex-2 w-1/2">
+            <div className="relative flex-2 w-1/2">
               <label
                 htmlFor="startDate"
-                className="block text-sm font-medium text-black"
+                //className="block text-sm font-medium text-black"
+                className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 Start Date
               </label>
@@ -641,14 +654,20 @@ const handleShowUser = (userName, datetime) => {
                 name="startDate"
                 value={startDate || ""}
                 onChange={handleStartDateChange}
-                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                //className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                className="peer bg-white w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               />
             </div>
 
-            <div className="flex-2 w-1/2">
+            <div className="relative flex-2 w-1/2">
               <label
                 htmlFor="endDate"
-                className="block text-sm font-medium text-gray-900"
+                //className="block text-sm font-medium text-gray-900"
+                className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 End Date
               </label>
@@ -658,7 +677,9 @@ const handleShowUser = (userName, datetime) => {
                 name="endDate"
                 value={endDate || ""}
                 onChange={handleEndDateChange}
-                className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                //className="bg-white w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                className="peer bg-white w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
@@ -666,46 +687,51 @@ const handleShowUser = (userName, datetime) => {
 
 
 
-        <div className="flex-2">
+      
+        <div className="relative flex-1.5 " style={{display:'none'}}>
          
-        </div>
-        <div className="flex-1.5">
-          <label
-            htmlFor="statusFilter"
-            className="block text-sm font-medium  text-black"
-          >
-            Search Checklist
-          </label>
           <label
             htmlFor="search"
-            className="mb-2 text-sm font-medium text-black sr-only"
+            //className="mb-2 text-sm font-medium text-black sr-only"
+                className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Search
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <SearchIcon className="w-4 h-4 " />
+              {/* <SearchIcon className="w-4 h-4 " /> */}
             </div>
             <input
               type="search"
               id="search"
-              className="block w-full p-2.5 pl-10 text-sm border border-gray-300 rounded-lg bg-white-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Search"
+              //className="block w-full p-2.5 pl-10 text-sm border border-gray-300 rounded-lg bg-white-50 focus:ring-blue-500 focus:border-blue-500dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 text:dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer block w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+              //placeholder="Search"
               required
               onChange={handleSearch}
             />
           </div>
         </div>
-        <div className="flex-2">
+        <div className="relative flex-2">
           <label
             htmlFor="statusFilter"
-            className="block text-sm font-medium text-black"
+           // className="block text-sm font-medium text-black"
+            className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Filter by Status
           </label>
           <select
             id="statusFilter"
-            className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            //className="bg-white w-full border border-gray-300 text-black text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 700 dark:border-gray-600 dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >

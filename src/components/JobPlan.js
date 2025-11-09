@@ -4,9 +4,11 @@ import Swal from "sweetalert2";
 import { getSession } from "@/lib/utils/utils";
 import HelpIcon from "@mui/icons-material/Help";
 import ChatIcon from "@mui/icons-material/Chat";
+import { set } from "mongoose";
 
-const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
+const JobPlan = ({ data, onClose, setRefresh }) => {
  // console.log('job plan',data);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateType, setDateType] = useState("");
   const [showRecurring, setShowRecurring] = useState(false);
   const [showShiftDate, setshowShiftDate] = useState(false);
@@ -132,6 +134,7 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
   };
 
   const handleSubmit = async (e, checkListTemplate) => {
+    setIsSubmitting(true);
     e.preventDefault();
     let nextDate;
 
@@ -211,7 +214,7 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
       });
       onClose();
       setRefresh((prev) => !prev);
-      handleEventToMqtt();
+      setIsSubmitting(false);
     } catch (error) {
       console.error(error);
       Swal.fire({
@@ -219,6 +222,7 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
         title: "Error",
         text: "Failed to activate Checklist template",
       });
+      setIsSubmitting(false);
     }
   };
 
@@ -428,8 +432,14 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
 
 
           {showRecurring && (
-            <div className="flex flex-col gap-2">
-              <label htmlFor="recurrence" className="text-sm font-semibold">
+            <div className="relative flex flex-col gap-2">
+              <label 
+                  htmlFor="recurrence" 
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
+                  >
                 Recurrence
               </label>
               <select
@@ -437,7 +447,8 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
                 name="recurrence"
                 value={recurrenceOption}
                 onChange={(e) => setRecurrenceOption(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
+                               className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -447,41 +458,73 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
                 <option value="6monthly">6Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>
+              <div className="relative">
+                    <label 
+                        htmlFor="end-date" 
+                        className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                              text-gray-500 text-sm transition-all z-10
+                              peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                              peer-valid:top-1 peer-valid:text-xs"
+                    >
+                      Start Date
+                    </label>
 
-              <label htmlFor="end-date" className="text-sm font-semibold">
-                Start Date
-              </label>
+                    <input
+                      type="date"
+                      id="start-date"
+                      name="start-date"
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                                focus:outline-none focus:border-blue-500"
+                    />
+              </div>
+              <div className="relative">
+                    <label 
+                        htmlFor="end-date" 
+                        className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                              text-gray-500 text-sm transition-all z-10
+                              peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                              peer-valid:top-1 peer-valid:text-xs"
+                    >
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      id="end-date"
+                      name="end-date"
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                                focus:outline-none focus:border-blue-500"
+                    />
+                    
+              </div>
+              <div className="relative">
 
-              <input
-                type="date"
-                id="start-date"
-                name="start-date"
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              />
-
-              <label htmlFor="end-date" className="text-sm font-semibold">
-                End Date
-              </label>
-              <input
-                type="date"
-                id="end-date"
-                name="end-date"
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              />
-              <label htmlFor="activate-time" className="text-sm font-semibold">
-                Activate Time
-              </label>
-              <input
-                type="time"
-                id="activate-time"
-                name="activate-time"
-                //value="07:00"
-                //onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              />
-              <label htmlFor="activate-time" className="text-sm font-semibold">
+                    <label 
+                        htmlFor="activate-time" 
+                        className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                              text-gray-500 text-sm transition-all z-10
+                              peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                              peer-valid:top-1 peer-valid:text-xs"
+                    > 
+                      Activate Time
+                    </label>
+                    <input
+                      type="time"
+                      id="activate-time"
+                      name="activate-time"
+                      //value="07:00"
+                      //onChange={(e) => setEndDate(e.target.value)}
+                       // className="border border-gray-300 rounded-md p-2"
+                      className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                                focus:outline-none focus:border-blue-500"
+                    />
+              </div>
+            <div className="relative">
+              <label 
+                  htmlFor="activate-time" 
+                  className="text-sm font-semibold"
+              >
                 Select Line Name
               </label>
               <div
@@ -538,6 +581,8 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
                 )}
               </div>
             </div>
+              
+            </div>
           )}
         </div>
         <button
@@ -549,11 +594,13 @@ const JobPlan = ({ data, onClose, setRefresh ,handleEventToMqtt}) => {
         </button>
 
         <button
-          type="submit"
-          className="bg-blue-700 text-white font-bold py-2 px-4 self-end hover:bg-blue-800 shadow-lg rounded-sm"
-        >
-          Save
-        </button>
+            type="submit"
+            disabled={isSubmitting}
+            className={`text-white font-bold py-2 px-4 self-end shadow-lg rounded-sm
+              ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"}`}
+          >
+            {isSubmitting ? "Waiting..." : "Save"}
+          </button>
 
 
       </form>

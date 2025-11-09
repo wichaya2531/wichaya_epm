@@ -20,18 +20,57 @@ const checkItemAbNormal = async (_id) => {
 }
 
 
+// weekStartsOn: 0=อาทิตย์, 1=จันทร์ (ปรับตามระบบของคุณ)
+function getMonthGridRange(year, month, weekStartsOn = 0) {
+  // month ใช้ 1-12
+  const firstOfMonth = new Date(year, month - 1, 1);
+
+  // หา start ให้ไปต้นสัปดาห์ที่ครอบวันแรกของเดือน
+  const day = firstOfMonth.getDay(); // 0..6
+  const diffToWeekStart = (day - weekStartsOn + 7) % 7;
+  const gridStart = new Date(firstOfMonth);
+  gridStart.setDate(firstOfMonth.getDate() - diffToWeekStart);
+
+  // ช่วง 6 สัปดาห์ = 42 วัน
+  const gridEnd = new Date(gridStart);
+  gridEnd.setDate(gridStart.getDate() + 42 - 1); // inclusive
+
+  return { gridStart, gridEnd }; // ใช้ช่วง [gridStart .. gridEnd]
+}
+
+// สร้างวันที่ทั้ง 42 ช่อง (สำหรับเรนเดอร์หรือฟิลเตอร์อีเวนต์)
+function buildMonthGridDates(year, month, weekStartsOn = 0) {
+  const { gridStart } = getMonthGridRange(year, month, weekStartsOn);
+  const days = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + i);
+    days.push(d);
+  }
+  return days; // array ยาว 42 วันเรียงต่อกัน 6 แถว
+}
+
+
 export const GET = async (req) => {
 
-  console.time("fetch-jobs");         
+  //console.time("fetch-jobs");         
 
   await connectToDb();
   const searchParams = req.nextUrl.searchParams;
-
   const workgroup_id_raw = searchParams.get("workgroup_id");
   const selectedType = searchParams.get("type") || "all";
   const selectedPlanType = searchParams.get("plantype") || "all";
-
   const workgroup_id = workgroup_id_raw === "No workgroup" ? "all" : workgroup_id_raw;
+  
+  const datetimeStart = searchParams.get("start");
+  const datetimeEnd = searchParams.get("end");
+  //console.log('Fetching events for range:');
+ // console.log('datetimeStart',datetimeStart);
+ // console.log('datetimeEnd',datetimeEnd);
+// 1) แปลง datetimeStart / datetimeEnd เป็น Date object
+  const startDate = datetimeStart ? new Date(datetimeStart) : null;
+  const endDate = datetimeEnd ? new Date(datetimeEnd) : null;
+
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -47,10 +86,21 @@ export const GET = async (req) => {
         });
 
         // Jobs
-        const jobs =
-          workgroup_id === "all"
-            ? await Job.find()
-            : await Job.find({ WORKGROUP_ID: workgroup_id });
+        // const jobs =
+        //   workgroup_id === "all"
+        //     ? await Job.find()
+        //     : await Job.find({ WORKGROUP_ID: workgroup_id });
+
+        const jobQuery = {};
+        if (workgroup_id !== "all") jobQuery.WORKGROUP_ID = workgroup_id;
+
+        // 🔹 เงื่อนไขวันที่
+        if (startDate && endDate) {
+          jobQuery.createdAt = { $gte: startDate, $lte: endDate };
+        }
+
+        const jobs = await Job.find(jobQuery);
+
 
         for (const job of jobs) {
           const startDate = new Date(job.createdAt);
@@ -104,6 +154,10 @@ export const GET = async (req) => {
 
       // แล้วใช้ query นี้ในการดึงข้อมูล
       //console.log('query',query);
+    if (startDate && endDate) {
+      query.ACTIVATE_DATE = { $gte: startDate, $lte: endDate };
+    }
+
       const schedules = await Schedule.find(query);
 
         // // Schedules
@@ -142,7 +196,7 @@ export const GET = async (req) => {
         }
 
         controller.close();
-        console.timeEnd("fetch-jobs");  // จะแสดงเวลาใน milliseconds
+        //console.timeEnd("fetch-jobs");  // จะแสดงเวลาใน milliseconds
 
       } catch (err) {
          if(process.env.NEXT_PUBLIC_DEBUG=="true"){

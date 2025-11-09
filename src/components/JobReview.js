@@ -15,6 +15,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import HistoryIcon from '@mui/icons-material/History';
 import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 import useFetchJobValue from "@/lib/hooks/useFetchJobValue";  
 
@@ -65,13 +66,27 @@ const JobForm = ({
 }) => {
   const [showTip, setShowTip] = useState(false);
   const [refresh, setRefresh] = useState(false);
-   const [activeTip, setActiveTip] = useState(null);   // เก็บ ID ของปุ่มที่กำลังโชว์ balloon
+  const [activeTip, setActiveTip] = useState(null);   // เก็บ ID ของปุ่มที่กำลังโชว์ balloon
+  const [isApproving, setIsApproving] = useState(true);
 
-  var { jobData, jobItems, isLoading, error } = useFetchJobValue(
+  const { jobData, jobItems, isLoading, error } = useFetchJobValue(
     job_id,
     refresh
   );
 
+  const preApprove = async (job_id, isApproved, comment) => {
+    setIsApproving(true);
+       await handleApprove(job_id, isApproved, comment);
+    setIsApproving(false);
+  }
+
+useEffect(() => {
+  if (!isLoading) {
+     // setTimeout(() => {
+        setIsApproving(false);
+     // }, 2500);
+  }
+}, [isLoading]);
 
   // const [showPanel, setShowPanel] = useState(false);
 //console.log("jobData.=>", jobData);
@@ -128,167 +143,257 @@ const JobForm = ({
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mt-4">
          {/* Row 1 */}
          {/* column 1 */}
-         <div className="flex items-center gap-1 mb-1">
+         <div className="relative flex items-center gap-1 mb-1">
            <label
             htmlFor="text-input"
-             className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+               className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
            >
-             Checklist ID :
+             Checklist ID
            </label>
-            <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.JobID}</label>
+            <input  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
+            
+            value={jobData.JobID} disabled />
+           
             
         </div>
         {/* column 2 */}
-        <div className="flex items-center gap-1 mb-1">
+        <div className="relative flex items-center gap-1 mb-1">
            <label
              htmlFor="text-input"
-             className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+             //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
            >
-             Checklist Name :
+             Checklist Name
            </label>
-           <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.Name}</label>
-          
+            <input    className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 
+             focus:outline-none focus:border-blue-500 
+             text-gray-800 text-sm truncate"
+            value={jobData.Name} disabled />
          </div>
           {/* column 3 */}     
-         <div className="flex items-center gap-1 mb-1">
+         <div className="relative flex items-center gap-1 mb-1">
            <label
              htmlFor="text-input"
-             className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+             //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
            >
-             Document No : 
+             Document No
            </label>
-          <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.DocumentNo}</label> 
-           
+          <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2   
+                        focus:outline-none focus:border-blue-500"
+            value={jobData.DocumentNo} disabled />
          </div>
          {/* Row  2 */} 
          {/* column 1 */} 
-        <div className="flex items-center gap-1 mb-1">
+        <div className="relative flex items-center gap-1 mb-1">
            <label
              htmlFor="text-input"
-             className=" min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            // className=" min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
            >
-             Line Name : 
+             Line Name 
            </label>
-           <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.LINE_NAME}</label>
+           <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.LINE_NAME} disabled />
          </div>
          {/* column 2 */} 
-         <div className="flex items-center gap-1 mb-1">
+         <div className="relative flex items-center gap-1 mb-1">
            <label
              htmlFor="text-input"
-             className=" min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+             //className=" min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"  
            >
-             Version : 
+             Version
            </label>
-            <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.ChecklistVer}</label>
+            <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.ChecklistVer} disabled />
          </div>
         {/* column 3 */} 
-        <div className="flex items-center gap-1 mb-1">
+        <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
-            Workgroup :
+            Workgroup
           </label>
-         <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.WorkgroupName}</label>
+         <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.WorkgroupName} disabled />
         </div>
           {/* Row  3 */} 
          {/* column 1 */} 
-        <div className="flex items-center gap-1 mb-1">
+        <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
-            Activated By : 
+            Activated By
           </label>
-          <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.ActivatedBy}</label>
+          <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.ActivatedBy} disabled />
         </div>
          {/* column 2 */} 
-         <div className="flex items-center gap-1 mb-1">
+         <div className="relative flex items-center gap-1 mb-1">
            <label
              htmlFor="text-input"
-             className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+             //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1     
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
            >
-             Submitted By : 
+             Submitted By
            </label>
-            <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.SubmittedBy} </label>
+            <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.SubmittedBy} disabled />
          </div>
           {/* column 3 */}
-          <div className="flex items-center gap-1 mb-1">
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="text-input"
-              className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600 text-right"
+              //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600 text-right"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
             >
-              Timeout : 
+              Timeout
             </label>
-             <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.Timeout}</label>
+             <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.Timeout} disabled />
           </div>
          {/* Row  4 */} 
          {/* column 1 */} 
-          <div className="flex items-center gap-1 mb-1">
+          <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
           >
-            Activated At : 
+            Activated At
           </label>
-           <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.ActivatedAt}</label>
+           <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.ActivatedAt} disabled />
         </div>   
           {/* column 2 */}     
-        <div className="flex items-center gap-1 mb-1">
+        <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
           >
-            Submited At : 
+            Submited At
           </label>
-           <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.SubmitedAt}</label>
+           <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.SubmitedAt} disabled />
         </div>
           {/* column 3 */}     
-         <div className="flex items-center gap-1 mb-1">
+         <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
           >
-            LastestUpdate At : 
+            LastestUpdate At
           </label>
-           <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.LastestUpdate}</label>
-        </div>   
+           <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.LastestUpdate} disabled />
+        </div>
            {/* Row  5 */} 
          {/* column 1 */}        
-        <div className="flex items-center gap-1 mb-1">
+        <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+           className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                       text-gray-500 text-sm transition-all z-10
+                       peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                       peer-valid:top-1 peer-valid:text-xs"
           >
-            Status : 
+            Status
           </label>
-           <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.Status}</label>
+           <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+            value={jobData.Status} disabled />
         </div>
          {/* column 2 */}        
-       <div className="flex items-center gap-1 mb-1">
+       <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                       text-gray-500 text-sm transition-all z-10
+                       peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                       peer-valid:top-1 peer-valid:text-xs"
           >
             {/* WD Tag / Machine ID */}
             {process.env.NEXT_PUBLIC_LABEL_WD_TAG} : 
           </label>
-          <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.WD_TAG}</label>
+          <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                      focus:outline-none focus:border-blue-500"
+            value={jobData.WD_TAG} disabled />
         </div>     
          {/* column 3 */}        
-         <div className="flex items-center gap-1 mb-1">
+         <div className="relative flex items-center gap-1 mb-1">
           <label
             htmlFor="text-input"
-            className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="min-w-[120px] text-sm ipadmini:text-md font-bold text-gray-600"
+            className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
           >
             {/* Machine Name */}
             {process.env.NEXT_PUBLIC_LABEL_MACHINE_NAME} :
           </label>
-          <label calss="text-sm ipadmini:text-md font-bold text-gray-600" >{jobData.MachineName}</label>
-        </div>      
-      
-    </div>  
-    <hr></hr>  
+          <input className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                      focus:outline-none focus:border-blue-500"
+            value={jobData.MachineName} disabled />
+        </div>
+
+    </div>
+    <hr></hr> 
     <div className="flex flex-col">
         {/* <h1
           className="text-3xl font-bold text-primary flex items-center cursor-pointer"
@@ -494,12 +599,19 @@ const JobForm = ({
               value="approve"
               variant="contained"
               color="primary"
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() => 
-                handleApprove(job_id,true)
-              }
+              disabled={isApproving}
+              className={`text-white font-bold py-2 px-4 rounded 
+                ${isApproving 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-green-500 hover:bg-green-700'}`}
+                  //onClick={() => preApprove(job_id, true)}
+                  onClick={async () => {
+                    setIsApproving(true);
+                    await preApprove(job_id, true);
+                    setIsApproving(false);
+                  }}
             >
-              Approve
+              {isApproving ? 'Waiting...' : 'Approve'}
             </button>
 
             {/* ปุ่ม Disapprove */}
@@ -509,246 +621,24 @@ const JobForm = ({
               value="disapprove"
               variant="contained"
               color="secondary"
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() =>
-                handleApprove(job_id, false, "Disapproval reason goes here")
-              }
+              disabled={isApproving}
+              className={`text-white font-bold py-2 px-4 rounded 
+                ${isApproving 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-red-500 hover:bg-red-700'}`}
+              onClick={async () => {
+                setIsApproving(true);
+                await preApprove(job_id, false, "Disapproval reason goes here");
+                setIsApproving(false);
+              }}
             >
-              Disapprove
+              {isApproving ? 'Waiting...' : 'Disapprove'}
             </button>
           </div>
     </div>      
 
 
 </div>
-
-
-    
-
-    //                   {/* ปุ่ม Hide/Unhide */}
-    //                   <div
-    //                     onClick={() => setShowPanel(!showPanel)}
-    //                     className="cursor-pointer w-full border text-right text-sm ipadmini:text-md font-bold text-gray-800 pb-1 cursor-pointer"
-    //                     style={{borderRadius:'0.5em'}} 
-    //                   >
-    //                     Job Evident &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   {showPanel ? <VisibilityOffIcon /> : <VisibilityIcon />}
-    //                   </div>
-    //                   {
-    //                     //--------------------------------------------------------->>                        
-    //                   }
-    //                   <div className={`${showPanel ? "" : "hidden"}`} style={{border:'1px solid none',position:'relative'}}>
-    //                       <div className={`flex flex-col`}
-    //                           style={{border:'1px solid none',position:'relative'}} 
-    //                       >
-    //                         {
-    //                           <label
-    //                             htmlFor="text"
-    //                             className=" text-sm ipadmini:text-md font-bold text-gray-600 "
-    //                           >
-    //                             &nbsp; Sticker Before {" "}
-    //                           </label>
-    //                         }
-
-    //                         {(
-    //                           <div 
-    //                               className="flex flex-col items-center"
-    //                               style={{position:'absolute',border:'1px solid none',right:'5px'}}
-    //                           >
-    //                             {/* ซ่อน input อัปโหลดไฟล์ */}
-    //                             <input
-    //                               type="file"
-    //                               id="fileInput-1"
-    //                               className="hidden"
-    //                               onChange={(e) =>
-    //                                 handleUploadFileToJob(e.target.files[0], "fileInput-1")
-    //                               }
-    //                               accept="image/*"
-    //                             />
-
-    //                             {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
-    //                                 <label
-    //                                         htmlFor="fileInput-1"
-    //                                         className="cursor-pointer"
-    //                                   >
-    //                                     <img
-    //                                       src="/assets/images/image.png"
-    //                                       alt="person"
-    //                                       width={30}
-    //                                       height={30}
-    //                                     />
-    //                                 </label>
-                                    
-
-    //                           </div>
-    //                         )}
-
-    //                         {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-    //                         {preview_1 && (
-    //                           <img src={preview_1} alt="Preview" width={200} className="mt-4" />
-    //                         )}
-    //                         {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-    //                         {jobData.IMAGE_FILENAME && (
-    //                           <img
-    //                             src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
-    //                             alt="Preview"
-    //                             width={200}
-    //                             className="mt-4"
-    //                             onClick={() =>
-    //                               onclicktoShow(
-    //                                 `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
-    //                               )
-    //                             }
-    //                           />
-    //                         )}
-    //                       </div>
-
-    //                       {
-    //                         //-------------------------------------------------------------------------------------------->>
-    //                         <p style={{borderBottom:'2px solid gray',padding:'5px'}}></p>  
-    //                       }    
-
-    //                         <div className={`flex flex-col `}
-    //                             style={{borderTop:'1px solid none',position:'relative',paddingTop:'5px'}}  
-    //                         >
-    //                           {
-    //                             <label
-    //                               htmlFor="text"
-    //                               className="text-sm ipadmini:text-md font-bold text-gray-600"
-    //                             >
-    //                               &nbsp;  Sticker After{" "}
-    //                             </label>
-    //                           }
-
-    //                           {(
-    //                             <div className="flex flex-col items-center"
-    //                                 style={{position:'absolute',border:'1px solid none',right:'5px'}}
-    //                             >
-    //                               {/* ซ่อน input อัปโหลดไฟล์ */}
-    //                               <input
-    //                                 type="file"
-    //                                 id="fileInput-2"
-    //                                 className="hidden"
-    //                                 onChange={(e) =>
-    //                                   handleUploadFileToJob(e.target.files[0], "fileInput-2")
-    //                                 }
-    //                                 accept="image/*"
-    //                               />
-
-    //                               {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
-    //                               <label
-    //                                 htmlFor="fileInput-2"
-    //                                   className="cursor-pointer"
-    //                               // className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
-    //                               >
-    //                                     <img
-    //                                       src="/assets/images/image.png"
-    //                                       alt="person"
-    //                                       width={30}
-    //                                       height={30}
-    //                                     />
-                                
-    //                               </label>
-    //                             </div>
-    //                           )}
-
-    //                           {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-    //                           {preview_2 && (
-    //                             <img src={preview_2} alt="Preview" width={200} className="mt-4" />
-    //                           )}
-    //                           {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-    //                           {jobData.IMAGE_FILENAME_2 && (
-    //                             <img
-    //                               src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
-    //                               alt="Preview"
-    //                               width={200}
-    //                               className="mt-4"
-    //                               onClick={() =>
-    //                                 onclicktoShow(
-    //                                   `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
-    //                                 )
-    //                               }
-    //                             />
-    //                           )}
-    //                         </div>  
-    //                   </div>
-
-    //                   {
-    //                     //---------------------------------------------------------->>
-    //                   }
-    //     </div>  
-
-    //     <div className="flex flex-col hidden">
-
-    //               <label
-    //                 htmlFor="image-file"
-    //                 className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
-    //               >Evident before(PM Sticker)</label>
-    //               {jobData.IMAGE_FILENAME ? (
-    //                 <img
-    //                   src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
-    //                   alt="Job Image"
-    //                   width={200}
-    //                   height={200}
-    //                   onClick={() =>
-    //                     onclicktoShow(
-    //                       `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
-    //                     )
-    //                   }
-    //                 />
-    //               ) : (
-    //                 <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
-    //               )}
-
-
-
-    //     </div>
-    //     <div className="flex flex-col hidden" >
-    //       <label
-    //         htmlFor="image-file"
-    //         className="text-sm ipadmini:text-md font-bold text-gray-600 pb-4"
-    //       > Evident after(PM Sticker)</label>
-    //       {jobData.IMAGE_FILENAME_2 ? (
-    //         <img
-    //           src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
-    //           alt="Job Image"
-    //           width={200}
-    //           height={200}
-    //           onClick={() =>
-    //             onclicktoShow(
-    //               `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
-    //             )
-    //           }
-    //         />
-    //       ) : (
-    //         <p className="text-gray-500">&nbsp;</p> // ข้อความแสดงเมื่อไม่มีข้อมูล
-    //       )}
-    //     </div>
-    //   </div>
-
-    //----------------------------------ส่วนของ job Item-------------------------
-  
-
-    //   <hr />
-    //   <div className="flex flex-col gap-8">
-
-
-
-
-
-    
-  
-
-    
-    
-    //     </div>
-    //     {view ? (
-    //       ""
-    //     ) : (
-
-    //     )}
-    
-    // </form>
-     
   );
 };
 

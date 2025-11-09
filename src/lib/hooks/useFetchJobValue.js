@@ -5,12 +5,12 @@ const useFetchJobValue = (job_id, refresh=null) => {
     //console.log(" useFetchJobValue **");
     const [jobData, setJobData] = useState([]);
     const [jobItems, setJobItems] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchJobValue = async () => {
-            setIsLoading(true);
+            //setIsLoading(true);
             setError(null);
             try {
                 const response = await fetch(`/api/job/get-job-value?job_id=${job_id}`, { next: { revalidate: 10 } });
@@ -20,6 +20,7 @@ const useFetchJobValue = (job_id, refresh=null) => {
                 if (data.status === 200) {
                     setJobData(data.jobData);
                     setJobItems(data.jobItemData);
+                    setIsLoading(false);
                 }
             } catch (err) {
                 setError(err);

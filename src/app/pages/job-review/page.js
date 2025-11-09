@@ -14,16 +14,16 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 
 
-import {  useRef, useCallback } from "react";
-//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
-import mqtt from "mqtt";
-const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
-const options = {
-  username: process.env.NEXT_PUBLIC_MQT_USERNAME,
-  password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-  reconnectPeriod: 2000,
-};
-//---------------------------------------------->>
+// import {  useRef, useCallback } from "react";
+// //------------------สำหรับการ เชื่อมต่อ MQTT ------->>
+// import mqtt from "mqtt";
+// const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
+// const options = {
+//   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
+//   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
+//   reconnectPeriod: 2000,
+// };
+// //---------------------------------------------->>
 
 const Page = ({ searchParams }) => {
   const router = useRouter();
@@ -50,79 +50,79 @@ const Page = ({ searchParams }) => {
   const [preview_2, setPreview_2] = useState(null);  
 
 
-   //-----------MQTT----------------------------------------->>
+//    //-----------MQTT----------------------------------------->>
    
- const mqttClient = useRef(null);
- useEffect(() => {
-   const client = mqtt.connect(connectUrl, options);
-   mqttClient.current = client;
+//  const mqttClient = useRef(null);
+//  useEffect(() => {
+//    const client = mqtt.connect(connectUrl, options);
+//    mqttClient.current = client;
  
-   const onConnect = () => {
-     console.log("✅ MQTT Connected on Page Job Review");
-     if (user?.workgroup_id) client.subscribe(user.workgroup_id);
-   };
-   client.on("connect", onConnect);
-   client.on("error", (err) => console.error("❌ MQTT Error:", err));
-   client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
-   client.on("message", (t, m) => {
-        try {
-          if (document.getElementById('page-expire').innerHTML==='true'){ 
-                      console.log('Block by page expire!!');
-                      return;
-          }
-        } catch (error) {
-                console.error("Error Code: 120\n", error?.stack ?? error);
-        }     
-     console.log("📩", t, m.toString());
-     setTimeout(() => {
-      setRefresh((prev) => !prev);
-     }, 3000);
+//    const onConnect = () => {
+//      console.log("✅ MQTT Connected on Page Job Review");
+//      if (user?.workgroup_id) client.subscribe(user.workgroup_id);
+//    };
+//    client.on("connect", onConnect);
+//    client.on("error", (err) => console.error("❌ MQTT Error:", err));
+//    client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
+//    client.on("message", (t, m) => {
+//         try {
+//           if (document.getElementById('page-expire').innerHTML==='true'){ 
+//                       console.log('Block by page expire!!');
+//                       return;
+//           }
+//         } catch (error) {
+//                 console.error("Error Code: 120\n", error?.stack ?? error);
+//         }     
+//      console.log("📩", t, m.toString());
+//      setTimeout(() => {
+//       setRefresh((prev) => !prev);
+//      }, 3000);
      
-     //if(!refreshSkip){
-          //setRefresh(true);  
-    // }
+//      //if(!refreshSkip){
+//           //setRefresh(true);  
+//     // }
      
-   });
+//    });
  
-   return () => {
-     client.end(true);
-     mqttClient.current = null;
-   };
- }, []);
+//    return () => {
+//      client.end(true);
+//      mqttClient.current = null;
+//    };
+//  }, []);
  
- // ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
- useEffect(() => {
-   if (user?.workgroup_id && mqttClient.current?.connected) {
-     mqttClient.current.subscribe(user.workgroup_id, (err) =>
-       err ? console.error("Subscription error:", err)
-           : console.log("📡 Subscribed:", user.workgroup_id)
-     );
-   }
- }, [user?.workgroup_id]);
+//  // ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
+//  useEffect(() => {
+//    if (user?.workgroup_id && mqttClient.current?.connected) {
+//      mqttClient.current.subscribe(user.workgroup_id, (err) =>
+//        err ? console.error("Subscription error:", err)
+//            : console.log("📡 Subscribed:", user.workgroup_id)
+//      );
+//    }
+//  }, [user?.workgroup_id]);
  
- // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
- const handleEventToMqtt = useCallback(() => {
-  // setRefreshSkip(true); 
-  // setTimeout(() => {
-   //         setRefreshSkip(false); 
-  // }, 3000);
+//  // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
+//  const handleEventToMqtt = useCallback(() => {
+//   // setRefreshSkip(true); 
+//   // setTimeout(() => {
+//    //         setRefreshSkip(false); 
+//   // }, 3000);
  
-   const c = mqttClient.current;
-   if (!c || c.disconnected) {
-     console.warn("MQTT not connected");
-     return;
-   }
-   if (!user?.workgroup_id) {
-     console.warn("No topic");
-     return;
-   }
-   try {
-     c.publish(user.workgroup_id, "refresh");
-   } catch (err) {
-     console.error("Error Code: 121\n", err?.stack ?? err);
-   }
- }, [user?.workgroup_id]);
-   //------------------------------------------------------->>
+//    const c = mqttClient.current;
+//    if (!c || c.disconnected) {
+//      console.warn("MQTT not connected");
+//      return;
+//    }
+//    if (!user?.workgroup_id) {
+//      console.warn("No topic");
+//      return;
+//    }
+//    try {
+//      c.publish(user.workgroup_id, "refresh");
+//    } catch (err) {
+//      console.error("Error Code: 121\n", err?.stack ?? err);
+//    }
+//  }, [user?.workgroup_id]);
+//    //------------------------------------------------------->>
 
 
 
@@ -264,17 +264,15 @@ const Page = ({ searchParams }) => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          setRefresh(!refresh);
-          setTimeout(() => {
-                  handleEventToMqtt();
-          }, 1000);  
-
-
+          //setRefresh(!refresh);
+          // setTimeout(() => {
+          //         handleEventToMqtt();
+          // }, 1000);  
 
           setTimeout(() => {
                   //router.push("/pages/job-approve");
                   window.close();        
-          }, 1500);
+          }, 1000);
 
           
         });

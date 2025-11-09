@@ -11,59 +11,65 @@ import { JobApproves } from "@/lib/models/JobApprove";
 import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
 import { ProfileGroup } from "@/lib/models/ProfileGroup";
 
-const getPositionTimeByJobItem = async (jobItemID) => {
-  const jobItem = await JobItem.findOne({ JOB_ITEM_TEMPLATE_ID: jobItemID });
-  //console.log(jobItem.createdAt);
-  return jobItem.createdAt;
-};
+// const getPositionTimeByJobItem = async (jobItemID) => {
+//   const jobItem = await JobItem.findOne({ JOB_ITEM_TEMPLATE_ID: jobItemID });
+//   //console.log(jobItem.createdAt);
+//   return jobItem.createdAt;
+// };
 
-const getGuideInputByJobItem = async (jobItemID) => {
-  const jobItem = await JobItem.find({ JOB_ITEM_TEMPLATE_ID: jobItemID });
+// const getGuideInputByJobItem = async (jobItemID) => {
+//   const jobItem = await JobItem.find({ JOB_ITEM_TEMPLATE_ID: jobItemID });
 
-  var guideInput = [];
-  jobItem.map((item) => {
-    if (
-      item.ACTUAL_VALUE !== null &&
-      !["pass", "fail"].includes(item.ACTUAL_VALUE.toLowerCase()) &&
-      isNaN(item.ACTUAL_VALUE) // เพิ่มเงื่อนไขไม่เอาตัวเลข
-    ) {
-      guideInput.push(item.ACTUAL_VALUE);
-    }
-  });
-  guideInput = [...new Set(guideInput)];
-  return guideInput;
-};
+//   var guideInput = [];
+//   jobItem.map((item) => {
+//     if (
+//       item.ACTUAL_VALUE !== null &&
+//       !["pass", "fail"].includes(item.ACTUAL_VALUE.toLowerCase()) &&
+//       isNaN(item.ACTUAL_VALUE) // เพิ่มเงื่อนไขไม่เอาตัวเลข
+//     ) {
+//       guideInput.push(item.ACTUAL_VALUE);
+//     }
+//   });
+//   guideInput = [...new Set(guideInput)];
+//   return guideInput;
+// };
+
 export const dynamic = "force-dynamic";
 
 
-async function getApproverName(user_id) {
-        //console.log('user_id',user_id);
-        try {
+// async function getApproverName(user_id) {
+//         //console.log('user_id',user_id);
+//         try {
 
-                      const userApprove = await User.findOne({
-                        _id: new ObjectId( user_id[0] ),
-                      });
+//                       const userApprove = await User.findOne({
+//                         _id: new ObjectId( user_id[0] ),
+//                       });
 
-                     //console.log("userApprove ",userApprove);   
-                     return userApprove.EMP_NAME;
-        } catch (error) {
-                //console.log(error);
-        }
-        return "unknown";
-}
+//                      //console.log("userApprove ",userApprove);   
+//                      return userApprove.EMP_NAME;
+//         } catch (error) {
+//                 //console.log(error);
+//         }
+//         return "unknown";
+// }
 
 export const GET = async (req, res) => {
   await connectToDb();
   const searchParams = req.nextUrl.searchParams;
   const JobID = searchParams.get("job_id");
+  const user_id = searchParams.get("user_id");
+
+
+  console.log('user_id =>', user_id);
   
 
-  console.log('JobID=>', JobID);
+  //console.log('JobID=>', JobID);
   
 
   try {
    // let machineName;
     const job = await Job.findOne({ _id: JobID });
+   // console.log('job in try =>', job);
     if (!job)
       return NextResponse.json({
         status: 404,
@@ -75,6 +81,9 @@ export const GET = async (req, res) => {
         acc[group._id] = group.PROFILE_NAME;
         return acc;
     }, {});
+    //console.log('profileGroupsArr =>', profileGroupsArr);
+    
+    //console.log('profileGroups =>', profileGroups);
 
     //sort lastest come last
     //const jobItems = await JobItem.find({ JOB_ID: JobID }).sort({
@@ -101,21 +110,21 @@ export const GET = async (req, res) => {
                 const activaterName = user?.EMP_NAME || "Unknown";
                 const statusName = status?.status_name || "Unknown";
                 const statusColor = status?.color || "Unknown";
-                
+                //console.log('user=>', user);  
 
     const submit_name = {
         EMP_NAME:  job.SUBMITTED_BY_NAME  ?? job.SUBMITTED_BY?.EMP_NAME  ?? "-",
         EMP_NUMBER: job.SUBMITTED_BY?.EMP_NUMBER  ?? "-",      
         // EMP_EMAIL: job.SUBMITTED_BY_EMAIL ?? job.SUBMITTED_BY?.EMP_EMAIL ?? "",
     };
-
+   // console.log('job in try=>', job);
     const jobData = {
         _id:job._id,                  
         SUBMITTED_BY: submit_name,
         LINE_NAME:job.LINE_NAME,
         JOB_NAME:job.JOB_NAME,
         JOB_APPROVERS: job.JOB_APPROVERS,
-        APPROVE_ALLOW : job.JOB_APPROVERS?.includes(user._id) && ((statusName || "Unknown") && statusName=="waiting for approval"  ),
+        APPROVE_ALLOW :job.JOB_APPROVERS?.includes(user_id) && ((statusName || "Unknown") && statusName=="waiting for approval"  ),
         ACTIVATE_USER:job.ACTIVATE_USER,
         createdAt:job.createdAt,
         ACTIVATER_NAME: activaterName,
@@ -133,114 +142,6 @@ export const GET = async (req, res) => {
         //await checkItemAbNormal(job._id),
         PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
     };    
-
-
-
-
-                // ฝฝreturn {
-                  //...job.toObject(),
-
-
-                //   _id:job._id,                  
-                //   SUBMITTED_BY: submit_name,
-                //   LINE_NAME:job.LINE_NAME,
-                //   JOB_NAME:job.JOB_NAME,
-                //   JOB_APPROVERS: job.JOB_APPROVERS,
-                //   APPROVE_ALLOW : job.JOB_APPROVERS?.includes(user_id) && ((statusName || "Unknown") && statusName=="waiting for approval"  ),
-                //   ACTIVATE_USER:job.ACTIVATE_USER,
-                //   createdAt:job.createdAt,
-                //   ACTIVATER_NAME: activaterName,
-                //   STATUS_NAME: statusName,
-                //   STATUS_COLOR: statusColor,
-                //   ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL||false,
-                //   VALUE_ITEM_ABNORMAL:job.VALUE_ITEM_ABNORMAL,
-                //   updatedAt: job.updatedAt,
-                //   SUBMITTED_DATE: job.SUBMITTED_DATE,
-                //   JOB_VERIFY: job.IMAGE_FILENAME||job.IMAGE_FILENAME_2 ? true : false,
-                //   LAST_GET_BY:job.LAST_GET_BY || "Unknown",
-                //   LAST_GET_TIME:job.LAST_GET_TIME || "Unknown",
-                //   TYPE:job.TYPE || "Unknown",
-                //   PROFILE_GROUP: await profileGroups[job.PROFILE_GROUP] || "Unknown",
-                //   //await checkItemAbNormal(job._id),
-                //   PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
-
-              //  };
-             // });    
-    // const jobItemData = await Promise.all(
-    //   jobItems.map(async (jobItem) => {
-    //     const location = await TestLocation.findById(jobItem.TEST_LOCATION_ID);
-
-    //    // console.log("jobItem=>",jobItem);
-
-    //     return {
-    //       JobItemID: jobItem._id,
-    //       JobItemTitle: jobItem.JOB_ITEM_TITLE,
-    //       JobItemTemplateMqtt:jobItem.JOB_ITEM_TEMPLATE_ID,
-    //       JobItemName: jobItem.JOB_ITEM_NAME,
-    //       UpperSpec: jobItem.UPPER_SPEC,
-    //       LowerSpec: jobItem.LOWER_SPEC,
-    //       TestMethod: jobItem.TEST_METHOD,
-    //       BeforeValue: jobItem.BEFORE_VALUE,
-    //       BeforeValue2: jobItem.BEFORE_VALUE2,
-    //       ActualValue: jobItem.ACTUAL_VALUE,
-    //       Value: jobItem.VALUE,
-    //       Comment: jobItem.COMMENT,
-    //       RealTimeValue: jobItem.REAL_TIME_VALUE,
-    //       TestLocationName: location ? location.LocationName : "",
-    //       ExecuteDate: jobItem.EXECUTE_DATE,
-    //       LastestUpdate: jobItem.updatedAt.toLocaleString(),
-    //       IMG_ATTACH: jobItem.IMG_ATTACH,
-    //       IMG_ATTACH_1: jobItem.IMG_ATTACH_1||"",
-    //       File: jobItem.FILE ? jobItem.FILE.replace(/\\/g, "/") : null,
-    //       createAt: jobItem.createdAt.toLocaleString(),
-    //       createAtTemplate: await getPositionTimeByJobItem(
-    //         jobItem.JOB_ITEM_TEMPLATE_ID
-    //       ),
-    //       guide_input: await getGuideInputByJobItem(
-    //         jobItem.JOB_ITEM_TEMPLATE_ID
-    //       ),
-    //       input_type:jobItem.INPUT_TYPE||"All",
-    //       pos:jobItem.POS||0
-    //     };
-    //   })
-    // );
-
-
-
-    // if (job.SORT_ITEM_BY_POSITION) {
-    //   jobItemData.sort((a, b) => {
-    //     return  a.pos-b.pos;
-    //   });
-    // }else{
-    //       jobItemData.sort((a, b) => {
-    //         return (
-    //           new Date(a.createAtTemplate).getTime() -
-    //           new Date(b.createAtTemplate).getTime()
-    //         );
-    //       });
-    // }
-
-   // console.log('job sort by pos',job);
-   // console.log('jobItem sort by pos',jobItemData);
-
-  //  jobItemData.forEach(element => {
-  //         console.log(element.pos);
-  //  });   
-
-
-    // if (statusName === "renew") {
-    //   const jobApprove = await JobApproves.find({ "JOB._id": JobID })
-    //     .sort({ createdAt: -1 })
-    //     .limit(1);
-    //   if (jobApprove.length > 0) {
-    //     const commentor = await User.findOne({ _id: jobApprove[0].USER_ID });
-    //     jobData.comment = jobApprove[0].COMMENT;
-    //     jobData.commentator = commentor.EMP_NAME;
-    //     jobData.commentAt = jobApprove[0].createdAt.toLocaleString();
-    //   } else {
-    //     console.log("JobApproves document not found");
-    //   }
-    // }
 
     return NextResponse.json({
       status: 200,

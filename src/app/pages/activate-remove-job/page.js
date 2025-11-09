@@ -83,17 +83,17 @@ const handleClickViewMode = (checked) => {
     client.on("connect", onConnect);
     client.on("error", (err) => console.error("❌ MQTT Error:", err));
     client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
-    client.on("message", (t, m) => {
-       try {
-          if (document.getElementById('page-expire').innerHTML==='true'){ 
-                      console.log('Block by page expire!!');
-                      return;
-          }
-        } catch (error) {
-                console.error("Error Code: 120\n", error?.stack ?? error);
-        }     
-      console.log("📩", t, m.toString());      
-    });
+    // client.on("message", (t, m) => {
+    //    try {
+    //       if (document.getElementById('page-expire').innerHTML==='true'){ 
+    //                   console.log('Block by page expire!!');
+    //                   return;
+    //       }
+    //     } catch (error) {
+    //             console.error("Error Code: 120\n", error?.stack ?? error);
+    //     }     
+    //   console.log("📩", t, m.toString());      
+    // });
   
     return () => {
       client.end(true);
@@ -111,7 +111,7 @@ const handleClickViewMode = (checked) => {
     }
   }, [user?.workgroup_id]);
   
-  // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
+  // // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
   const handleEventToMqtt = useCallback(() => {
     const c = mqttClient.current;
     if (!c || c.disconnected) {
@@ -318,10 +318,6 @@ const handleClickViewMode = (checked) => {
       }
       event.target.value = "";
     });
-    
-   
-        
-  
 
   };
 
@@ -665,7 +661,7 @@ const handleClickViewMode = (checked) => {
             if (data.status === 200) {
               swalWithBootstrapButtons.fire({
                 title: "Deleted!",
-                text: "Your job has been deleted.",
+                text: " Your job has been deleted ." + selectedJobs.length + " items",
                 icon: "success",
               });
               setRefresh((prev) => !prev);
@@ -690,56 +686,56 @@ const handleClickViewMode = (checked) => {
   };
 
   // ฟังก์ชันลบงานที่เลือก
-  const handleDeleteSelected = async () => {
-    // alert('handleDeleteSelected');   
+  // const handleDeleteSelected = async () => {
+  //   // alert('handleDeleteSelected');   
 
 
-    if (selectedJobs.length === 0) return;
+  //   if (selectedJobs.length === 0) return;
 
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete them!",
-      cancelButtonText: "No, cancel!",
-      reverseButtons: true,
-    });
+  //   const result = await Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "You won't be able to revert this!",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonText: "Yes, delete them!",
+  //     cancelButtonText: "No, cancel!",
+  //     reverseButtons: true,
+  //   });
 
-   //console.log("selectedJobs",selectedJobs);
+  //  //console.log("selectedJobs",selectedJobs);
 
-    //return;
-    if (result.isConfirmed) {
-      try {
-        const response = await fetch(`/api/job/remove-job`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ job_ids: selectedJobs }), // ส่ง array
-        });
+  //   //return;
+  //   if (result.isConfirmed) {
+  //     try {
+  //       const response = await fetch(`/api/job/remove-job`, {
+  //         method: "DELETE",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ job_ids: selectedJobs }), // ส่ง array
+  //       });
 
-        const result = await response.json();
-        if (response.ok) {
-          Swal.fire("Deleted!", "Selected jobs have been deleted.", "success");
-          setJobs((prevJobs) =>
-            prevJobs.filter((job) => !selectedJobs.includes(job._id))
-          );
-          setSelectedJobs([]);
-        } else {
-          Swal.fire(
-            "Error!",
-            result.error || "Failed to delete jobs.",
-            "error"
-          );
-        }
-      } catch (err) {
-         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
-              console.error(err);
-              console.log("Error Code : 109");
-         }
-        Swal.fire("Error!", "Failed to delete jobs.", "error");
-      }
-    }
-  };
+  //       const result = await response.json();
+  //       if (response.ok) {
+  //         Swal.fire("Deleted!", "Selected jobs have been deleted." + selectedJobs.length + " Items", "success");
+  //         setJobs((prevJobs) =>
+  //           prevJobs.filter((job) => !selectedJobs.includes(job._id))
+  //         );
+  //         setSelectedJobs([]);
+  //       } else {
+  //         Swal.fire(
+  //           "Error!",
+  //           result.error || "Failed to delete jobs.",
+  //           "error"
+  //         );
+  //       }
+  //     } catch (err) {
+  //        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+  //             console.error(err);
+  //             console.log("Error Code : 109");
+  //        }
+  //       Swal.fire("Error!", "Failed to delete jobs.", "error");
+  //     }
+  //   }
+  // };
 
 
 
@@ -1107,7 +1103,8 @@ const handleClickViewMode = (checked) => {
             <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
               <JobsTable
                   refresh={refresh} 
-                  handleEventToMqtt={handleEventToMqtt}
+                  //handleEventToMqtt={handleEventToMqtt}
+                  date_range={0}
               />
               
             </div>

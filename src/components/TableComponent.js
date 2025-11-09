@@ -233,17 +233,24 @@ const TableComponent = ({
         className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left"
         style={{ display: disableFilter && disablePageSize ? "none" : "" }}
       >
-        <div className="flex flex-row gap-2 text-left max-w-full w-full">
+        <div className="relative flex flex-row gap-2 text-left max-w-full w-full">
           {/* Rows */}
           <div
             className="max-w-[20vw] inline-block pr-6"
             style={{ visibility: disablePageSize ? "hidden" : "visible" }}
           >
-            <div>Rows : </div>
+            <label
+              htmlFor="table-rows-num"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                      text-gray-500 text-sm transition-all z-10
+                      peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                      peer-valid:top-1 peer-valid:text-xs"
+            >Rows  </label>
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-[100%] inline-block"
+             className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               id="table-rows-num"
             >
               {[5, 10, 15, 20, 25, 50, 100].map((n) => (
@@ -256,13 +263,21 @@ const TableComponent = ({
 
           {/* Filter #1 */}
           {filterColumn && (
-            <div className="max-w-[250px] inline-block pr-6">
-              <div>Line Name : </div>
+            <div className="relative max-w-[250px] inline-block pr-6">
+              <label
+                htmlFor="table-filter-line-name"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
+                >Line Name </label>
               <select
                 value={selectedFilter}
                 onChange={handleFilterChange}
-                className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-[200px]"
-              >
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+                id="table-filter-line-name"
+              > 
                 <option value="">All</option>
                 {uniqueFilterOptions.map((option, idx) => (
                   <option key={`${filterColumn}-${idx}`} value={option}>
@@ -275,12 +290,21 @@ const TableComponent = ({
 
           {/* Filter #2 */}
           {filterColumn1 && (
-            <div className="max-w-[350px] inline-block">
-              <div>Profile Group : </div>
+            <div className="relative max-w-[350px] inline-block">
+              <label
+                htmlFor="table-filter-profile-group"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
+              >Profile Group  </label>
               <select
                 value={selectedFilter1}
                 onChange={handleFilterChange1}
-                className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-[200px]"
+                //className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-[200px]"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+                id="table-filter-profile-group"
               >
                 <option value="">All</option>
                 {uniqueFilterOptions1.map((option, idx) => (

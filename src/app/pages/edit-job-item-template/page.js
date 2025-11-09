@@ -185,44 +185,61 @@ const Page = ({ searchParams }) => {
       <div className="flex flex-col gap-3 mb-4 p-4 bg-white rounded-xl">
         <form onSubmit={HandleSubmit}>
           <div className="grid gap-6 mb-6 md:grid-cols-3">
-            <div>
+            <div className="relative">
               <label
                 for="author"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                //className="block mb-2 text-sm font-medium text-gray-900 text-black" 
+                 className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
               >
                 Author
               </label>
               <input
                 type="text"
                 id="author"
-                className="bg-gray-200 border cursor-not-allowed border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50  "
+                //className="bg-gray-200 border cursor-not-allowed border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50  "
+               className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+                placeholder="author"
                 value={user.name || ""}
                 disabled
                 name="author"
                 required
               />
             </div>
-            <div>
+            <div className="relative">
               <label
                 for="job_item_template_title"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
+               // className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
               >
                 Checklist Item Template Title
               </label>
               <input
                 type="text"
                 id="job_item_template_title"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                //className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
                 placeholder="title"
                 defaultValue={jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE || ""}
                 name="job_item_template_title"
                 required
               />
             </div>
-            <div>
+            <div className="relative">
               <label
                 for="job_item_template_name"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
               >
                 Checklist Item Template Name
               </label>
@@ -230,55 +247,72 @@ const Page = ({ searchParams }) => {
                 type="text"
                 id="job_item_template_name"
                 placeholder="name"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
                 defaultValue={jobItemTemplate.JOB_ITEM_TEMPLATE_NAME || ""}
                 name="job_item_template_name"
                 required
               />
             </div>
-            <div>
+            <div className="relative">
               <label
                 for="Upper_Spec"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
               >
                 Upper Spec
               </label>
               <input
                 type="text"
                 id="upper_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
                 defaultValue={jobItemTemplate.UPPER_SPEC || ""}
                 name="upper_spec"
                 required
               />
             </div>
-            <div>
+            <div className="relative">
               <label
                 for="lower_spec"
-                class="block mb-2 text-sm font-medium text-gray-900 text-black"
+                //class="block mb-2 text-sm font-medium text-gray-900 text-black"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
               >
                 Lower Spec
               </label>
               <input
                 type="text"
                 id="lower_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
                 defaultValue={jobItemTemplate.LOWER_SPEC || ""}
                 name="lower_spec"
                 required
               />
             </div>
-            <div>
+            <div className="relative">
               <label
                 for="test_method"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
               >
                 Test Method
               </label>
               <input
                 type="text"
                 id="test_method"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                //className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
                 defaultValue={jobItemTemplate.TEST_METHOD || "-"}
                 name="test_method"
                 required

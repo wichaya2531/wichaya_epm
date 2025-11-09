@@ -26,6 +26,7 @@ const Page = () => {
   const router = useRouter();
   const [view, setView] = useState("month");
   const [date, setDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(moment().format("YYYY-MM"));
   const [refresh, setRefresh] = useState(false);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState("");
   const [selectedType, setSelectedType] = useState("");
@@ -43,11 +44,21 @@ const Page = () => {
     selectedType,
     selectedPlanType,
     refresh,
-    date
+    date,
+    currentMonth
   );
 
   const [open, setOpen] = useState(false);
   const [eventData, setEventData] = useState({});
+
+  const handleMonthChange = (newMonth) => {
+    // newMonth เช่น "2025-11"
+    const [y, m] = newMonth.split("-").map(Number);
+    const newDate = new Date(y, m - 1, 1); // วันที่ 1 ของเดือนนั้น
+    setDate(newDate); // ✅ เปลี่ยนเดือนของ Calendar
+    setCurrentMonth(newMonth); // เก็บไว้สำหรับ fetch data ถ้าจำเป็น
+    setRefresh(!refresh); // รีโหลดข้อมูลใหม่ถ้าต้องการ
+  };
 
   useEffect(() => {
     //console.log(" use fetch");
@@ -375,6 +386,8 @@ const handleshowOptionAfterClickEvent = async (b) => {
 };
 
 
+
+
   const handleNavigate = (newDate) => {
     setDate(newDate);
   };
@@ -383,6 +396,8 @@ const handleshowOptionAfterClickEvent = async (b) => {
     const newDate = new Date(e.target.value);
     setDate(newDate);
   };
+
+
 
   // Define the eventPropGetter function
   const eventPropGetter = (event, start, end, isSelected) => {
@@ -405,158 +420,158 @@ const handleshowOptionAfterClickEvent = async (b) => {
     };
   };
 
-  // Define the dayPropGetter function
-  const dayPropGetter = (date) => {
-    const isCurrentDate = moment(date).isSame(new Date(), "day");
-    return {
-      style: {
-        border: isCurrentDate ? "2px solid #bebebe" : undefined,
-        backgroundColor: isCurrentDate ? "white" : undefined,
-        boxShadow: isCurrentDate ? "0px 4px 8px rgba(0, 0, 0, 0.2)" : undefined,
-        padding: "2em",
-      },
-    };
-  };
+          // Define the dayPropGetter function
+          const dayPropGetter = (date) => {
+            const isCurrentDate = moment(date).isSame(new Date(), "day");
+            return {
+              style: {
+                border: isCurrentDate ? "2px solid #bebebe" : undefined,
+                backgroundColor: isCurrentDate ? "white" : undefined,
+                boxShadow: isCurrentDate ? "0px 4px 8px rgba(0, 0, 0, 0.2)" : undefined,
+                padding: "2em",
+              },
+            };
+          };
 
-  // Define the onSelectEvent function
-  const handleSelectEvent = (event) => {
-    //console.log('use handleSelectEvent event',event);
-    handleshowOptionAfterClickEvent(event);
+          // Define the onSelectEvent function
+          const handleSelectEvent = (event) => {
+            //console.log('use handleSelectEvent event',event);
+            handleshowOptionAfterClickEvent(event);
 
-    return ;  
-   
-    if (router) {
-      let viewMode = "";
-      if (event.status_name === "plan") {
-        Swal.fire({
-          title: "Checklist is in plan status",
-          text: "You cannot view the Checklist in plan status",
-          icon: "warning",
-          confirmButtonText: "OK",
-        });
-        return;
-      } else if (event.status_name === "complete") {
-        viewMode = "true";
-      } else if (event.status_name === "overdue") {
-        Swal.fire({
-          title: "Checklist is overdue",
-          text: "You cannot view the Checklist in overdue status",
-          icon: "warning",
-          confirmButtonText: "OK",
-        });
-        return;
-      }/* else if (event.status_name === "waiting for approval") {
-        Swal.fire({
-          title: "Checklist is waiting for approval",
-          text: "You cannot view the Checklist in waiting for approval status",
-          icon: "warning",
-          confirmButtonText: "OK",
-        });
-        return;
-      }*/ else if (
-        event.status_name === "new" ||
-        event.status_name === "ongoing" ||
-        event.status_name === "renew"
-      ) {
-        viewMode = "false";
-      }
-      sessionStorage.setItem("viewMode", viewMode);
-      
-    //  router.push(`/pages/view-jobs?job_id=${event.job_id}`);
-    const url = `/pages/view-jobs?job_id=${event.job_id}`;
-    window.open(url, "_blank"); // เปิดหน้าใหม่ในแท็บใหม่
+            return ;  
+          
+            if (router) {
+              let viewMode = "";
+              if (event.status_name === "plan") {
+                Swal.fire({
+                  title: "Checklist is in plan status",
+                  text: "You cannot view the Checklist in plan status",
+                  icon: "warning",
+                  confirmButtonText: "OK",
+                });
+                return;
+              } else if (event.status_name === "complete") {
+                viewMode = "true";
+              } else if (event.status_name === "overdue") {
+                Swal.fire({
+                  title: "Checklist is overdue",
+                  text: "You cannot view the Checklist in overdue status",
+                  icon: "warning",
+                  confirmButtonText: "OK",
+                });
+                return;
+              }/* else if (event.status_name === "waiting for approval") {
+                Swal.fire({
+                  title: "Checklist is waiting for approval",
+                  text: "You cannot view the Checklist in waiting for approval status",
+                  icon: "warning",
+                  confirmButtonText: "OK",
+                });
+                return;
+              }*/ else if (
+                event.status_name === "new" ||
+                event.status_name === "ongoing" ||
+                event.status_name === "renew"
+              ) {
+                viewMode = "false";
+              }
+              sessionStorage.setItem("viewMode", viewMode);
+              
+            //  router.push(`/pages/view-jobs?job_id=${event.job_id}`);
+            const url = `/pages/view-jobs?job_id=${event.job_id}`;
+            window.open(url, "_blank"); // เปิดหน้าใหม่ในแท็บใหม่
 
-    }
-
-  };
-  const handleShowmore = (events, date) => {
-    setEventData({ events, date: date.toString() });
-    setOpen(true);
-  };
-
-  const close = () => {
-    setOpen(false);
-  };
-
-  const handleChangeWorkgroup = (e) => {
-    setSelectedWorkgroup(e);
-    setRefresh(!refresh);
-  };
-
-
-  const handleChangeType = (selectedType) => {
-      //console.log("selectedType",selectedType);
-      try{
-            if(selectedType==="plan"){
-                    document.getElementById('plan-type-panel').style.display='block';
-            }else{
-                    document.getElementById('plan-type-panel').style.display='none';
             }
-      }catch(err){
-         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
-              console.log("Error Code : 114");
-              console.error("📄 Stack trace:\n", err.stack);
-              console.log(err);
-         }
-      }
+
+          };
+            const handleShowmore = (events, date) => {
+              setEventData({ events, date: date.toString() });
+              setOpen(true);
+            };
+
+            const close = () => {
+              setOpen(false);
+            };
+
+            const handleChangeWorkgroup = (e) => {
+              setSelectedWorkgroup(e);
+              setRefresh(!refresh);
+            };
 
 
-      setSelectedType(selectedType);
-      setRefresh(!refresh);
-    /* if (selectedType === "all") {
-      setEvents(allEvents);
-    } else {
-      const filtered = allEvents.filter(
-        (event) => event.status_name.toLowerCase() === selectedType.toLowerCase()
-      );
-      setEvents(filtered);
-    }*/
-  };
+            const handleChangeType = (selectedType) => {
+                //console.log("selectedType",selectedType);
+                try{
+                      if(selectedType==="plan"){
+                              document.getElementById('plan-type-panel').style.display='block';
+                      }else{
+                              document.getElementById('plan-type-panel').style.display='none';
+                      }
+                }catch(err){
+                  if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                        console.log("Error Code : 114");
+                        console.error("📄 Stack trace:\n", err.stack);
+                        console.log(err);
+                  }
+                }
 
 
-  const handleChangePlanType = (selectedPlanType) => {
-      //console.log("setEvents");
-      setSelectedPlanType(selectedPlanType);
-      setRefresh(!refresh);
-    /* if (selectedType === "all") {
-      setEvents(allEvents);
-    } else {
-      const filtered = allEvents.filter(
-        (event) => event.status_name.toLowerCase() === selectedType.toLowerCase()
-      );
-      setEvents(filtered);
-    }*/
-  };
+                setSelectedType(selectedType);
+                setRefresh(!refresh);
+              /* if (selectedType === "all") {
+                setEvents(allEvents);
+              } else {
+                const filtered = allEvents.filter(
+                  (event) => event.status_name.toLowerCase() === selectedType.toLowerCase()
+                );
+                setEvents(filtered);
+              }*/
+            };
 
 
-  const CustomEvent = ({ event }) => {
-  return (
-    <div style={{ display: "flex", alignItems: "center", overflow: "hidden" }}>
-      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1 }}>
-        {event.title}
-      </span>
-      {
-        event.status_name === "ongoing" && event.last_get_by && (
-          <AssignmentIndIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }}
-             onClick={(e) => {
-              e.stopPropagation();      // กัน bubble ไป parent
-              // e.preventDefault();    // ถ้าอยู่ใน <a> หรือ <button type="submit"> ให้เปิดบรรทัดนี้ด้วย
-              handleSelectEvent(event);
-            }}
-          />
-        )
-      }
-      {
-        event.abnormal_item===1&&(
-          <NotificationImportantSharpIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
-        )
-      }
-      {event.sticker_verify === true && (
-        <VerifiedIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
-      )}
-    </div>
-  );
-};
+            const handleChangePlanType = (selectedPlanType) => {
+                //console.log("setEvents");
+                setSelectedPlanType(selectedPlanType);
+                setRefresh(!refresh);
+              /* if (selectedType === "all") {
+                setEvents(allEvents);
+              } else {
+                const filtered = allEvents.filter(
+                  (event) => event.status_name.toLowerCase() === selectedType.toLowerCase()
+                );
+                setEvents(filtered);
+              }*/
+            };
+
+
+            const CustomEvent = ({ event }) => {
+            return (
+              <div style={{ display: "flex", alignItems: "center", overflow: "hidden" }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1 }}>
+                  {event.title}
+                </span>
+                {
+                  event.status_name === "ongoing" && event.last_get_by && (
+                    <AssignmentIndIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }}
+                      onClick={(e) => {
+                        e.stopPropagation();      // กัน bubble ไป parent
+                        // e.preventDefault();    // ถ้าอยู่ใน <a> หรือ <button type="submit"> ให้เปิดบรรทัดนี้ด้วย
+                        handleSelectEvent(event);
+                      }}
+                    />
+                  )
+                }
+                {
+                  event.abnormal_item===1&&(
+                    <NotificationImportantSharpIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
+                  )
+                }
+                {event.sticker_verify === true && (
+                  <VerifiedIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
+                )}
+              </div>
+            );
+          };
 
 
   return (
@@ -582,21 +597,35 @@ const handleshowOptionAfterClickEvent = async (b) => {
       </div>
       <div className="bg-white rounded-xl p-4">
         <div className="flex flex-col md:flex-row justify-between mb-4 mt-4">
-          <div className="flex flex-col md:flex-row">
-            <label className="mb-2 md:mb-0">
-              Date:
-              <input
-                type="date"
-                className="text-sm border border-gray-300 rounded-md p-1 ml-2 "
-                value={moment(date).format("YYYY-MM-DD")}
-                onChange={handleDateChange}
+          <div className="relative flex flex-col md:flex-row">
+              <label 
+                  className="pointer-events-none absolute left-3 bg-white px-1
+                            text-gray-500 text-sm transition-all z-10
+                            peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                            peer-valid:top-1 peer-valid:text-xs"    
+              >
+                Month
+              </label> 
+             <input
+                type="month"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+                value={moment(date).format("YYYY-MM")}
+                onChange={(e) => handleMonthChange(e.target.value)}   // ✅ ใช้ e.target.value
                 disabled={eventLoading}
               />
-            </label>
-            <label className="md:ml-4">
-              Workgroup:
+            </div>
+          <div className="relative flex flex-col md:flex-row items-start md:items-center">
+              <label 
+                    className="pointer-events-none absolute left-3 bg-white px-1 top-0
+                            text-gray-500 text-sm transition-all z-10
+                            peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                            peer-valid:top-1 peer-valid:text-xs"    
+                >
+                Workgroup
+              </label>
               <select
-                className={`text-sm border border-gray-300 rounded-md p-1 ml-2 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
+                className={`peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
                 onChange={(e) => handleChangeWorkgroup(e.target.value)}
                 disabled={eventLoading}
               >
@@ -613,13 +642,21 @@ const handleshowOptionAfterClickEvent = async (b) => {
                     {workgroup.WORKGROUP_NAME}
                   </option>
                 ))}
-              </select>
+              </select>            
+          </div>
+          <div className="relative flex flex-col md:flex-row items-start md:items-center">
+            <label 
+                className="pointer-events-none absolute left-3 bg-white px-1 top-0
+                            text-gray-500 text-sm transition-all z-10
+                            peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                            peer-valid:top-1 peer-valid:text-xs"                
+            >
+              Type 
             </label>
-
-            <label className="md:ml-4">
-              Type :
               { <select
-                className={`text-sm border border-gray-300 rounded-md p-1 ml-2 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
+                  //className={`text-sm border border-gray-300 rounded-md p-1 ml-2 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
+                  className={`peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
                 onChange={(e) => handleChangeType(e.target.value)}
                 disabled={eventLoading}
               >
@@ -644,9 +681,11 @@ const handleshowOptionAfterClickEvent = async (b) => {
                   </option>
                 ))} */}
               </select> }
-            </label>
-            <label id='plan-type-panel' style={{display:'none'}} className="md:ml-4">
+           </div>
+          <div id='plan-type-panel' style={{display:'none'}} className="relative flex flex-col md:flex-row items-start md:items-center">
+            <label   className="md:ml-4">
                   Plan Type:
+             </label>      
                   { <select
                 className={`text-sm border border-gray-300 rounded-md p-1 ml-2 ${eventLoading ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : ''}`}
                 onChange={(e) => handleChangePlanType(e.target.value)}
@@ -662,10 +701,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
                 <option value="3monthly">3Monthly</option>
                 <option value="6monthly">6Monthly</option>
                 <option value="yearly">Yearly</option>           
-              </select> }  
-            </label>
-
-
+              </select> }            
           </div>
         </div>
         <div className="mb-4">
@@ -760,6 +796,7 @@ const handleshowOptionAfterClickEvent = async (b) => {
              components={{
               event: CustomEvent,
             }}
+            toolbar={false}   // 🔹 ปิด toolbar ทั้งแถบ
           />
         </div>
       </div>

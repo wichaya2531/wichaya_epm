@@ -128,10 +128,14 @@ const JobForm = ({
           isShowJobInfo ? "" : "hidden"
         }`}
       >
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+             className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Checklist Id
           </label>
@@ -139,15 +143,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+             className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.JobID}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Checklist Name
           </label>
@@ -155,15 +165,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.Name}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Document No.
           </label>
@@ -171,15 +187,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.DocumentNo}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Line Name.
           </label>
@@ -187,15 +209,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.LINE_NAME}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Checklist Version
           </label>
@@ -203,15 +231,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.ChecklistVer}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Workgroup Name
           </label>
@@ -219,15 +253,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.WorkgroupName}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Activated By
           </label>
@@ -235,15 +275,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.ActivatedBy}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Submitted By
           </label>
@@ -251,15 +297,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.SubmittedBy}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Timeout
           </label>
@@ -267,15 +319,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.Timeout}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1  
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Activated At
           </label>
@@ -283,15 +341,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.ActivatedAt}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Submited At
           </label>
@@ -299,15 +363,21 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.SubmitedAt}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+             className="pointer-events-none absolute left-3 bg-white px-1
+                         text-gray-500 text-sm transition-all z-10
+                         peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                         peer-valid:top-1 peer-valid:text-xs"
           >
             LastestUpdate At
           </label>
@@ -315,16 +385,22 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.LastestUpdate}
             disabled
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Status
           </label>
@@ -332,16 +408,22 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+           // className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.Status}
             disabled
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             {/* WD Tag / Machine ID */}
             {process.env.NEXT_PUBLIC_LABEL_WD_TAG}
@@ -350,16 +432,22 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.WD_TAG}
             disabled
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             {/* Machine Name */}
             {process.env.NEXT_PUBLIC_LABEL_MACHINE_NAME}
@@ -368,7 +456,9 @@ const JobForm = ({
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                        focus:outline-none focus:border-blue-500"
             value={jobData.MachineName}
             disabled
           />

@@ -138,7 +138,7 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
 
 
   const [showPanel, setShowPanel] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isPictureRequired = jobData.PICTURE_EVEDENT_REQUIRE;
 
@@ -146,6 +146,20 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [previewItemPicture, setPreviewItemPicture] = useState(null);
 
   var jobItemSelected = null;
+
+
+
+  const preHandleSubmit = (e) => {
+      // ตรวจสอบเงื่อนไขก่อนส่งฟอร์ม
+      setIsSubmitting(true);
+      handleSubmit(e);
+      setTimeout(() => {
+            setIsSubmitting(false);
+      }, 6000);
+  };
+
+
+
 
   const handleUploadFileToJobItem = (item) => {
     jobItemSelected = item;
@@ -353,7 +367,7 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
   return (
     <form
       className="flex flex-col gap-8 p-4 bg-white rounded-xl"
-      onSubmit={handleSubmit}
+      onSubmit={preHandleSubmit}
     >
       <input
         type="file"
@@ -384,10 +398,14 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
           isShowJobInfo ? "" : "hidden"
         }`}
       >
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+             className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Checklist Id
           </label>
@@ -395,15 +413,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+             className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.JobID}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Checklist Name
           </label>
@@ -411,15 +435,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.Name}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Document No.
           </label>
@@ -427,15 +457,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.DocumentNo}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Line Name.
           </label>
@@ -443,15 +479,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.LINE_NAME}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1  
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Checklist Version
           </label>
@@ -459,15 +501,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.ChecklistVer}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"  
           >
             Workgroup Name
           </label>
@@ -475,15 +523,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.WorkgroupName}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+           className="pointer-events-none absolute left-3 bg-white px-1
+                       text-gray-500 text-sm transition-all z-10
+                       peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                       peer-valid:top-1 peer-valid:text-xs"
           >
             Activated By
           </label>
@@ -491,15 +545,20 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.ActivatedBy}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Submitted By
           </label>
@@ -507,16 +566,22 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.SubmittedBy}
             disabled
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Timeout
           </label>
@@ -524,15 +589,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.Timeout}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Activated At
           </label>
@@ -540,15 +611,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.ActivatedAt}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             LastestUpdate At
           </label>
@@ -556,15 +633,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.LastestUpdate}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Submitted At
           </label>
@@ -572,15 +655,21 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.SubmitedAt}
             disabled
           />
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             Status
           </label>
@@ -588,16 +677,22 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             type="text"
             id="disabled-input"
             aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+            className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
             value={jobData.Status}
             disabled
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+            //className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             {/* WD Tag / Machine ID */}
             {process.env.NEXT_PUBLIC_LABEL_WD_TAG}[{machines.length===0?" (No Machine Data)":machines.length}]
@@ -608,7 +703,9 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
               type="text"
               id="disabled-input"
               aria-label="disabled input"
-              className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+              //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               value={jobData.WD_TAG}
               disabled
             />
@@ -631,7 +728,8 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
           : (
             /* edit mode กรณีที่ไม่มี wd tag */    
             <Select
-              className="mb-5"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               inputId="my-wd-tag-select"   // 👈 ตั้ง id ที่นี่
               options={machines.map((item) => ({
                 value: item.wd_tag,
@@ -648,10 +746,14 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
             />
           )}
         </div>
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <label
             htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
+           // className="text-sm ipadmini:text-md font-bold text-gray-600"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
           >
             {/* Machine Name */}
             {process.env.NEXT_PUBLIC_LABEL_MACHINE_NAME}
@@ -662,7 +764,9 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                 type="text"
                 id="disabled-input"
                 aria-label="disabled input"
-                className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+                //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
                 value={jobData.MachineName}
                 disabled
               />
@@ -671,7 +775,11 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                 type="text"
                 id="disabled-input"
                 aria-label="disabled input"
-                className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+                //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+                value="No Machine Assigned"
+                disabled
               />
             )
           ) : (
@@ -679,7 +787,9 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
               type="text"
               id="disabled-input"
               aria-label="disabled input"
-              className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+              //className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               value={machineName}
               placeholder={jobData.MachineName}
               disabled
@@ -1273,12 +1383,14 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
         </div>
         <div>
           {!view && jobData.Status && jobData.Status !== "complete" && (
-            <button
-              type="submit"          
-              className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-14 py-3 bg-primary text-base font-medium text-white hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              Submit
-            </button>
+           <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`inline-flex justify-center rounded-md border border-transparent shadow-sm px-14 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm
+              ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-secondary'}`}
+          >
+            {isSubmitting ? 'Waiting...' : 'Submit'}
+          </button>
           )}
         </div>
       </div>

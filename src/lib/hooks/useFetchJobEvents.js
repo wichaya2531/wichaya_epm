@@ -1,104 +1,126 @@
-// http://localhost:3000/api/job/get-job-events?workgroup_id=6629f7235c49892a9ddf6b6b
-import { useState, useEffect } from "react";
-import { config } from "@/config/config.js";
+import { useState, useEffect, useMemo } from "react";
+import moment from "moment";
 
+function getFixedMonthGrid(year, month, weekStartsOn = 0) {
+  const first = new Date(year, month - 1, 1);
+  const day = first.getDay();
+  const diffToStart = (day - weekStartsOn + 7) % 7;
 
-const useFetchJobEvents = (workgroup_id,selectedType,selectedPlanType,refresh = null,date = null) => {
-    const [events, setEvents] = useState([]);
-    const [eventLoading, setEventLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const start = new Date(first);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(first.getDate() - diffToStart);
 
-    console.log("dateSelected",date);
-    
+  const end = new Date(start);
+  end.setDate(start.getDate() + 41);
+  end.setHours(23, 59, 59, 999);
 
-    // useEffect(() => {
+  return { start, end };
+}
 
-    //                 const fetchJobEvents = async () => {
-    //                     setEventLoading(true);
-    //                     setError(null);
-    //                     try {
-    //                         const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}&type=${selectedType}&plantype=${selectedPlanType}`, { next: { revalidate: 10 } });
-    //                         const data = await res.json();
-    //                         console.log("data5 -> ", data);                            
-    //                         setEvents(data.events);
-    //                         setEventLoading(false);
-    //                     } catch (error) {
-    //                         setError(error);
-    //                         setEventLoading(false);
-    //                     }
-    //                 };
-    //     if(workgroup_id){
-    //         setEventLoading(true);
-    //         fetchJobEvents();
-    //     }                
-                   
+function getCurrentMonthGrid(weekStartsOn = 0) {
+  const now = new Date();
+  return getFixedMonthGrid(now.getFullYear(), now.getMonth() + 1, weekStartsOn);
+}
 
-    // }, [workgroup_id,selectedType, refresh]);
+const useFetchJobEvents = (
+  workgroup_id,
+  selectedType,
+  selectedPlanType,
+  refresh = null,
+  date = null,
+  currentMonth
+) => {
+  //console.log("currentMonth in hook", currentMonth);
 
+  // ✅ ใช้ useMemo คำนวณช่วงเวลาใหม่ทุกครั้งที่เดือนเปลี่ยน
+  const range = useMemo(() => {
+    let start, end;
 
-                useEffect(() => {
-                const fetchStream = async () => {
-                    setEventLoading(true);
-                    setError(null);
-                    setEvents([]); // เคลียร์ก่อนโหลดใหม่
+    if (currentMonth) {
+      if (typeof currentMonth === "string") {
+        const [y, m] = currentMonth.split("-").map(Number);
+        ({ start, end } = getFixedMonthGrid(y, m, 0));
+      } else if (moment.isMoment(currentMonth)) {
+        const y = currentMonth.year();
+        const m = currentMonth.month() + 1;
+        ({ start, end } = getFixedMonthGrid(y, m, 0));
+      } else if (currentMonth instanceof Date) {
+        const y = currentMonth.getFullYear();
+        const m = currentMonth.getMonth() + 1;
+        ({ start, end } = getFixedMonthGrid(y, m, 0));
+      }
+    } else {
+      ({ start, end } = getCurrentMonthGrid(0));
+    }
 
-                    try {
-                    const res = await fetch(`/api/job/get-job-events?workgroup_id=${workgroup_id}&type=${selectedType}&plantype=${selectedPlanType}`);
-                    const reader = res.body?.getReader();
-                    const decoder = new TextDecoder();
-                    let buffer = '';
+    const startISO = moment(start).startOf("day").toISOString();
+    const endISO = moment(end).endOf("day").toISOString();
 
-                    if (!reader) throw new Error("ไม่สามารถอ่าน stream ได้");
-                    
-                    
-                    while (true) {
-                        const { value, done } = await reader.read();
-                        if (done) break;
+    //console.log("📅 Range:", moment(start).format("YYYY-MM-DD"), "→", moment(end).format("YYYY-MM-DD"));
+    return { startISO, endISO };
+  }, [currentMonth]);
 
-                        buffer += decoder.decode(value, { stream: true });
+  const [events, setEvents] = useState([]);
+  const [eventLoading, setEventLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-                        let boundary;
-                        while ((boundary = buffer.indexOf('\n')) >= 0) {
-                        const chunk = buffer.slice(0, boundary).trim();
-                        buffer = buffer.slice(boundary + 1);
+  // ✅ ใช้ range.startISO / range.endISO แทน start / end เก่า
+  useEffect(() => {
+    const fetchStream = async () => {
+      setEventLoading(true);
+      setError(null);
+      setEvents([]);
+      
+      //console.log("Fetching events for range:", range.startISO, "to", range.endISO);
+      
+      try {
+        const res = await fetch(
+          `/api/job/get-job-events?workgroup_id=${workgroup_id}&type=${selectedType}&plantype=${selectedPlanType}&start=${range.startISO}&end=${range.endISO}`
+        );
 
-                        if (chunk) {
-                            try {
-                            const data = JSON.parse(chunk);
-                           // if(preload){
-                             //   preload=!preload;
-                             //   console.log('data.',data);
-                           // }
-                            
-                            if (Array.isArray(data)) {
-                                setEvents(prev => [...prev, ...data]); // เพิ่มทีละก้อน
-                            }
-                            } catch (err) {
-                                 //console.warn("❌ ไม่สามารถ parse JSON ได้:", chunk);
-                            }
-                        }
-                        }
-                    }
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        if (!reader) throw new Error("ไม่สามารถอ่าน stream ได้");
 
-                    setEventLoading(false);
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
 
-                        console.log('final events',events);   
+          let boundary;
+          while ((boundary = buffer.indexOf("\n")) >= 0) {
+            const chunk = buffer.slice(0, boundary).trim();
+            buffer = buffer.slice(boundary + 1);
 
-                    } catch (error) {
-                    console.error("โหลด stream ล้มเหลว", error);
-                    setError(error);
-                    setEventLoading(false);
-                    }
-                };
-
-                if (workgroup_id) {
-                    fetchStream();
+            if (chunk) {
+              try {
+                const data = JSON.parse(chunk);
+                if (Array.isArray(data)) {
+                  setEvents((prev) => [...prev, ...data]);
                 }
-                }, [workgroup_id, selectedType, selectedPlanType, refresh]);
+              } catch (err) {
+                // console.warn("❌ parse error:", chunk);
+              }
+            }
+          }
+        }
 
+        setEventLoading(false);
+        //console.log("✅ Final events:", events);
+      } catch (error) {
+        console.error("โหลด stream ล้มเหลว", error);
+        setError(error);
+        setEventLoading(false);
+      }
+    };
 
+    if (workgroup_id) {
+      fetchStream();
+    }
+  }, [workgroup_id, selectedType, selectedPlanType, refresh, range.startISO, range.endISO]);
 
-    return { events, eventLoading, error };
+  return { events, eventLoading, error };
 };
 
 export default useFetchJobEvents;

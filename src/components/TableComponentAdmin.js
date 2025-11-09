@@ -222,12 +222,19 @@ const clearFilters = (e) => {
           <div className="max-w-[20vw] inline-block font-medium text-black ">
                Filter :
           </div>
-          <div className="max-w-[20vw] inline-block">
-            <span>Rows:</span>
+          <div className="relative max-w-[20vw] inline-block">
+            <span
+                 className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
+            >Rows</span>
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-[100%] inline-block"
+              //className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-[100%] inline-block"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               id="table-rows-num"
             >
               <option value={5}>5</option>
@@ -257,14 +264,27 @@ const clearFilters = (e) => {
           )}
           
           <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+            <label
+              htmlFor="searchTerm"
+              //className="block text-xs text-gray-600 mb-1"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
+            >
+              by [Checklist Name]
+            </label>
             <input
-              className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[180px]"
-              type="text"
-              placeholder="by [Checklist Name]"
+              //className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[180px]"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+              id="searchTerm"
+              //placeholder="by [Checklist Name]"
+              type="text"             
               value={searchTerm}
               onChange={handleSearch}
             />
-            <SearchIcon className="absolute left-2 top-2 text-gray-500" />
+            {/* <SearchIcon className="absolute left-2 top-2 text-gray-500" /> */}
           </div>
           <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
                    {/* Select โหมด AND/OR */}
@@ -283,14 +303,26 @@ const clearFilters = (e) => {
                   </div>
           </div>
           <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+            <label
+              htmlFor="searchTerm1"
+              //className="block text-xs text-gray-600 mb-1"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600" 
+            >
+              by [Line Name]
+            </label>
             <input
-              className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
+              //className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+              id="searchTerm1"
               type="text"
-              placeholder="by [Line Name]"
+              //placeholder="by [Line Name]"
               value={searchTerm1}
               onChange={handleSearch1}
             />
-            <SearchIcon className="absolute left-2 top-2 text-gray-500" />
+            {/* <SearchIcon className="absolute left-2 top-2 text-gray-500" /> */}
           </div>
           <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
             <button

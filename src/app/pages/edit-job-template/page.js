@@ -14,6 +14,7 @@ import Swal from "sweetalert2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { getSession } from "@/lib/utils/utils.js";
 import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
+import { border } from "@chakra-ui/react";
 
 // ---------------------- Timeout options & helpers (นอกคอมโพเนนต์) ----------------------
 const TIMEOUT_OPTIONS = [
@@ -479,18 +480,23 @@ const Page = ({ searchParams }) => {
       </h1>
 
       <div className="mb-4 p-4 bg-white rounded-xl">
-        <div className="grid gap-6 mb-6 md:grid-cols-3">
-          <div>
+        <div className=" grid gap-6 mb-6 md:grid-cols-3">
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="author"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Author
             </label>
             <input
               type="text"
               id="author"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              //className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={user?.name || ""}
               name="author"
               required
@@ -498,17 +504,23 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="workgroup"
-              className="block mb-2 text-sm font-medium text-black"
+              //className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Workgroup
             </label>
             <input
               type="text"
               id="workgroup"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              //className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={user?.workgroup || ""}
               name="workgroup"
               required
@@ -516,10 +528,14 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="due_date"
-              className="block mb-2 text-sm font-medium text-black"
+              //className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Due Date
             </label>
@@ -528,23 +544,31 @@ const Page = ({ searchParams }) => {
               id="due_date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              //className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               name="due_date"
               required
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="job_template_name"
-              className="block mb-2 text-sm font-medium text-black"
+              //className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"  
             >
               Checklist Template Name
             </label>
             <input
               type="text"
               id="job_template_name"
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              //className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={jobTemplateName}
               onChange={(e) => setJobTemplateName(e.target.value)}
               name="job_template_name"
@@ -552,17 +576,22 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="doc_num"
-              className="block mb-2 text-sm font-medium text-black"
+              //className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Document no.
             </label>
             <input
               type="text"
               id="doc_num"
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               name="doc_num"
               value={docNum}
               onChange={(e) => setDocNum(e.target.value)}
@@ -570,17 +599,22 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="checklist_ver"
-              className="block mb-2 text-sm font-medium text-black"
+              //className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Checklist Version
             </label>
             <input
               type="text"
               id="checklist_ver"
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               name="checklist_ver"
               value={checklistVer}
               onChange={(e) => setChecklistVer(e.target.value)}
@@ -588,17 +622,23 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div  className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="line_name"
-              className="block mb-2 text-sm font-medium text-black"
+             // className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Line Name
             </label>
             <select
               id="line_name"
               name="line_name"
-              className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              //className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={lineName}
               onChange={(e) => setLineName(e.target.value)}
             >
@@ -615,10 +655,14 @@ const Page = ({ searchParams }) => {
             </select>
           </div>
 
-          <div className="z-50">
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="timeout-select"
-              className="block mb-2 text-sm font-medium text-black"
+              //className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Timeout
             </label>
@@ -629,7 +673,9 @@ const Page = ({ searchParams }) => {
                 hasTouchedTimeout.current = true;
                 setTimeoutValue(e.target.value);
               }}
-              className="bg-white border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-black"
+              //className="bg-white border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-black"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
             >
               <option value="">Select Timeout</option>
               {TIMEOUT_OPTIONS.map((opt) => (
@@ -640,10 +686,14 @@ const Page = ({ searchParams }) => {
             </select>
           </div>
 
-          <div className="z-50">
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="checklist-type"
-              className="block mb-2 text-sm font-medium text-black"
+              //className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Checklist Type
             </label>
@@ -659,7 +709,8 @@ const Page = ({ searchParams }) => {
               name="checklist-type"
               value={checklistType}
               onChange={setChecklistType}
-              className="z-50"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -732,10 +783,14 @@ const Page = ({ searchParams }) => {
 
           </div>
 
-            <div className="flex flex-col items-start space-y-2 border-red-300">
+            <div className="relative flex flex-col items-start space-y-2 border-red-300">
               <label
                 htmlFor="profileGroup"
-                className="block mb-2 text-sm font-medium text-black"
+                //className="block mb-2 text-sm font-medium text-black"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
               >
                 Profiles
               </label>
@@ -743,7 +798,9 @@ const Page = ({ searchParams }) => {
               <select
                 id="profileGroup"
                 name="profileGroup"
-                className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                //className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 value={profileGroup}
                 onChange={(e) => {
                   //console.log("profileGroup changed:", e.target.value);
@@ -763,10 +820,14 @@ const Page = ({ searchParams }) => {
           {/* Notify Active */}
           <div className="flex flex-col gap-5 ">
             <div className="flex gap-5 w-full">
-              <div className="flex flex-col w-full">
+              <div className="relative flex flex-col w-full">
                 <label
                   htmlFor="notify-active"
-                  className="block mb-2 text-sm font-medium text-black"
+                 // className="block mb-2 text-sm font-medium text-black"
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
                 >
                   Add Notify Active
                 </label>
@@ -776,7 +837,8 @@ const Page = ({ searchParams }) => {
                   value={selectedNotify}
                   onChange={setSelectedNotify}
                   isSearchable
-                  className="z-30"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 />
               </div>
               <button
@@ -805,10 +867,14 @@ const Page = ({ searchParams }) => {
           {/* Notify Overdue */}
           <div className="flex flex-col gap-5">
             <div className="flex gap-5 w-full">
-              <div className="flex flex-col w-full">
+              <div className="relative flex flex-col w-full">
                 <label
                   htmlFor="notify-overdue"
-                  className="block mb-2 text-sm font-medium text-black"
+                 // className="block mb-2 text-sm font-medium text-black"
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
                 >
                   Add Notify Overdue
                 </label>
@@ -818,7 +884,10 @@ const Page = ({ searchParams }) => {
                   value={selectedNotifyOverdue}
                   onChange={setSelectedNotifyOverdue}
                   isSearchable
-                  className="z-20"
+                  style={{border:'none'}}
+                  //className="z-20"
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 
+                       focus:outline-none focus:border-blue-500"
                 />
               </div>
               <button
@@ -847,10 +916,14 @@ const Page = ({ searchParams }) => {
           {/* Approver */}
           <div className="flex flex-col gap-5 ">
             <div className="flex gap-5 w-full">
-              <div className="flex flex-col w-full">
+              <div className="relative flex flex-col w-full">
                 <label
                   htmlFor="approver"
-                  className="block mb-2 text-sm font-medium text-black"
+                  //className="block mb-2 text-sm font-medium text-black"
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
                 >
                   Add Approver
                 </label>
@@ -860,7 +933,9 @@ const Page = ({ searchParams }) => {
                   value={selectedApprover}
                   onChange={setSelectedApprover}
                   isSearchable
-                  className="z-40"
+                  //className="z-40"
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 />
               </div>
               <button
