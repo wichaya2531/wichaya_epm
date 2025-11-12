@@ -85,6 +85,7 @@ const createTable = async ({
             })),
             cols_width: Array.from({ length: columns }).fill(50),
             rows_height: Array.from({ length: rows }).fill(25),
+            merged_cells: [],
             position: {
                 x: 0,
                 y: 0,
