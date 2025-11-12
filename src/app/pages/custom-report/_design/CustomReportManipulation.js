@@ -77,7 +77,7 @@ const CustomReportManipulation = ({
     return jobTemplates && (
         <>
             <div>
-                {currentCustomReportProfile.customReportTables.map(({cells, cols_width, rows_height}, index) => (
+                {currentCustomReportProfile.customReportTables.map(({cells, cols_width, rows_height, merged_cells}, index) => (
                     <div
                         key={index}
                         className={"flex gap-2"}
@@ -131,9 +131,10 @@ const CustomReportManipulation = ({
                         >
                             <Spreadsheet
                                 cells={cells}
+                                merged_cells={merged_cells}
                                 cols_width={cols_width}
                                 rows_height={rows_height}
-                                onChange={({cells, cols_width, rows_height}) => {
+                                onChange={({cells, cols_width, rows_height, merged_cells}) => {
                                     setCustomReportProfiles(js => js.map(
                                         j => (
                                             j.id === currentCustomReportProfileId ? {
@@ -144,6 +145,7 @@ const CustomReportManipulation = ({
                                                         cells,
                                                         cols_width,
                                                         rows_height,
+                                                        merged_cells,
                                                     } : table
                                                 ))
                                             } : j

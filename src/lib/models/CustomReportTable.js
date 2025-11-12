@@ -97,25 +97,13 @@ const CoordinateSchema = new mongoose.Schema({
     _id: false,
 })
 
-const cellSchema = new mongoose.Schema({
+const CellSchema = new mongoose.Schema({
     value: {
         type: String,
         required: false,
     },
     style: {
         type: StyleSchema,
-        required: false,
-    },
-    from: {
-        type: CoordinateSchema,
-        required: false,
-    },
-    expand_x: {
-        type: Number,
-        required: false,
-    },
-    expand_y: {
-        type: Number,
         required: false,
     },
     image_id: {
@@ -126,9 +114,21 @@ const cellSchema = new mongoose.Schema({
     _id: false,
 })
 
+const MergedCellsSchema = new mongoose.Schema({
+    start: {
+        type: CoordinateSchema,
+        required: true,
+    },
+    end: {
+        type: CoordinateSchema,
+        required: true,
+    },
+    _id: false,
+})
+
 const customReportTableSchema = new mongoose.Schema({
     cells: {
-        type: [[cellSchema]],
+        type: [[CellSchema]],
         required: true,
     },
     cols_width: {
@@ -137,6 +137,10 @@ const customReportTableSchema = new mongoose.Schema({
     },
     rows_height: {
         type: [Number],
+        required: true,
+    },
+    merged_cells: {
+        type: [MergedCellsSchema],
         required: true,
     },
     position: {

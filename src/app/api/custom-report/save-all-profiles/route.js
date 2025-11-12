@@ -35,7 +35,7 @@ export const POST = async (req) => {
                 },
             },
             ...profiles.map(({customReportTables}) => (
-                customReportTables?.map(({id, cells, cols_width, rows_height, position}) => (
+                customReportTables?.map(({id, cells, cols_width, rows_height, merged_cells, position}) => (
                     inDbTableIds.includes(id) ? {
                         updateOne: {
                             filter: {
@@ -46,6 +46,7 @@ export const POST = async (req) => {
                                     cells,
                                     cols_width,
                                     rows_height,
+                                    merged_cells,
                                     position,
                                 } ,
                             },
@@ -56,6 +57,7 @@ export const POST = async (req) => {
                                 cells,
                                 cols_width,
                                 rows_height,
+                                merged_cells,
                                 position,
                             }
                         },

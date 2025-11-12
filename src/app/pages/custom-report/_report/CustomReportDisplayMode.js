@@ -93,14 +93,14 @@ const CustomReportDisplayMode = ({
                 className={"w-full overflow-x-auto"}
             >
                 <div
-                    className="flex border border-transparent bg-white relative"
+                    className="flex border border-transparent bg-white relative overflow-hidden"
                     style={{
                         height: `${currentCustomReportProfile.height}px`,
                         width: `${currentCustomReportProfile.width}px`,
                     }}
                     ref={reportRef}
                 >
-                    {formattedTables?.map(({cells, cols_width, rows_height, position}, index) => (
+                    {formattedTables?.map(({cells, cols_width, rows_height, merged_cells, position}, index) => (
                         <div
                             key={index}
                             className="w-min absolute"
@@ -114,6 +114,7 @@ const CustomReportDisplayMode = ({
                                 cells={cells}
                                 cols_width={cols_width}
                                 rows_height={rows_height}
+                                merged_cells={merged_cells}
                                 viewOnlyMode={true}
                             />
                         </div>
