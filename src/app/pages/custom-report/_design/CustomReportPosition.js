@@ -153,7 +153,7 @@ const DynamicTemplatePosition = ({
         <div
             className={"overflow-x-auto"}
         >
-            <div className={"flex w-fit"}>
+            <div className={"flex w-fit overflow-hidden"}>
                 <div
                     className="w-full flex border border-gray-300 bg-white relative"
                     ref={containerRef}
@@ -162,7 +162,7 @@ const DynamicTemplatePosition = ({
                         width: `${currentCustomReportProfile.width}px`,
                     }}
                 >
-                    {currentCustomReportProfile.customReportTables.map(({cells, cols_width, rows_height, position}, index) => (
+                    {currentCustomReportProfile.customReportTables.map(({cells, cols_width, rows_height, merged_cells, position}, index) => (
                         <div
                             key={index}
                             className={"absolute overflow-hidden max-w-full"}
@@ -180,6 +180,7 @@ const DynamicTemplatePosition = ({
                                     cells={cells}
                                     cols_width={cols_width}
                                     rows_height={rows_height}
+                                    merged_cells={merged_cells}
                                     viewOnlyMode={true}
                                 />
                             </div>

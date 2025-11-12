@@ -44,6 +44,7 @@ export const POST = async (req) => {
                 cells: 1,
                 cols_width: 1,
                 rows_height: 1,
+                merged_cells: 1,
                 position: 1,
             }
         }])
