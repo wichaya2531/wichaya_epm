@@ -17,6 +17,8 @@ const ColorSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+}, {
+    _id: false,
 })
 
 const BorderStyleSchema = new mongoose.Schema({
@@ -32,6 +34,8 @@ const BorderStyleSchema = new mongoose.Schema({
         type: ColorSchema,
         required: true,
     },
+}, {
+    _id: false,
 })
 
 const BorderSchema = new mongoose.Schema({
@@ -51,6 +55,8 @@ const BorderSchema = new mongoose.Schema({
         type: BorderStyleSchema,
         required: false,
     },
+}, {
+    _id: false,
 })
 
 const StyleSchema = new mongoose.Schema({
@@ -82,6 +88,12 @@ const StyleSchema = new mongoose.Schema({
         type: BorderSchema,
         required: false,
     },
+    rotate: {
+        type: Number,
+        required: false,
+    }
+}, {
+    _id: false,
 })
 
 const CoordinateSchema = new mongoose.Schema({
@@ -123,6 +135,7 @@ const MergedCellsSchema = new mongoose.Schema({
         type: CoordinateSchema,
         required: true,
     },
+}, {
     _id: false,
 })
 

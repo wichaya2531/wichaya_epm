@@ -74,19 +74,6 @@ const DynamicTemplatePosition = ({
                     ...(profile.id === currentCustomReportProfile.id && {
                         height: newHeight,
                     }),
-                    customReportTables: profile.customReportTables.map((table, tableIndex) => ({
-                        ...table,
-                        position: {
-                            ...table.position,
-                            y: Math.max(
-                                0,
-                                Math.min(
-                                    table.position.y,
-                                    containerRef.current.clientHeight - containerRef.current.children[tableIndex].clientHeight
-                                )
-                            ),
-                        }
-                    }))
                 })))
             }
             if (resizingWidth) {
@@ -97,19 +84,6 @@ const DynamicTemplatePosition = ({
                     ...(profile.id === currentCustomReportProfile.id && {
                         width: newWidth,
                     }),
-                    customReportTables: profile.customReportTables.map((table, tableIndex) => ({
-                        ...table,
-                        position: {
-                            ...table.position,
-                            x: Math.max(
-                                0,
-                                Math.min(
-                                    table.position.x,
-                                    containerRef.current.clientWidth - containerRef.current.children[tableIndex].clientWidth
-                                )
-                            ),
-                        }
-                    }))
                 })))
             }
             if (positionChanging !== -1) {
@@ -153,62 +127,66 @@ const DynamicTemplatePosition = ({
         <div
             className={"overflow-x-auto"}
         >
-            <div className={"flex w-fit overflow-hidden"}>
-                <div
-                    className="w-full flex border border-gray-300 bg-white relative"
-                    ref={containerRef}
-                    style={{
-                        height: `${currentCustomReportProfile.height}px`,
-                        width: `${currentCustomReportProfile.width}px`,
-                    }}
-                >
-                    {currentCustomReportProfile.customReportTables.map(({cells, cols_width, rows_height, merged_cells, position}, index) => (
-                        <div
-                            key={index}
-                            className={"absolute overflow-hidden max-w-full"}
-                            style={{
-                                marginLeft: `${position.x}px`,
-                                marginTop: `${position.y}px`,
-                            }}
-                            onMouseDown={(e) => onMouseDownTable(e, index)}
-                        >
+            <div
+                className={"py-[15px]"}
+            >
+                <div className={"flex w-fit overflow-hidden"}>
+                    <div
+                        className="w-full flex border border-gray-300 bg-white relative"
+                        ref={containerRef}
+                        style={{
+                            height: `${currentCustomReportProfile.height}px`,
+                            width: `${currentCustomReportProfile.width}px`,
+                        }}
+                    >
+                        {currentCustomReportProfile.customReportTables.map(({cells, cols_width, rows_height, merged_cells, position}, index) => (
                             <div
-                                className={"w-min h-min"}
+                                key={index}
+                                className={"absolute overflow-hidden max-w-full"}
+                                style={{
+                                    marginLeft: `${position.x}px`,
+                                    marginTop: `${position.y}px`,
+                                }}
+                                onMouseDown={(e) => onMouseDownTable(e, index)}
                             >
-                                <Spreadsheet
-                                    key={index}
-                                    cells={cells}
-                                    cols_width={cols_width}
-                                    rows_height={rows_height}
-                                    merged_cells={merged_cells}
-                                    viewOnlyMode={true}
-                                />
+                                <div
+                                    className={"w-min h-min"}
+                                >
+                                    <Spreadsheet
+                                        key={index}
+                                        cells={cells}
+                                        cols_width={cols_width}
+                                        rows_height={rows_height}
+                                        merged_cells={merged_cells}
+                                        viewOnlyMode={true}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+                    <div
+                        className="flex w-2 bg-gray-200 hover:cursor-col-resize"
+                        style={{
+                            height: `${currentCustomReportProfile.height}px`,
+                        }}
+                        onMouseDown={onMouseDownResizeWidthContainer}
+                    />
                 </div>
                 <div
-                    className="flex w-2 bg-gray-200 hover:cursor-col-resize"
-                    style={{
-                        height: `${currentCustomReportProfile.height}px`,
-                    }}
-                    onMouseDown={onMouseDownResizeWidthContainer}
-                />
-            </div>
-            <div
-                className="flex w-fit"
-            >
-                <div
-                    className="flex h-2 bg-gray-200 hover:cursor-row-resize"
-                    style={{
-                        width: `${currentCustomReportProfile.width}px`,
-                    }}
-                    onMouseDown={onMouseDownResizeHeightContainer}
-                />
-                <div
-                    className={"flex h-2 w-2 bg-gray-200 hover:cursor-nw-resize"}
-                    onMouseDown={onMouseDownResizeBothContainer}
-                />
+                    className="flex w-fit"
+                >
+                    <div
+                        className="flex h-2 bg-gray-200 hover:cursor-row-resize"
+                        style={{
+                            width: `${currentCustomReportProfile.width}px`,
+                        }}
+                        onMouseDown={onMouseDownResizeHeightContainer}
+                    />
+                    <div
+                        className={"flex h-2 w-2 bg-gray-200 hover:cursor-nw-resize"}
+                        onMouseDown={onMouseDownResizeBothContainer}
+                    />
+                </div>
             </div>
         </div>
     )

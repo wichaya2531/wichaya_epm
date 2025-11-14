@@ -1,6 +1,6 @@
 import {FaImage} from "react-icons/fa";
 import Swal from "sweetalert2";
-import {toBlob} from "html-to-image";
+import {toCanvas} from "html-to-image";
 import withReactContent from "sweetalert2-react-content";
 import FileSaver from "file-saver";
 
@@ -22,12 +22,15 @@ const ExportPng = ({
             })
         } else {
             if (reportRef.current) {
-                const imgBlob = await toBlob(reportRef.current, {
-                    includeQueryParams: true,
+                const canvas = await toCanvas(reportRef.current, {
+                    style: {
+                        overflow: "hidden",
+                        textOverflow: "hidden",
+                    }
                 })
-                if (imgBlob) {
-                    FileSaver.saveAs(imgBlob, fileName)
-                }
+                canvas.toBlob((blob) => {
+                    FileSaver.saveAs(blob, fileName)
+                }, "image/png");
             }
         }
     }
