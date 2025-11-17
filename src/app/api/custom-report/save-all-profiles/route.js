@@ -13,6 +13,9 @@ export const POST = async (req) => {
         const allProfileIds = profiles.map(({id}) => id)
         const allDbProfiles = (await CustomReportProfile.find({
             USER_ID: user_id,
+            _id: {
+                $in: allProfileIds
+            }
         }))
         const notInDbProfileIds = allProfileIds.filter(id => !allDbProfiles.includes(id))
         const deletedProfiles = allDbProfiles.filter(id => !allProfileIds.includes(id))
@@ -115,12 +118,12 @@ export const POST = async (req) => {
 
         // clean up deleted table that store images
         const fsPath = path.join("C:", "ePM_CustomReport")
-        await Promise.all(deletedTableIds.map(async (table_id) => {
+        await Promise.all(deletedTableIds.filter((id) => !exceptTableIds.includes(id)).map(async (table_id) => {
             const dir = path.join(fsPath, "table_assets", "images", table_id);
             await fs.rm(dir, { recursive: true, force: true })
         }))
-        const tableIdsInDeletedProfiles = deletedProfiles.map(({custom_report_table_ids}) => custom_report_table_ids.toString()).flat()
-        await Promise.all(tableIdsInDeletedProfiles.map(async (table_id) => {
+        const tableIdsInDeletedProfiles = deletedProfiles.map(({ custom_report_table_ids }) => custom_report_table_ids.toString()).flat()
+        await Promise.all(tableIdsInDeletedProfiles.filter((id) => !exceptTableIds.includes(id)).map(async (table_id) => {
             const dir = path.join(fsPath, "table_assets", "images", table_id);
             await fs.rm(dir, { recursive: true, force: true })
         }))

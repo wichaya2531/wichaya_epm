@@ -209,6 +209,7 @@ const DynamicReportPage = () => {
                                     </div>
                                 )}
                                 value={currentCustomReportProfileForAutoComplete}
+                                isOptionEqualToValue={(option, value) => option.value === value.value}
                                 onChange={(_, autoCompleteValue) => {
                                     if(autoCompleteValue) {
                                         const {value} = autoCompleteValue;
