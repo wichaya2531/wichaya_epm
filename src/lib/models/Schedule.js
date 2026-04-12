@@ -12,6 +12,10 @@ const scheduleSchema = new mongoose.Schema(
     ACTIVATE_DATE: { type: Date, required: true },
     // ACTIVATE_TIME: { type: String, required: false },
     LINE_NAME: { type: String, required: true },
+    MC_TAG: {
+      WD_TAG: { type: String, default: "" },
+      MACHINE_NAME: { type: String, default: "" },
+    },
     DOC_NUMBER: { type: String, required: true },
     STATUS: { type: String, default: "plan" },
     WORKGROUP_ID: {
@@ -21,6 +25,7 @@ const scheduleSchema = new mongoose.Schema(
     },
     PLAN_TYPE: { type: String, default: "Unknown" },
     PROFILE_GROUP: { type: String, default: null },
+    ACTIVATED_STATUS: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

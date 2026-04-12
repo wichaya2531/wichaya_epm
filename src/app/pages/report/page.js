@@ -10,52 +10,68 @@ import BarChart3 from "./BarChart3";
 import BarChart4 from "./BarChart4";
 import BarChart5 from "./BarChart5";
 import BarChart1 from "./BarChart1";
-import ReportDoc from "./ReportDoc";
+
+import Type_1 from "./Type_1";
+import Type_2 from "./Type_2";
 import { use, useState } from "react";
 import useFetchReport1 from "@/lib/hooks/useFetchReport1";
 
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { useEffect } from "react";
+import { set } from "mongoose";
 const Page = () => {
   const [refresh, setRefresh] = useState(false);
   const currentDate = new Date();
-
+  
+  const [fetchEnabled, setFetchEnabled] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
+  
   const { user, isLoading: usersloading } = useFetchUsers(refresh);
   // เวลาปัจจุบัน - 3 วัน
  // console.log('currentDate',currentDate);
-  const pastDate = new Date(currentDate);
-  pastDate.setDate(pastDate.getDate() - 2); // ย้อน 1 วัน
+  const pastDate = new Date();
+  pastDate.setDate(pastDate.getDate() - 1); // ย้อน 1 วัน
  // pastDate.setDate(currentDate.getDate());
   const formattedStartDate = pastDate.toISOString().split("T")[0];
   const [startDate, setStartDate] = useState(formattedStartDate);
 
-  const pastDate_a = new Date(currentDate);
-  pastDate_a.setDate(pastDate_a.getDate() +1); // ย้อน 1 วัน
+  const pastDate_a = new Date();
+  pastDate_a.setDate(pastDate_a.getDate() +2); // ย้อน 1 วัน
   const formattedStartDate_a = pastDate_a.toISOString().split("T")[0];
   const [endDate, setEndDate] = useState(formattedStartDate_a);
 
   const [workgroupSelect, setWorkgroupSelect] = useState(user.workgroup);
+  
   const { report, isLoading } = useFetchReport1(
     refresh,
     startDate,
     endDate,
-    workgroupSelect
+    workgroupSelect,
+    fetchEnabled          // ✅ ใหม่
   );
 
-  const [selectedChart, setSelectedChart] = useState("ReportDoc");
+  const [selectedChart, setSelectedChart] = useState("Type_1");
 
 
   const [workgroupOfUser, setWorkgroupOfUser] = useState([]);
   const chartButtons = [
     //{ label: "Value in Item", value: "BarChart5" },
-    { label: "ReportDoc", value: "ReportDoc" },
+    { label: "Type-1 Report", value: "Type_1" },
+    { label: "Type-2 Report", value: "Type_2" },
     // { label: "Checklist Active By user", value: "BarChart" },
     // { label: "Template By Workgroups", value: "BarChart1" },
     // { label: "User Type workgroup", value: "BarChart2" },
     // { label: "Members in workgroup", value: "BarChart3" },
     // { label: "By activate name", value: "BarChart4" },
   ];
-
+ 
+    useEffect(() => {
+      // ปิด loading เมื่อ hook โหลดเสร็จ
+      if (dataLoading && !isLoading) {
+        //alert('OK');
+        //setDataLoading(false);
+      }
+    }, [isLoading, dataLoading]);
 
   useEffect(() => {
         //setAllLineName([]);
@@ -90,22 +106,17 @@ const Page = () => {
     //console.log('Filtered Start Date:', start);
    // console.log("Filtered End Date:", end);
   };
-  const handlePullData = () => {
-    //      console.log(workgroupOfUser);
-   // return;
-    //alert(workgroupSelect);
 
-    if (workgroupSelect===undefined) {
-      setWorkgroupSelect(workgroupOfUser.workgroup);
-    }
-    //alert('OK');
-    //setStartDate(start);
-    //setEndDate(end);
-    //console.log('Filtered Start Date:', start);
-    //console.log('Filtered End Date:', end);
-    setRefresh(!refresh); // Trigger refresh to refetch data
-     //console.log(`Fetching data from ${startDate} to ${endDate}`);
-  };
+const handlePullData = () => {
+
+      setDataLoading(true);      // ✅ เปิด loading  
+      if (workgroupSelect === undefined) {
+        setWorkgroupSelect(workgroupOfUser.workgroup);
+      }
+
+     setFetchEnabled(true);     // ✅ อนุญาตให้ hook fetch ได้
+     setRefresh((prev) => !prev); // ✅ trigger ให้ยิงใหม่
+};
 
   const handleWorkgroupSelect = (workgroup_name) => {
     setWorkgroupSelect(workgroup_name);
@@ -150,15 +161,15 @@ const Page = () => {
             </button>
           ))}
         </div>
-
-        <div id="2" className="flex">
+            
+        {/* <div id="2" className="flex">
           <Link
             href={"/pages/report/dynamic"}
             className="px-6 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg transition-all duration-150 ease-in-out hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             {"Dynamic Report"}
           </Link>
-        </div>
+        </div> */}
       </div>
 
           
@@ -171,8 +182,23 @@ const Page = () => {
         {/* {selectedChart === "BarChart5" && (
           <BarChart5 report={report} isLoading={isLoading} />
         )} */}
-        {selectedChart === "ReportDoc" && (
-          <ReportDoc
+        {selectedChart === "Type_1" && (
+          <Type_1
+            //report={report}
+            //isLoading={isLoading}
+            //onDateStartFilterChange={handleDateStartFilterChange}
+           // onDateEndFilterChange={handleDateEndFilterChange}
+           // onPullData={handlePullData}
+           // onWorkgroupSelect={handleWorkgroupSelect}
+            workgroupOfUser={workgroupOfUser}
+            dateTimeStart={startDate}
+            dateTimeEnd={endDate}
+            //dataLoading={dataLoading}
+          />
+        )}
+
+        {selectedChart === "Type_2" && (
+          <Type_2
             report={report}
             isLoading={isLoading}
             onDateStartFilterChange={handleDateStartFilterChange}
@@ -184,6 +210,7 @@ const Page = () => {
             dateTimeEnd={endDate}
           />
         )}
+
       </div>
     </Layout>
   );

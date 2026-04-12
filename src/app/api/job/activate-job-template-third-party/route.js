@@ -88,6 +88,7 @@ export const GET = async (req, res) => {
         //1.3 create job
         //console.log("jobTemplate relmote Activate=>", jobTemplate)
         const job = new Job({
+            JOB_TEMPLATE_ID: jobTemplate._id,//new ObjectId(),
             JOB_NAME: jobTemplate.JOB_TEMPLATE_NAME,
             JOB_STATUS_ID: newID._id,
             DOC_NUMBER: jobTemplate.DOC_NUMBER,
@@ -99,6 +100,8 @@ export const GET = async (req, res) => {
             TIMEOUT: jobTemplate.TIMEOUT,
             PICTURE_EVEDENT_REQUIRE:jobTemplate.PICTURE_EVEDENT_REQUIRE||false,
             AGILE_SKIP_CHECK:jobTemplate.AGILE_SKIP_CHECK||false, 
+            SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
+            PROFILE_GROUP:jobTemplate.PROFILE_GROUP||"Unknown",        
         });
         await job.save();
         //console.log("current job Activate=>", jobTemplate);

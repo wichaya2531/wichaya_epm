@@ -14,7 +14,8 @@ export const GET = async (req) => {
                      req.headers.get("accept")?.includes("application/x-ndjson");
 
   await connectToDb();
-
+  
+  //console.log("Hello World");
   // --- สร้าง key_filter จาก JOB_NAME [xxx] ---
   let key_filter = "";
   if (job_id_filter) {
@@ -49,6 +50,7 @@ export const GET = async (req) => {
         createdAt: machine.createdAt,
         createdBy: machine.created_by,
         workgroup: machine.workgroup,
+        workgroup_id: machine.workgroup_id||"Unknown",
       }));
       return NextResponse.json({ status: 200, machines: data });
     }
@@ -73,6 +75,7 @@ export const GET = async (req) => {
               createdAt: machine.createdAt,
               createdBy: machine.created_by,
               workgroup: machine.workgroup,
+              workgroup_id: machine.workgroup_id||"Unknown",
             };
             controller.enqueue(encoder.encode(JSON.stringify(item) + "\n"));
           }

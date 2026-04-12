@@ -10,15 +10,20 @@ import { connectToDb } from "@/app/api/mongo/index.js";
 import { JobApproves } from "@/lib/models/JobApprove";
 import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
 
-const getPositionTimeByJobItem = async (jobItemID) => {
-  const jobItem = await JobItem.findOne({ JOB_ITEM_TEMPLATE_ID: jobItemID });
-  //console.log(jobItem.createdAt);
-  return jobItem.createdAt;
-};
+// const getPositionTimeByJobItem = async (jobItemID) => {
+//   const jobItem = await JobItem.findOne({ JOB_ITEM_TEMPLATE_ID: jobItemID });
+//   //console.log(jobItem.createdAt);
+//   return jobItem.createdAt;
+// };
 
 const getGuideInputByJobItem = async (jobItemID) => {
-  const jobItem = await JobItem.find({ JOB_ITEM_TEMPLATE_ID: jobItemID });
-
+//return [];
+//console.time("getGuideInputByJobItem");
+ const jobItem = await JobItem.find({ JOB_ITEM_TEMPLATE_ID: jobItemID })
+  .sort({ createdAt: -1 })
+  .limit(30)
+  .lean();
+ //console.timeEnd("getGuideInputByJobItem");
   var guideInput = [];
   jobItem.map((item) => {
     if (
@@ -30,8 +35,10 @@ const getGuideInputByJobItem = async (jobItemID) => {
     }
   });
   guideInput = [...new Set(guideInput)];
+  //console.log("guideInput", guideInput);
   return guideInput;
 };
+
 export const dynamic = "force-dynamic";
 
 
@@ -52,10 +59,60 @@ async function getApproverName(user_id) {
 }
 
 export const GET = async (req, res) => {
+ console.log("load-job-data-start*********************");
+ console.time("load-job-data");
   await connectToDb();
   const searchParams = req.nextUrl.searchParams;
   const JobID = searchParams.get("job_id");
+  //const view = searchParams.get("view");
+  //console.log("view",view);
+
   
+  //const jobItem = await JobItem.find({ JOB_ITEM_TEMPLATE_ID: jobItemID });
+  const jobItems = await JobItem.find({JOB_ID:new ObjectId(JobID)});
+  const jobItemMap = {};
+  //var count=0;
+  jobItems.forEach(item => {
+    jobItemMap[item.JOB_ITEM_TEMPLATE_ID.toString()] = item.createdAt;
+    //count++;
+  });
+
+ //console.log('jobItemMap count',count);
+
+  //   const jobItemss = await JobItem.find(
+  //     { JOB_ID: new ObjectId(JobID)
+  //     }
+  //   ).lean();
+  //  jobItemss.forEach(element => {
+  //         console.log('element.ACTUAL_VALUE',element.ACTUAL_VALUE);
+  //  });
+
+  //   const guideInput = {}; // { templateId: [values] }
+   
+  //   jobItemss.forEach(item => {
+  //     const key = item.JOB_ITEM_TEMPLATE_ID?.toString();
+  //     const v = item.ACTUAL_VALUE;
+
+  //     if (
+  //       key &&
+  //       v !== null &&
+  //       typeof v === "string" &&
+  //       !["pass", "fail"].includes(v.toLowerCase()) &&
+  //       isNaN(Number(v)) // ไม่เอาตัวเลขจริง
+  //     ) {
+  //       if (!guideInput[key]) {
+  //         guideInput[key] = new Set();
+  //       }
+  //       guideInput[key].add(v);
+  //     }
+  //   });
+
+  //   // แปลง Set → Array
+  //   Object.keys(guideInput).forEach(k => {
+  //     guideInput[k] = [...guideInput[k]];
+  //   });
+ 
+  // console.log('guideInput',guideInput);  
 
   //console.log('JobID=>', JobID);
   
@@ -69,12 +126,13 @@ export const GET = async (req, res) => {
         message: "Checklist has been deleted already, or wrong ChecklistID",
       });
    
-
+      
 
     //sort lastest come last
     const jobItems = await JobItem.find({ JOB_ID: JobID }).sort({
       createdAt: -1,
     });
+   
     const workgroup = await Workgroup.findOne({ _id: job.WORKGROUP_ID });
     const workgroupName = workgroup ? workgroup.WORKGROUP_NAME : null;
     const user = await User.findOne({ _id: job ? job.ACTIVATE_USER : null });
@@ -88,7 +146,7 @@ export const GET = async (req, res) => {
     } else {
       machineName = null;
     }
-
+    
      //console.log('job=>', job);
 
     const jobData = {
@@ -119,6 +177,8 @@ export const GET = async (req, res) => {
       PICTURE_EVEDENT_REQUIRE:job.PICTURE_EVEDENT_REQUIRE || false ,
     };    
 
+     
+
     const jobItemData = await Promise.all(
       jobItems.map(async (jobItem) => {
         const location = await TestLocation.findById(jobItem.TEST_LOCATION_ID);
@@ -128,7 +188,7 @@ export const GET = async (req, res) => {
         return {
           JobItemID: jobItem._id,
           JobItemTitle: jobItem.JOB_ITEM_TITLE,
-          JobItemTemplateMqtt:jobItem.JOB_ITEM_TEMPLATE_ID,
+          //JobItemTemplateMqtt:jobItem.JOB_ITEM_TEMPLATE_ID,
           JobItemName: jobItem.JOB_ITEM_NAME,
           UpperSpec: jobItem.UPPER_SPEC,
           LowerSpec: jobItem.LOWER_SPEC,
@@ -139,27 +199,25 @@ export const GET = async (req, res) => {
           Value: jobItem.VALUE,
           Comment: jobItem.COMMENT,
           RealTimeValue: jobItem.REAL_TIME_VALUE,
-          TestLocationName: location ? location.LocationName : "",
+          TestLocationName:  location ? location.LocationName : "",
           ExecuteDate: jobItem.EXECUTE_DATE,
           LastestUpdate: jobItem.updatedAt.toLocaleString(),
           IMG_ATTACH: jobItem.IMG_ATTACH,
           IMG_ATTACH_1: jobItem.IMG_ATTACH_1||"",
           File: jobItem.FILE ? jobItem.FILE.replace(/\\/g, "/") : null,
           createAt: jobItem.createdAt.toLocaleString(),
-          createAtTemplate: await getPositionTimeByJobItem(
-            jobItem.JOB_ITEM_TEMPLATE_ID
-          ),
+          createAtTemplate:jobItemMap[jobItem.JOB_ITEM_TEMPLATE_ID] , 
           guide_input: await getGuideInputByJobItem(
-            jobItem.JOB_ITEM_TEMPLATE_ID
-          ),
+             jobItem.JOB_ITEM_TEMPLATE_ID
+          ),         
           input_type:jobItem.INPUT_TYPE||"All",
           pos:jobItem.POS||0
         };
       })
     );
 
-
-
+    
+  //========================================>>
     if (job.SORT_ITEM_BY_POSITION) {
       jobItemData.sort((a, b) => {
         return  a.pos-b.pos;
@@ -194,6 +252,9 @@ export const GET = async (req, res) => {
         console.log("JobApproves document not found");
       }
     }
+    
+      console.timeEnd("load-job-data");
+
 
     return NextResponse.json({
       status: 200,

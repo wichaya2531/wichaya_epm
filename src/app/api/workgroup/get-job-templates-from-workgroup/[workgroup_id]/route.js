@@ -33,10 +33,14 @@ async function loadProfileGroupsMap() {
 
 
 export const GET = async (req, {params}) => {
+    
+   // console.log("Hello World");
+    
     await connectToDb();
     const { workgroup_id } = params;
 
     const _profileGroups=await loadProfileGroupsMap();
+    
     //console.log('_profileGroups',_profileGroups);
     
 

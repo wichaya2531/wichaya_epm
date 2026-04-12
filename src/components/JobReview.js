@@ -137,6 +137,29 @@ useEffect(() => {
    }       
 
 
+    const parseKeysInBrace = (jobItemName = "") => {
+      const m = String(jobItemName).match(/\{([^}]+)\}/);
+      if (!m) return [];
+      return m[1].split(",").map(v => v.trim()).filter(Boolean);
+    };
+
+    const parseKeyValuePairs = (s = "") => {
+      const out = {};
+      String(s || "")
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean)
+        .forEach(part => {
+          const [k, ...rest] = part.split(":");
+          const key = (k || "").trim();
+          const val = rest.join(":").trim();
+          if (key) out[key] = val;
+        });
+      return out;
+    };
+
+
+
   return (
     
   <div>
@@ -438,7 +461,10 @@ useEffect(() => {
                     <div>{item.JobItemTitle} </div>
                   </td>
                   <td className="border px-4 py-2 relative">
-                    <div>{item.JobItemName} </div>
+                    <div>
+                        {/*item.JobItemName*/} 
+                        {item.JobItemName?.replace(/\{[^}]*\}/g, "").trim()}    
+                    </div>
                     <InfoIcon
                       className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
                       style={{ display: "none" }}
@@ -493,18 +519,75 @@ useEffect(() => {
                         onClick={() => handleShowHistory(item)}
                       /> */}
                     </span>
-                    <input
-                      type="text"
-                      id={`actual_value_${item.JobItemID}`}
-                      value={item.ActualValue+(item.Value && item.Value !==null?' , '+item.Value:"")}
-                      className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
-                      disabled
-                      style={{
-                        backgroundColor: getPastelColorForValue(
-                          item.ActualValue || ""
-                        ),
-                      }}
-                    />
+                    {/* jmp:1234 */}
+                    <center style={{padding:'5px'}}>
+                          {(() => {
+                          const keys = parseKeysInBrace(item.JobItemName);
+                          const isMulti = keys.length > 0;
+
+                          // รวมค่าไว้เหมือนเดิม
+                          const combined = [
+                            item.ActualValue ?? "",
+                            item.Value !== null && item.Value !== undefined && item.Value !== "" ? item.Value : "",
+                          ]
+                            .filter(Boolean)
+                            .join(",");
+
+                          // parse "A1:10,A2:20"
+                          const viewMap = isMulti ? parseKeyValuePairs(combined) : null;
+
+                          // ✅ ถ้าเป็น multi ให้แสดงแบบ card
+                          if (isMulti) {
+                            return (
+                              <div className="grid grid-cols-2 md:grid-cols-2 gap-2 w-[90%] ">
+                                {keys.map((k) => {
+                                  const raw = viewMap?.[k] ?? "-";
+
+                                  // 👉 เอาเฉพาะค่าหลัง :
+                                  const valueAfterColon =
+                                    typeof raw === "string" && raw.includes(":")
+                                      ? raw.split(":")[1]
+                                      : raw;
+
+                                  return (
+                                    <div
+                                      key={k}
+                                      className="bg-gray-100 border border-gray-300 rounded-lg px-2 py-1.5 text-center"
+                                      title={`${k} : ${raw}`}
+                                    >
+                                      {/* Key */}
+                                      <div className="text-xs text-gray-500 font-semibold">
+                                        {k}
+                                      </div>
+
+                                      {/* Value (หลัง :) */}
+                                      <div className="text-sm text-gray-900 font-bold">
+                                        {valueAfterColon}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>  
+                            );
+                          }
+
+                          // ✅ ไม่ใช่ multi ก็แสดง input เดิม
+                          return (
+                            <input
+                              type="text"
+                              id={`actual_value_${item.JobItemID}`}
+                              value={combined}
+                              className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg
+                                        focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
+                              disabled
+                              style={{ backgroundColor: getPastelColorForValue(item.ActualValue || "") }}
+                            />
+                          );
+                        })()}
+                    </center>
+                    
+
+
                     {item.Comment !== null ? (
                       <span style={{padding:'5px'}}>
                       {/* ✅ balloon tips แสดงใน modal */}

@@ -24,16 +24,9 @@ import SelectContainer from "@/components/SelectContainer.js"; // นำเข�
 import { toggleButtonClasses } from "@mui/material";
 import Cookies from "js-cookie";
 
+
 import {  useRef, useCallback } from "react";
-//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
-import mqtt from "mqtt";
-const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
-const options = {
-  username: process.env.NEXT_PUBLIC_MQT_USERNAME,
-  password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-  reconnectPeriod: 2000,
-};
-//---------------------------------------------->>
+
 
 const Page = () => {
 
@@ -54,6 +47,7 @@ const Page = () => {
   const [showPlanningColumns, setShowPlanningColumns] = useState(false);
   const [viewMode,setviewMode]=useState(false);
   
+    const [machines, setMachines] =useState([]);
   //const { profiles, loading: profilesLoading, error: profilesError } = useFetchProfiles(user?.workgroup_id);
   
 // ----------------Cookie---------------------
@@ -69,66 +63,47 @@ const handleClickViewMode = (checked) => {
 // -------------------------------------------
 
 
+//------------SSE------------------------------------------>>
+const jobsRef = useRef([]); // ✅ สร้าง ref เก็บค่า jobs ล่าสุด
+const userRef = useRef([]); // ✅ สร้าง ref เก็บค่า users ล่าสุด
+// อัปเดตค่า ref ทุกครั้งที่ state jobs เปลี่ยน
+useEffect(() => {
+  jobsRef.current = jobs;
+}, [jobs]);
+useEffect(() => {
+  userRef.current = user;
+}, [user]);
 
-  //-----------MQTT----------------------------------------->>
-  const mqttClient = useRef(null);
-  useEffect(() => {
-    const client = mqtt.connect(connectUrl, options);
-    mqttClient.current = client;
-  
-    const onConnect = () => {
-      console.log("✅ MQTT Connected on Page Active Remove Job");
-      if (user?.workgroup_id) client.subscribe(user.workgroup_id);
-    };
-    client.on("connect", onConnect);
-    client.on("error", (err) => console.error("❌ MQTT Error:", err));
-    client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
-    // client.on("message", (t, m) => {
-    //    try {
-    //       if (document.getElementById('page-expire').innerHTML==='true'){ 
-    //                   console.log('Block by page expire!!');
-    //                   return;
-    //       }
-    //     } catch (error) {
-    //             console.error("Error Code: 120\n", error?.stack ?? error);
-    //     }     
-    //   console.log("📩", t, m.toString());      
-    // });
-  
-    return () => {
-      client.end(true);
-      mqttClient.current = null;
-    };
-  }, []);
-  
-  // ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
-  useEffect(() => {
-    if (user?.workgroup_id && mqttClient.current?.connected) {
-      mqttClient.current.subscribe(user.workgroup_id, (err) =>
-        err ? console.error("Subscription error:", err)
-            : console.log("📡 Subscribed:", user.workgroup_id)
-      );
-    }
-  }, [user?.workgroup_id]);
-  
-  // // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
-  const handleEventToMqtt = useCallback(() => {
-    const c = mqttClient.current;
-    if (!c || c.disconnected) {
-      console.warn("MQTT not connected");
-      return;
-    }
-    if (!user?.workgroup_id) {
-      console.warn("No topic");
-      return;
-    }
-    try {
-      c.publish(user.workgroup_id, "refresh");
-    } catch (err) {
-      console.error("Error Code: 121\n", err?.stack ?? err);
-    }
-  }, [user?.workgroup_id]);
-   //---------------------------------------------------------------->>
+useEffect(() => {
+  // ถ้ายังไม่มี userRef.current หรือไม่มี workgroup_id ให้ return ออกไปก่อน
+  if (!userRef.current || !userRef.current.workgroup_id) {
+    console.log("⏳ รอ userRef พร้อมก่อน...");
+    return;
+  }
+
+  console.log("✅ เริ่มเชื่อมต่อ SSE ของกลุ่ม:", userRef.current.workgroup_id);
+
+  const es = new EventSource(`/api/events?group=${userRef.current.workgroup_id}`);
+
+  es.onmessage = async (ev) => {
+    console.log('data receive',ev.data);
+   
+  };
+
+  es.onerror = (err) => console.error("❌ SSE error:", err);
+  setTimeout(() => {
+          console.log("🧹 ปิดการเชื่อมต่อ SSE.....");
+          es.close();
+  }, Number(process.env.NEXT_PUBLIC_PAGE_TIMEOUT)*1000);
+
+  return () => {
+    console.log("🧹 ปิดการเชื่อมต่อ SSE");
+    es.close();
+  };
+}, [userRef.current?.workgroup_id]); // ✅ จะ re-run เมื่อมีค่า workgroup_id
+
+
+
     const jobTemplatesHeader = [
       "ID",
       ...(showPlanningColumns ? ["Plan Start", "Plan End"] : []),
@@ -174,7 +149,42 @@ const handleClickViewMode = (checked) => {
           prevSelected.includes(jobId) ? prevSelected.filter((id) => id !== jobId): [...prevSelected, jobId]
     );
   };
-  var [allLineName, setAllLineName] = useState(false);
+
+  //var [allLineName, setAllLineName] = useState(false);
+  const [allLineName, setAllLineName] = useState([]);  // ✅ array  
+  //const bufLineName = await fetchLineNames(session);
+  //setAllLineName(Array.isArray(bufLineName) ? bufLineName : []);
+
+
+
+ useEffect(async () => {
+      // use effect เพื่ออ่านค่า machines จากฐานข้อมูลมาเก็บไว้ ซึ่งถ้าหากว่าเคยอ่านแล้ว จะไม่ต้องเสียเวลาอ่านใหม่ แต่
+      // หากว่ายังไม่เคยอ่านมาเลย จำเป็นจะต้องอ่าน เพื่อเข้าไปบันทึกเก็บไว้ใน Local Storage
+      let localStorageMachines = localStorage.getItem("machines");
+      if (localStorageMachines!==null) {
+          localStorageMachines = JSON.parse(localStorageMachines);
+          setMachines(localStorageMachines);
+          //console.log('localStorageMachines',localStorageMachines);
+      } else {
+              console.log("โหลด Machines จากฐานข้อมูล..."); 
+              const url = `/api/machine/get-machines`;
+              const res = await fetch(url, {
+                cache: "no-store",
+                headers: {
+                  Accept: "application/json",
+                },
+              });
+              if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+              }
+              const dataResponse = await res.json();
+              setMachines(dataResponse.machines);   
+              localStorage.setItem("machines", JSON.stringify(dataResponse.machines));               
+      }
+
+  }, []);
+
+
 
   const filteredJobs =
     jobs &&
@@ -198,9 +208,13 @@ const handleClickViewMode = (checked) => {
     const session = await getSession();
     setSession(session);
     await fetchUser(session.user_id);
-    var bufLineName = await fetchLineNames(session);
+
+    const bufLineName = await fetchLineNames(session);
+    setAllLineName(Array.isArray(bufLineName) ? bufLineName : []);
+
+    //var bufLineName = await fetchLineNames(session);
     //console.log("tt..=>",tt);
-    setAllLineName(bufLineName);
+    //setAllLineName(bufLineName);
     // try {
     //       const lineNamesResponse = await fetch(
     //         "/api/select-line-name/get-line-name"
@@ -250,7 +264,7 @@ const handleClickViewMode = (checked) => {
       setUser(data.user);
       setUserEnableFunctions(data.user.actions);
       await fetchJobTemplates(data.user.workgroup_id);
-      await fetchJobs(data.user.workgroup_id);
+      await fetchJobs(data.user.workgroup_id);   เพื่อทดสอบ
     } catch (error) {
       console.error(error);
     }
@@ -406,7 +420,7 @@ const handleClickViewMode = (checked) => {
                 //await fetchJobs(user.workgroup_id);
                 //setRefresh(true);
                 setRefresh((prev) => !prev);
-                handleEventToMqtt();
+                //handleEventToMqtt();
         });
       }
     } catch (error) {
@@ -795,6 +809,30 @@ const handleClickViewMode = (checked) => {
                 Plan
               </button>
             </div>
+            &nbsp;
+            <div className="py-3 inline-block " style={{display:'none'}}>
+              <button
+                className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-5 rounded "
+                onClick={() => handlePlan(data)}
+                disabled={
+                  !userEnableFunctions.some(
+                    (action) =>
+                      action._id === enabledFunction["activate-job-template"]
+                  )
+                }
+                style={{
+                  cursor: !userEnableFunctions.some(
+                    (action) =>
+                      action._id === enabledFunction["activate-job-template"]
+                  )
+                    ? "not-allowed"
+                    : "pointer",
+                }}
+              >
+                Plan+
+              </button>
+            </div>
+
             &nbsp;&nbsp;
             <button
               className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-2 px-2 rounded"
@@ -843,20 +881,40 @@ const handleClickViewMode = (checked) => {
               style={{ display: "none" }}
             >
               <center style={{ padding: "5px", border: "1px solid none" }}>
-                <select                  
-                  onChange={(event) =>
-                    onLineNameSelected(event.target.value, data,event)
-                  }
-                  style={{ padding: "10px" }}
-                >
-                  <option value="">Select Line</option>{" "}
-                  {/* Option เริ่มต้น */}
-                  {allLineName.map((lineName) => (
-                    <option key={lineName} value={lineName}>
-                      {lineName}
-                    </option>
-                  ))}
-                </select>
+
+                <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl shadow-inner">
+                  {/* <label className="text-sm font-semibold text-gray-600">
+                    Select Production Line
+                  </label> */}
+
+                  <select
+                    onChange={(event) =>
+                      onLineNameSelected(event.target.value, data, event)
+                    }
+                    className="
+                      w-full
+                      px-4 py-2
+                      rounded-lg
+                      border border-gray-300
+                      bg-white
+                      text-gray-700
+                      focus:outline-none
+                      focus:ring-2
+                      focus:ring-blue-400
+                      transition
+                    "
+                  >
+                    <option value="">— Please select —</option>
+
+                    {(Array.isArray(allLineName) ? allLineName : []).map((lineName) => (
+                      <option key={lineName} value={lineName}>
+                        {lineName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                
               </center>
             </div>
           </div>
@@ -1104,7 +1162,7 @@ const handleClickViewMode = (checked) => {
               <JobsTable
                   refresh={refresh} 
                   //handleEventToMqtt={handleEventToMqtt}
-                  date_range={0}
+                  date_range={1}
               />
               
             </div>
@@ -1117,7 +1175,7 @@ const handleClickViewMode = (checked) => {
           data={planData}
           onClose={() => setIsShowPlan(false)} // Close modal handler
           setRefresh={setRefresh}
-          handleEventToMqtt={handleEventToMqtt}
+           //handleEventToMqtt={handleEventToMqtt}
         />
       )}
     </Layout>

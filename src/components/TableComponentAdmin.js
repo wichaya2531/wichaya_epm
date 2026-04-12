@@ -1,30 +1,54 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { FaSpinner } from "react-icons/fa";
 
-
 const TableComponentAdmin = ({
   headers,
   datas,
-  searchColumn,
-  searchColumn1,
-  filterColumn,
   TableName,
   PageSize,
-  searchHidden = null,
-  linenameOnSelect = null,
+  filterColumn,  
+  searchColumn,
+  searchColumn1,
+  searchHidden,
+  filteredJobs,
   selectedJobs,
   handleDeleteSelected,
-  filteredJobs,
+  handleApproveSelected,
+  showApproveAllButton = false,
   currentPage,
   onPageChange,
   setSelectedJobs,
   isLoading,
+  orientation,
+  userRole,
+  callFromApprovePage = false,
 }) => {
 
-  //console.log("currentPage",currentPage);
+// const TableComponentAdmin = ({
+//   headers,
+//   datas,
+//   searchColumn,
+//   searchColumn1,
+//   filterColumn,
+//   TableName,
+//   PageSize,
+//   searchHidden = null,
+//   linenameOnSelect = null,
+//   selectedJobs,
+//   handleDeleteSelected,
+//   filteredJobs,
+//   currentPage,
+//   onPageChange,
+//   setSelectedJobs,
+//   isLoading,
+//   orientation="landscape",
+//   userRole,
+// }) => {
+
+  //console.log("ข้อมูลจาก TableComponentAdmin datas",datas);
   //console.log("TableComponentAdmin user=>",user);
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
@@ -42,8 +66,10 @@ const TableComponentAdmin = ({
   const endIndex = startIndex + pageSize;
   const jobsInCurrentPage = filteredJobs.slice(startIndex, endIndex);
 
-  const data = datas;
 
+
+
+  const data = datas;
   // ฟังก์ชันสำหรับจัดเรียงข้อมูล
   const sortedData = React.useMemo(() => {
     if (!sortConfig.key) return data;
@@ -220,7 +246,7 @@ const clearFilters = (e) => {
       <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left">
         <div className="flex flex-row gap-2 text-left max-w-full">
           <div className="max-w-[20vw] inline-block font-medium text-black ">
-               Filter :
+               {/* Filter : */}
           </div>
           <div className="relative max-w-[20vw] inline-block">
             <span
@@ -263,7 +289,7 @@ const clearFilters = (e) => {
             </div>
           )}
           
-          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[150px] inline-block ml-auto">
             <label
               htmlFor="searchTerm"
               //className="block text-xs text-gray-600 mb-1"
@@ -302,7 +328,7 @@ const clearFilters = (e) => {
                     </select>
                   </div>
           </div>
-          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[160px] inline-block ml-auto">
             <label
               htmlFor="searchTerm1"
               //className="block text-xs text-gray-600 mb-1"
@@ -330,7 +356,7 @@ const clearFilters = (e) => {
               onClick={clearFilters}
               className="px-3 py-2 text-sm rounded-lg border border-red-500 text-red-600 hover:bg-red-50"
             >
-              Clear Filter
+              Clear
             </button>
           </div>
 
@@ -340,76 +366,119 @@ const clearFilters = (e) => {
       <div className="w-full bg-white rounded-lg font-sans flex flex-col justify-center items-start overflow-x-auto shadow-md">
         {/* ห่อหัวตารางด้วย flex */}
         <div className="w-full flex justify-between items-center">
-          <h1 className="text-sm text-secondary font-bold p-2">
-            {TableName || "Table Name"}
-          </h1>
+          {/* ห่อหัวตารางด้วย flex */}
+            <h1 className="text-sm text-secondary font-bold p-2">
+              {TableName || "Table Name"}
+            </h1>
+            {(userRole === "Admin Group" || userRole === "Owner") ? (
+              <>
+                {/* Select All Checkbox */}
+                {orientation === "landscape" && (
+                  <div className="flex items-center space-x-4 p-2 rounded-lg">
+                    <div className="flex items-center space-x-2 w-50">
+                      <input
+                        type="checkbox"
+                        name="select-job-all"
+                        id="select-job-all"
+                        onChange={handleSelectAllJobs}
+                        checked={
+                          jobsInCurrentPage.length > 0 &&
+                          jobsInCurrentPage.every((job) =>
+                            selectedJobs.includes(job._id)
+                          )
+                        }
+                        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                      />
+                      <label
+                        htmlFor="select-job-all"
+                        className="text-gray-800 pr-2 font-medium text-sm md:text-base"
+                      >
+                        Select All
+                      </label>
+                    </div>
 
-          {/* ปุ่ม Select All และ Remove Selected */}
-          <div className="flex items-center space-x-4 p-2 rounded-lg ">
-            {/* Select All Checkbox */}
-            <div className="flex items-center space-x-2 w-50">
-              <input
-                type="checkbox"
-                name="select-job-all"
-                id="select-job-all"
-                onChange={handleSelectAllJobs}
-                checked={
-                  jobsInCurrentPage.length > 0 &&
-                  jobsInCurrentPage.every((job) =>
-                    selectedJobs.includes(job._id)
-                  )
-                }
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-              />
-              <label htmlFor="select-job-all" className="text-gray-800 pr-2 font-medium text-sm md:text-base">
-                Select All
-              </label>
-            </div>
+                    {/* Remove Selected Button */}
+                        <div className="flex items-center gap-3">
+                          {callFromApprovePage && showApproveAllButton && selectedJobs?.length > 0 && (
+                            <button
+                              onClick={handleApproveSelected}
+                              className="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
+                            >
+                              Approve All
+                            </button>
+                          )}
 
-            {/* Remove Selected Button */}
-            <button
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleDeleteSelected}
-              disabled={selectedJobs.length === 0}
-            >
-              <DeleteIcon className="w-5 h-5" />
-            </button>
+                          {selectedJobs?.length > 0 && (
+                            <button
+                              onClick={handleDeleteSelected}
+                              className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                  </div>
+                )}
+              </>
+            ) : null}
           </div>
-        </div>
+
 
         <table className="table-auto w-full text-[12px] ipadmini:text-sm">
           <thead className="bg-[#347EC2] text-white text-sm">
             <tr>
-              {headers.map((header) => (
-                <th
-                  key={header}
-                  className="px-2 py-2 cursor-pointer"
-                  onClick={() => handleSort(header)}
-                >
-                  {header}
-                  {sortConfig.key === header
-                    ? sortConfig.direction === "asc"
-                      ? " ▲"
-                      : " ▼"
-                    : ""}
-                </th>
-              ))}
+              {headers.map((header) =>
+                
+                  <th
+                    key={header}
+                    className="px-2 py-2 cursor-pointer"
+                    onClick={() => handleSort(header)}
+                  >
+                    {header}
+                    {sortConfig.key === header
+                      ? sortConfig.direction === "asc"
+                        ? " ▲"
+                        : " ▼"
+                      : ""}
+                  </th>
+               
+              )}
             </tr>
           </thead>
+
           <tbody className="text-center">
             {currentPageData.map((item) => (
               <tr
                 key={item.ID}
                 className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
-                  {Object.keys(item).map((key) => (
-                    <td key={`${item.id}-${key}`} className="px-4 py-3">
-                      {item[key] ? item[key] : "N/A"}
+                {Object.keys(item).map((key) => {
+                  const value = item[key];
+
+                  const isLineNameObject =
+                    key === "Line Name" &&
+                    value &&
+                    typeof value === "object" &&
+                    !Array.isArray(value);
+
+                  return (
+                    <td key={`${item.ID}-${key}`} className="px-4 py-3">
+                      {/* แสดงค่า */}
+                      {isLineNameObject
+                        ? value.line_name || value.linename || "N/A"
+                        : value || "N/A"}
+
+                      {/* แสดง machine_name เฉพาะ Line Name */}
+                      {isLineNameObject && value.machine_name && (
+                        <div className="ml-2 text-blue-500 cursor-pointer">
+                          {value.machine_name}
+                        </div>
+                      )}
                     </td>
-                  ))}
-                </tr>
-              ))}
-            {/* )} */}
+                  );
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

@@ -15,10 +15,13 @@ import { ObjectId } from "mongodb";
 import { Notified, Notifies } from "@/lib/models/Notifies.js";
 import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 
-//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
-import mqtt from "mqtt";
-import { once } from "events";
-//---------------------------------------------->>
+
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
+
+
 
 async function getEmailfromUserID(userID) {
   try {
@@ -250,8 +253,8 @@ export const POST = async (req, res) => {
 
     //console.log('uniqueEmails',uniqueEmails);
     await sendEmailsFromManual(uniqueEmails, jobData);
-              //----------------------  ส่ง MQTT แจ้งงานใหม่  ไปยัง workgroup ที่เกี่ยวข้อง  ----->>
-              try{
+    //-------------------------SSE----------------------------->>
+          try{
                   var workgroup_id="";
                    //if(isJob){
                        workgroup_id=job.WORKGROUP_ID;
@@ -264,42 +267,18 @@ export const POST = async (req, res) => {
                       workgroup_id = workgroup_id.toString();
                     }
                   }
-                  const MQTT_URL = process.env.MQTT_URL || process.env.NEXT_PUBLIC_MQT_URL; // แล้วแต่คุณตั้ง env
-                  const MQTT_USERNAME = process.env.MQTT_USERNAME || process.env.NEXT_PUBLIC_MQT_USERNAME;
-                  const MQTT_PASSWORD = process.env.MQTT_PASSWORD || process.env.NEXT_PUBLIC_MQT_PASSWORD;
-      
-                  function connectMqtt() {
-                    const client = mqtt.connect(MQTT_URL, {
-                      username: MQTT_USERNAME,
-                      password: MQTT_PASSWORD,
-                      reconnectPeriod: 0, // ฟังก์ชันสั้น ๆ ไม่ต้อง reconnect
-                    });
-                    return client;
-                  }
-      
-                  function publishAsync(client, topic, payload, opts = { qos: 1, retain: false }) {
-                    return new Promise((resolve, reject) => {
-                      client.publish(topic, payload, opts, (err) => (err ? reject(err) : resolve()));
-                    });
-                  }
-                  // ------------------------------------------------        
-                  // ... ใน POST handler ของคุณ (ท้าย ๆ ก่อน return)        
-                  // console.log("workgroup id ที่ต้องส่ง  mqtt update ", workgroup_id_list);        
-                  // สร้าง client และรอ connected
-                  const mqttClient = connectMqtt();
-                  await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน        
-                      // ส่งทีละอัน (แปลง ObjectId → string)
-                      //console.log("MQTT ===>>"+job.WORKGROUP_ID);
-                      //const msgPck=`{\'JOB_ID\':\'${job._id.toString()}\'}`;
-                      await publishAsync(mqttClient,workgroup_id, "refresh"); // ✅ รอให้ publish เสร็จ
-                  // ปิด connection แบบรอส่งค้างให้ครบ
-                  await new Promise((resolve) => mqttClient.end(false, resolve));
-          }catch(err){
-                //console.log("MQTT error ",err);
-                console.log("MQTT.... error");
-          }
-          //----------------------  ส่ง MQTT แจ้งงานใหม่  ไปยัง workgroup ที่เกี่ยวข้อง  ----->> 
 
+                    try {
+                      broadcast(workgroup_id, "refresh");
+                    } catch (err) {
+                      console.error("emit error:", err);
+                    } 
+                  
+          }catch(err){
+                console.log("SSE error ",err);
+          }
+
+    //--------------------------------------------------------->>
 
     return NextResponse.json({ status: 200, response: job });
   } catch (err) {

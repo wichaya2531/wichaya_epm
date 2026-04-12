@@ -171,8 +171,8 @@ const Navbar = ({ menu,mqttStatus }) => {
           <Image
             src="/assets/card-logo/wd-logo.png"
             alt="wd logo"
-            width={150}
-            height={150}
+            width={100}
+            height={100}
             className=""
                       />
             {mqttStatus ? (
@@ -270,7 +270,7 @@ const Navbar = ({ menu,mqttStatus }) => {
                   <option value="">Select User</option>
                   {filteredUsers.map((user) => (
                     <option key={user._id} value={user._id}>
-                      {user.name}, {user.workgroup}, {user.role}
+                      {user.username}, {user.workgroup}, {user.role}
                     </option>
                   ))}
                 </select>

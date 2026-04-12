@@ -63,7 +63,7 @@ export const POST = async (req, res) => {
     const body = await req.json(); // อ่าน body ของ request
     
 
-    console.log("body",body);
+    //console.log("body",body);
 
 
     return NextResponse.json({ status: 200});

@@ -15,12 +15,24 @@ export default function LoginForm() {
   //const [host, setHost]=useState("default");
   const [state, formAction] = useFormState(login, undefined);
   const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
+  const [isLoading, setIsLoading] = useState(false);
 
   const togglePasswordVisibility = () => {
     console.log("use togglePasswordVisibility");
     setShowPassword(!showPassword); // Toggle password visibility
   };
   
+  useEffect(() => {
+    if (state) {
+      const timer = setTimeout(() => {
+        setIsLoading(false); // 🔁 กลับมา Login
+      }, 5000); // 10 วินาที
+
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
+
+
   const handleClick = () => {
     //C:\Users\1000222790\Documents\GitHub\e_pm\src\app\pages\dashboard
     //alert(process.env.NEXT_PUBLIC_HOST_LINK +'/pages/dashboard');
@@ -94,8 +106,8 @@ const Test2PoST = async () => {
         <img
           src="/assets/card-logo/wd-logo.png"
           alt="wd logo"
-          width={200}
-          height={150}
+          width={150}
+          height={100}
           className=""
         />
       </div>
@@ -140,7 +152,11 @@ const Test2PoST = async () => {
         
           <form
             className="flex flex-col items-center gap-5 w-full"
-            action={formAction}
+            //action={formAction}
+            action={async (formData) => {
+              setIsLoading(true);        // 🔥 เริ่ม Wait
+              await formAction(formData); // เรียก login action
+            }}
           >
             <div className="flex w-full max-w-xs">
               <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-e-0 border-gray-300 border-e-0 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
@@ -189,9 +205,20 @@ const Test2PoST = async () => {
                 Show Password
               </label>
             </div>
-            <button id='btn-login' className="bg-blue-600 text-white py-3 w-full max-w-xs rounded-md hover:bg-blue-500 font-bold mt-3 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+            {/* <button id='btn-login' className="bg-blue-600 text-white py-3 w-full max-w-xs rounded-md hover:bg-blue-500 font-bold mt-3 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
               Login
-            </button>
+            </button> */}
+          <button
+            id="btn-login"
+            disabled={isLoading}
+            className={`py-3 w-full max-w-xs font-bold rounded-lg text-sm text-white
+              ${isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br"}
+            `}
+          >
+            {isLoading ? "Please wait..." : "Login"}
+          </button>
             {state?.message && <p className="text-red-500">{state.message}</p>}
           </form>
           <Link
@@ -210,7 +237,7 @@ const Test2PoST = async () => {
             
       </div>
       <div className="absolute bottom-1 text-white  right-2 text-gray-500 text-[18px] italic">
-            Rev. 5.11.25.T.09.56
+            Ver 1.0
             {/* <div>
                   <button onClick={Test2PoST}>Test POST</button>
             </div> */}

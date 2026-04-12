@@ -32,6 +32,12 @@ function asInt(v, def = 1) {
   return Number.isFinite(n) && n > 0 ? n : def;
 }
 
+
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
+
 export async function POST(req) {
 
   //console.log("flush from activate-job-template-manual");
@@ -218,6 +224,35 @@ export async function POST(req) {
       timeout: jobTemplate.TIMEOUT,
       linename: LINE_NAME,
     };
+
+
+          //-----------------------SSE-------------------------------------->>
+                try{
+                       // console.log('SSE flush',baseJobDoc);
+                        var workgroup_id="";
+                         //if(isJob){
+                             workgroup_id=baseJobDoc.WORKGROUP_ID;
+                         //}else{
+                         //   workgroup_id=findSchedual.WORKGROUP_ID;
+                        // }
+                        if (typeof workgroup_id === 'object' && workgroup_id !== null) {
+                          // ตรวจสอบว่าเป็น ObjectId ของ MongoDB จริง ๆ
+                          if (workgroup_id.toString) {
+                            workgroup_id = workgroup_id.toString();
+                          }
+                        }
+      
+                          try {
+                            //const payload = { JOB_ID: job._id};
+                            broadcast(workgroup_id, "refresh");
+                          } catch (err) {
+                            console.error("emit error:", err);
+                          } 
+                        
+                }catch(err){
+                      console.log("SSE error ",err);
+                }
+          //---------------------------------------------------------------->>
 
 
     //console.log("uniqueEmails: ", uniqueEmails);  

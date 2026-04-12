@@ -60,7 +60,7 @@ export const GET = async (req, res) => {
   const user_id = searchParams.get("user_id");
 
 
-  console.log('user_id =>', user_id);
+  //console.log('user_id =>', user_id);
   
 
   //console.log('JobID=>', JobID);

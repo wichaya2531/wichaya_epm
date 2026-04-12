@@ -179,7 +179,9 @@ export const getRevisionNo = async (documentNo) => {
   try {
     const res = await fetch(
       //`https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&xmlFlag=searchCriteria&docNum=${documentNo}`
-      `https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docNum=${documentNo}&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&revReleaseDate=&xmlFlag=searchCriteria`,
+      //`https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docNum=${documentNo}&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&revReleaseDate=&xmlFlag=searchCriteria`,
+      //`https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docNum=${documentNo}&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&revReleaseDate=&xmlFlag=searchCriteria`,     
+       `https://wdcdagilesdk.oracleoutsourcing.com/AgileDocumentViewer/DocAttachmentServlet?&docNum=${documentNo}&docDesc=&docType=&docCategory=&productName=&businessUnit=&classification=&affectedSite=&affectedAreas=&docOwner=&lifecyclePhase=&revReleaseFromDate=&revReleaseToDate=&xmlFlag=searchCriteria`,
       { next: { revalidate: 10 } }
     );
     const data = await res.json();

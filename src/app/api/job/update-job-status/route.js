@@ -4,63 +4,32 @@ import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { User } from "@/lib/models/User";
 
-//------------------สำหรับการ เชื่อมต่อ MQTT ------->>
-import mqtt from "mqtt";
-import { once } from "events";
-//---------------------------------------------->>
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
 
 export const PUT = async (req, res) => {
   await connectToDb();
   const body = await req.json();
   const { JOB_ID } = body;
   const { user_id } = body; 
+  const { workgroup_id } = body; 
+  
   //console.log("JOB_ID", JOB_ID);
-  //console.log("USER_ID", user_id);
+  //console.log("workgroup_id", workgroup_id);
   const user = await User.findOne({ _id: user_id });
   //console.log("user", user);
   //return NextResponse.json({ status: 200 });
-  const msgPck=`{\'JOB_ID\':\'${JOB_ID}\'}`;
-    try{
-       const job = await Job.findOne({ _id: JOB_ID });
-      //console.log('workgroup_id',workgroup_id);
-      //console.log('isJob',isJob);
-      //console.log('findSchedual',findSchedual);
-          const MQTT_URL = process.env.MQTT_URL || process.env.NEXT_PUBLIC_MQT_URL; // แล้วแต่คุณตั้ง env
-          const MQTT_USERNAME = process.env.MQTT_USERNAME || process.env.NEXT_PUBLIC_MQT_USERNAME;
-          const MQTT_PASSWORD = process.env.MQTT_PASSWORD || process.env.NEXT_PUBLIC_MQT_PASSWORD;
 
-          function connectMqtt() {
-            const client = mqtt.connect(MQTT_URL, {
-              username: MQTT_USERNAME,
-              password: MQTT_PASSWORD,
-              reconnectPeriod: 0, // ฟังก์ชันสั้น ๆ ไม่ต้อง reconnect
-            });
-            return client;
-          }
-
-          function publishAsync(client, topic, payload, opts = { qos: 1, retain: false }) {
-            return new Promise((resolve, reject) => {
-              client.publish(topic, payload, opts, (err) => (err ? reject(err) : resolve()));
-            });
-          }
-          // ------------------------------------------------        
-          // ... ใน POST handler ของคุณ (ท้าย ๆ ก่อน return)        
-          // console.log("workgroup id ที่ต้องส่ง  mqtt update ", workgroup_id_list);        
-          // สร้าง client และรอ connected
-          const mqttClient = connectMqtt();
-          await once(mqttClient, "connect"); // ✅ รอให้เชื่อมต่อก่อน        
-              // ส่งทีละอัน (แปลง ObjectId → string)
-          //const msg=`{\'JOB_ID\':\'${JOB_ID}\',\'EVENT\':\'UPDATE-JOB\'}`;
-          //msg = msg.replaceAll('"', "\""); 
-          //console.log('msg',msg);
-          await publishAsync(mqttClient,job.WORKGROUP_ID, msgPck); // ✅ รอให้ publish เสร็จ
-          // ปิด connection แบบรอส่งค้างให้ครบ
-          await new Promise((resolve) => mqttClient.end(false, resolve));
-  }catch(err){
-        console.log("MQTT error ",err);
-        console.log(".... error");
-  }
-
+//----------------SSE------------------------------->>
+      try {
+        const payload = { JOB_ID: JOB_ID};
+        broadcast(workgroup_id, payload);
+      } catch (err) {
+        console.error("emit error:", err);
+      }
+//--------------------------------------------------->>        
 
   try {
 

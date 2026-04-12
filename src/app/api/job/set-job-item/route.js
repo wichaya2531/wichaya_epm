@@ -26,13 +26,13 @@ export const GET = async (req, res) => {
    try {  
      const jobItem = await JobItem.findOne({ _id: JobItemID });
 
-     //console.log('jobItem',jobItem);
+     //console.log('set jobItem by aoi',jobItem);
 
-    //  if(jobItem.INPUT_CONVERT===true){
-    //       jobItem.ACTUAL_VALUE = JobItemvalue==="1"?"Pass":"Fail";
-    //  }else{
-    //       jobItem.ACTUAL_VALUE = JobItemvalue;
-    //  }      
+      if(jobItem.INPUT_CONVERT===true){
+           jobItem.ACTUAL_VALUE = JobItemvalue==="1"?"Pass":"Fail";
+      }else{
+           jobItem.ACTUAL_VALUE = JobItemvalue;
+      }      
      
      await jobItem.save();
 

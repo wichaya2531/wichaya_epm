@@ -364,12 +364,17 @@ const TableComponent = ({
             {currentPageData.map((item, rowIdx) => (
               <tr
                 key={item?.ID ?? item?.id ?? `${TableName || "T"}-row-${rowIdx}`}
-                className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
+                className="hover:shadow-lg bg-white border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
                 {headers.map((headerKey, colIdx) => (
-                  <td key={`${rowIdx}-${headerKey}`} className="px-4 py-3">
-                    {item?.[headerKey] ?? "-"}
-                  </td>
+                  <td
+                      key={`${rowIdx}-${headerKey}`}
+                      className="px-4 py-3 w-[200px] max-w-[200px]"
+                    >
+                      <div className="whitespace-normal break-words">
+                        {item?.[headerKey] ?? "-"}
+                      </div>
+                    </td>
                 ))}
               </tr>
             ))}           

@@ -15,6 +15,7 @@ import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { FaFileCsv, FaDownload } from "react-icons/fa";
+import { useRouter } from "next/navigation"; // ถ้าเป็น Next.js app router
 
 const jobItemTemplateHeader = [
   "ID",
@@ -25,7 +26,7 @@ const jobItemTemplateHeader = [
   //"Upper/Lower ",
   "Upper_Lower",
   //"Test Method",
-  "Test_Method",
+  //"Test_Method",
   "input_type",
   "Create At",
   "Action",
@@ -36,6 +37,7 @@ const enabledFunction = {
 };
 
 const Page = ({ searchParams }) => {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPicture, setItemPicture] = useState(null);
   const [uploadMode, setUploadMode] = useState("resize");
@@ -74,6 +76,61 @@ const Page = ({ searchParams }) => {
     accept: "image/*",
   });
 
+
+    const openActionMenu = (jobItemTemplate) => {
+      const canRemove =
+        user &&
+        user.actions &&
+        user.actions.some(
+          (action) => action._id === enabledFunction["remove-job-item-template"]
+        );
+
+      Swal.fire({
+        title: "Choose Action",
+        //html: `<div style="font-size:13px;opacity:.8">${jobItemTemplate?.JOB_ITEM_TEMPLATE_NAME || ""}</div>`,
+        showCloseButton: true,
+        showCancelButton: true,
+        cancelButtonText: "Close",
+        showDenyButton: true,
+        confirmButtonText: "Edit",
+        denyButtonText: "More...",
+      }).then((result) => {
+        // 1) Edit
+        if (result.isConfirmed) {
+          router.push(
+            `/pages/edit-job-item-template?jobItemTemplate_id=${jobItemTemplate._id}&jobTemplate_id=${jobTemplate_id}`
+          );
+          return;
+        }
+
+        // 2) เปิดเมนูย่อย (Remove / Mqtt)
+        if (result.isDenied) {
+          Swal.fire({
+            title: "More Actions",
+            showCloseButton: true,
+            showCancelButton: true,
+            cancelButtonText: "Back",
+            confirmButtonText: canRemove ? "Remove" : "Remove (No Permission)",
+            confirmButtonColor: canRemove ? undefined : "#9CA3AF",
+            showDenyButton: true,
+            denyButtonText: "Mqtt",
+            preConfirm: () => {
+              if (!canRemove) return false; // กันกด remove ถ้าไม่มีสิทธิ์
+              return true;
+            },
+          }).then((r2) => {
+            if (r2.isConfirmed && canRemove) {
+              handleRemove(jobItemTemplate._id);
+            }
+            if (r2.isDenied) {
+              handleMqtt(jobItemTemplate);
+            }
+          });
+        }
+      });
+    };
+
+
   const handleUploadFileToJob = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -101,7 +158,7 @@ const Page = ({ searchParams }) => {
         ? "/api/uploadPicture/Item-templateResize"
         : "/api/uploadPicture/Item-template";
 
-    try {
+    try {5
       const res = await fetch(url, {
         method: "POST",
         body: formData,
@@ -466,7 +523,7 @@ const Page = ({ searchParams }) => {
       Name: jobItemTemplate.JOB_ITEM_TEMPLATE_NAME,
       Upper_Lower:
         jobItemTemplate.UPPER_SPEC + "/" + jobItemTemplate.LOWER_SPEC,
-      Test_Method: jobItemTemplate.TEST_METHOD,
+      //Test_Method: jobItemTemplate.TEST_METHOD,
       input_type: (
         <div className="flex items-center justify-center gap-2">
           <select
@@ -491,74 +548,17 @@ const Page = ({ searchParams }) => {
         </div>
       ),
       "Create At": jobItemTemplate.createdAt,
-      Action: (
-        <div className="flex items-center justify-center gap-2">
-          <Link
-            className="text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center
-                    bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            href={{
-              pathname: "/pages/edit-job-item-template",
-              query: {
-                jobItemTemplate_id: jobItemTemplate._id,
-                jobTemplate_id: jobTemplate_id,
-              },
-            }}
-          >
-            Edit
-          </Link>
-
-          <button
-            className={`text-white font-bold rounded-lg text-sm px-2 py-2.5 text-center 
-                            ${
-                              user &&
-                              user.actions &&
-                              !user.actions.some(
-                                (action) =>
-                                  action._id ===
-                                  enabledFunction["remove-job-item-template"]
-                              )
-                                ? "bg-red-500 cursor-not-allowed"
-                                : "bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
-                            }`}
-            onClick={() => handleRemove(jobItemTemplate._id)}
-            disabled={
-              !user ||
-              !user.actions ||
-              !user.actions.some(
-                (action) =>
-                  action._id === enabledFunction["remove-job-item-template"]
-              )
-            }
-          >
-            Remove
-          </button>
-
-          <button
-            className={`text-white font-bold rounded-lg text-sm px-2 py-2.5 text-center 
-                            ${
-                              user &&
-                              user.actions &&
-                              !user.actions.some(
-                                (action) =>
-                                  action._id ===
-                                  enabledFunction["remove-job-item-template"]
-                              )
-                                ? "bg-lime-500 cursor-not-allowed"
-                                : "bg-lime-700 hover:bg-green-800 focus:ring-4 focus:outline-none dark:bg-green-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
-                            }`}
-            onClick={() => handleMqtt(jobItemTemplate)}
-            disabled={
-              !user ||
-              !user.actions ||
-              !user.actions.some(
-                (action) =>
-                  action._id === enabledFunction["remove-job-item-template"]
-              )
-            }
-          >
-            Mqtt
-          </button>
-        </div>
+      Action: (  
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                className="text-white font-bold rounded-lg text-sm px-4 py-2 text-center
+                          bg-indigo-500 hover:bg-indigo-600 focus:ring-4 focus:outline-none focus:ring-indigo-300"
+                onClick={() => openActionMenu(jobItemTemplate)}
+              >
+                Actions
+              </button>
+            </div>
       ),
     };
   });

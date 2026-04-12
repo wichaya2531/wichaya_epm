@@ -167,20 +167,43 @@ const Page = () => {
   const handleUpdate = async (machine) => {
     const { value: inputs } = await Swal.fire({
       title: "Update Machine",
-      html: `
-<div style="display: flex; flex-direction: column;">
-    <label for="wdTag">WD TAG</label>
-    <input id="wdTag" class="swal2-input" placeholder="Enter new WD_TAG" value="${
-      machine.wd_tag || ""
-    }">
+      html: `<div style="display:flex; flex-direction:column; gap:16px;">
 
-    <label for="machineName" style="margin-top: 10px;">MACHINE NAME</label>
-    <input id="machineName" class="swal2-input" placeholder="Enter new Machine Name" value="${
-      machine.name || ""
-    }">
-</div>
+  <!-- WD TAG -->
+  <div style="position:relative;">
+    <label for="wdTag"
+      class="pointer-events-none absolute left-3 top-1 bg-white px-1
+             text-gray-500 text-sm transition-all z-10
+             peer-focus:top-[-6px] peer-focus:text-xs peer-focus:text-blue-600
+             peer-valid:top-[-6px] peer-valid:text-xs">
+      WD TAG
+    </label>
 
-      `,
+    <input id="wdTag"
+      class="swal2-input peer w-[320px] border border-gray-300 rounded-md
+             px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+      placeholder=" "
+      value="${machine.wd_tag || ""}">
+  </div>
+
+  <!-- MACHINE NAME -->
+  <div style="position:relative;">
+    <label for="machineName"
+      class="pointer-events-none absolute left-3 top-1 bg-white px-1
+             text-gray-500 text-sm transition-all z-10
+             peer-focus:top-[-6px] peer-focus:text-xs peer-focus:text-blue-600
+             peer-valid:top-[-6px] peer-valid:text-xs">
+      MACHINE NAME
+    </label>
+
+    <input id="machineName"
+      class="swal2-input peer w-[320px] border border-gray-300 rounded-md
+             px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+      placeholder=" "
+      value="${machine.name || ""}">
+  </div>
+
+</div>`,
       focusConfirm: false,
       showCancelButton: true,
       cancelButtonText: "Cancel",
@@ -312,34 +335,45 @@ const Page = () => {
         </h2>
         <div className="mb-6 max-w-lg space-y-4 flex flex-col h-full">
           <div className="flex flex-row gap-4">
-            <div className="flex flex-col w-1/2">
+            <div className="relative flex flex-col w-1/2">
               <label
                 htmlFor="wdTag"
-                className="text-sm font-medium mb-2 text-gray-700"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 WD TAG
               </label>
               <input
                 type="text"
                 id="wdTag"
-                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                
+                    //className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 value={wdTag}
                 onChange={(e) => setWdTag(e.target.value)}
                 placeholder="Enter WD_TAG"
               />
             </div>
             {/* MACHINE NAME */}
-            <div className="flex flex-col w-1/2">
+            <div className="relative flex flex-col w-1/2">
               <label
                 htmlFor="machineName"
-                className="text-sm font-medium mb-2 text-gray-700"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 MACHINE NAME
               </label>
               <input
                 type="text"
                 id="machineName"
-                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                //className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 value={machineName}
                 onChange={(e) => setMachineName(e.target.value)}
                 placeholder="Enter MACHINE NAME"

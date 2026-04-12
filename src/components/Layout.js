@@ -7,19 +7,12 @@ import useFetchCards from "@/lib/hooks/useFetchCards";
 import { usePathname } from "next/navigation";
 import Denied from "./Denied";
 import LoadingComponent from "./LoadingComponent";
-import mqtt from "mqtt";
-import { set } from "mongoose";
+
+
 
 //------------------ ENV / CONFIG ----------------->>
 const PAGE_TIMEOUT = Number(process.env.NEXT_PUBLIC_PAGE_TIMEOUT) || 60; // วินาที
 
-const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
-const options = {
-  username: process.env.NEXT_PUBLIC_MQT_USERNAME,
-  password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-  reconnectPeriod: 2000,
-};
-//---------------------------------------------->>
 
 const Layout = ({ children, className = "" }) => {
   const [refresh, setRefresh] = useState(false);
@@ -28,45 +21,13 @@ const Layout = ({ children, className = "" }) => {
   const pathname = usePathname();
   const [authorized, setAuthorized] = useState(true);
   const [authCheckComplete, setAuthCheckComplete] = useState(false);
-  const [mqttConnected, setMqttConnected] = useState(false);
+  const [mqttConnected, setMqttConnected] = useState(true);
 
   // ✅ ใช้ Number() เพื่อให้เป็นตัวเลขแน่ๆ
   const [timeLeft, setTimeLeft] = useState(PAGE_TIMEOUT);
   const [pageExpire, setPageExpire] = useState(false);
   
 
-  //-----------MQTT----------------------------------------->>
-  const mqttClient = useRef(null);
-  useEffect(() => {
-    const client = mqtt.connect(connectUrl, options);
-    mqttClient.current = client;
-
-    const onConnect = () => {
-      console.log("✅ MQTT Connected on Page Layout");
-      setMqttConnected(true);
-      // client.subscribe("some/topic");
-    };
-
-    const onMessage = (t, m) => {
-      console.log("📩", t, m.toString());
-      setRefresh((prev) => !prev);
-      // (ทางเลือก) รีเซ็ต timeout เมื่อมี message
-      // resetTimer();
-    };
-
-    client.on("connect", onConnect);
-    client.on("error", (err) => console.error("❌ MQTT Error:", err));
-    client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
-    client.on("message", onMessage);
-
-    return () => {
-      client.off("connect", onConnect);
-      client.off("message", onMessage);
-      client.end(true);
-      mqttClient.current = null;
-    };
-  }, []);
-  //------------------------------------------------------->>
 
   // ✅ ฟังก์ชันรีเซ็ตตัวนับให้เป็นค่าสูงสุดเสมอ
   const resetTimer = useCallback(() => {
@@ -82,7 +43,7 @@ const Layout = ({ children, className = "" }) => {
 
       setTimeLeft((prev) => {
         const newTime = prev - 1;
-        // console.log("⏳ Time left:", newTime, "seconds");
+        //console.log("⏳ Time left:", newTime, "seconds");
         if (newTime <= 0) {
           setPageExpire(true);
           clearInterval(timer);

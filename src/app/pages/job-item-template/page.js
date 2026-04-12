@@ -8,13 +8,14 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const jobItemTemplateHeader = [
   "ID",
   "LINE NAME",
   "Checklist Template Name",
   "Document no.",
-  "Version.",
+  //"Version.",
   //"Created At",
   "Action",
 ];
@@ -39,6 +40,7 @@ const TIMEOUT_OPTIONS = [
 
 
 const Page = () => {
+  const router = useRouter();
   const [refresh, setRefresh] = useState(false);
   const [jobTemplates, setJobTemplates] = useState([]);
   const [session, setSession] = useState({});
@@ -74,6 +76,179 @@ const Page = () => {
       console.error(error);
     }
   };
+
+
+    const showActionSwal = async (jobTemplate) => {
+      const canEdit = userEnableFunctions.some(
+        (action) => action._id === enabledFunction["edit-job-template"]
+      );
+      const canRemove = userEnableFunctions.some(
+        (action) => action._id === enabledFunction["remove-job-template"]
+      );
+      const canAddItem = userEnableFunctions.some(
+        (action) => action._id === enabledFunction["add-job-item-template"]
+      );
+
+      await Swal.fire({
+        //title: `Actions : ${jobTemplate.LINE_NAME || "N/A"}`,
+        width: "700px",   // เพิ่มบรรทัดนี้
+        html: `
+  <style>
+    .swal-actions{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr); /* เดิม 2 */
+      gap:5px;
+      margin-top:6px;
+    }
+    @media (min-width: 600px){
+      .swal-actions{ grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+    }
+    .swal-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+
+      width:90%;
+      padding:10px 12px;
+      border-radius:12px;
+
+      border:1px solid rgba(0,0,0,.12);
+      background: #fff;
+      color:#111827;
+
+      font-weight:700;
+      font-size:13px;
+
+      box-shadow: 0 10px 22px rgba(0,0,0,.08);
+      cursor:pointer;
+      user-select:none;
+
+      transition: transform .08s ease, box-shadow .18s ease, filter .18s ease;
+    }
+    .swal-btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(0,0,0,.12);
+      filter: brightness(.99);
+    }
+    .swal-btn:active{
+      transform: translateY(0px) scale(.99);
+      box-shadow: 0 8px 18px rgba(0,0,0,.10);
+    }
+
+    .swal-btn.primary { background:#2563eb; border-color:#1d4ed8; color:#fff; }
+    .swal-btn.secondary { background:#64748b; border-color:#475569; color:#fff; }
+    .swal-btn.success { background:#16a34a; border-color:#15803d; color:#fff; }
+    .swal-btn.danger { background:#dc2626; border-color:#b91c1c; color:#fff; }
+    .swal-btn.info { background:#0ea5e9; border-color:#0284c7; color:#fff; }
+
+    .swal-btn[disabled]{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow:none !important;
+      filter:none !important;
+    }
+    .swal-note{
+      margin-top:10px;
+      font-size:12px;
+      opacity:.72;
+      text-align:center;
+    }
+  </style>
+
+  <div class="swal-actions">
+    <button id="swal-edit" class="swal-btn primary" ${!canEdit ? "disabled" : ""}>
+      <span>✏️</span><span>Edit</span>
+    </button>
+
+    <button id="swal-dup" class="swal-btn secondary">
+      <span>📄</span><span>Duplicate</span>
+    </button>
+
+    <button id="swal-copywg" class="swal-btn secondary">
+      <span>👥</span><span>Copy to WG</span>
+    </button>
+
+    <button id="swal-remove" class="swal-btn danger" ${!canRemove ? "disabled" : ""}>
+      <span>🗑️</span><span>Remove</span>
+    </button>
+
+    <button id="swal-additem" class="swal-btn success" ${!canAddItem ? "disabled" : ""}>
+      <span>🧾</span><span>Add/Edit Item</span>
+    </button>
+
+    <button id="swal-api" class="swal-btn info">
+      <span>🔗</span><span>API</span>
+    </button>
+
+    <button id="swal-apiplus" class="swal-btn info">
+      <span>⚡</span><span>API+</span>
+    </button>
+  </div>
+
+  <div class="swal-note">
+    * ปุ่มที่ถูกปิดสิทธิ์จะกดไม่ได้
+  </div>
+` ,
+        showConfirmButton: false,
+        showCloseButton: true,
+        didOpen: () => {
+          const editBtn = document.getElementById("swal-edit");
+          const dupBtn = document.getElementById("swal-dup");
+          const copyWgBtn = document.getElementById("swal-copywg");
+          const removeBtn = document.getElementById("swal-remove");
+          const addItemBtn = document.getElementById("swal-additem");
+          const apiBtn = document.getElementById("swal-api");
+          const apiPlusBtn = document.getElementById("swal-apiplus");
+
+          // กันกรณีปุ่ม disabled
+          if (editBtn && canEdit) {
+            editBtn.addEventListener("click", () => {
+              Swal.close();
+              router.push(`/pages/edit-job-template?jobTemplate_id=${jobTemplate._id}`);
+            });
+          }
+
+          dupBtn?.addEventListener("click", () => {
+            Swal.close();
+            handleCopy(jobTemplate._id);
+          });
+
+          copyWgBtn?.addEventListener("click", () => {
+            Swal.close();
+            handleCopyToWorkgroup(jobTemplate._id);
+          });
+
+          if (removeBtn && canRemove) {
+            removeBtn.addEventListener("click", () => {
+              Swal.close();
+              handleRemove(jobTemplate._id, jobTemplate.JobTemplateCreateID);
+            });
+          }
+
+            if (addItemBtn && canAddItem) {
+              addItemBtn.addEventListener("click", () => {
+                Swal.close();
+                router.push(
+                  `/pages/job-item-template/add-job-item-template?jobTemplate_id=${jobTemplate._id}`
+                );
+              }, { once: true });
+            }
+
+          apiBtn?.addEventListener("click", () => {
+            Swal.close();
+            handleInfo(jobTemplate._id, jobTemplate.LINE_NAME);
+          });
+
+          apiPlusBtn?.addEventListener("click", () => {
+            Swal.close();
+            handleInfoPlus(jobTemplate._id, jobTemplate.LINE_NAME);
+          });
+        },
+      });
+    };
+
 
   const fetchJobTemplates = async (workgroup_id) => {
     try {
@@ -422,105 +597,16 @@ const Page = () => {
       "Document no.": jobTemplate.DOC_NUMBER,
       "Version.":jobTemplate.CHECKLIST_VERSION,
       "Create At": jobTemplate.createdAt,
-      Action: (
-        <div className="flex gap-2 items-center justify-center">
-          <Link
-            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-            href={{
-              pathname: "/pages/edit-job-template",
-              query: { jobTemplate_id: jobTemplate._id },
-            }}
-            disabled={
-              !userEnableFunctions.some(
-                (action) => action._id === enabledFunction["edit-job-template"]
-              )
-            }
-            style={{
-              cursor: !userEnableFunctions.some(
-                (action) => action._id === enabledFunction["edit-job-template"]
-              )
-                ? "not-allowed"
-                : "pointer",
-            }}
-          >
-            Edit
-          </Link>
-          <button
-            onClick={() => handleCopy(jobTemplate._id)}
-            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
-          >
-            Duplicate
-          </button>
-
-          <button
-            onClick={() => handleCopyToWorkgroup(jobTemplate._id)}
-            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold text-xs py-2 px-2 rounded"
-          >
-            Copy to workgroup.
-          </button>
-
-          <button
-            className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-2 rounded"
-            onClick={() =>
-              handleRemove(jobTemplate._id, jobTemplate.JobTemplateCreateID)
-            }
-            disabled={
-              !userEnableFunctions.some(
-                (action) =>
-                  action._id === enabledFunction["remove-job-template"]
-              )
-            }
-            style={{
-              cursor: !userEnableFunctions.some(
-                (action) =>
-                  action._id === enabledFunction["remove-job-template"]
-              )
-                ? "not-allowed"
-                : "pointer",
-            }}
-          >
-            Remove
-          </button>
-          <Link
-            className="bg-teal-500 hover:bg-teal-700 text-white font-semibold text-xs py-2 px-2 rounded"
-            href={{
-              pathname: "/pages/job-item-template/add-job-item-template",
-              query: { jobTemplate_id: jobTemplate._id },
-            }}
-            disabled={
-              !userEnableFunctions.some(
-                (action) =>
-                  action._id === enabledFunction["add-job-item-template"]
-              )
-            }
-            style={{
-              cursor: !userEnableFunctions.some(
-                (action) =>
-                  action._id === enabledFunction["add-job-item-template"]
-              )
-                ? "not-allowed"
-                : "pointer",
-            }}
-          >
-            Add/Edit Item
-          </Link>
-
-          <button
-            onClick={() => handleInfo(jobTemplate._id, jobTemplate.LINE_NAME)}
-            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
-          >
-            API
-          </button>
-
-          <button
-            onClick={() => handleInfoPlus(jobTemplate._id, jobTemplate.LINE_NAME)}
-            className="bg-slate-500 hover:bg-slate-700 text-white font-semibold py-2 px-2 rounded"
-          >
-            API+
-          </button>
-
-        </div>
-      ),
+       Action: (
+            <div className="flex justify-center">
+              <button
+                onClick={() => showActionSwal(jobTemplate)}
+                className="bg-indigo-500 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded"
+              >
+                Actions
+              </button>
+            </div>
+          ), 
     };
   });
 
@@ -655,15 +741,18 @@ const handleCreateTemplate = async () => {
           </label> */}
           <select
             id="template-name-filter"
-            className="w-64 ml-0 border border-gray-300 p-2 rounded" // ปรับให้ตัวเลือกอยู่ทางซ้าย
+           className="w-full max-w-[20vw] ml-0 border border-gray-300 p-2 rounded"
             value={selectedTemplateName}
             onChange={(e) => setSelectedTemplateName(e.target.value)}
           >
             <option value="">All</option>
-            {uniqueTemplateNames.map((templateName, index) => (
-              <option key={index} value={templateName}>
-                {templateName}
-              </option>
+
+            {[...uniqueTemplateNames]     // copy array กันแก้ของเดิม
+              .sort((a, b) => a.localeCompare(b))   // เรียง A-Z
+              .map((templateName, index) => (
+                <option key={index} value={templateName}>
+                  {templateName}
+                </option>
             ))}
           </select>
           <button

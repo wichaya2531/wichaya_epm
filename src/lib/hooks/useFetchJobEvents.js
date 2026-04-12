@@ -28,11 +28,12 @@ const useFetchJobEvents = (
   selectedPlanType,
   refresh = null,
   date = null,
-  currentMonth
+  currentMonth,
+  lineNameSearch = "",
+  checklistNameSearch = "",
+  profilegroupIdSearch = "",
+  wdTagSearch = ""
 ) => {
-  //console.log("currentMonth in hook", currentMonth);
-
-  // ✅ ใช้ useMemo คำนวณช่วงเวลาใหม่ทุกครั้งที่เดือนเปลี่ยน
   const range = useMemo(() => {
     let start, end;
 
@@ -56,7 +57,6 @@ const useFetchJobEvents = (
     const startISO = moment(start).startOf("day").toISOString();
     const endISO = moment(end).endOf("day").toISOString();
 
-    //console.log("📅 Range:", moment(start).format("YYYY-MM-DD"), "→", moment(end).format("YYYY-MM-DD"));
     return { startISO, endISO };
   }, [currentMonth]);
 
@@ -64,28 +64,37 @@ const useFetchJobEvents = (
   const [eventLoading, setEventLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ ใช้ range.startISO / range.endISO แทน start / end เก่า
   useEffect(() => {
     const fetchStream = async () => {
       setEventLoading(true);
       setError(null);
       setEvents([]);
-      
-      //console.log("Fetching events for range:", range.startISO, "to", range.endISO);
-      
+
       try {
-        const res = await fetch(
-          `/api/job/get-job-events?workgroup_id=${workgroup_id}&type=${selectedType}&plantype=${selectedPlanType}&start=${range.startISO}&end=${range.endISO}`
-        );
+        const params = new URLSearchParams({
+          workgroup_id: workgroup_id || "",
+          type: selectedType || "all",
+          plantype: selectedPlanType || "all",
+          start: range.startISO,
+          end: range.endISO,
+          line_name: lineNameSearch || "",
+          checklist_name: checklistNameSearch || "",
+          profilegroup_id: profilegroupIdSearch || "",
+          wd_tag: wdTagSearch || "",
+        });
+
+        const res = await fetch(`/api/job/get-job-events?${params.toString()}`);
 
         const reader = res.body?.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+
         if (!reader) throw new Error("ไม่สามารถอ่าน stream ได้");
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
+
           buffer += decoder.decode(value, { stream: true });
 
           let boundary;
@@ -100,14 +109,13 @@ const useFetchJobEvents = (
                   setEvents((prev) => [...prev, ...data]);
                 }
               } catch (err) {
-                // console.warn("❌ parse error:", chunk);
+                console.error("JSON parse error:", err);
               }
             }
           }
         }
 
         setEventLoading(false);
-        //console.log("✅ Final events:", events);
       } catch (error) {
         console.error("โหลด stream ล้มเหลว", error);
         setError(error);
@@ -118,7 +126,18 @@ const useFetchJobEvents = (
     if (workgroup_id) {
       fetchStream();
     }
-  }, [workgroup_id, selectedType, selectedPlanType, refresh, range.startISO, range.endISO]);
+  }, [
+    workgroup_id,
+    selectedType,
+    selectedPlanType,
+    refresh,
+    range.startISO,
+    range.endISO,
+    lineNameSearch,
+    checklistNameSearch,
+    profilegroupIdSearch,
+    wdTagSearch,
+  ]);
 
   return { events, eventLoading, error };
 };

@@ -28,8 +28,7 @@ const Page = (searchParams) => {
           </h1>
         </div>
         <h1 className="text-sm font-bold text-secondary flex  items-center">
-          {/* 'Contact admin, need help.'*/}
-        </h1>
+           <labe>Contact Developper : email Wichaya.Yeunyong@wdc.com , ext. 644047 or Ms team Wichaya Yeunyong  </labe>        </h1>
         <Plan_job_guide />
       </div>
     </Layout>

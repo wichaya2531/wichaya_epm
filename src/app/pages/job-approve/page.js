@@ -19,16 +19,7 @@ const jobApprovesHeader = [
 ];
 
 // import {  useRef, useCallback } from "react";
-// //------------------สำหรับการ เชื่อมต่อ MQTT ------->>
-// import mqtt from "mqtt";
-// import TableComponentAdmin from "@/components/TableComponentAdmin";
-// const connectUrl = process.env.NEXT_PUBLIC_MQT_URL;
-// const options = {
-//   username: process.env.NEXT_PUBLIC_MQT_USERNAME,
-//   password: process.env.NEXT_PUBLIC_MQT_PASSWORD,
-//   reconnectPeriod: 2000,
-// };
-// //---------------------------------------------->>
+
 
 //console.log("jobApprovesHeader_xxx.."
 // );
@@ -43,71 +34,7 @@ const Page = () => {
     refetch ,
   } = useFetchJobApproves(user._id,refreshEvent);
 
-//-----------MQTT----------------------------------------->>
-// const mqttClient = useRef(null);
-// useEffect(() => {
-//   const client = mqtt.connect(connectUrl, options);
-//   mqttClient.current = client;
 
-//   const onConnect = () => {
-//     console.log("✅ MQTT Connected on Page Job Approve");
-//     if (user?.workgroup_id) client.subscribe(user.workgroup_id);
-//   };
-//     //-------ส่วนของการกำหนดค่า timeout การรับข้อความ -----    
-//     let mqttClientReceiveTimeout = false; // ตัวแปรเก็บ timeout ของ การรับข้อความ
-//     setTimeout(() => {
-//          //mqttClient.current && mqttClient.current.end(true);
-//          mqttClientReceiveTimeout = true;
-//     }, process.env.NEXT_PUBLIC_MQTT_MESSAGE_TIMEOUT*60);
-//     //-------------------------------------------->>  
-//   client.on("connect", onConnect);
-//   client.on("error", (err) => console.error("❌ MQTT Error:", err));
-//   client.on("close", () => console.warn("⚠️ MQTT Disconnected"));
-//   client.on("message", (t, m) => {
-//     console.log("📩", t, m.toString());
-//     if(mqttClientReceiveTimeout)return;
-//           // ✅ โหลดตารางใหม่ทันที
-//       //await refetch();
-
-//       // (ถ้ายังอยากโชว์เอฟเฟกต์ refresh ให้คงไว้ได้)
-//       setRefreshEvent(true);
-//       setTimeout(() => setRefreshEvent(false), 3000);
-//   });
-
-//   return () => {
-//     client.end(true);
-//     mqttClient.current = null;
-//   };
-// }, []);
-
-// // ถ้า user เปลี่ยน ค่อย subscribe เพิ่ม
-// useEffect(() => {
-//   if (user?.workgroup_id && mqttClient.current?.connected) {
-//     mqttClient.current.subscribe(user.workgroup_id, (err) =>
-//       err ? console.error("Subscription error:", err)
-//           : console.log("📡 Subscribed:", user.workgroup_id)
-//     );
-//   }
-// }, [user?.workgroup_id]);
-
-// // ใช้เรียกตอนกดปุ่ม/เหตุการณ์เท่านั้น (อย่าเรียกตรง ๆ ระหว่าง render)
-// const handleEventToMqtt = useCallback(() => {
-//   const c = mqttClient.current;
-//   if (!c || c.disconnected) {
-//     console.warn("MQTT not connected");
-//     return;
-//   }
-//   if (!user?.workgroup_id) {
-//     console.warn("No topic");
-//     return;
-//   }
-//   try {
-//     c.publish(user.workgroup_id, "refresh");
-//   } catch (err) {
-//     console.error("Error Code: 121\n", err?.stack ?? err);
-//   }
-// }, [user?.workgroup_id]);
-//------------------------------------------------------->>
 
 
 const handleJobReviewByNavigate = (job_id) => {
@@ -201,8 +128,12 @@ const handleJobReviewByNavigate = (job_id) => {
             filterStatusDisable={true} 
             editBtnDisable={true} 
             approveByNavigate={true} 
-            viewBtnDisable={true}
-            handleJobReviewByNavigate={handleJobReviewByNavigate} />
+            viewBtnDisable={false}
+            
+            handleJobReviewByNavigate={handleJobReviewByNavigate} 
+            callFromApprovePage={true}
+            />
+
       </div>
     </Layout>
   );

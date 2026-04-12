@@ -20,38 +20,84 @@ import Cookies from "js-cookie";
 const Page = () => {
   //console.log('flush from Page dashboard');
   const [viewMode,setviewMode]=useState(false);
+  const [showCards, setShowCards] = useState(true);
+
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: userloading } = useFetchUser(refresh);
   const { cards, isLoading: cardsLoading } = useFetchCards(refresh);
-  const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
-  const [pageExpire,setPageExpire]=useState(false);
+  //const { jobs, isLoading: jobsLoading } = useFetchJobs(refresh);
+  //const [pageExpire,setPageExpire]=useState(false);
+
+   try{
+       localStorage.removeItem("machines"); 
+   }catch(err){
+       //console.error(err); 
+   }
+
+
+
+//  useEffect(() => {
+//     // อ่าค่า Storage ทั้งหมด 
+
+ 
+//       let saved = sessionStorage.getItem("machineIds");
+//       //console.log("saved", saved);
+//       if (saved!==null) {
+//           console.log("machineIds foun : ไม่ต้องเสียเวลาโหลดใหม่ ");
+//           // แปลงกลับเป็น object
+//           const machineIds = JSON.parse(saved);
+//           console.log("machineIds", machineIds);
+
+//       } else {
+//           console.log("machineIds not found :: โหลดใหม่");
+          
+//           const dataSimple = { name: "jack" };
+//           sessionStorage.setItem("machineIds", JSON.stringify(dataSimple));
+//       }
+
+//     // for (let i = 0; i < sessionStorage.length; i++) {
+//     //   const key = sessionStorage.key(i);
+//     //   const value = sessionStorage.getItem(key);
+//     //   console.log(key, "=", value);
+//     // }
+//   }, []);
+
+
   //console.log("refresh",refresh);
 //  useEffect(() => {
-//    setInterval(() => {  
+//    setInterval(() => {
 //              //var timerOnPage=document.getElementById('timeout-monitor').innerHTML;
 //              //console.log("Dashboard Page Timeout Monitor:",timerOnPage);
 //              var _pageExpire=document.getElementById('page-expire').innerHTML;
-//              console.log("Dashboard Page Expire Monitor:",_pageExpire); 
+//              console.log("Dashboard Page Expire Monitor:",_pageExpire);
 
-             
+
 //    }, 5000);
 
 //  }, []);
-  
+
 // ----------------Cookie ---------------------
 useEffect(() => {
   const v = Cookies.get("dashboardPage_summaryView"); // "true" | "false" | undefined
   setviewMode(v === "true");
+
+  const c = Cookies.get("dashboardPage_showCards");
+  setShowCards(c !== "false");           // default = true
 }, []);
 
 const handleClickViewMode = (checked) => {
   setviewMode(checked);
   Cookies.set("dashboardPage_summaryView", String(checked), { expires: 365 });
 };
+
+const handleClickShowCards = (checked) => {
+  setShowCards(checked);
+  Cookies.set("dashboardPage_showCards", String(checked), { expires: 365 });
+};
 // -------------------------------------------
 
   return (
-    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
+    <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-3">
       <div className="z-50">
         {/* Header section */}
         <div className="flex justify-center items-center flex-col gap-4 bg-white rounded-xl p-4">
@@ -72,7 +118,58 @@ const handleClickViewMode = (checked) => {
           </h1> */}
         </div>
 
+          {/* Show Cards switch */}
+          <div
+            className="inline-flex items-center gap-4 bg-white px-4 py-2 rounded-lg shadow-sm border mt-4"
+            style={{ width: "15em" }}
+          >
+            <label
+              htmlFor="showCardToggle"
+              className="text-gray-700 text-lg font-semibold cursor-pointer"
+            >
+              Cards Menu
+            </label>
+
+            <div
+              className={`relative inline-flex items-center h-7 rounded-full w-14 cursor-pointer transition-all duration-300 ${
+                showCards ? "bg-blue-500" : "bg-gray-300"
+              }`}
+              onClick={() => handleClickShowCards(!showCards)}
+            >
+              <span
+                className={`inline-block w-6 h-6 bg-white rounded-full shadow transform transition-transform duration-300 ${
+                  showCards ? "translate-x-7" : "translate-x-1"
+                }`}
+              ></span>
+            </div>
+          </div>
+
+
         {/* Cards section */}
+
+          {showCards && (
+            <div className="flex flex-wrap mt-9 gap-8 justify-center">
+              {cards &&
+                cards.map((card, index) => {
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card
+                        title={card.TITLE}
+                        detail={card.DETAIL}
+                        link={card.LINK}
+                        logo_path={card.LOGO_PATH}
+                      />
+                    </motion.div>
+                  );
+                })}
+            </div>
+          )}
+{/* 
         <div className="flex flex-wrap mt-9 gap-8 justify-center">
           {cards &&
             cards.map((card, index) => {
@@ -90,37 +187,39 @@ const handleClickViewMode = (checked) => {
                     logo_path={card.LOGO_PATH}
                   />
                 </motion.div>
+
+
               );
             })}
+        </div> */}
+        <div
+          className="inline-flex items-center gap-4 bg-white px-4 py-2 rounded-lg shadow-sm border"
+          style={{ width: "15em" }}
+        >
+          <label
+            htmlFor="summaryView"
+            className="text-gray-700 text-lg font-semibold cursor-pointer"
+          >
+            Graph
+          </label>
+
+          <div
+            className={`relative inline-flex items-center h-7 rounded-full w-14 cursor-pointer transition-all duration-300 ${
+              viewMode ? "bg-green-500" : "bg-gray-300"
+            }`}
+            onClick={() => handleClickViewMode(!viewMode)}
+          >
+            <span
+              className={`inline-block w-6 h-6 bg-white rounded-full shadow transform transition-transform duration-300 ${
+                viewMode ? "translate-x-7" : "translate-x-1"
+              }`}
+            ></span>
+          </div>
         </div>
 
-        <div 
-            style={{
-              display:'inline-block',
-              width:'20vw',
-              backgroundColor:'white',
-              padding:'4px',
-              borderRadius:'4px', 
-            }}
-        >
-          <span>
-            <label htmlFor="summaryView" style={{ paddingRight: "5px", cursor: "pointer" }}>
-              Summary View&nbsp;:
-            </label>
-            &nbsp;&nbsp;
-            <input
-              id="summaryView"                     // ✅ ใช้ id เพื่อเชื่อมกับ label
-              type="checkbox"
-              checked={viewMode}
-              onChange={(e) => handleClickViewMode(e.target.checked)}
-              style={{
-                transform: "scale(1.8)",
-                padding: "10px",
-                cursor: "pointer",
-              }}
-            />
-          </span>
-        </div>    
+
+
+
         {/* Jobs table section */}
 
       {viewMode===true ? (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 const useFetchMachines = (user) => {
-  const [machines, setMachines] = useState([]);
+  //const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
