@@ -157,31 +157,32 @@ useEffect(() => {
 
 
 
- useEffect(async () => {
+ useEffect(() => {
       // use effect เพื่ออ่านค่า machines จากฐานข้อมูลมาเก็บไว้ ซึ่งถ้าหากว่าเคยอ่านแล้ว จะไม่ต้องเสียเวลาอ่านใหม่ แต่
       // หากว่ายังไม่เคยอ่านมาเลย จำเป็นจะต้องอ่าน เพื่อเข้าไปบันทึกเก็บไว้ใน Local Storage
-      let localStorageMachines = localStorage.getItem("machines");
-      if (localStorageMachines!==null) {
-          localStorageMachines = JSON.parse(localStorageMachines);
-          setMachines(localStorageMachines);
-          //console.log('localStorageMachines',localStorageMachines);
-      } else {
-              console.log("โหลด Machines จากฐานข้อมูล..."); 
-              const url = `/api/machine/get-machines`;
-              const res = await fetch(url, {
-                cache: "no-store",
-                headers: {
-                  Accept: "application/json",
-                },
-              });
-              if (!res.ok) {
-                throw new Error(`HTTP ${res.status}`);
-              }
-              const dataResponse = await res.json();
-              setMachines(dataResponse.machines);   
-              localStorage.setItem("machines", JSON.stringify(dataResponse.machines));               
-      }
-
+      const loadMachines = async () => {
+        let localStorageMachines = localStorage.getItem("machines");
+        if (localStorageMachines !== null) {
+            localStorageMachines = JSON.parse(localStorageMachines);
+            setMachines(localStorageMachines);
+        } else {
+            console.log("โหลด Machines จากฐานข้อมูล...");
+            const url = `/api/machine/get-machines`;
+            const res = await fetch(url, {
+              cache: "no-store",
+              headers: {
+                Accept: "application/json",
+              },
+            });
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`);
+            }
+            const dataResponse = await res.json();
+            setMachines(dataResponse.machines);
+            localStorage.setItem("machines", JSON.stringify(dataResponse.machines));
+        }
+      };
+      loadMachines();
   }, []);
 
 

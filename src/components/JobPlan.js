@@ -427,7 +427,8 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
       <form
-        className="bg-white px-20 py-9 rounded-lg w-[900px] max-h-[90vh] flex flex-col gap-8 relative overflow-auto"
+        className="bg-white px-20 py-9 rounded-lg w-[900px] max-h-[81vh] flex flex-col gap-2 relative overflow-auto"
+        style={{ transform: "scale(0.95)", transformOrigin: "top center" }}
         onSubmit={handleSubmit}
       >
         <h1 className="text-2xl font-bold">

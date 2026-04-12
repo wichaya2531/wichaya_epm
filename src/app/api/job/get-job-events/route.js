@@ -193,7 +193,7 @@ if (endDate) {
             color: "#999999",
           };
 
-          console.log('schedule=',schedule);
+         // console.log('schedule=',schedule);
 
           const hours = schedule.ACTIVATE_DATE
             .getHours()

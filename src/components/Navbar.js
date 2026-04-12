@@ -29,6 +29,7 @@ const Navbar = ({ menu,mqttStatus }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const router = useRouter();
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen); // สลับสถานะเปิด/ปิด
@@ -43,9 +44,6 @@ const Navbar = ({ menu,mqttStatus }) => {
   useEffect(() => {
     setIsClient(true); // ตั้งค่า isClient เป็น true หลังจากที่ render ฝั่ง client เสร็จ
   }, []);
-
-  // ใช้ useRouter เฉพาะเมื่อเป็นฝั่ง client
-  const router = isClient ? useRouter() : null;
 
   if (state?.success) {
     setTimeout(() => {
