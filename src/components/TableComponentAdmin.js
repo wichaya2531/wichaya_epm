@@ -85,7 +85,12 @@ const TableComponentAdmin = ({
 
 
 // ตัวช่วย
-const norm = (v) => (v ?? "").toString().toLowerCase().trim();
+const norm = (v) => {
+  if (v && typeof v === "object" && !Array.isArray(v)) {
+    return (v.linename || v.line_name || "").toString().toLowerCase().trim();
+  }
+  return (v ?? "").toString().toLowerCase().trim();
+};
 const match = (item, col, term) =>
   col && term ? norm(item?.[col]).includes(norm(term)) : false;
 
@@ -217,16 +222,14 @@ const filteredData = sortedData?.length
     return 5;
   };
 
-  // ✅ ฟังก์ชัน Select All: เลือกเฉพาะ jobs ในหน้าปัจจุบัน
+  // ✅ ฟังก์ชัน Select All: เลือกเฉพาะ jobs ในหน้าปัจจุบัน (ใช้ currentPageData ที่ผ่าน local filter แล้ว)
   const handleSelectAllJobs = () => {
-
-    //console.log("use handleSelectAllJobs!!!");
-
-    const allCurrentPageIds = jobsInCurrentPage.map((job) => job._id);
-    if (selectedJobs.length === allCurrentPageIds.length) {
-      setSelectedJobs([]); // ยกเลิกการเลือกทั้งหมด
+    const allCurrentPageIds = currentPageData.map((item) => item._id).filter(Boolean);
+    const allSelected = allCurrentPageIds.length > 0 && allCurrentPageIds.every((id) => selectedJobs.includes(id));
+    if (allSelected) {
+      setSelectedJobs((prev) => prev.filter((id) => !allCurrentPageIds.includes(id)));
     } else {
-      setSelectedJobs(allCurrentPageIds); // เลือกทั้งหมดในหน้าปัจจุบัน
+      setSelectedJobs((prev) => [...new Set([...prev, ...allCurrentPageIds])]);
     }
   };
 
@@ -382,9 +385,9 @@ const clearFilters = (e) => {
                         id="select-job-all"
                         onChange={handleSelectAllJobs}
                         checked={
-                          jobsInCurrentPage.length > 0 &&
-                          jobsInCurrentPage.every((job) =>
-                            selectedJobs.includes(job._id)
+                          currentPageData.length > 0 &&
+                          currentPageData.every((item) =>
+                            item._id ? selectedJobs.includes(item._id) : false
                           )
                         }
                         className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
@@ -452,7 +455,7 @@ const clearFilters = (e) => {
                 key={item.ID}
                 className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
-                {Object.keys(item).map((key) => {
+                {Object.keys(item).filter((key) => key !== "_id").map((key) => {
                   const value = item[key];
 
                   const isLineNameObject =

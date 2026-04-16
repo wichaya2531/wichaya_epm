@@ -10,18 +10,17 @@ const TableComponent = ({
   filterColumn1,
   TableName,
   PageSize,
-  searchHidden = null,       // (ยังไม่ใช้ แต่คงไว้ตามเดิม)
-  linenameOnSelect = null,   // (ยังไม่ใช้ แต่คงไว้ตามเดิม)
+  controlledPageSize,        // ถ้าส่งมาจากภายนอก จะใช้ค่านี้แทน internal state
+  searchHidden = null,
+  linenameOnSelect = null,
   currentPage,
   onPageChange,
   disablePageSize,
   disableFilter,
   refreshEvent,
   isLoading,
- // handleSelectProfileGroup,
 }) => {
 
-  //console.log('datas',datas);
   // -------------------- State --------------------
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(PageSize || 5);
@@ -58,12 +57,18 @@ const TableComponent = ({
     return 5;
   };
 
-  // -------------------- Init from cookie --------------------
+  // -------------------- Init from cookie (เฉพาะเมื่อไม่มี controlledPageSize) --------------------
   useEffect(() => {
+    if (controlledPageSize) return;
     const rowsVisible = getRowsVisible();
     const n = Number(rowsVisible);
     if (!Number.isNaN(n) && n > 0) setPageSize(n);
   }, []); // run once
+
+  // -------------------- Sync controlledPageSize จากภายนอก --------------------
+  useEffect(() => {
+    if (controlledPageSize) setPageSize(controlledPageSize);
+  }, [controlledPageSize]);
 
   // -------------------- Unique filter options --------------------
   const uniqueFilterOptions = useMemo(() => {
@@ -316,20 +321,6 @@ const TableComponent = ({
             </div>
           )}
 
-          {/* Search */}
-          <div
-            className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto"
-            style={{ visibility: disableFilter ? "hidden" : "visible" }}
-          >
-            <input
-              className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-            <SearchIcon className="absolute left-2 top-2 text-gray-500" />
-          </div>
         </div>
       </div>
 
@@ -366,16 +357,32 @@ const TableComponent = ({
                 key={item?.ID ?? item?.id ?? `${TableName || "T"}-row-${rowIdx}`}
                 className="hover:shadow-lg bg-white border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
-                {headers.map((headerKey, colIdx) => (
-                  <td
-                      key={`${rowIdx}-${headerKey}`}
-                      className="px-4 py-3 w-[200px] max-w-[200px]"
-                    >
-                      <div className="whitespace-normal break-words">
-                        {item?.[headerKey] ?? "-"}
-                      </div>
-                    </td>
-                ))}
+                {headers.map((headerKey, colIdx) => {
+                    const value = item?.[headerKey];
+                    const isLineNameObject =
+                      headerKey === "Line Name" &&
+                      value &&
+                      typeof value === "object" &&
+                      !Array.isArray(value);
+
+                    return (
+                      <td
+                        key={`${rowIdx}-${headerKey}`}
+                        className="px-4 py-3 w-[200px] max-w-[200px]"
+                      >
+                        <div className="whitespace-normal break-words">
+                          {isLineNameObject
+                            ? value.linename || value.line_name || "-"
+                            : value ?? "-"}
+                        </div>
+                        {isLineNameObject && value.machine_name && (
+                          <div className="text-blue-500 text-xs mt-1">
+                            {value.machine_name}
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
               </tr>
             ))}           
             {/* ไม่มีข้อมูล */}

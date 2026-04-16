@@ -71,6 +71,7 @@ const JobsTableQuickView = ({ refresh,jobIds }) => {
   
  
   const [disabledJobs, setDisabledJobs] = useState({}); // เก็บสถานะ disable ของแต่ละ job_id
+  const [orientation, setOrientation] = useState("portrait");
 
   const { user, isLoading: userLoading } = useFetchUser(refresh);
 
@@ -93,6 +94,20 @@ const JobsTableQuickView = ({ refresh,jobIds }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // ── Orientation (ใช้สำหรับ Select All ใน TableComponentAdmin) ──
+  useEffect(() => {
+    const checkOrientation = () => {
+      setOrientation(window.innerHeight > window.innerWidth ? "portrait" : "landscape");
+    };
+    checkOrientation();
+    window.addEventListener("resize", checkOrientation);
+    window.addEventListener("orientationchange", checkOrientation);
+    return () => {
+      window.removeEventListener("resize", checkOrientation);
+      window.removeEventListener("orientationchange", checkOrientation);
+    };
+  }, []);
 
 
 //----------- ฟังก์ชันเพิ่ม/อัปเดต job ใน list ---------->>  
@@ -277,6 +292,66 @@ const handleClick = (job_id) => {
       }
     }
   };
+
+  // ── Approve All selected jobs ─────────────────────────────────
+  const handleApproveSelected = async () => {
+    if (selectedJobs.length === 0) {
+      Swal.fire({ icon: "warning", title: "No jobs selected", text: "Please select at least 1 job." });
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Approve selected jobs?",
+      text: `You are about to approve ${selectedJobs.length} item(s).`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, approve all",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const approvePromises = selectedJobs.map((job_id) =>
+        fetch(`/api/approval/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            job_id,
+            user_id: user._id,
+            isApproved: true,
+            comment: "Bulk approve",
+            disapprove_reason: "",
+          }),
+        }).then((res) => res.json())
+      );
+
+      const results = await Promise.all(approvePromises);
+      const successCount = results.filter((r) => r.status === 200).length;
+      const failCount = results.length - successCount;
+
+      if (successCount > 0) {
+        setSelectedJobs([]);
+        setReloadKey((prev) => prev + 1);
+      }
+
+      Swal.fire({
+        icon: successCount > 0 ? "success" : "error",
+        title: "Bulk Approve Result",
+        html: `
+          <div style="text-align:left">
+            <div>Approved: <b>${successCount}</b></div>
+            <div>Failed: <b>${failCount}</b></div>
+          </div>
+        `,
+        confirmButtonText: "OK",
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({ icon: "error", title: "Error", text: "Something went wrong during bulk approve." });
+    }
+  };
+  // ─────────────────────────────────────────────────────────────
 
   //console.log("jobs.=>", jobs);
   const filteredJobs =
@@ -514,11 +589,18 @@ const handleShowUser = (userName, datetime) => {
   });
 };
 
+  // ── DEBUG: ดู JSON ที่ได้จาก API ──────────────────────────────
+  if (jobs && jobs.length > 0) {
+    console.log("[QuickView] jobs[0] keys:", Object.keys(jobs[0]));
+    console.log("[QuickView] jobs[0].MC_TAG:", jobs[0].MC_TAG);
+    console.log("[QuickView] jobs[0] full:", jobs[0]);
+  }
+  // ──────────────────────────────────────────────────────────────
+
   const jobsActiveBody =
     filteredJobs &&
     filteredJobs.map((job, index) => {
-      //console.log('job',job);
-      let statusColor = job.STATUS_COLOR; 
+      let statusColor = job.STATUS_COLOR;
       // ตรวจสอบค่า Active ตาม STATUS_NAME
       const activeValue =
         job.STATUS_NAME === "complete"
@@ -539,9 +621,17 @@ const handleShowUser = (userName, datetime) => {
             />
           ),
         }),
+        _id: job._id,
         ID: index + 1,
         "Checklist Name": job.JOB_NAME,
-        "Line Name": job.LINE_NAME,
+        "Line Name": {
+          linename: job.LINE_NAME,
+          machine_name: (
+            job.MC_TAG?.MACHINE_NAME && job.MC_TAG?.WD_TAG
+              ? `${job.MC_TAG.MACHINE_NAME} : ${job.MC_TAG.WD_TAG}`
+              : job.MC_TAG?.MACHINE_NAME || job.MC_TAG?.WD_TAG || ""
+          ),
+        },
         Status: (
           <div
             style={{ backgroundColor: statusColor,position:'relative' }}
@@ -860,7 +950,6 @@ const handleShowUser = (userName, datetime) => {
                 ]
               </>
           }
-
           PageSize={5}
           searchColumn={"Checklist Name"}
           searchColumn1={"Line Name"}
@@ -868,11 +957,21 @@ const handleShowUser = (userName, datetime) => {
           filteredJobs={filteredJobs}
           selectedJobs={selectedJobs}
           handleDeleteSelected={handleDeleteSelected}
+          handleApproveSelected={handleApproveSelected}
+          showApproveAllButton={
+            selectedJobs.length > 0 &&
+            selectedJobs.every((id) => {
+              const job = jobs.find((j) => String(j._id) === String(id));
+              return job?.STATUS_NAME === "waiting for approval";
+            })
+          }
+          callFromApprovePage={true}
           currentPage={currentPage}
-          //onPageChange={(page) => setCurrentPage(page)}
           onPageChange={(page) => handleSetCurrentPage(page)}
           setSelectedJobs={setSelectedJobs}
           isLoading={jobsLoading}
+          orientation={orientation}
+          userRole={user.role}
         />
       ) : (
         <TableComponent

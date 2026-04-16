@@ -35,6 +35,7 @@ const ExportButtons = ({ handleExport, excel = false }) => {
       <button
         onClick={() => handleExport("png")}
         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+        style={{display:'none'}}
       >
         <FaImage />
         <span className="hidden md:inline">Save as PNG</span>
@@ -43,6 +44,7 @@ const ExportButtons = ({ handleExport, excel = false }) => {
       <button
         onClick={() => handleExport("pdf")}
         className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+        style={{display:'none'}}
       >
         <FaFilePdf />
         <span className="hidden md:inline">Export PDF</span>

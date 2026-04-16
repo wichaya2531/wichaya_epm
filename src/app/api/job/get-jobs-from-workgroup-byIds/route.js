@@ -7,6 +7,7 @@ import { Schedule } from "@/lib/models/Schedule";
 import { User } from "@/lib/models/User";
 import { Status } from "@/lib/models/Status";
 import { ProfileGroup } from "@/lib/models/ProfileGroup";
+import { Machine } from "@/lib/models/Machine";
 import { Types } from "mongoose";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +58,7 @@ function streamResponse(stream) {
 }
 
 // enrich/mapping ให้หน้าบ้าน
-async function mapJobsAndSchedules({ jobs, schedules, profileNameById,user_id }) {
+async function mapJobsAndSchedules({ jobs, schedules, profileNameById, machineMap, user_id }) {
   //console.log("...................................");
   const jobStatusIds = [
     ...new Set(jobs.map((j) => String(j.JOB_STATUS_ID)).filter(Boolean)),
@@ -94,6 +95,10 @@ async function mapJobsAndSchedules({ jobs, schedules, profileNameById,user_id })
       SUBMITTED_BY: submit_name,
       LINE_NAME: job.LINE_NAME,
       JOB_NAME: job.JOB_NAME,
+      MC_TAG: {
+        MACHINE_NAME: machineMap[job.WD_TAG] ?? "",
+        WD_TAG: job.WD_TAG ?? "",
+      },
       ACTIVATE_USER: job.ACTIVATE_USER,
       createdAt: job.createdAt,
       APPROVE_ALLOW : job.JOB_APPROVERS?.includes(user_id) && ((st?.status_name || "Unknown") && st.status_name=="waiting for approval"  ),
@@ -173,16 +178,23 @@ export const POST = async (req, { params }) => {
     return streamResponse(stream);
   }
 
-  const profileNameById = await loadProfileGroupsMap();
+  const [profileNameById, machines] = await Promise.all([
+    loadProfileGroupsMap(),
+    Machine.find().lean(),
+  ]);
+
+  const machineMap = machines.reduce((acc, m) => {
+    acc[m.WD_TAG] = m.MACHINE_NAME;
+    return acc;
+  }, {});
 
   const stream = makeNDJSONStream(async (push) => {
-    // ❌ ตัด WORKGROUP_ID ออกจากเงื่อนไข
     const [jobs, schedules] = await Promise.all([
       Job.find({ _id: { $in: ids } }).sort({ updatedAt: -1 }).lean(),
       Schedule.find({ _id: { $in: ids } }).sort({ updatedAt: -1 }).lean(),
     ]);
 
-    const merged = await mapJobsAndSchedules({ jobs, schedules, profileNameById,user_id });
+    const merged = await mapJobsAndSchedules({ jobs, schedules, profileNameById, machineMap, user_id });
     push(merged);
   });
 

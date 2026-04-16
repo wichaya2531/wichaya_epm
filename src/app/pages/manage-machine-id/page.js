@@ -17,16 +17,16 @@ const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useFetchUser();
   const [machines, setMachines] = useState([]);
-  
-  //const [loading, error,setLoading ] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  //const { machines, loading, error, setMachines }=useFetchMachines(user);
-
   const [currentUser, setcurrentUser] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [wdTag, setWdTag] = useState("");
   const [machineName, setMachineName] = useState("");
+
+  // ── Search + PageSize state ───────────────────────────────────────────────────
+  const [searchWdTag, setSearchWdTag]             = useState("");
+  const [searchMachineName, setSearchMachineName] = useState("");
+  const [pageSize, setPageSize]                   = useState(10);
   const lineNameHeader = [
     "ID",
     "WD_TAG",
@@ -60,7 +60,14 @@ const Page = () => {
 
 
   
-  const machineTableBody = machines?.map((machine, index) => ({
+  // ── Filtered list ────────────────────────────────────────────────────────────
+  const filteredMachines = machines?.filter((machine) => {
+    const matchWd   = machine.wd_tag?.toLowerCase().includes(searchWdTag.toLowerCase());
+    const matchName = machine.name?.toLowerCase().includes(searchMachineName.toLowerCase());
+    return matchWd && matchName;
+  }) ?? [];
+
+  const machineTableBody = filteredMachines.map((machine, index) => ({
     ID: index + 1,
     WD_TAG: machine.wd_tag || "Unknown",
     "MACHINE NAME": machine.name || "Unknown",
@@ -402,14 +409,83 @@ const Page = () => {
             </div>
           </div>
         </div>
+        {/* ── Search + Rows Bar ──────────────────────────────────────────── */}
+        <div className="flex items-end gap-3 mb-0">
+          {/* Search WD_TAG */}
+          <div className="relative w-[200px]">
+            <label className="pointer-events-none absolute left-3 top-1 bg-white px-1 text-gray-500 text-xs z-10">
+              Search WD TAG
+            </label>
+            <input
+              type="text"
+              value={searchWdTag}
+              onChange={(e) => { setSearchWdTag(e.target.value); setCurrentPage(1); }}
+              placeholder="e.g. WD-001"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 text-sm
+                         focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Search MACHINE NAME */}
+          <div className="relative w-[200px]">
+            <label className="pointer-events-none absolute left-3 top-1 bg-white px-1 text-gray-500 text-xs z-10">
+              Search Machine Name
+            </label>
+            <input
+              type="text"
+              value={searchMachineName}
+              onChange={(e) => { setSearchMachineName(e.target.value); setCurrentPage(1); }}
+              placeholder="e.g. CNC-01"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 text-sm
+                         focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Rows */}
+          <div className="relative w-[100px]">
+            <label className="pointer-events-none absolute left-3 top-1 bg-white px-1 text-gray-500 text-xs z-10">
+              Rows
+            </label>
+            <select
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 text-sm
+                         focus:outline-none focus:border-blue-500"
+            >
+              {[5, 10, 15, 20, 25, 50, 100].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Clear Button */}
+          {(searchWdTag || searchMachineName) && (
+            <button
+              type="button"
+              onClick={() => { setSearchWdTag(""); setSearchMachineName(""); setCurrentPage(1); }}
+              className="shrink-0 px-4 py-2 text-sm rounded-lg border border-red-400 text-red-500 hover:bg-red-50 transition"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Result count */}
+        {(searchWdTag || searchMachineName) && (
+          <p className="text-sm text-gray-500 mb-0">
+            Found <span className="font-semibold text-gray-700">{filteredMachines.length}</span> result{filteredMachines.length !== 1 ? "s" : ""}
+          </p>
+        )}
+
         <TableComponent
           headers={lineNameHeader}
           datas={machineTableBody}
           TableName="Machine list"
-          searchColumn="WD_TAG"
-          filterColumn="WD_TAG"
           currentPage={currentPage}
           onPageChange={(page) => setCurrentPage(page)}
+          controlledPageSize={pageSize}
+          disablePageSize
+          disableFilter
         />
       </div>
     </Layout>

@@ -14,7 +14,7 @@ import BarChart1 from "./BarChart1";
 import Type_1 from "./Type_1";
 import Type_2 from "./Type_2";
 import { use, useState } from "react";
-import useFetchReport1 from "@/lib/hooks/useFetchReport1";
+import useFetchReport2 from "@/lib/hooks/useFetchReport2";
 
 import useFetchUsers from "@/lib/hooks/useFetchUser";
 import { useEffect } from "react";
@@ -42,7 +42,7 @@ const Page = () => {
 
   const [workgroupSelect, setWorkgroupSelect] = useState(user.workgroup);
   
-  const { report, isLoading } = useFetchReport1(
+  const { report, isLoading } = useFetchReport2(
     refresh,
     startDate,
     endDate,
@@ -199,15 +199,7 @@ const handlePullData = () => {
 
         {selectedChart === "Type_2" && (
           <Type_2
-            report={report}
-            isLoading={isLoading}
-            onDateStartFilterChange={handleDateStartFilterChange}
-            onDateEndFilterChange={handleDateEndFilterChange}
-            onPullData={handlePullData}
-            onWorkgroupSelect={handleWorkgroupSelect}
             workgroupOfUser={workgroupOfUser}
-            dateTimeStart={startDate}
-            dateTimeEnd={endDate}
           />
         )}
 

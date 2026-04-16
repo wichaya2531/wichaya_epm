@@ -83,22 +83,49 @@ const JobForm = ({
   const autoFullItems = (dataValue) => {
     toggleMenu();
 
-    jobItems.forEach((element) => {
-      try {
-        const el = document.getElementById(
-          `${element.JobItemID}/${jobData.LINE_NAME}`
-        );
-        if (el) el.value = dataValue;
-      } catch (error) {
-        console.log(error);
-      }
+    const nextMultiValues = {};
 
-      try {
-        handleInputChange({ target: { value: dataValue } }, element);
-      } catch (error) {
-        console.log(error);
+    jobItems.forEach((element) => {
+      // ข้าม Numeric input — ไม่ใส่ค่าลงไป
+      if (element?.input_type === "Numeric") return;
+
+      const keys = parseKeysInBrace(element?.JobItemName || "");
+
+      if (keys.length > 0) {
+        // Multi-field item: build merged "Zone1:Pass,Zone2:Pass" value
+        const row = {};
+        keys.forEach((k) => { row[k] = dataValue; });
+        nextMultiValues[element.JobItemID] = row;
+
+        const merged = keys.map((k) => `${k}:${dataValue}`).join(",");
+        try {
+          handleInputChange({ target: { value: merged } }, element);
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        // Simple field: update DOM + handleInputChange
+        try {
+          const el = document.getElementById(
+            `${element.JobItemID}/${jobData.LINE_NAME}`
+          );
+          if (el) el.value = dataValue;
+        } catch (error) {
+          console.log(error);
+        }
+
+        try {
+          handleInputChange({ target: { value: dataValue } }, element);
+        } catch (error) {
+          console.log(error);
+        }
       }
     });
+
+    // Update multiValues state once for all multi-field items
+    if (Object.keys(nextMultiValues).length > 0) {
+      setMultiValues((prev) => ({ ...prev, ...nextMultiValues }));
+    }
   };
 
 
@@ -942,7 +969,7 @@ const handleMultiChange = (item, key, value) => {
                   <th className="w-[50px]">
                     {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME}
                   </th>
-                  <th className="w-[50px] px-4 py-2">
+                  <th className="w-[150px] px-4 py-2">
                     {process.env.NEXT_PUBLIC_UPPER_SPEC}/{process.env.NEXT_PUBLIC_LOWER_SPEC}
                   </th>
                   <th className="w-[150px] px-4 py-2">Actual Value</th>
@@ -973,7 +1000,7 @@ const handleMultiChange = (item, key, value) => {
                       />
                     </td>
 
-                    <td className="border px-4 py-2">
+                    <td className="border px-4 py-2 w-[150px]">
                       <div>
                         {process.env.NEXT_PUBLIC_UPPER_SPEC}{" "}
                         <b style={{ color: "red", fontWeight: "1200" }}>↑</b> : {item.UpperSpec}

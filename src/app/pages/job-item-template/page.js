@@ -96,52 +96,42 @@ const Page = () => {
   <style>
     .swal-actions{
       display:grid;
-      grid-template-columns: repeat(3, 1fr); /* เดิม 2 */
-      gap:5px;
-      margin-top:6px;
-    }
-    @media (min-width: 600px){
-      .swal-actions{ grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+      grid-template-columns: repeat(4, 1fr);
+      gap:8px;
+      margin-top:8px;
     }
     .swal-btn{
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:2px;
-
-      width:90%;
-      padding:10px 12px;
-      border-radius:12px;
-
+      gap:6px;
+      width:100%;
+      padding:10px 8px;
+      border-radius:10px;
       border:1px solid rgba(0,0,0,.12);
-      background: #fff;
+      background:#fff;
       color:#111827;
-
       font-weight:700;
       font-size:13px;
-
-      box-shadow: 0 10px 22px rgba(0,0,0,.08);
+      box-shadow:0 6px 16px rgba(0,0,0,.08);
       cursor:pointer;
       user-select:none;
-
-      transition: transform .08s ease, box-shadow .18s ease, filter .18s ease;
+      transition:transform .08s ease, box-shadow .18s ease, filter .18s ease;
     }
     .swal-btn:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 14px 26px rgba(0,0,0,.12);
-      filter: brightness(.99);
+      transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(0,0,0,.12);
+      filter:brightness(.97);
     }
     .swal-btn:active{
-      transform: translateY(0px) scale(.99);
-      box-shadow: 0 8px 18px rgba(0,0,0,.10);
+      transform:translateY(0) scale(.98);
+      box-shadow:0 4px 10px rgba(0,0,0,.10);
     }
-
-    .swal-btn.primary { background:#2563eb; border-color:#1d4ed8; color:#fff; }
+    .swal-btn.primary   { background:#2563eb; border-color:#1d4ed8; color:#fff; }
     .swal-btn.secondary { background:#64748b; border-color:#475569; color:#fff; }
-    .swal-btn.success { background:#16a34a; border-color:#15803d; color:#fff; }
-    .swal-btn.danger { background:#dc2626; border-color:#b91c1c; color:#fff; }
-    .swal-btn.info { background:#0ea5e9; border-color:#0284c7; color:#fff; }
-
+    .swal-btn.success   { background:#16a34a; border-color:#15803d; color:#fff; }
+    .swal-btn.danger    { background:#dc2626; border-color:#b91c1c; color:#fff; }
+    .swal-btn.info      { background:#0ea5e9; border-color:#0284c7; color:#fff; }
     .swal-btn[disabled]{
       opacity:.45;
       cursor:not-allowed;
@@ -158,33 +148,13 @@ const Page = () => {
   </style>
 
   <div class="swal-actions">
-    <button id="swal-edit" class="swal-btn primary" ${!canEdit ? "disabled" : ""}>
-      <span>✏️</span><span>Edit</span>
-    </button>
-
-    <button id="swal-dup" class="swal-btn secondary">
-      <span>📄</span><span>Duplicate</span>
-    </button>
-
-    <button id="swal-copywg" class="swal-btn secondary">
-      <span>👥</span><span>Copy to WG</span>
-    </button>
-
-    <button id="swal-remove" class="swal-btn danger" ${!canRemove ? "disabled" : ""}>
-      <span>🗑️</span><span>Remove</span>
-    </button>
-
-    <button id="swal-additem" class="swal-btn success" ${!canAddItem ? "disabled" : ""}>
-      <span>🧾</span><span>Add/Edit Item</span>
-    </button>
-
-    <button id="swal-api" class="swal-btn info">
-      <span>🔗</span><span>API</span>
-    </button>
-
-    <button id="swal-apiplus" class="swal-btn info">
-      <span>⚡</span><span>API+</span>
-    </button>
+    <button id="swal-edit"    class="swal-btn primary"   ${!canEdit    ? "disabled" : ""}><span>✏️</span><span>Edit</span></button>
+    <button id="swal-remove"  class="swal-btn danger"    ${!canRemove  ? "disabled" : ""}><span>🗑️</span><span>Remove</span></button>
+    <button id="swal-additem" class="swal-btn success"   ${!canAddItem ? "disabled" : ""}><span>🧾</span><span>Add/Edit Item</span></button>
+    <button id="swal-dup"     class="swal-btn secondary"                                 ><span>📄</span><span>Duplicate</span></button>
+    <button id="swal-copywg"  class="swal-btn secondary"                                 ><span>👥</span><span>Copy to WG</span></button>
+    <button id="swal-api"     class="swal-btn info"                                      ><span>🔗</span><span>API</span></button>
+    <button id="swal-apiplus" class="swal-btn info"                                      ><span>⚡</span><span>API+</span></button>
   </div>
 
   <div class="swal-note">
@@ -615,25 +585,25 @@ const handleCreateTemplate = async () => {
     title: 'Create New Template',
     html: `
       <div style="text-align: left;">
-        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Template Name:</label>
-        <input id="templateName" class="swal2-input" placeholder="Enter template name" style="margin-bottom: 10px;">
-        
-        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Document No.:</label>
-        <input id="documentNo" class="swal2-input" placeholder="Enter document number" style="margin-bottom: 10px;">
-        
-        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Checklist Version:</label>
-        <input id="checklistVersion" class="swal2-input" placeholder="Enter version" style="margin-bottom: 10px;">
-        
-        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Timeout:</label>
-        <select id="timeout" class="swal2-input" style="margin-bottom: 10px;">
+        <label style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">Template Name:</label>
+        <input id="templateName" class="swal2-input" placeholder="Enter template name" style="margin-bottom: 7px; font-size: 12px; padding: 5px 10px; height: auto;">
+
+        <label style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">Document No.:</label>
+        <input id="documentNo" class="swal2-input" placeholder="Enter document number" style="margin-bottom: 7px; font-size: 12px; padding: 5px 10px; height: auto;">
+
+        <label style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">Checklist Version:</label>
+        <input id="checklistVersion" class="swal2-input" placeholder="Enter version" style="margin-bottom: 7px; font-size: 12px; padding: 5px 10px; height: auto;">
+
+        <label style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">Timeout:</label>
+        <select id="timeout" class="swal2-input" style="margin-bottom: 7px; font-size: 12px; padding: 5px 10px; height: auto;">
           <option value="">Select timeout</option>
-          ${TIMEOUT_OPTIONS.map(option => 
+          ${TIMEOUT_OPTIONS.map(option =>
             `<option value="${option.value}">${option.label}</option>`
           ).join('')}
         </select>
-        
-        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Checklist Type:</label>
-        <select id="checklistType" class="swal2-input" style="margin-bottom: 10px;">
+
+        <label style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">Checklist Type:</label>
+        <select id="checklistType" class="swal2-input" style="margin-bottom: 7px; font-size: 12px; padding: 5px 10px; height: auto;">
           <option value="">Select checklist type</option>
           <option value="Shiftly">Shiftly</option>
           <option value="Daily">Daily</option>
@@ -645,7 +615,7 @@ const handleCreateTemplate = async () => {
     showCancelButton: true,
     confirmButtonText: 'Create',
     cancelButtonText: 'Cancel',
-    width: '500px',
+    width: '375px',
     preConfirm: () => {
       const templateName = document.getElementById('templateName').value;
       const documentNo = document.getElementById('documentNo').value;
@@ -756,11 +726,11 @@ const handleCreateTemplate = async () => {
             ))}
           </select>
           <button
-            className="bg-blue-500 w-[auto] hover:bg-green-700 text-white font-semibold py-2 px-4 rounded mt-2 ml-auto"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1.5 px-5 rounded shadow"
             style={{ position: 'absolute', right: '10px', top: '5px' }}
             onClick={handleCreateTemplate}
           >
-            Create 
+            + Create
           </button>
 
         </div>

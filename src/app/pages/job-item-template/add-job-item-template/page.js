@@ -6,8 +6,8 @@ import useFetchJobItemTemplates from "@/lib/hooks/useFetchJobItemTemplates";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import useFetchJobTemplate from "@/lib/hooks/useFetchJobTemplate";
 import useFetchTestLocations from "@/lib/hooks/useFetchTestLocations";
-import Select from "react-select";
-import { useState } from "react";
+import useFetchCards from "@/lib/hooks/useFetchCards";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Image from "next/image";
@@ -15,18 +15,13 @@ import { useDropzone } from "react-dropzone";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { FaFileCsv, FaDownload } from "react-icons/fa";
-import { useRouter } from "next/navigation"; // ถ้าเป็น Next.js app router
+import { useRouter, usePathname } from "next/navigation";
 
 const jobItemTemplateHeader = [
   "ID",
-  // "Job Title"
-  "Title" /*process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE */,
-  //"Job Name",
-  "Name" ,
-  //"Upper/Lower ",
+  "Title",
+  "Name",
   "Upper_Lower",
-  //"Test Method",
-  //"Test_Method",
   "input_type",
   "Create At",
   "Action",
@@ -38,6 +33,7 @@ const enabledFunction = {
 
 const Page = ({ searchParams }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemPicture, setItemPicture] = useState(null);
   const [uploadMode, setUploadMode] = useState("resize");
@@ -52,6 +48,7 @@ const Page = ({ searchParams }) => {
   );
   const { locations, isLoading: locationsLoading } =
     useFetchTestLocations(refresh);
+  const { cards } = useFetchCards(refresh);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,12 +56,14 @@ const Page = ({ searchParams }) => {
     "/assets/images/image.png"
   );
 
+  const pageCard = cards?.find(
+    (card) => card.LINK && card.LINK.some((link) => pathname?.includes(link))
+  );
+
   const onDrop = async (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-      //console.log("file seledcted by drop ",file);
       const filePath = await uploadJobPictureToServer(file);
-      //console.log("filePath",filePath);
       setPreviewPictureItem("/api/viewItem-template?imgName=" + filePath);
       setSelectedFile(true);
       setItemPicture(filePath);
@@ -76,65 +75,99 @@ const Page = ({ searchParams }) => {
     accept: "image/*",
   });
 
+  const openActionMenu = (jobItemTemplate) => {
+    const canRemove =
+      user &&
+      user.actions &&
+      user.actions.some(
+        (action) => action._id === enabledFunction["remove-job-item-template"]
+      );
 
-    const openActionMenu = (jobItemTemplate) => {
-      const canRemove =
-        user &&
-        user.actions &&
-        user.actions.some(
-          (action) => action._id === enabledFunction["remove-job-item-template"]
-        );
+    Swal.fire({
+      title: "Choose Action",
+      showCloseButton: true,
+      showConfirmButton: false,
+      html: `
+  <style>
+    .swal-actions{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:8px;
+      margin-top:8px;
+    }
+    .swal-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      width:100%;
+      padding:10px 8px;
+      border-radius:10px;
+      border:1px solid rgba(0,0,0,.12);
+      background:#fff;
+      color:#111827;
+      font-weight:700;
+      font-size:13px;
+      box-shadow:0 6px 16px rgba(0,0,0,.08);
+      cursor:pointer;
+      user-select:none;
+      transition:transform .08s ease, box-shadow .18s ease, filter .18s ease;
+    }
+    .swal-btn:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(0,0,0,.12);
+      filter:brightness(.97);
+    }
+    .swal-btn:active{
+      transform:translateY(0) scale(.98);
+      box-shadow:0 4px 10px rgba(0,0,0,.10);
+    }
+    .swal-btn.primary { background:#2563eb; border-color:#1d4ed8; color:#fff; }
+    .swal-btn.danger  { background:#dc2626; border-color:#b91c1c; color:#fff; }
+    .swal-btn[disabled]{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow:none !important;
+      filter:none !important;
+    }
+    .swal-note{
+      margin-top:10px;
+      font-size:12px;
+      opacity:.72;
+      text-align:center;
+    }
+  </style>
+  <div class="swal-actions">
+    <button id="swal-edit"   class="swal-btn primary"><span>✏️</span><span>Edit</span></button>
+    <button id="swal-remove" class="swal-btn danger"  ${!canRemove ? "disabled" : ""}><span>🗑️</span><span>Remove</span></button>
+  </div>
+  <div class="swal-note">* ปุ่มที่ถูกปิดสิทธิ์จะกดไม่ได้</div>
+`,
+      didOpen: () => {
+        const editBtn = document.getElementById("swal-edit");
+        const removeBtn = document.getElementById("swal-remove");
 
-      Swal.fire({
-        title: "Choose Action",
-        //html: `<div style="font-size:13px;opacity:.8">${jobItemTemplate?.JOB_ITEM_TEMPLATE_NAME || ""}</div>`,
-        showCloseButton: true,
-        showCancelButton: true,
-        cancelButtonText: "Close",
-        showDenyButton: true,
-        confirmButtonText: "Edit",
-        denyButtonText: "More...",
-      }).then((result) => {
-        // 1) Edit
-        if (result.isConfirmed) {
+        editBtn?.addEventListener("click", () => {
+          Swal.close();
           router.push(
             `/pages/edit-job-item-template?jobItemTemplate_id=${jobItemTemplate._id}&jobTemplate_id=${jobTemplate_id}`
           );
-          return;
-        }
+        });
 
-        // 2) เปิดเมนูย่อย (Remove / Mqtt)
-        if (result.isDenied) {
-          Swal.fire({
-            title: "More Actions",
-            showCloseButton: true,
-            showCancelButton: true,
-            cancelButtonText: "Back",
-            confirmButtonText: canRemove ? "Remove" : "Remove (No Permission)",
-            confirmButtonColor: canRemove ? undefined : "#9CA3AF",
-            showDenyButton: true,
-            denyButtonText: "Mqtt",
-            preConfirm: () => {
-              if (!canRemove) return false; // กันกด remove ถ้าไม่มีสิทธิ์
-              return true;
-            },
-          }).then((r2) => {
-            if (r2.isConfirmed && canRemove) {
-              handleRemove(jobItemTemplate._id);
-            }
-            if (r2.isDenied) {
-              handleMqtt(jobItemTemplate);
-            }
+        if (removeBtn && canRemove) {
+          removeBtn.addEventListener("click", () => {
+            Swal.close();
+            handleRemove(jobItemTemplate._id);
           });
         }
-      });
-    };
-
+      },
+    });
+  };
 
   const handleUploadFileToJob = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      // อัปโหลดไฟล์และรอผลลัพธ์
       const filePath = await uploadJobPictureToServer(file);
       console.log("filePath", filePath);
       setPreviewPictureItem("/api/viewItem-template?imgName=" + filePath);
@@ -146,19 +179,18 @@ const Page = ({ searchParams }) => {
   const uploadJobPictureToServer = async (inputFile) => {
     if (!inputFile) {
       alert("Please select a file first.");
-      return null; // คืนค่า null หากไม่มีไฟล์
+      return null;
     }
     const formData = new FormData();
     formData.append("file", inputFile);
     formData.append("JOB_Template_ID", jobTemplate_id);
 
-    // เลือก URL ตามโหมดการอัปโหลด
     const url =
       uploadMode === "resize"
         ? "/api/uploadPicture/Item-templateResize"
         : "/api/uploadPicture/Item-template";
 
-    try {5
+    try {
       const res = await fetch(url, {
         method: "POST",
         body: formData,
@@ -166,23 +198,22 @@ const Page = ({ searchParams }) => {
 
       const data = await res.json();
       if (data.result) {
-        return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
+        return data.filePath;
       } else {
         alert("An error occurred while uploading the file.");
-        return null; // คืนค่า null หากเกิดข้อผิดพลาด
+        return null;
       }
     } catch (error) {
       console.error(error);
       alert("An error occurred while uploading the file.");
-      return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      return null;
     }
   };
 
-  const HandleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const form = new FormData(e.target);
-    //console.log('form.get("input-convert")',form.get("input-convert"));
-    //alert('1');
     const data = {
       AUTHOR_ID: user._id,
       JOB_ITEM_TEMPLATE_TITLE: form.get("job_item_template_title"),
@@ -192,11 +223,10 @@ const Page = ({ searchParams }) => {
       TEST_METHOD: form.get("test_method"),
       JOB_TEMPLATE_ID: jobTemplate_id,
       JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
-      TEST_LOCATION_ID: "667b915a596b4d721ec60c40", //form.get("test_location"),
-      INPUT_CONVERT:form.get("input-convert")==="on"?true:false,
+      TEST_LOCATION_ID: "667b915a596b4d721ec60c40",
+      INPUT_CONVERT: form.get("input-convert") === "on" ? true : false,
     };
-   //console.log('data',data); 
-   //return;
+
     const formData = new FormData();
     formData.append("AUTHOR_ID", data.AUTHOR_ID);
     formData.append("JOB_ITEM_TEMPLATE_TITLE", data.JOB_ITEM_TEMPLATE_TITLE);
@@ -208,8 +238,6 @@ const Page = ({ searchParams }) => {
     formData.append("JobTemplateCreateID", data.JobTemplateCreateID);
     formData.append("TEST_LOCATION_ID", data.TEST_LOCATION_ID);
     formData.append("INPUT_CONVERT", data.INPUT_CONVERT);
-
-    // ใช้พาธไฟล์ที่ได้จากการอัปโหลด
     formData.append("FILE", itemPicture);
 
     try {
@@ -218,7 +246,6 @@ const Page = ({ searchParams }) => {
         {
           method: "POST",
           body: formData,
-          next: { revalidate: 10 },
         }
       );
 
@@ -233,6 +260,8 @@ const Page = ({ searchParams }) => {
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Failed to add product", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -253,12 +282,9 @@ const Page = ({ searchParams }) => {
         return;
       }
 
-      // สร้าง FormData สำหรับข้อมูลหลายแถว
       const formData = new FormData();
 
-      // เพิ่มข้อมูลจาก jsonData ทีละแถว
-      jsonData.forEach((row, index) => {
-        // เพิ่มข้อมูลจากไฟล์ Excel
+      jsonData.forEach((row) => {
         formData.append(
           "JOB_ITEM_TEMPLATE_TITLE[]",
           row["JOB_ITEM_TEMPLATE_TITLE"]
@@ -271,14 +297,12 @@ const Page = ({ searchParams }) => {
         formData.append("LOWER_SPEC[]", row["LOWER_SPEC"]);
         formData.append("TEST_METHOD[]", row["TEST_METHOD"]);
 
-        // ข้อมูลเพิ่มเติมจากฟอร์มที่กรอก
         formData.append("AUTHOR_ID", user._id);
         formData.append("JOB_TEMPLATE_ID", jobTemplate_id);
         formData.append("JobTemplateCreateID", jobTemplate.JobTemplateCreateID);
         formData.append("TEST_LOCATION_ID", "667b915a596b4d721ec60c40");
       });
 
-      // ถ้ามีการเลือกไฟล์เพื่ออัปโหลด
       if (selectedFile) {
         console.log("upload file from input");
         formData.append("FILE", selectedFile);
@@ -289,7 +313,7 @@ const Page = ({ searchParams }) => {
           "/api/job-item-template/create-job-item-templates",
           {
             method: "POST",
-            body: formData, // ส่ง FormData
+            body: formData,
           }
         );
 
@@ -330,24 +354,22 @@ const Page = ({ searchParams }) => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Job Templates");
 
-    // บันทึกเป็นไฟล์ Excel
     XLSX.writeFile(wb, "Job_Item_Template.xlsx");
   };
 
   const handleMqtt = async (jobItemTemplate) => {
     const idToCopy = jobItemTemplate._id;
 
-    // ใช้ SweetAlert2 (swal)
     Swal.fire({
       title: "Mqtt Topic ID",
       html: `<p>ID: <strong>${idToCopy + "/{Line_name}"}</strong></p>
                <button id="copy-btn" class="swal2-confirm swal2-styled" style="background-color: #3085d6; color: white;">
                    Copy to Clipboard
                </button>
-              
+
               <div style="border:1px solid none;width:450px;text-align:left;padding:15px;">
                 <p style="padding-left:45px;"><strong>[--------Setting Info-------]</strong></p>
-                
+
                 <p style="padding-left:50px;">Broker IP&nbsp;&nbsp;: &nbsp;&nbsp;<strong>${
                   process.env.NEXT_PUBLIC_MQTT_BROKER_IP
                 }</strong></p>
@@ -360,28 +382,28 @@ const Page = ({ searchParams }) => {
                 <p style="padding-left:50px;">Pass&nbsp;&nbsp;:&nbsp;&nbsp;<strong>${
                   process.env.NEXT_PUBLIC_MQT_PASSWORD
                 }</strong></p>
-              </div>  
+              </div>
                `,
-      showConfirmButton: false, // ซ่อนปุ่ม "OK" เริ่มต้น
-    });
-
-    // เพิ่ม Event Listener ให้กับปุ่ม Copy
-
-    document.addEventListener("click", (event) => {
-      if (event.target.id === "copy-btn") {
-        const textArea = document.createElement("textarea");
-        textArea.value = idToCopy;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-          document.execCommand("copy");
-          Swal.fire("Copied!", "ID has been copied to clipboard.", "success");
-        } catch (err) {
-          console.log("Error Code : 119");
-          Swal.fire("Oops!", "Failed to copy ID.", "error");
+      showConfirmButton: false,
+      didOpen: () => {
+        const copyBtn = document.getElementById("copy-btn");
+        if (copyBtn) {
+          copyBtn.addEventListener("click", () => {
+            const textArea = document.createElement("textarea");
+            textArea.value = idToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+              document.execCommand("copy");
+              Swal.fire("Copied!", "ID has been copied to clipboard.", "success");
+            } catch (err) {
+              console.log("Error Code : 119");
+              Swal.fire("Oops!", "Failed to copy ID.", "error");
+            }
+            document.body.removeChild(textArea);
+          });
         }
-        document.body.removeChild(textArea);
-      }
+      },
     });
   };
 
@@ -411,9 +433,12 @@ const Page = ({ searchParams }) => {
 
         const data = await response.json();
 
-        Swal.fire("Deleted!", "The item has been deleted.", "success");
-
-        setRefresh((prev) => !prev);
+        if (data.status === 200) {
+          Swal.fire("Deleted!", "The item has been deleted.", "success");
+          setRefresh((prev) => !prev);
+        } else {
+          Swal.fire("Error!", data.message || "Failed to delete the item.", "error");
+        }
       } catch (err) {
         console.log("Error Code : 120");
         console.log("Error", err);
@@ -427,9 +452,6 @@ const Page = ({ searchParams }) => {
   };
 
   const handleTypeInputSelect = async (b, valueSelected) => {
-    //alert('****handleTypeInputSelect****',b);
-    // alert(valueSelected);
-    // return;
     const formData = new FormData();
     formData.append("jobItemTemplateID", b._id);
     formData.append("input-type", valueSelected);
@@ -445,24 +467,12 @@ const Page = ({ searchParams }) => {
 
       const data = await res.json();
       console.log("data=>", data);
-
-      //if (data.result) {
-      //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
-      //} else {
-      //alert("An error occurred while uploading the file.");
-      //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
-      //}
     } catch (error) {
-      //console.error(error);
-      //alert("An error occurred while uploading the file.");
-      //return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      console.error(error);
     }
   };
 
   const handlePosSelect = async (b, valueSelected) => {
-    //console.log("valueSelected=>"+valueSelected+" => "+b._id);
-    //alert('use handlePosSelect ');
-    //return;
     const formData = new FormData();
     formData.append("jobItemTemplateID", b._id);
     formData.append("pos", valueSelected);
@@ -477,42 +487,27 @@ const Page = ({ searchParams }) => {
       );
 
       const data = await res.json();
-      //console.log("data=>", data);
-      //setRefresh((prev) => !prev);      
-      //if (data.result) {
-      //  return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
-      //} else {
-      //alert("An error occurred while uploading the file.");
-      //  return null; // คืนค่า null หากเกิดข้อผิดพลาด
-      //}
     } catch (error) {
-      //console.error(error);
-      //alert("An error occurred while uploading the file.");
-      //return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      console.error(error);
     }
   };
 
-  const jobItemTemplateBody = jobItemTemplates.map((jobItemTemplate, index) => {
-    //console.log("jobItemTemplates.length=>",jobItemTemplates.length);
-    var buffer_position_list = [];
-    var counter = 1;
-    jobItemTemplates.map((jobItemTemplate, index) => {
-      buffer_position_list.push({
-        id: counter,
-        name: counter,
-      });
-      counter++;
-    });
+  const buffer_position_list = jobItemTemplates.map((_, index) => ({
+    id: index + 1,
+    name: index + 1,
+  }));
+
+  const jobItemTemplateBody = jobItemTemplates.map((jobItemTemplate) => {
     return {
       ID: (
-        /* index + 1 */ /*jobItemTemplate.pos+ */ <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <select
             className="p-2"
             onChange={(e) => handlePosSelect(jobItemTemplate, e.target.value)}
           >
             <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
-            {buffer_position_list.map((point, index) => (
-              <option key={point.id || index} value={point.name}>
+            {buffer_position_list.map((point) => (
+              <option key={point.id} value={point.name}>
                 {point.name}
               </option>
             ))}
@@ -523,42 +518,32 @@ const Page = ({ searchParams }) => {
       Name: jobItemTemplate.JOB_ITEM_TEMPLATE_NAME,
       Upper_Lower:
         jobItemTemplate.UPPER_SPEC + "/" + jobItemTemplate.LOWER_SPEC,
-      //Test_Method: jobItemTemplate.TEST_METHOD,
       input_type: (
         <div className="flex items-center justify-center gap-2">
           <select
             className="p-2"
-            // onChange={(e) => handlePosSelect(jobItemTemplate, e.target.value)}
+            defaultValue={jobItemTemplate.INPUT_TYPE}
             onChange={(e) =>
               handleTypeInputSelect(jobItemTemplate, e.target.value)
             }
           >
-            <option value={jobItemTemplate.INPUT_TYPE || ""}>
-              {jobItemTemplate.INPUT_TYPE}
-            </option>
             <option value="Numeric">Numeric</option>
             <option value="String">String</option>
-            {/* <option value={jobItemTemplate.pos}>{jobItemTemplate.pos}</option>
-            {buffer_position_list.map((point, index) => (
-              <option key={point.id || index} value={point.name}>
-                {point.name}
-              </option>
-            ))} */}
           </select>
         </div>
       ),
       "Create At": jobItemTemplate.createdAt,
-      Action: (  
-            <div className="flex items-center justify-center">
-              <button
-                type="button"
-                className="text-white font-bold rounded-lg text-sm px-4 py-2 text-center
-                          bg-indigo-500 hover:bg-indigo-600 focus:ring-4 focus:outline-none focus:ring-indigo-300"
-                onClick={() => openActionMenu(jobItemTemplate)}
-              >
-                Actions
-              </button>
-            </div>
+      Action: (
+        <div className="flex items-center justify-center">
+          <button
+            type="button"
+            className="text-white font-bold rounded-lg text-sm px-4 py-2 text-center
+                      bg-indigo-500 hover:bg-indigo-600 focus:ring-4 focus:outline-none focus:ring-indigo-300"
+            onClick={() => openActionMenu(jobItemTemplate)}
+          >
+            Actions
+          </button>
+        </div>
       ),
     };
   });
@@ -571,7 +556,7 @@ const Page = ({ searchParams }) => {
             <ArrowBackIosNewIcon />
           </Link>
           <Image
-            src="/assets/card-logo/management.png"
+            src={pageCard?.LOGO_PATH || "/assets/card-logo/management.png"}
             alt="wd logo"
             width={50}
             height={50}
@@ -583,7 +568,7 @@ const Page = ({ searchParams }) => {
         </h1>
       </div>
       <div className="flex flex-col gap-4 mb-4 p-4 bg-white rounded-xl">
-        <form onSubmit={HandleSubmit} className="flex flex-col justify-center ">
+        <form onSubmit={handleSubmit} className="flex flex-col justify-center ">
           <div className="grid gap-6 mb-6 md:grid-cols-3 row-span-4">
             <div className="flex flex-col gap-4 justify-center items-center w-full row-span-4">
               <div className="flex justify-between space-x-4">
@@ -623,9 +608,9 @@ const Page = ({ searchParams }) => {
                 <input
                   {...getInputProps()}
                   id="fileInput"
-                  style={{ display: "none" }} // ซ่อน input file
-                  onChange={handleUploadFileToJob} // ลบ onChange นี้
-                  accept="image/*" // กำหนดประเภทไฟล์
+                  style={{ display: "none" }}
+                  onChange={handleUploadFileToJob}
+                  accept="image/*"
                 />
 
                 <div className="flex flex-col justify-center items-center">
@@ -652,12 +637,6 @@ const Page = ({ searchParams }) => {
                 </div>
               </div>
               <div className="flex gap-4">
-                {/* <label
-                  htmlFor="fileInput"
-                  className="cursor-pointer bg-[#347EC2] text-white text-sm px-4 py-2 rounded-lg drop-shadow-lg hover:bg-[#4398E7] hover:text-white flex justify-center items-center gap-2 font-bold"
-                >
-                  Add the image
-                </label> */}
                 <button
                   className="bg-red-500 text-sm font-bold text-white px-4 py-2 rounded-lg drop-shadow-lg hover:bg-red-700 hover:text-white"
                   type="button"
@@ -670,140 +649,93 @@ const Page = ({ searchParams }) => {
               </div>
             </div>
 
-            <div className="relative">
-              <label
-                htmlFor="author"
-                 className="pointer-events-none absolute left-3 top-0 bg-white px-1
-                        text-gray-500 text-sm transition-all z-10
-                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
-                        peer-valid:top-1 peer-valid:text-xs"
-              >
+            {/* ── Author ─────────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="author" className="block text-sm font-medium text-gray-600 mb-1">
                 Author
               </label>
-              <input
-                type="text"
+              <textarea
                 id="author"
-                 className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
-                          focus:outline-none focus:border-blue-500"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none resize-none"
                 value={user?.name || ""}
                 disabled
                 name="author"
-                required
+                readOnly
               />
             </div>
-            <div className="relative">
-              <label
-                htmlFor="job_item_template_title"
-                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
-                className="pointer-events-none absolute left-3 top-0 bg-white px-1
-                        text-gray-500 text-sm transition-all z-10
-                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
-                        peer-valid:top-1 peer-valid:text-xs"
-              >
-              {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE}
-              
+
+            {/* ── Item Title ──────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="job_item_template_title" className="block text-sm font-medium text-gray-600 mb-1">
+                {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="job_item_template_title"
-                //className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
-                          focus:outline-none focus:border-blue-500"
-                //placeholder="Item Title"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 name="job_item_template_title"
                 required
               />
             </div>
-            <div className="relative">
-              <label
-                htmlFor="job_item_template_name"
-                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
-                className="pointer-events-none absolute left-3 top-0 bg-white px-1
-                        text-gray-500 text-sm transition-all z-10
-                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
-                        peer-valid:top-1 peer-valid:text-xs"
-              >
-                 {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME}
+
+            {/* ── Item Name ───────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="job_item_template_name" className="block text-sm font-medium text-gray-600 mb-1">
+                {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="job_item_template_name"
-                //className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
-                          focus:outline-none focus:border-blue-500"
-                //placeholder="Item Name"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 name="job_item_template_name"
                 required
               />
             </div>
-            <div className="relative" >
-              <label
-                htmlFor="upper_spec"
-                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
-                className="pointer-events-none absolute left-3 top-0 bg-white px-1
-                        text-gray-500 text-sm transition-all z-10
-                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
-                        peer-valid:top-1 peer-valid:text-xs"
-              >
+
+            {/* ── Upper Spec ──────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="upper_spec" className="block text-sm font-medium text-gray-600 mb-1">
                 {process.env.NEXT_PUBLIC_UPPER_SPEC}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="upper_spec"
-                //className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
-                          focus:outline-none focus:border-blue-500"
-                //placeholder="Upper Spec"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 name="upper_spec"
                 required
               />
             </div>
-            <div className="relative">
-              <label
-                htmlFor="lower_spec"
-                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
-                className="pointer-events-none absolute left-3 top-0 bg-white px-1
-                        text-gray-500 text-sm transition-all z-10
-                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
-                        peer-valid:top-1 peer-valid:text-xs"
-              >
+
+            {/* ── Lower Spec ──────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="lower_spec" className="block text-sm font-medium text-gray-600 mb-1">
                 {process.env.NEXT_PUBLIC_LOWER_SPEC}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="lower_spec"
-                //className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                //placeholder="Lower Spec"
-                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
-                          focus:outline-none focus:border-blue-500"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 name="lower_spec"
                 required
               />
             </div>
-            <div className="relative">
-              <label
-                htmlFor="test_method"
-                //className="block mb-2 text-sm font-medium text-gray-900 text-black"
-                className="pointer-events-none absolute left-3 top-0 bg-white px-1
-                        text-gray-500 text-sm transition-all z-10
-                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
-                        peer-valid:top-1 peer-valid:text-xs"
-              >
+
+            {/* ── Test Method ─────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="test_method" className="block text-sm font-medium text-gray-600 mb-1">
                 {process.env.NEXT_PUBLIC_TEST_METHODE}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="test_method"
-                //className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
-                          focus:outline-none focus:border-blue-500"
-                //placeholder="test method"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 name="test_method"
                 required
               />
             </div>
 
-            <div  className="select-none">
+            <div className="select-none">
               <label
                 htmlFor="input-convert"
                 className="flex items-center space-x-2 text-sm font-medium text-gray-900"
@@ -812,13 +744,11 @@ const Page = ({ searchParams }) => {
                   type="checkbox"
                   id="input-convert"
                   name="input-convert"
-                 className="w-5 h-5 bg-white border border-gray-300 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
-                  // required
+                  className="w-5 h-5 bg-white border border-gray-300 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
                 />
                 <span>Input Converter( 1 to "Pass" , 0 to "Fail")</span>
               </label>
             </div>
-
 
             <div style={{ display: "none" }}>
               <label
@@ -827,38 +757,13 @@ const Page = ({ searchParams }) => {
               >
                 Test Location
               </label>
-              {/* <Select
-                name="test_location"
-                id="test_location"
-                
-                className="display-none text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full"
-                
-                options={locations.map((location) => {
-                  return {
-                    value: location._id,
-                    label: location.LocationName,
-                  };
-                })
-              }
-                isSearchable={true}
-              /> */}
             </div>
           </div>
           <div className="flex justify-around items-center p-6 ">
             <button
               type="submit"
-              className={`text-white font-bold rounded-lg text-sm p-4 text-center hover:bg-blue-800 focus:ring-4 focus:outline-none
-            ${
-              user &&
-              user.actions &&
-              !user.actions.some(
-                (action) =>
-                  action._id === enabledFunction["add-job-item-template"]
-              )
-                ? "bg-blue-500 cursor-not-allowed"
-                : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            }`}
               disabled={
+                isSubmitting ||
                 !user ||
                 !user.actions ||
                 !user.actions.some(
@@ -866,6 +771,18 @@ const Page = ({ searchParams }) => {
                     action._id === enabledFunction["add-job-item-template"]
                 )
               }
+              className={`text-white font-bold rounded-lg text-sm p-4 text-center hover:bg-blue-800 focus:ring-4 focus:outline-none
+            ${
+              isSubmitting ||
+              !user ||
+              !user.actions ||
+              !user.actions.some(
+                (action) =>
+                  action._id === enabledFunction["add-job-item-template"]
+              )
+                ? "bg-blue-500 cursor-not-allowed"
+                : "bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            }`}
             >
               Add Checklist Item Template
             </button>
@@ -876,7 +793,7 @@ const Page = ({ searchParams }) => {
               <input
                 type="file"
                 accept=".xlsx, .xls"
-                onChange={handleFileUpload} // เมื่อเลือกไฟล์ให้เรียก handleFileUpload
+                onChange={handleFileUpload}
                 className="hidden"
               />
             </label>

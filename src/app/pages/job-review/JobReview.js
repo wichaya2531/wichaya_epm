@@ -5,7 +5,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import HelpIcon from "@mui/icons-material/Help";
 import ChatIcon from "@mui/icons-material/Chat";
 import ImageIcon from "@mui/icons-material/Image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 import Image from "next/image";
@@ -37,6 +37,51 @@ const JobForm = ({
 
   const [isWaiting, setIsWaiting] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+  const [multiValues, setMultiValues] = useState({});
+
+  // ── multi-field helpers ───────────────────────────────────────────────────
+  const shouldUseMulti = (jobItemName = "") => {
+    const s = String(jobItemName);
+    return s.includes("{") && s.includes(",");
+  };
+
+  const parseKeysInBrace = (jobItemName = "") => {
+    if (!shouldUseMulti(jobItemName)) return [];
+    const m = String(jobItemName).match(/\{([^}]+)\}/);
+    if (!m) return [];
+    return m[1].split(",").map((v) => v.trim()).filter(Boolean);
+  };
+
+  const parseKeyValuePairs = (s = "") => {
+    const out = {};
+    String(s || "").split(",").map((x) => x.trim()).filter(Boolean).forEach((part) => {
+      const [k, ...rest] = part.split(":");
+      const key = (k || "").trim();
+      const val = rest.join(":").trim();
+      if (key) out[key] = val;
+    });
+    return out;
+  };
+
+  // initialize multiValues จาก jobItems เมื่อโหลดเสร็จ
+  useEffect(() => {
+    const next = {};
+    (jobItems || []).forEach((item) => {
+      const keys = parseKeysInBrace(item.JobItemName);
+      if (keys.length === 0) return;
+
+      const raw = String(item.ActualValue || "").trim();
+      const mapByPair = raw.includes(":") ? parseKeyValuePairs(raw) : null;
+      const parts = raw.split(",").map((s) => s.trim()).filter((s) => s !== "");
+
+      next[item.JobItemID] = {};
+      keys.forEach((k, i) => {
+        next[item.JobItemID][k] =
+          (mapByPair && mapByPair[k] !== undefined ? mapByPair[k] : parts[i]) ?? "";
+      });
+    });
+    setMultiValues(next);
+  }, [jobItems]);
   //console.log("jobData.=>", jobData);
   //console.log("jobItems.=>", jobItems);
   //console.log(jobData.IMAGE_FILENAME);
@@ -695,58 +740,49 @@ const JobForm = ({
             ))}
           </div>
           <table className="table-auto border-collapse w-full text-sm">
-            <thead className="text-center">
-              <tr className="bg-gray-200">
-              <th className="w-[50px]">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE} </th>
-              <th className="w-[50px]">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME} </th>
-                {/* <th className="w-[50px] px-4 py-2">
-                                    Test Method
-                                </th> */}
-                <th className="w-[50px] px-4 py-2">{process.env.NEXT_PUBLIC_UPPER_SPEC+"/"+  process.env.NEXT_PUBLIC_LOWER_SPEC}</th>
-                {/* <th className="w-[50px] px-4 py-2">Before Value</th> */}
-                <th className="w-[150px] py-2">Actual Value</th>
-                <th className="w-[150px] px-4 py-2">Attach</th>
-                {/* <th className="w-[5px] px-2 py-2">See images</th> */}
+            <thead className="bg-[#347EC2] text-white text-sm text-center">
+              <tr>
+                <th className="w-[50px] px-2 py-2">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE}</th>
+                <th className="w-[50px] px-2 py-2">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME}</th>
+                <th className="w-[150px] px-2 py-2">{process.env.NEXT_PUBLIC_UPPER_SPEC}/{process.env.NEXT_PUBLIC_LOWER_SPEC}</th>
+                <th className="w-[150px] px-2 py-2">Actual Value</th>
+                <th className="w-[150px] px-2 py-2">Attach</th>
               </tr>
             </thead>
             <tbody className="text-center">
               {jobItems.map((item, index) => (
-                <tr key={index}>
-                  <td className="border px-4 py-2 relative">
-                    <div>{item.JobItemTitle} </div>
-                  </td>
-                  <td className="border px-4 py-2 relative">
-                    <div>{item.JobItemName} </div>
-                    <InfoIcon
-                      className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
-                      style={{ display: "none" }}
-                      onClick={() => handleShowJobItemDescription(item)}
-                    />
+                <tr key={index} className="bg-white border-b border-solid border-[#C6C6C6] hover:bg-gray-100 hover:shadow-lg font-bold">
 
+                  {/* ── Item Title ─────────────────────────────────────────── */}
+                  <td className="border px-4 py-2 w-[25vw] max-w-[25vw] align-middle">
+                    <div className="whitespace-normal break-words">
+                      {item.JobItemTitle}
+                    </div>
+                  </td>
+
+                  {/* ── Item Name (strip {Zone1,Zone2}) ────────────────────── */}
+                  <td className="border px-3 py-2 relative w-[25vw] max-w-[25vw]">
+                    <div
+                      className="pr-8 whitespace-normal break-words"
+                      title={item.JobItemName?.replace(/\{[^}]*\}/g, "").trim()}
+                    >
+                      {item.JobItemName?.replace(/\{[^}]*\}/g, "").trim()}
+                    </div>
                     <InfoIcon
-                      className="absolute right-1 bottom-0 text-blue-600 size-4 cursor-pointer "
+                      className="absolute bottom-1 right-1 text-blue-600 size-5 cursor-pointer"
                       onClick={() => handleShowTestMethodDescription(item)}
                     />
                   </td>
-                  {/* <td className="border px-4 py-2 relative">
-                                        <div>{item.TestMethod} </div>
-                                        <InfoIcon
-                                            className="absolute right-1 top-1 text-blue-600 size-4 cursor-pointer "
-                                            onClick={() => handleShowTestMethodDescription(item)}
 
-                                        />
-                                    </td> */}
-                  <td className="border px-4 py-2">
-                    {" "}
+                  {/* ── USL / LSL ──────────────────────────────────────────── */}
+                  <td className="border px-4 py-2 w-[150px]">
                     <div>
-                      Upper{" "}
-                      <b style={{ color: "red", fontWeight: "1200" }}>↑</b> :{" "}
-                      {item.UpperSpec}
+                      {process.env.NEXT_PUBLIC_UPPER_SPEC}{" "}
+                      <b style={{ color: "red" }}>↑</b> : {item.UpperSpec}
                     </div>
                     <div>
-                      Lower{" "}
-                      <b style={{ color: "blue", fontWeight: "1200" }}>↓</b> :{" "}
-                      {item.LowerSpec}
+                      {process.env.NEXT_PUBLIC_LOWER_SPEC}{" "}
+                      <b style={{ color: "blue" }}>↓</b> : {item.LowerSpec}
                     </div>
                   </td>
                   {/* <td className="border px-4 py-2">
@@ -763,44 +799,87 @@ const JobForm = ({
                       }}
                     />
                   </td> */}
-                  <td className="border  py-2 relative">
-                    <span className="shrink-0" style={{padding:'5px'}}>
-                      <HistoryIcon sx={{ color: "#1E40AF", fontSize: 30 }} 
+                  {/* ── Actual Value ───────────────────────────────────────── */}
+                  <td className="border px-4 py-2 relative w-[25vw] max-w-[25vw]">
+                    {/* ── History + Comment icons ─────────────────────────── */}
+                    <span className="absolute bottom-1 right-1 cursor-pointer">
+                      <HistoryIcon
+                        sx={{ color: "#1E40AF", fontSize: 25 }}
                         onClick={() => handleShowHistory(item)}
                       />
                     </span>
-                    <input
-                      type="text"
-                      id={`actual_value_${item.JobItemID}`}
-                      value={item.ActualValue+(item.Value && item.Value !==null?' , '+item.Value:"")}
-                      className=" bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-not-allowed"
-                      disabled
-                      style={{
-                        backgroundColor: getPastelColorForValue(
-                          item.ActualValue || ""
-                        ),
-                      }}
-                    />
-                    {item.Comment !== null ? (
-                      <span style={{padding:'5px'}}>
-                          <ChatIcon
-                            className=" right-1 top-0 text-blue-600 size-6 cursor-pointer "
-                            // style={{ display: "none" }}
-                            onClick={() => handleShowComment(item)}
-                          />
-                      </span>
-                     
 
-                    ) : (
-                      <span></span>
-                    )}
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="flex-1">
+                        {(() => {
+                          const keys = parseKeysInBrace(item.JobItemName);
+                          const isMulti = keys.length > 0;
+
+                          const combined = [
+                            item.ActualValue ?? "",
+                            item.Value !== null && item.Value !== undefined && item.Value !== ""
+                              ? item.Value : "",
+                          ].filter(Boolean).join(",");
+
+                          if (isMulti) {
+                            return (
+                              <div className="grid grid-cols-2 gap-4 w-[90%] place-items-start">
+                                {keys.map((k) => (
+                                  <div key={k} className="w-full">
+                                    <div className="rounded-lg border border-gray-300 bg-white overflow-hidden">
+                                      <div className="bg-blue-50 text-blue-700 text-sm font-semibold px-3 py-1.5 border-b border-gray-200">
+                                        {k}
+                                      </div>
+                                      <div className="p-2">
+                                        <input
+                                          type="text"
+                                          value={multiValues?.[item.JobItemID]?.[k] ?? ""}
+                                          disabled
+                                          className="w-full text-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm bg-gray-100 cursor-not-allowed"
+                                          style={{
+                                            backgroundColor: getPastelColorForValue(
+                                              multiValues?.[item.JobItemID]?.[k] || ""
+                                            ),
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="grid gap-2 w-[90%]">
+                              <input
+                                type="text"
+                                value={combined}
+                                disabled
+                                className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg text-center w-full p-1.5 cursor-not-allowed"
+                                style={{
+                                  backgroundColor: getPastelColorForValue(item.ActualValue || ""),
+                                }}
+                              />
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {item.Comment !== null && (
+                        <span className="shrink-0 absolute top-1 right-1 cursor-pointer">
+                          <ChatIcon
+                            className="text-blue-600 size-6 cursor-pointer"
+                            onClick={() => handleShowComment(item)}
+                            title="Show comment"
+                          />
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td className="border px-4 py-2 relative">
+                  {/* ── Attach ─────────────────────────────────────────────── */}
+                  <td className="border py-2 relative">
                     <center>
-                      <label
-                        htmlFor="image-file"
-                        className="text-sm ipadmini:text-md font-bold text-gray-600"
-                      ></label>
                       {item.IMG_ATTACH ? (
                         <div className="pt-2">
                            <img

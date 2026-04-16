@@ -648,7 +648,7 @@ const handleShowUser = (userName, datetime) => {
           : "Not Active";
       return {
         ...( (user.role === "Admin Group" || user.role === "Owner") && orientation==="landscape" && {
-            
+
           checkbox: (
             <input
               className="w-5 h-5"
@@ -658,7 +658,8 @@ const handleShowUser = (userName, datetime) => {
             />
           ),
         }),
-            ID: index + 1         
+            _id: job._id,
+            ID: index + 1
         ,
         "Checklist Name": job.JOB_NAME,
        "Line Name": {

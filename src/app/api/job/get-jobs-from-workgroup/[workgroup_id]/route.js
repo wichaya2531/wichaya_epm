@@ -243,7 +243,7 @@ export const GET = async (req, { params }) => {
       return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
     });
 
-    console.log("jobsWithActivater total =", jobsWithActivater.length);
+    //console.log("jobsWithActivater total =", jobsWithActivater.length);
 
     return NextResponse.json({
       status: 200,

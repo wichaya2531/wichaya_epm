@@ -20,7 +20,7 @@ const ShowmoreData = ({
   workgroups,
 }) => {
 
-  console.log('showmoreData page data=',data);
+  //console.log('showmoreData page data=',data);
 
 
   var openOptionDeleteJob = false;
