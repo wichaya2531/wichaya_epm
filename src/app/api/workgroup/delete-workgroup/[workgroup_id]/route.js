@@ -15,6 +15,8 @@ export const DELETE = async (req, {params}) => {
         }
         return NextResponse.json({ message: "Workgroup deleted successfully", workgroup });
     } catch (err) {
+                console.log("Error Code : 100");
+
         return NextResponse.json({ message: "Workgroup deletion failed", file: __filename, error: err.message });
     }
 

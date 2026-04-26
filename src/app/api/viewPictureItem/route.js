@@ -10,7 +10,6 @@ export const GET = async (req,res) => {
     
     //const filePath = path.join('c:\\imagedownload', fileName);
     const filePath = "c:\\ePM_PictureUpload\\Item\\"+fileName; // หรือคุณสามารถใช้ path.join() ถ้าจำเป็น
-
     try {
         // อ่านไฟล์แบบ async
         const data = await fs.readFile(filePath);
@@ -24,6 +23,10 @@ export const GET = async (req,res) => {
         });
     } catch (err) {
         // ถ้าเกิดข้อผิดพลาด (เช่น ไฟล์ไม่เจอ) ให้ส่งสถานะ 404 กลับไป
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 096");
+         }
+
         return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 };

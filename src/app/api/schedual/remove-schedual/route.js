@@ -23,7 +23,11 @@ export const DELETE = async (req, res) => {
    const schedualsDelete=await Schedule.findByIdAndDelete(schedual_id);
     return NextResponse.json({ status: 200, message: "ลบสำเร็จ", schedualsDelete });
   } catch (error) {
-    console.error("ลบไม่สำเร็จ:", error);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 075");
+            console.error("ลบไม่สำเร็จ:", error);
+     }
+    
     return NextResponse.json({ status: 500, message: "เกิดข้อผิดพลาด", error: error.message });
   }
   return;
@@ -49,7 +53,10 @@ export const DELETE = async (req, res) => {
         // jobItemData: jobItemData,
       });
   } catch (err) {
-      console.log(err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.log("Error Code : 076");
+        console.log(err);
+     }
       return NextResponse.json({
         status: 500,      
         error: err.message,

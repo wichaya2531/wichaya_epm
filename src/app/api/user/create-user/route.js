@@ -29,6 +29,9 @@ export const POST = async (req, res) => {
     await user.save();
     return NextResponse.json({ status: 200, user });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 086");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

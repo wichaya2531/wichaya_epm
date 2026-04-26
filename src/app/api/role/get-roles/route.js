@@ -9,6 +9,9 @@ export const GET = async (req) => {
     const roles = await Role.find();
     return NextResponse.json({ roles, status: 200 });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 073");
+     }
     return NextResponse.json({
       message: "Read all roles failed",
       file: __filename,

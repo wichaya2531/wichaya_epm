@@ -1,244 +1,221 @@
 import { Job } from "@/lib/models/Job";
-import { JobItem } from "@/lib/models/JobItem";
 import { NextResponse } from "next/server";
 import { User } from "@/lib/models/User";
 import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
-import { JobTemplate } from "@/lib/models/JobTemplate";
+import { ProfileGroup } from "@/lib/models/ProfileGroup";
+import { Machine } from "@/lib/models/Machine";
+
 export const dynamic = "force-dynamic";
 
-// code แบบ ดึงทีละหน่อย 
-
 export const GET = async (req, { params }) => {
-  await connectToDb();
-  // รับค่า starttime และ endtime จาก query string
-  const startTime = req.nextUrl.searchParams.get("starttime")+"T00:00:00Z";
-  const endTime = req.nextUrl.searchParams.get("endtime")+"T23:59:59Z";
-  // แปลงเป็น ISO string ถ้ามีค่า
-  //const startTimeISO = startTime ? new Date(startTime).toISOString() : undefined;
-  //const endTimeISO = endTime ? new Date(endTime).toISOString() : undefined;
-  const { workgroup_id } = params;
-  //
- // console.log("workgroup_id=>", workgroup_id, "startTime=>", startTime, "endTime=>", endTime);
-
-  //console.log("workgroup_id=>",workgroup_id);
-  if (workgroup_id === "undefined") {
-    return NextResponse.json({
-      status: 400,
-      error: "Workgroup ID is required",
-    });
-  } 
-  
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      
-      var gap=20;       // maximum record for query per round 
-      //var numTotal=0;
-      for (let i = 1; i <= 40; i++) {        
-              var jobs,schedules;
-              
-                // สร้าง filter สำหรับ jobs โดยใช้ startTime และ endTime ถ้ามีค่า
-                const jobFilter = { WORKGROUP_ID: workgroup_id };
-                if (startTime) {
-                jobFilter.updatedAt = { ...jobFilter.updatedAt, $gte: new Date(startTime) };
-                }
-                if (endTime) {
-                jobFilter.updatedAt = { ...jobFilter.updatedAt, $lte: new Date(endTime) };
-                }
-                jobs = await Job.find(jobFilter)
-                .sort({ createdAt: -1 })
-                .skip((i - 1) * gap)
-                .limit(gap);
-              
-              //if(jobs.length<=0){
-              //  break;
-              //}   
-                // กรอง schedules ด้วย startTime และ endTime ถ้ามีค่า
-                const scheduleFilter = { WORKGROUP_ID: workgroup_id };
-                if (startTime) {
-                  scheduleFilter.ACTIVATE_DATE = { ...scheduleFilter.ACTIVATE_DATE, $gte: new Date(startTime) };
-                }
-                if (endTime) {
-                  scheduleFilter.ACTIVATE_DATE = { ...scheduleFilter.ACTIVATE_DATE, $lte: new Date(endTime) };
-                }
-                schedules = await Schedule.find(scheduleFilter)
-                .sort({ createdAt: -1 })
-                .skip((i - 1) * gap)
-                .limit(gap);
-                if(jobs.length<=0 && schedules.length<=0){
-                  break;
-                }
-
-
-                //console.log("i="+i+",gap="+gap+",length="+jobs.length);                
-              var io=0;
-              const activaterPromises = jobs.map(async (job) => {
-                const user = await User.findOne({ _id: job.ACTIVATE_USER });
-                const status = await Status.findOne({ _id: job.JOB_STATUS_ID });
-                const activaterName = user?.EMP_NAME || "Unknown";
-                const statusName = status?.status_name || "Unknown";
-                const statusColor = status?.color || "Unknown";
-                
-               // console.log("job.SUBMITTED_BY.EMP_NAME",job.SUBMITTED_BY.EMP_NAME);
-
-                 // บางเรคคอร์ดใช้ฟิลด์แยกชื่อ/อีเมล
-                const submit_name = {
-                  EMP_NAME:  job.SUBMITTED_BY_NAME  ?? job.SUBMITTED_BY?.EMP_NAME  ?? "-",
-                 // EMP_EMAIL: job.SUBMITTED_BY_EMAIL ?? job.SUBMITTED_BY?.EMP_EMAIL ?? "",
-                };
-                //if(job){
-                //    console.log(job.PUBLIC_EDIT_IN_WORKGROUP);
-                //}
-                
-                //  if(job.JOB_TEMPLATE_NAME.includes("wichaya_for")){
-                //      console.log('job',job);
-                //      io++;
-                //  }
-
-                 //console.log("job",job);
-                 
-                 return {
-                  //...job.toObject(),
-                  _id:job._id,
-                  SUBMITTED_BY: submit_name,
-                  LINE_NAME:job.LINE_NAME,
-                  JOB_NAME:job.JOB_NAME,
-                  ACTIVATE_USER:job.ACTIVATE_USER,
-                  createdAt:job.createdAt,
-                  ACTIVATER_NAME: activaterName,
-                  STATUS_NAME: statusName,
-                  STATUS_COLOR: statusColor,
-                  ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL||false,
-                  VALUE_ITEM_ABNORMAL:job.VALUE_ITEM_ABNORMAL,
-                  updatedAt: job.updatedAt,
-                  SUBMITTED_DATE: job.SUBMITTED_DATE,
-                  //await checkItemAbNormal(job._id),
-                  //PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP||false
-                };
-              });
-          
-              const schedulePromises = schedules.map(async (schedule) => {
-                //console.log("schedule",schedule);
-                const status = await Status.findOne({ status_name: schedule.STATUS });
-                const statusColor = status?.color || "Unknown";
-          
-                const LineName = await JobTemplate.findOne({
-                  JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
-                });
-          
-                const Line_Name = LineName?.LINE_NAME || "Unknown";
-                return {
-                  _id: schedule._id,//schedule.JOB_TEMPLATE_ID,
-                  //REVIEWS: "",
-                  //WD_TAG: "",
-                  //JOB_STATUS_ID: "",                  
-                  LINE_NAME: schedule.LINE_NAME,
-                  JOB_APPROVERS: [],
-                  JOB_NAME: schedule.JOB_TEMPLATE_NAME,
-                  DOC_NUMBER: schedule.DOC_NUMBER,                  
-                  //CHECKLIST_VERSION: "",
-                  //WORKGROUP_ID: "",
-                  ACTIVATE_USER: "Scheduler",
-                  //TIMEOUT: "",
-                  createdAt: new Date(schedule.ACTIVATE_DATE).toISOString(),
-                  //submitedAt:new Date().toISOString(),
-                  updatedAt: schedule.updatedAt,
-                  ACTIVATER_NAME: "Scheduler",
-                  STATUS_NAME: schedule.STATUS,
-                  STATUS_COLOR: statusColor,
-                  JOB_TEMPLATE_CREATE_ID: schedule.JOB_TEMPLATE_CREATE_ID,
-                  JOB_TEMPLATE_NAME: schedule.JOB_TEMPLATE_NAME,
-                  ACTIVATE_DATE: schedule.ACTIVATE_DATE,
-                  SCHEDULE_STATUS: schedule.STATUS,
-                };
-              });
-              
-             // console.log('activaterPromises',activaterPromises);
-              
-              const combinedPromises = [...activaterPromises, ...schedulePromises];
-              let jobsWithActivater = await Promise.all(combinedPromises);
-              
-              //console.log('jobsWithActivater',jobsWithActivater);
-
-              jobsWithActivater.sort((a, b) => {
-                return new Date(b.updatedAt) - new Date(a.updatedAt);
-              });
-             // numTotal+=jobsWithActivater.length;
-              //------------------------------------------>>
-              const json = JSON.stringify(jobsWithActivater);      // แปลงเป็น string
-              const chunk = encoder.encode(json + '\n'); // ใส่ newline คั่นแต่ละ batch
-              controller.enqueue(chunk);
-              await new Promise(resolve => setTimeout(resolve, 500)); // delay 1 วิ
-      }
-      //console.log("จำนวนรอบที่ทำงานทั้งหมด numTotal="+numTotal);
-      controller.enqueue(encoder.encode( '" จบการส่งข้อมูล"\n'));
-      controller.close();
-
-    }
-  });
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-      'Cache-Control': 'no-cache',
-    }
-  });
-  
-  //-------------------------->>>>
-
   try {
+    await connectToDb();
+
+    const rawStartTime = req.nextUrl.searchParams.get("starttime");
+    const rawEndTime = req.nextUrl.searchParams.get("endtime");
+    const profile = req.nextUrl.searchParams.get("profile");
+    const user_id = req.nextUrl.searchParams.get("user_id");
+    const status = req.nextUrl.searchParams.get("status");
 
 
-    const lrv_Date = new Date();
-    lrv_Date.setDate(lrv_Date.getDate() - 7);
+
+    const { workgroup_id } = params;
+
+    if (!workgroup_id || workgroup_id === "undefined") {
+      return NextResponse.json(
+        {
+          status: 400,
+          error: "Workgroup ID is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    const startTime = rawStartTime
+      ? new Date(`${rawStartTime}T00:00:00`)
+      : null;
+
+    const endTime = rawEndTime
+      ? new Date(`${rawEndTime}T23:59:59.999`)
+      : null;
 
 
-    const jobs = await Job.find({ WORKGROUP_ID: workgroup_id, updatedAt: { $gte: lrv_Date } });//.limit(2000);
-    const schedules = await Schedule.find({ WORKGROUP_ID: workgroup_id , updatedAt: { $gte: lrv_Date }});//.limit(2000);
-    const activaterPromises = jobs.map(async (job) => {
-      const user = await User.findOne({ _id: job.ACTIVATE_USER });
-      const status = await Status.findOne({ _id: job.JOB_STATUS_ID });
-      const activaterName = user?.EMP_NAME || "Unknown";
-      const statusName = status?.status_name || "Unknown";
-      const statusColor = status?.color || "Unknown";
+
+
+   // console.log("startTime",startTime);   
+   // console.log("endTime",endTime);   
+   // console.log("status",status);  
+
+
+    // โหลด Profile Group ทั้งหมดไว้ map ครั้งเดียว
+    const profileGroupsArr = await ProfileGroup.find().lean();
+    const profileGroups = profileGroupsArr.reduce((acc, group) => {
+      acc[String(group._id)] = group.PROFILE_NAME;
+      return acc;
+    }, {});
+
+    // โหลด Machine ทั้งหมดไว้ map ครั้งเดียว
+    const machines = await Machine.find().lean();
+    const machineMap = machines.reduce((acc, machine) => {
+      acc[machine.WD_TAG] = machine.MACHINE_NAME;
+      return acc;
+    }, {});
+
+    // ----------------------------
+    // สร้าง filter สำหรับ jobs
+    // ----------------------------
+    const jobFilter = {
+      WORKGROUP_ID: workgroup_id,
+    };
+
+    if (startTime || endTime) {
+      jobFilter.createdAt = {};
+      if (startTime) jobFilter.createdAt.$gte = startTime;
+      if (endTime) jobFilter.createdAt.$lte = endTime;
+    }
+
+    if (profile && profile !== "null") {
+      jobFilter.PROFILE_GROUP = profile;
+    }
+
+    // ----------------------------
+    // สร้าง filter สำหรับ schedules
+    // ----------------------------
+    const scheduleFilter = {
+      WORKGROUP_ID: workgroup_id,
+    };
+
+    if (startTime || endTime) {
+      scheduleFilter.ACTIVATE_DATE = {};
+      if (startTime) scheduleFilter.ACTIVATE_DATE.$gte = startTime;
+      if (endTime) scheduleFilter.ACTIVATE_DATE.$lte = endTime;
+    }
+
+    if (profile && profile !== "null") {
+      scheduleFilter.PROFILE_GROUP = profile;
+    }
+
+    const [jobs, schedules] = await Promise.all([
+      Job.find(jobFilter).sort({ createdAt: -1 }).lean(),
+      Schedule.find(scheduleFilter).sort({ createdAt: -1 }).lean(),
+    ]);
+
+    // โหลด user/status ล่วงหน้าเพื่อลด query ซ้ำ
+    const activateUserIds = [
+      ...new Set(
+        jobs
+          .map((job) => job.ACTIVATE_USER)
+          .filter(Boolean)
+          .map((id) => String(id))
+      ),
+    ];
+
+    const jobStatusIds = [
+      ...new Set(
+        jobs
+          .map((job) => job.JOB_STATUS_ID)
+          .filter(Boolean)
+          .map((id) => String(id))
+      ),
+    ];
+
+    const scheduleStatusNames = [
+      ...new Set(schedules.map((s) => s.STATUS).filter(Boolean)),
+    ];
+
+    const [users, jobStatuses, scheduleStatuses] = await Promise.all([
+      activateUserIds.length
+        ? User.find({ _id: { $in: activateUserIds } }).lean()
+        : [],
+      jobStatusIds.length
+        ? Status.find({ _id: { $in: jobStatusIds } }).lean()
+        : [],
+      scheduleStatusNames.length
+        ? Status.find({ status_name: { $in: scheduleStatusNames } }).lean()
+        : [],
+    ]);
+
+    const userMap = users.reduce((acc, user) => {
+      acc[String(user._id)] = user;
+      return acc;
+    }, {});
+
+    const statusByIdMap = jobStatuses.reduce((acc, item) => {
+      acc[String(item._id)] = item;
+      return acc;
+    }, {});
+
+    const statusByNameMap = scheduleStatuses.reduce((acc, item) => {
+      acc[item.status_name] = item;
+      return acc;
+    }, {});
+
+    const mappedJobs = jobs.map((job) => {
+      const user = job.ACTIVATE_USER
+        ? userMap[String(job.ACTIVATE_USER)]
+        : null;
+
+      const statusObj = job.JOB_STATUS_ID
+        ? statusByIdMap[String(job.JOB_STATUS_ID)]
+        : null;
+
+      const statusName = statusObj?.status_name || "Unknown";
+      const statusColor = statusObj?.color || "Unknown";
+      const approvers = Array.isArray(job.JOB_APPROVERS) ? job.JOB_APPROVERS : [];
+
+      const submit_name = {
+        EMP_NAME: job.SUBMITTED_BY_NAME ?? job.SUBMITTED_BY?.EMP_NAME ?? "-",
+        EMP_NUMBER: job.SUBMITTED_BY?.EMP_NUMBER ?? "-",
+      };
 
       return {
-        ...job.toObject(),
-        ACTIVATER_NAME: activaterName,
+        _id: job._id,
+        SUBMITTED_BY: submit_name,
+        LINE_NAME: job.LINE_NAME,
+        JOB_NAME: job.JOB_NAME,
+        JOB_APPROVERS: approvers,
+        APPROVE_ALLOW:
+          !!user_id &&
+          approvers.includes(user_id) &&
+          statusName === "waiting for approval",
+        ACTIVATE_USER: job.ACTIVATE_USER,
+        createdAt: job.createdAt,
+        ACTIVATER_NAME: user?.EMP_NAME || "Unknown",
         STATUS_NAME: statusName,
         STATUS_COLOR: statusColor,
+        ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL || false,
+        VALUE_ITEM_ABNORMAL: job.VALUE_ITEM_ABNORMAL,
+        updatedAt: job.updatedAt,
+        SUBMITTED_DATE: job.SUBMITTED_DATE,
+        JOB_VERIFY: !!(job.IMAGE_FILENAME || job.IMAGE_FILENAME_2),
+        LAST_GET_BY: job.LAST_GET_BY || "Unknown",
+        LAST_GET_TIME: job.LAST_GET_TIME || "Unknown",
+        TYPE: job.TYPE || "Unknown",
+        PROFILE_GROUP: profileGroups[String(job.PROFILE_GROUP)] || "Unknown",
+        PUBLIC_EDIT_IN_WORKGROUP: job.PUBLIC_EDIT_IN_WORKGROUP || false,
+        MC_TAG: {
+          MACHINE_NAME: machineMap[job.WD_TAG] ?? "",
+          WD_TAG: job.WD_TAG ?? "",
+        },
       };
     });
 
-    const schedulePromises = schedules.map(async (schedule) => {
-      //console.log("schedule",schedule);
-      const status = await Status.findOne({ status_name: schedule.STATUS });
-      const statusColor = status?.color || "Unknown";
+    const mappedSchedules = schedules.map((schedule) => {
+      const statusObj = statusByNameMap[schedule.STATUS];
+      const statusColor = statusObj?.color || "Unknown";
 
-      const LineName = await JobTemplate.findOne({
-        JobTemplateCreateID: schedule.JOB_TEMPLATE_CREATE_ID,
-      });
-
-      const Line_Name = LineName?.LINE_NAME || "Unknown";
-      //console.log("XXXX----XXXX",LineName);
       return {
-        _id: schedule._id,//schedule.JOB_TEMPLATE_ID,
-        REVIEWS: "",
-        WD_TAG: "",
-        JOB_STATUS_ID: "",
+        _id: schedule._id,
         LINE_NAME: schedule.LINE_NAME,
         JOB_APPROVERS: [],
         JOB_NAME: schedule.JOB_TEMPLATE_NAME,
         DOC_NUMBER: schedule.DOC_NUMBER,
-        CHECKLIST_VERSION: "",
-        WORKGROUP_ID: "",
         ACTIVATE_USER: "Scheduler",
-        TIMEOUT: "",
-        createdAt: new Date(schedule.ACTIVATE_DATE).toISOString(),
-        //submitedAt:new Date().toISOString(),
+        createdAt: schedule.ACTIVATE_DATE
+          ? new Date(schedule.ACTIVATE_DATE).toISOString()
+          : null,
         updatedAt: schedule.updatedAt,
         ACTIVATER_NAME: "Scheduler",
         STATUS_NAME: schedule.STATUS,
@@ -247,21 +224,43 @@ export const GET = async (req, { params }) => {
         JOB_TEMPLATE_NAME: schedule.JOB_TEMPLATE_NAME,
         ACTIVATE_DATE: schedule.ACTIVATE_DATE,
         SCHEDULE_STATUS: schedule.STATUS,
+        PROFILE_GROUP:
+          profileGroups[String(schedule.PROFILE_GROUP)] || "Unknown",
+        MC_TAG: schedule.MC_TAG || "",
       };
     });
 
-    const combinedPromises = [...activaterPromises, ...schedulePromises];
-    let jobsWithActivater = await Promise.all(combinedPromises);
+    let jobsWithActivater = [...mappedJobs, ...mappedSchedules];
+
+    // filter status ฝั่งรวม ถ้ามีส่งมา
+    if (status && status !== "All") {
+      jobsWithActivater = jobsWithActivater.filter(
+        (item) => item.STATUS_NAME === status.toLowerCase()
+      );
+    }
 
     jobsWithActivater.sort((a, b) => {
-      return new Date(b.updatedAt) - new Date(a.updatedAt);
+      return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
     });
 
-    //console.log(jobsWithActivater);
+    //console.log("jobsWithActivater total =", jobsWithActivater.length);
 
-    return NextResponse.json({ status: 200, jobs: jobsWithActivater });
+    return NextResponse.json({
+      status: 200,
+      jobs: jobsWithActivater,
+    });
   } catch (err) {
-    console.log("Error", err);
-    return NextResponse.json({ status: 500, error: err.message });
+    if (process.env.NEXT_PUBLIC_DEBUG == "true") {
+      console.log("Error", err);
+      console.log("Error Code : 030");
+    }
+
+    return NextResponse.json(
+      {
+        status: 500,
+        error: err.message,
+      },
+      { status: 500 }
+    );
   }
 };

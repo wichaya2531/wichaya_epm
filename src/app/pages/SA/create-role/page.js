@@ -7,7 +7,7 @@ import {config} from "../../../../config/config.js";
 import SALayout from "@/components/SALayout";
 import Swal from "sweetalert2";
 
-const headers = ["ID", "Role", "Action"];
+const headers = ["id", "Role", "Action"];
 
 const Page = () => {
   const [roles, setRoles] = useState([]);
@@ -37,7 +37,7 @@ const Page = () => {
 
     id: index + 1,
     Role: role.ROLE_NAME,
-    action: [
+    Action: [
       <span className="pl-4">
         <Link
           id="1"

@@ -66,9 +66,11 @@ export const POST = async (req, res) => {
     // Return the response with user data and token
     return NextResponse.json({ status: 200, user: data, token: token });
   } catch (err) {
-    // Log the error details for better debugging
-    console.error("Error during login:", err); // เพิ่มการแสดงผลข้อผิดพลาดใน server
-
+                if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                    console.log("Error Code : 016");
+                    // Log the error details for better debugging
+                    console.error("Error during login:", err); // เพิ่มการแสดงผลข้อผิดพลาดใน server
+                }
     return NextResponse.json({
       message: "User login failed",
       file: __filename,

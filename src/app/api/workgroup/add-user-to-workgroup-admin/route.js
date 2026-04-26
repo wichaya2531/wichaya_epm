@@ -22,6 +22,9 @@ export const POST = async (req, res) => {
         await workgroup.save();
         return NextResponse.json({ status:200, workgroup });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 098");
+         }
         return NextResponse.json({status: 500, file: __filename, error: err.message});
     }
 };

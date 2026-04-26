@@ -1,27 +1,55 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import { FaSpinner } from "react-icons/fa";
 
 const TableComponentAdmin = ({
   headers,
   datas,
-  searchColumn,
-  filterColumn,
   TableName,
   PageSize,
-  searchHidden = null,
-  linenameOnSelect = null,
+  filterColumn,  
+  searchColumn,
+  searchColumn1,
+  searchHidden,
+  filteredJobs,
   selectedJobs,
   handleDeleteSelected,
-  filteredJobs,
+  handleApproveSelected,
+  showApproveAllButton = false,
   currentPage,
   onPageChange,
   setSelectedJobs,
+  isLoading,
+  orientation,
+  userRole,
+  callFromApprovePage = false,
 }) => {
 
-  //console.log("datas.",datas);
+// const TableComponentAdmin = ({
+//   headers,
+//   datas,
+//   searchColumn,
+//   searchColumn1,
+//   filterColumn,
+//   TableName,
+//   PageSize,
+//   searchHidden = null,
+//   linenameOnSelect = null,
+//   selectedJobs,
+//   handleDeleteSelected,
+//   filteredJobs,
+//   currentPage,
+//   onPageChange,
+//   setSelectedJobs,
+//   isLoading,
+//   orientation="landscape",
+//   userRole,
+// }) => {
+
+  //console.log("ข้อมูลจาก TableComponentAdmin datas",datas);
+  //console.log("TableComponentAdmin user=>",user);
   setTimeout(() => {
     var rowsVisible = getRowsVisible();
     try {
@@ -29,6 +57,8 @@ const TableComponentAdmin = ({
     } catch (error) {}
   }, 1000);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm1, setSearchTerm1] = useState("");
+  const [filterMode,setFilterMode]=useState("||");
   const [pageSize, setPageSize] = useState(PageSize || 5);
   const [selectedFilter, setSelectedFilter] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -36,8 +66,10 @@ const TableComponentAdmin = ({
   const endIndex = startIndex + pageSize;
   const jobsInCurrentPage = filteredJobs.slice(startIndex, endIndex);
 
-  const data = datas;
 
+
+
+  const data = datas;
   // ฟังก์ชันสำหรับจัดเรียงข้อมูล
   const sortedData = React.useMemo(() => {
     if (!sortConfig.key) return data;
@@ -49,16 +81,46 @@ const TableComponentAdmin = ({
     });
   }, [data, sortConfig]);
 
-  const filteredData =
-    sortedData && sortedData.length > 0
-      ? sortedData.filter((item) =>
-          searchColumn
-            ? item[searchColumn]
-                ?.toLowerCase()
-                .includes(searchTerm.toLowerCase())
-            : item
-        )
-      : [];
+
+
+
+// ตัวช่วย
+const norm = (v) => {
+  if (v && typeof v === "object" && !Array.isArray(v)) {
+    return (v.linename || v.line_name || "").toString().toLowerCase().trim();
+  }
+  return (v ?? "").toString().toLowerCase().trim();
+};
+const match = (item, col, term) =>
+  col && term ? norm(item?.[col]).includes(norm(term)) : false;
+
+// ตั้งค่าโหมดกรอง: "OR" หรือ "AND"
+//const filterMode = "AND"; // เปลี่ยนเป็น "OR" ได้
+
+// มีเงื่อนไขใดถูกระบุบ้างไหม (สำหรับโหมด OR)
+const anyTermProvided =
+  (!!searchColumn && !!searchTerm) || (!!searchColumn1 && !!searchTerm1);
+
+const filteredData = sortedData?.length
+  ? sortedData.filter((item) => {
+      if (filterMode === "&&") {
+        // ต้องตรงทุกเงื่อนไขที่กรอกไว้
+        return (
+          (searchColumn  && searchTerm  ? match(item, searchColumn,  searchTerm)  : true) &&
+          (searchColumn1 && searchTerm1 ? match(item, searchColumn1, searchTerm1) : true)
+        );
+      } else {
+        // OR: ตรงอย่างน้อยหนึ่งเงื่อนไข
+        return !anyTermProvided
+          ? true
+          : match(item, searchColumn,  searchTerm) ||
+            match(item, searchColumn1, searchTerm1);
+      }
+    })
+  : [];
+
+
+
 
   const finalFilteredData =
     filteredData && filteredData.length > 0
@@ -116,6 +178,10 @@ const TableComponentAdmin = ({
     setSearchTerm(event.target.value);
     onPageChange(1);
   };
+  const handleSearch1 = (event) => {
+    setSearchTerm1(event.target.value);
+    onPageChange(1);
+  };
 
   const handlePageSizeChange = (event) => {
     setPageSize(Number(event.target.value));
@@ -156,29 +222,48 @@ const TableComponentAdmin = ({
     return 5;
   };
 
-  // ✅ ฟังก์ชัน Select All: เลือกเฉพาะ jobs ในหน้าปัจจุบัน
+  // ✅ ฟังก์ชัน Select All: เลือกเฉพาะ jobs ในหน้าปัจจุบัน (ใช้ currentPageData ที่ผ่าน local filter แล้ว)
   const handleSelectAllJobs = () => {
-
-    //console.log("use handleSelectAllJobs!!!");
-
-    const allCurrentPageIds = jobsInCurrentPage.map((job) => job._id);
-    if (selectedJobs.length === allCurrentPageIds.length) {
-      setSelectedJobs([]); // ยกเลิกการเลือกทั้งหมด
+    const allCurrentPageIds = currentPageData.map((item) => item._id).filter(Boolean);
+    const allSelected = allCurrentPageIds.length > 0 && allCurrentPageIds.every((id) => selectedJobs.includes(id));
+    if (allSelected) {
+      setSelectedJobs((prev) => prev.filter((id) => !allCurrentPageIds.includes(id)));
     } else {
-      setSelectedJobs(allCurrentPageIds); // เลือกทั้งหมดในหน้าปัจจุบัน
+      setSelectedJobs((prev) => [...new Set([...prev, ...allCurrentPageIds])]);
     }
   };
+
+
+const clearFilters = (e) => {
+  e?.stopPropagation?.(); // กัน event bubble (ถ้าวางใน element ที่มี onClick parent)
+  //setSearchColumn("");
+  setSearchTerm("");
+  //setSearchColumn1("");
+  setSearchTerm1("");
+  setFilterMode("||");    // ค่าเริ่มต้นที่ต้องการ
+};
+
 
   return (
     <div className="flex flex-col justify-center gap-5 items-center relative">
       <div className="flex flex-row flex-wrap justify-start items-center w-full my-4 gap-2 text-left">
         <div className="flex flex-row gap-2 text-left max-w-full">
-          <div className="max-w-[20vw] inline-block">
-            <span>Rows:</span>
+          <div className="max-w-[20vw] inline-block font-medium text-black ">
+               {/* Filter : */}
+          </div>
+          <div className="relative max-w-[20vw] inline-block">
+            <span
+                 className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
+            >Rows</span>
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-[100%] inline-block"
+              //className="mx-2 p-2 border rounded-md flex-shrink-0 max-w-[100%] inline-block"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
               id="table-rows-num"
             >
               <option value={5}>5</option>
@@ -206,92 +291,195 @@ const TableComponentAdmin = ({
               </select>
             </div>
           )}
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+          
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[150px] inline-block ml-auto">
+            <label
+              htmlFor="searchTerm"
+              //className="block text-xs text-gray-600 mb-1"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
+            >
+              by [Checklist Name]
+            </label>
             <input
-              className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
-              type="text"
-              placeholder="Search..."
+              //className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[180px]"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+              id="searchTerm"
+              //placeholder="by [Checklist Name]"
+              type="text"             
               value={searchTerm}
               onChange={handleSearch}
             />
-            <SearchIcon className="absolute left-2 top-2 text-gray-500" />
+            {/* <SearchIcon className="absolute left-2 top-2 text-gray-500" /> */}
           </div>
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+                   {/* Select โหมด AND/OR */}
+                  <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+                    {/* <label className="block text-xs text-gray-600 mb-1">Filter Mode</label> */}
+                    <select
+                      value={filterMode}
+                      onChange={(e) => setFilterMode(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm
+                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                                shadow-sm"
+                    >
+                      <option value="||">OR (match any)</option>
+                      <option value="&&">AND (match all)</option>
+                    </select>
+                  </div>
+          </div>
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[160px] inline-block ml-auto">
+            <label
+              htmlFor="searchTerm1"
+              //className="block text-xs text-gray-600 mb-1"
+              className="pointer-events-none absolute left-3 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600" 
+            >
+              by [Line Name]
+            </label>
+            <input
+              //className="border border-gray-300 rounded-md p-2 pl-9 pr-4 max-w-[150px]"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                          focus:outline-none focus:border-blue-500"
+              id="searchTerm1"
+              type="text"
+              //placeholder="by [Line Name]"
+              value={searchTerm1}
+              onChange={handleSearch1}
+            />
+            {/* <SearchIcon className="absolute left-2 top-2 text-gray-500" /> */}
+          </div>
+          <div className="relative mx-2 md:w-auto flex-shrink-0 max-w-[200px] inline-block ml-auto">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="px-3 py-2 text-sm rounded-lg border border-red-500 text-red-600 hover:bg-red-50"
+            >
+              Clear
+            </button>
+          </div>
+
         </div>
       </div>
 
       <div className="w-full bg-white rounded-lg font-sans flex flex-col justify-center items-start overflow-x-auto shadow-md">
         {/* ห่อหัวตารางด้วย flex */}
         <div className="w-full flex justify-between items-center">
-          <h1 className="text-sm text-secondary font-bold p-2">
-            {TableName || "Table Name"}
-          </h1>
+          {/* ห่อหัวตารางด้วย flex */}
+            <h1 className="text-sm text-secondary font-bold p-2">
+              {TableName || "Table Name"}
+            </h1>
+            {(userRole === "Admin Group" || userRole === "Owner") ? (
+              <>
+                {/* Select All Checkbox */}
+                {orientation === "landscape" && (
+                  <div className="flex items-center space-x-4 p-2 rounded-lg">
+                    <div className="flex items-center space-x-2 w-50">
+                      <input
+                        type="checkbox"
+                        name="select-job-all"
+                        id="select-job-all"
+                        onChange={handleSelectAllJobs}
+                        checked={
+                          currentPageData.length > 0 &&
+                          currentPageData.every((item) =>
+                            item._id ? selectedJobs.includes(item._id) : false
+                          )
+                        }
+                        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                      />
+                      <label
+                        htmlFor="select-job-all"
+                        className="text-gray-800 pr-2 font-medium text-sm md:text-base"
+                      >
+                        Select All
+                      </label>
+                    </div>
 
-          {/* ปุ่ม Select All และ Remove Selected */}
-          <div className="flex items-center space-x-4 p-2 rounded-lg ">
-            {/* Select All Checkbox */}
-            <div className="flex items-center space-x-2 w-50">
-              <input
-                type="checkbox"
-                name="select-job-all"
-                id="select-job-all"
-                onChange={handleSelectAllJobs}
-                checked={
-                  jobsInCurrentPage.length > 0 &&
-                  jobsInCurrentPage.every((job) =>
-                    selectedJobs.includes(job._id)
-                  )
-                }
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-              />
-              <label htmlFor="select-job-all" className="text-gray-800 pr-2 font-medium text-sm md:text-base">
-                Select All
-              </label>
-            </div>
+                    {/* Remove Selected Button */}
+                        <div className="flex items-center gap-3">
+                          {callFromApprovePage && showApproveAllButton && selectedJobs?.length > 0 && (
+                            <button
+                              onClick={handleApproveSelected}
+                              className="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
+                            >
+                              Approve All
+                            </button>
+                          )}
 
-            {/* Remove Selected Button */}
-            <button
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleDeleteSelected}
-              disabled={selectedJobs.length === 0}
-            >
-              <DeleteIcon className="w-5 h-5" />
-            </button>
+                          {selectedJobs?.length > 0 && (
+                            <button
+                              onClick={handleDeleteSelected}
+                              className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                  </div>
+                )}
+              </>
+            ) : null}
           </div>
-        </div>
+
 
         <table className="table-auto w-full text-[12px] ipadmini:text-sm">
           <thead className="bg-[#347EC2] text-white text-sm">
             <tr>
-              {headers.map((header) => (
-                <th
-                  key={header}
-                  className="px-2 py-2 cursor-pointer"
-                  onClick={() => handleSort(header)}
-                >
-                  {header}
-                  {sortConfig.key === header
-                    ? sortConfig.direction === "asc"
-                      ? " ▲"
-                      : " ▼"
-                    : ""}
-                </th>
-              ))}
+              {headers.map((header) =>
+                
+                  <th
+                    key={header}
+                    className="px-2 py-2 cursor-pointer"
+                    onClick={() => handleSort(header)}
+                  >
+                    {header}
+                    {sortConfig.key === header
+                      ? sortConfig.direction === "asc"
+                        ? " ▲"
+                        : " ▼"
+                      : ""}
+                  </th>
+               
+              )}
             </tr>
           </thead>
+
           <tbody className="text-center">
             {currentPageData.map((item) => (
               <tr
                 key={item.ID}
-                className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"               
+                className="hover:shadow-lg bg-white h-16 border-b border-solid border-[#C6C6C6] hover:bg-gray-100 font-bold"
               >
-                {Object.keys(item).map((key) => (
-                  <td key={`${item.id}-${key}`} className="px-4 py-3">
-                    
-                    {item[key] ? item[key] : "N/A"}
-                  
-                  </td>
-                ))}
+                {Object.keys(item).filter((key) => key !== "_id").map((key) => {
+                  const value = item[key];
+
+                  const isLineNameObject =
+                    key === "Line Name" &&
+                    value &&
+                    typeof value === "object" &&
+                    !Array.isArray(value);
+
+                  return (
+                    <td key={`${item.ID}-${key}`} className="px-4 py-3">
+                      {/* แสดงค่า */}
+                      {isLineNameObject
+                        ? value.line_name || value.linename || "N/A"
+                        : value || "N/A"}
+
+                      {/* แสดง machine_name เฉพาะ Line Name */}
+                      {isLineNameObject && value.machine_name && (
+                        <div className="ml-2 text-blue-500 cursor-pointer">
+                          {value.machine_name}
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
@@ -314,7 +502,7 @@ const TableComponentAdmin = ({
               key={page}
               onClick={() => goToPage(page)}
               className={`py-2 px-4 rounded-lg font-semibold transition duration-300 ${
-                currentPage === page
+                currentPage == page
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 hover:bg-blue-200"
               }`}

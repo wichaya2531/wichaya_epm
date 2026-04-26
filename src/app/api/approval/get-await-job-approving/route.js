@@ -16,7 +16,7 @@ export const GET = async (req, res) => {
        // console.log("waitForApproveStatus => ", waitForApproveStatus);
         const jobs = await Job.find({
             JOB_STATUS_ID: waitForApproveStatus._id,
-            JOB_APPROVERS: new ObjectId(user_id)
+           JOB_APPROVERS: { $in: [user_id] },
         }).sort({ updatedAt: -1 })
         //console.log("Job=>", jobs);
         const promiseData = jobs.map(async (job) => {
@@ -57,19 +57,16 @@ export const GET = async (req, res) => {
         //         job_submittedAt: job.updatedAt
         //     };
         // });
-
-
-
-
-        
-
         const data = await Promise.all(promiseData);
 
 
         return NextResponse.json({ status: 200, data: data });
     }
     catch (err) {
-        console.log("Error => ", err.message);
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error => ", err.message);
+                console.log("Error Code : 012",user_id);
+        }
         return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
 }

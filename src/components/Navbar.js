@@ -13,7 +13,7 @@ import useFetchUser from "@/lib/hooks/useFetchUser.js";
 import useFetchUsers from "@/lib/hooks/useFetchUsers";
 import { useRouter } from "next/navigation";
 
-const Navbar = ({ menu }) => {
+const Navbar = ({ menu,mqttStatus }) => {
   // console.log("*****************Navbar**************");
 
   const [refresh, setRefresh] = useState(false);
@@ -29,6 +29,7 @@ const Navbar = ({ menu }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const router = useRouter();
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen); // สลับสถานะเปิด/ปิด
@@ -43,9 +44,6 @@ const Navbar = ({ menu }) => {
   useEffect(() => {
     setIsClient(true); // ตั้งค่า isClient เป็น true หลังจากที่ render ฝั่ง client เสร็จ
   }, []);
-
-  // ใช้ useRouter เฉพาะเมื่อเป็นฝั่ง client
-  const router = isClient ? useRouter() : null;
 
   if (state?.success) {
     setTimeout(() => {
@@ -171,10 +169,21 @@ const Navbar = ({ menu }) => {
           <Image
             src="/assets/card-logo/wd-logo.png"
             alt="wd logo"
-            width={150}
-            height={150}
+            width={100}
+            height={100}
             className=""
-          />
+                      />
+            {mqttStatus ? (
+              <>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full"></span>
+              </>
+            ) : (
+              <>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                <span className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full"></span>
+              </>
+            )}
         </Link>
       </div>
 
@@ -252,14 +261,14 @@ const Navbar = ({ menu }) => {
                   <FaTimes size={24} />
                 </button>
                 <select
-                  className="font-sm p-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-[180px] font-sm p-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                   onChange={handleUserSelection}
                   value={selectedUserId}
                 >
                   <option value="">Select User</option>
                   {filteredUsers.map((user) => (
                     <option key={user._id} value={user._id}>
-                      {user.name}, {user.workgroup}, {user.role}
+                      {user.username}, {user.workgroup}, {user.role}
                     </option>
                   ))}
                 </select>

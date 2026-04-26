@@ -21,6 +21,9 @@ export const DELETE = async (req) => {
       message: "Approver removed successfully.",
     });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 060");
+     }
     return NextResponse.json({
       status: 500,
       error: err.message,

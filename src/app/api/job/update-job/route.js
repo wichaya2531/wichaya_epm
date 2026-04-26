@@ -14,6 +14,11 @@ import { bool } from "sharp";
 //import fs from "fs";
 //import path from "path";
 
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
+
 export const POST = async (req) => {
       //const form = await req.formData();
       //console.log("form=>",form);
@@ -22,22 +27,24 @@ export const POST = async (req) => {
       //const _Job= await Job.findById(jobData.JobID);
       //console.log('_Job',_Job);
       //console.log('Approve',_Job.JOB_APPROVERS);
-      //console.log('jobData',jobData);
-       
+     const form = await req.formData();
+    //console.log("form=>",form);
+
+    // รับ jobData และ jobItemsData จาก FormData
+    const jobData = JSON.parse(form.get("jobData"));
+    const jobItemsData = JSON.parse(form.get("jobItemsData"));
+    //console.log('jobData=>',jobData);   
       //console.log(' this is test function !!!');
+
+          
+
+
 
 
   try {
     // เชื่อมต่อฐานข้อมูล
     await connectToDb();
     //console.log("Database connected");
-
-    const form = await req.formData();
-    //console.log("form=>",form);
-
-    // รับ jobData และ jobItemsData จาก FormData
-    const jobData = JSON.parse(form.get("jobData"));
-    const jobItemsData = JSON.parse(form.get("jobItemsData"));
     //console.log("jobData:", jobData);
     //console.log("jobItemsData:", jobItemsData);
 
@@ -78,7 +85,7 @@ export const POST = async (req) => {
     submittedUser.USERNAME="unknown";
     submittedUser.PASSWORD="unknown";
 
-    //console.log('submittedUser',submittedUser);  
+    //console.log('ผู้ใช้ที่ submit  ',submittedUser);  
 
     //console.log("job",job);   
     //console.log("process.env.WD_INTRANET_MODE",process.env.WD_INTRANET_MODE);
@@ -129,6 +136,7 @@ export const POST = async (req) => {
       return NextResponse.json({ status: 404, message: "Status not found." });
     }
     
+
     job.JOB_STATUS_ID = statusAssigned._id;
     job.SUBMITTED_BY = submittedUser;
     job.SUBMITTED_DATE = new Date();
@@ -157,6 +165,33 @@ export const POST = async (req) => {
       await sendEmailsFromManual(emailList, _jobForEmail,"wait_for_approve");
    }
 
+    //-------------------------SSE----------------------------->>
+          try{
+                  var workgroup_id="";
+                   //if(isJob){
+                       workgroup_id=job.WORKGROUP_ID;
+                   //}else{
+                   //   workgroup_id=findSchedual.WORKGROUP_ID;
+                  // }
+                  if (typeof workgroup_id === 'object' && workgroup_id !== null) {
+                    // ตรวจสอบว่าเป็น ObjectId ของ MongoDB จริง ๆ
+                    if (workgroup_id.toString) {
+                      workgroup_id = workgroup_id.toString();
+                    }
+                  }
+
+                    try {
+                      const payload = { JOB_ID: job._id};
+                      broadcast(workgroup_id, payload);
+                    } catch (err) {
+                      console.error("emit error:", err);
+                    } 
+                  
+          }catch(err){
+                console.log("SSE error ",err);
+          }
+
+    //--------------------------------------------------------->>
 
 
 
@@ -166,7 +201,10 @@ export const POST = async (req) => {
       jobData,
     });
   } catch (err) {
-    console.error("Error occurred:", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.error("Error occurred:", err);
+        console.log("Error Code : 036");
+     }
     return NextResponse.json({
       status: 500,
       message: "An error occurred while updating the job.",
@@ -200,11 +238,14 @@ export const POST = async (req) => {
 // ฟังก์ชันอัปเดต Job Items
 const updateJobItems = async (jobItemsData) => {
   const updatePromises = jobItemsData.map(async (jobItemData) => {
-    const jobItem = await JobItem.findOne({ _id: jobItemData.JobItemID });
 
+    
+    const jobItem = await JobItem.findOne({ _id: jobItemData.JobItemID });
+    
     if (jobItem) {
       // อัปเดตค่า ACTUAL_VALUE, COMMENT และ BEFORE_VALUE
       jobItem.ACTUAL_VALUE = jobItemData.value || jobItem.ACTUAL_VALUE; // อัปเดต ActualValue
+      jobItem.VALUE=jobItemData.Value;
       jobItem.COMMENT = jobItemData.Comment || jobItem.COMMENT; // อัปเดต Comment
       jobItem.BEFORE_VALUE =
         jobItemData.BeforeValue === "" || jobItemData.BeforeValue == null
@@ -217,6 +258,8 @@ const updateJobItems = async (jobItemsData) => {
       jobItem.IMG_ATTACH = jobItemData.IMG_ATTACH || jobItem.IMG_ATTACH; // รูปสำหรับ before 
       jobItem.IMG_ATTACH_1 = jobItemData.IMG_ATTACH_1 || jobItem.IMG_ATTACH_1; // รูปสำหรับ after
       jobItem.LastestUpdate = new Date(); // อัปเดตเวลาล่าสุด
+
+      //console.log('jobItem to update',jobItem);
       await jobItem.save(); // บันทึกการเปลี่ยนแปลง
       //console.log(`JobItem ${jobItemData.JobItemID} updated successfully.`);
     } else {

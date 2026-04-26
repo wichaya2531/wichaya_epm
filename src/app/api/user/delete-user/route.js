@@ -17,6 +17,10 @@ export const DELETE = async (req, {params}) => {
         }
         return NextResponse.json({ status: 200, user });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 087");
+         }
+
         return NextResponse.json({status: 500, file: __filename, error: err.message});
     }
 

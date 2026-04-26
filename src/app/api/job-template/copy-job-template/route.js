@@ -96,6 +96,9 @@ export const GET = async (req) => {
     //console.log("Data jobItemTemplates",jobItemTemplates);
     return NextResponse.json({ status: 200, message: "Copy Job Template" });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 054");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

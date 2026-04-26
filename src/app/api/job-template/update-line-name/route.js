@@ -30,6 +30,9 @@ export const PUT = async (req) => {
       jobTemplate, // สามารถส่งข้อมูลที่อัปเดตกลับได้ถ้าต้องการ
     });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 064");
+     }
     console.log("Update Line Name Error=>", err);
     return NextResponse.json({
       status: 500,

@@ -14,6 +14,9 @@ export const PUT = async (req, {params}) => {
         }
         return NextResponse.json({ message: "Action updated successfully", action });
     } catch (err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 009");
+        }
         return NextResponse.json({ message: "Action update failed", file: __filename, error: err.message });
     }
 };

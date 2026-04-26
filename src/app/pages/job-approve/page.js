@@ -5,9 +5,9 @@ import useFetchJobApproves from "@/lib/hooks/useFetchJobApproves";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import Link from "next/link";
 import Image from "next/image";
+import JobsTable from "@/components/JobsTable";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import { useState } from "react";
-
+import { useState ,useEffect } from "react";
 const jobApprovesHeader = [
   "ID",
   "Checklist Name",
@@ -17,20 +17,42 @@ const jobApprovesHeader = [
   "submittedAt",
   "Action",
 ];
-//console.log("jobApprovesHeader_xxx..");
+
+// import {  useRef, useCallback } from "react";
+
+
+//console.log("jobApprovesHeader_xxx.."
+// );
 const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [refreshEvent, setRefreshEvent] = useState(false);
   const { user, isLoading: userLoading, error: userError } = useFetchUser();
   const {
     jobApproves,
     loading: jobApprovesLoading,
     error: jobApprovesError,
-  } = useFetchJobApproves(user._id);
+    refetch ,
+  } = useFetchJobApproves(user._id,refreshEvent);
+
+
+
+
+const handleJobReviewByNavigate = (job_id) => {
+    //console.log("Review job_id:", job_id);
+    // You can use Next.js router to navigate programmatically if needed
+    //return;
+    window.open(`/pages/job-review?job_id=${job_id}`, '_blank');
+}
+
+
+
+
 
   //console.log("jobApproves List => ", jobApproves);
   const jobApprovesBody =
     jobApproves &&
     jobApproves.map((jobApprove, index) => {
+      //console.log("jobApprove => ", jobApprove);
       return {
         ID: index + 1,
         "Checklist Name": jobApprove.job_name,
@@ -47,17 +69,12 @@ const Page = () => {
         submittedAt: new Date(jobApprove.job_submittedAt).toLocaleString(),
         Action: (
           <div>
-            <Link
+            <button
               className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-[12px] ipadmini:text-sm px-5 py-2 text-center"
-              href={{
-                pathname: "/pages/job-review",
-                query: {
-                  job_id: jobApprove.job_id,
-                },
-              }}
+              onClick={() => handleJobReview(jobApprove.job_id)}
             >
               View
-            </Link>
+            </button>
           </div>
         ),
       };
@@ -84,19 +101,39 @@ const Page = () => {
         </h1>
       </div>
       <div className="mb-4 p-4 bg-white rounded-xl">
-        <h1 className="text-md font-bold text-secondary flex items-center">
+        {/* <h1 className="text-md font-bold text-secondary flex items-center">
           There are {Array.isArray(jobApproves) ? jobApproves.length : 0}{" "}
           submitted jobs, that you need to be reviewed.
-        </h1>
-        <hr className="border-gray-300 mt-4" />
-        <TableComponent
+        </h1> */}
+        {/* <hr className="border-gray-300 mt-4" /> */}
+        {/* <TableComponent
           headers={jobApprovesHeader}
           datas={jobApprovesBody}
-          TableName="Active Jobs"
+          TableName=
+          {
+              <>
+                Waiting Approve [{jobApprovesBody?.length}
+                {jobApprovesLoading && <span className="animate-pulse ml-3">..... ⏳</span>}
+                ]
+              </>
+          }          
           PageSize={5}
           currentPage={currentPage}
           onPageChange={(page) => setCurrentPage(page)}
-        />
+          refreshEvent={refreshEvent}
+          isLoading={jobApprovesLoading}
+        /> */}
+        <JobsTable  
+            jobFileterStatus={"waiting for approval"} 
+            filterStatusDisable={true} 
+            editBtnDisable={true} 
+            approveByNavigate={true} 
+            viewBtnDisable={false}
+            
+            handleJobReviewByNavigate={handleJobReviewByNavigate} 
+            callFromApprovePage={true}
+            />
+
       </div>
     </Layout>
   );

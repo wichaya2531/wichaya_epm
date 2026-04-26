@@ -27,7 +27,10 @@ export const POST = async (req) => {
     //console.log("selectLineNames =>", selectLineNames);
     return NextResponse.json({ status: 200, selectLineNames });
   } catch (err) {
-    console.error("Error fetching line names.:", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 079");
+            console.error("Error fetching line names.:", err);
+     }
     return NextResponse.json({
       status: 500,
       error: err.message,

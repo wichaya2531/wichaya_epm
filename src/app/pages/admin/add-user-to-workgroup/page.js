@@ -16,7 +16,7 @@ const workgroupHeader = [
   "Email",
   "Name",
   "Role",
-  "Change Role",
+  "Change_Role",
   "Action",
 ];
 const userHeader = ["id", "EMP_number", "Email", "Name", "Role", "Action"];
@@ -61,6 +61,7 @@ const Page = () => {
         throw new Error("Failed to fetch user data");
       }
       const data = await response.json();
+
       setUser(data.user);
       await fetchUsersWorkgroup(data.user.workgroup_id);
     } catch (error) {
@@ -320,11 +321,11 @@ const Page = () => {
       Email: user.email,
       Name: user.name,
       Role: user.role,
-      ChangRole:
+      Change_Role:
         user.role !== "Admin Group"
           ? [<RoleSelect user_id={user._id} />]
           : [<span className="pl-4"> </span>],
-      action:
+      Action:
         user.role !== "Admin Group"
           ? [
               <div className="flex justify-center items-center space-x-4">
@@ -405,7 +406,7 @@ const Page = () => {
         Email: user.email,
         Name: user.name,
         Role: <RoleSelect user_id={user._id} />,
-        action: [
+        Action: [
           <span className="pl-4 flex justify-center items-center" key={index}>
             <button
               onClick={async () => {

@@ -6,6 +6,10 @@ import { JobItem } from "@/lib/models/JobItem.js";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
 
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//---------------------------------------------->>
+
 export const DELETE = async (req, res) => {
   await connectToDb();
   const body = await req.json();
@@ -26,13 +30,19 @@ export const DELETE = async (req, res) => {
     return NextResponse.json({ status: 400, error: "Invalid job_ids" });
   }
   //console.log("✅ Received job_ids to delete:", job_ids);
+  const findSchedual=await Schedule.findById(job_ids);
   const isJob=await Job.findById(job_ids);
   //console.log('find_job',find_job);
-  if (!isJob) {
+ 
+ // const _schedual=await Schedule.findById(job_ids);
+  //console.log('find_job',find_job);
+  //if (!isJob) {
         //console.log('is schedual',job_ids);
-        const findSchedual=await Schedule.findById(job_ids);
+  //      const findSchedual=await Schedule.findById(job_ids);
         //console.log('findSchedual',findSchedual);
-  }
+ // }  
+         
+
 
   try {
     await Promise.all(
@@ -71,12 +81,47 @@ export const DELETE = async (req, res) => {
       })
     );
     //console.log("✅ Jobs deleted successfully:", job_ids);
+
+        //-------------------------SSE----------------------------->>
+          try{
+                  //console.log('isJob',isJob);
+                  var workgroup_id="";
+                  if(isJob){
+                     workgroup_id=isJob.WORKGROUP_ID;
+                  }else{
+                     workgroup_id=findSchedual.WORKGROUP_ID;
+                   }
+                  if (typeof workgroup_id === 'object' && workgroup_id !== null) {
+                    // ตรวจสอบว่าเป็น ObjectId ของ MongoDB จริง ๆ
+                    if (workgroup_id.toString) {
+                      workgroup_id = workgroup_id.toString();
+                    }
+                  }
+
+                    try {
+                      //const payload = { JOB_ID: job._id};
+                      broadcast(workgroup_id, "refresh");
+                    } catch (err) {
+                      console.error("emit error:", err);
+                    } 
+                  
+          }catch(err){
+                console.log("SSE error ",err);
+          }
+
+    //--------------------------------------------------------->>
+
+
+
     return NextResponse.json({
       status: 200,
       message: "Jobs deleted successfully",
     });
   } catch (err) {
     //console.log("❌ Error deleting jobs:", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 033");
+     }
     return NextResponse.json({ status: 500, error: err.message });
   }
 };

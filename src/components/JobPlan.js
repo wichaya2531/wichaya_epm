@@ -3,65 +3,65 @@ import CloseIcon from "@mui/icons-material/Close";
 import Swal from "sweetalert2";
 import { getSession } from "@/lib/utils/utils";
 import HelpIcon from "@mui/icons-material/Help";
-import ChatIcon from "@mui/icons-material/Chat";
 
 const JobPlan = ({ data, onClose, setRefresh }) => {
- // console.log('job plan',data);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateType, setDateType] = useState("");
   const [showRecurring, setShowRecurring] = useState(false);
-  const [showShiftDate, setshowShiftDate] = useState(false);
   const [recurrenceOption, setRecurrenceOption] = useState("");
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState("");
   const [selectedDayOfMonth, setSelectedDayOfMonth] = useState("");
   const [endDate, setEndDate] = useState("");
   const [startDate, setStartDate] = useState("");
-  var [allLineName, setAllLineName] = useState(false);
+  const [allLineName, setAllLineName] = useState([]);
   const [refresh] = useState(false);
-  const [session, setSession] = useState({});
-  const [selectedLineName, setSelectedLineName] = useState("");
-  const [isOpen, setIsOpen] = useState(false); // สถานะการแสดงของเมนู
-  const [searchTerm, setSearchTerm] = useState(""); // ตัวกรองการค้นหา
 
-  const handleLineNameChange = (lineName) => {
-    setSelectedLineName((prevSelectedLineName) => {
-      if (prevSelectedLineName.includes(lineName)) {
-        // หากค่ามีอยู่แล้วให้ลบออก
-        return prevSelectedLineName.filter((name) => name !== lineName);
-      } else {
-        // หากค่ามิได้เลือก ให้เพิ่มเข้าไปใน array
-        return [...prevSelectedLineName, lineName];
-      }
-    });
-  };
+  const [selectedLineName, setSelectedLineName] = useState([]);
+  const [lineItems, setLineItems] = useState([]);
 
-  const handleHelpButton = () => {
-        //alert('Help Icon');  
-        window.open("./help?filter=open_job_by_planning", "_blank");
-  }
-    
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
+  const [shiftDate, setShiftDate] = useState(false);
+  const [weekendSkip, setWeekendSkip] = useState(false);
+
+  const [machines, setMachines] = useState([]);
+  const [openMachineDropdownId, setOpenMachineDropdownId] = useState(null);
 
   useEffect(() => {
     setAllLineName([]);
     retrieveSession();
   }, [refresh]);
 
-  const retrieveSession = async () => {
-    const session = await getSession();
-    setSession(session);
-    var bufLineName = await fetchLineNames(session);
-    //console.log("tt..=>",tt);
-    setAllLineName(bufLineName);
-    // try {
-    //       const lineNamesResponse = await fetch(
-    //         "/api/select-line-name/get-line-name"
-    //       );
-    //       const lineNamesData = await lineNamesResponse.json();
-    //       //console.log("lineNamesData.selectLineNames=>", lineNamesData.selectLineNames);
-    //       setAllLineName(lineNamesData.selectLineNames.map((line) => line.name));
-    // } catch (error) {
+  useEffect(() => {
+    try {
+      let localStorageMachines = localStorage.getItem("machines");
+      //console.log("🔥 raw localStorage machines:", localStorageMachines);
 
-    // }
+      if (localStorageMachines !== null) {
+        localStorageMachines = JSON.parse(localStorageMachines);
+
+        //console.log("✅ parsed machines:", localStorageMachines);
+
+        setMachines(Array.isArray(localStorageMachines) ? localStorageMachines : []);
+      } else {
+        setMachines([]);
+      }
+    } catch (error) {
+      console.error("Error parsing machines from localStorage:", error);
+      setMachines([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("🚀 machines state updated:", machines);
+    console.table(machines);
+  }, [machines]);
+
+  const retrieveSession = async () => {
+    const sessionData = await getSession();
+    const bufLineName = await fetchLineNames(sessionData);
+    setAllLineName(bufLineName);
   };
 
   const fetchLineNames = async (userSession) => {
@@ -73,15 +73,12 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
         method: "POST",
         body: formData,
       });
-      const data = await response.json();
-      if (data.status === 200) {
-        //setSelectLineNames(data.selectLineNames);
-        //console.log("data.selectLineNames=>", data.selectLineNames);
-        //await setAllLineName(data.selectLineNames.map((line) => line.name));
-        //console.log("allLineName=>", allLineName);
-        return data.selectLineNames.map((line) => line.name);
+
+      const dataResponse = await response.json();
+      if (dataResponse.status === 200) {
+        return dataResponse.selectLineNames.map((line) => line.name);
       } else {
-        console.error("Failed to fetch data:", data.error);
+        console.error("Failed to fetch data:", dataResponse.error);
       }
     } catch (error) {
       console.error("Error fetching line names.:", error);
@@ -96,86 +93,209 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
     };
   }, []);
 
-  const handleDateTypeChange = (type) => {
+  const handleHelpButton = () => {
+    window.open("./help?filter=open_job_by_planning", "_blank");
+  };
 
-      setDateType(type);
+  const handleDateTypeChange = (type) => {
+    if (!showRecurring) return;
+
+    setDateType(type);
+
+    if (type === "dayOfWeek") {
+      setRecurrenceOption("weekly");
+      setSelectedDayOfMonth("");
+    } else if (type === "dayOfMonth") {
+      setRecurrenceOption("monthly");
+      setSelectedDayOfWeek("");
+    } else {
+      setRecurrenceOption("daily");
+    }
   };
 
   const handleRecurringChange = () => {
-    //onsole.log('BBBB',dateType);
+    const nextShowRecurring = !showRecurring;
+    setShowRecurring(nextShowRecurring);
 
-    setShowRecurring(!showRecurring);
-    if (!showRecurring) {
-      if (dateType=='dayOfMonth') {
-        setRecurrenceOption("monthly");        
-      }else if (dateType=='dayOfWeek') {
-        setRecurrenceOption("weekly");        
-      }else{
+    if (nextShowRecurring) {
+      if (dateType === "dayOfMonth") {
+        setRecurrenceOption("monthly");
+      } else if (dateType === "dayOfWeek") {
+        setRecurrenceOption("weekly");
+      } else {
         setRecurrenceOption("daily");
       }
-    
-    
     } else {
       setRecurrenceOption("");
+      setDateType("");
+      setSelectedDayOfWeek("");
+      setSelectedDayOfMonth("");
+      setShiftDate(false);
+      setWeekendSkip(false);
+      setStartDate("");
+      setEndDate("");
+      setIsOpen(false);
+      setSearchTerm("");
+      setSelectedLineName([]);
+      setLineItems([]);
+      setOpenMachineDropdownId(null);
     }
-   
-   /* setTimeout(function(){
-      try {
-        setRecurrenceOption("weekly");
-        //document.getElementById('recurrence').value="Weekly";
-      } catch (error) {
-          console.log(error);
-      }
-    },1000);*/
-    
-    
   };
 
-  const handleSubmit = async (e, checkListTemplate) => {
-    e.preventDefault();
-    let nextDate;
+  const handleAddLineName = (lineName) => {
+    if (!lineName) return;
 
-    //console.log('selectedDayOfWeek',selectedDayOfWeek);
+    const uniqueId =
+      Date.now().toString() + "_" + Math.random().toString(36).slice(2, 9);
+
+    setLineItems((prev) => [
+      ...prev,
+      {
+        id: uniqueId,
+        name: lineName,
+        showInput: false,
+        mc_tag: {
+          WD_TAG: "",
+          MACHINE_NAME: "",
+        },
+      },
+    ]);
+
+    setSelectedLineName((prev) => {
+      if (prev.includes(lineName)) return prev;
+      return [...prev, lineName];
+    });
+  };
+
+  const removeLineItem = (id) => {
+    setLineItems((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      const uniqueNames = [...new Set(updated.map((item) => item.name))];
+      setSelectedLineName(uniqueNames);
+      return updated;
+    });
+
+    if (openMachineDropdownId === id) {
+      setOpenMachineDropdownId(null);
+    }
+  };
+
+  const clearAllLineItems = () => {
+    setLineItems([]);
+    setSelectedLineName([]);
+    setOpenMachineDropdownId(null);
+  };
+
+  const toggleLineInput = (id) => {
+    setLineItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, showInput: !item.showInput } : item
+      )
+    );
+
+    setOpenMachineDropdownId((prev) => (prev === id ? null : prev));
+  };
+
+  const handleLineNoteChange = (id, value) => {
+    setLineItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              mc_tag:
+                typeof value === "string"
+                  ? {
+                      ...(typeof item.mc_tag === "object" && item.mc_tag !== null
+                        ? item.mc_tag
+                        : { WD_TAG: "", MACHINE_NAME: "" }),
+                      MACHINE_NAME: value,
+                    }
+                  : value,
+            }
+          : item
+      )
+    );
+  };
+
+  const handleSelectMachine = (id, machine) => {
+    handleLineNoteChange(id, {
+      WD_TAG: machine.wd_tag || "",
+      MACHINE_NAME: machine.name || "",
+    });
+    setOpenMachineDropdownId(null);
+  };
+
+  const getFilteredMachines = (keyword) => {
+    const safeKeyword = (keyword || "").toLowerCase().trim();
+    if (!safeKeyword) return [];
+
+    return machines
+      .filter((m) => {
+        const machineName = (m.name || "").toLowerCase();
+        const wdTag = (m.wd_tag || "").toLowerCase();
+        return machineName.includes(safeKeyword) || wdTag.includes(safeKeyword);
+      })
+      .slice(0, 10);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    let nextDate;
 
     if (dateType === "dayOfWeek") {
       nextDate = getNextDayOfWeek(selectedDayOfWeek);
     } else if (dateType === "dayOfMonth") {
       nextDate = getNextDayOfMonth(selectedDayOfMonth);
-    }else{
-          nextDate=document.getElementById('start-date').value;
+    } else {
+      nextDate = startDate || "";
     }
-      
+
     const requestData = {
       activationDate: nextDate,
       activationTime:
-        document.getElementById("activate-time").value == ""
+        document.getElementById("activate-time")?.value === ""
           ? "07:00"
-          : document.getElementById("activate-time").value,
+          : document.getElementById("activate-time")?.value || "07:00",
       recurrence: showRecurring ? recurrenceOption : null,
       endDate: endDate ? new Date(endDate).toISOString() : null,
       ...data,
       startDate: startDate ? new Date(startDate).toISOString() : null,
-      LINE_NAME: selectedLineName,
-      shift_date: document.getElementById("shift-date").checked,
-      weekend_skip:document.getElementById("weekend-skip").checked,
+      LINE_NAME: lineItems.map((item) => item.name),
+      LINE_ITEMS: lineItems.map((item) => ({
+        name: item.name,
+        mc_tag:
+          typeof item.mc_tag === "object"
+            ? item.mc_tag
+            : {
+                WD_TAG: "",
+                MACHINE_NAME: item.mc_tag || "",
+              },
+      })),
+      shift_date: shiftDate,
+      weekend_skip: weekendSkip,
     };
-    //console.log("Request Data:", requestData);
-    //return;
-    
+
+    console.log("📦 requestData:", requestData);
+
     if (!nextDate) {
       Swal.fire({
         icon: "error",
         title: "Error",
         text: "Please select a date",
       });
+      setIsSubmitting(false);
       return;
     }
+
     if (showRecurring && !endDate) {
       Swal.fire({
         icon: "error",
         title: "Error",
         text: "Please select an end date",
       });
+      setIsSubmitting(false);
       return;
     }
 
@@ -183,15 +303,23 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Please select an start date",
+        text: "Please select a start date",
       });
+      setIsSubmitting(false);
       return;
     }
 
-     //console.log("requestData", requestData);
-    
-    
-     try {
+    if (showRecurring && lineItems.length === 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please select at least one line",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
       const response = await fetch("/api/job/activate-job-template-plan", {
         method: "POST",
         headers: {
@@ -201,14 +329,18 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
         next: { revalidate: 10 },
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
+        throw new Error(responseData?.message || "Request failed");
       }
-      const data = await response.json();
+
       Swal.fire({
         icon: "success",
         title: "Success",
         text: "Checklist template activated successfully",
       });
+
       onClose();
       setRefresh((prev) => !prev);
     } catch (error) {
@@ -218,38 +350,28 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
         title: "Error",
         text: "Failed to activate Checklist template",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const getNextDayOfWeek = (dayOfWeek) => {
-
-    var start_date = document.getElementById('start-date').value; // รูปแบบ "yyyy-mm-dd"
-
-    // ตรวจสอบว่า start_date มีค่าหรือไม่
-    if (!start_date) {
-        console.error("start_date is empty.");
-        return null;
-    }
-
-    if (!start_date) {
+    if (!startDate) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Please select an start date",
+        text: "Please select a start date",
       });
       return null;
     }
-    // แปลง start_date เป็นวันในสัปดาห์
-    const startDateObj = new Date(start_date);
-    const startDayOfWeek = startDateObj.toLocaleString('en-us', { weekday: 'long' }).toLowerCase();
 
-    ///console.log('startDayOfWeek',startDayOfWeek);
-    if(dayOfWeek){
+    const startDateObj = new Date(startDate);
+    const startDayOfWeek = startDateObj
+      .toLocaleString("en-us", { weekday: "long" })
+      .toLowerCase();
 
-    }else{
-     dayOfWeek=startDayOfWeek;
-    }  
-    
+    const finalDayOfWeek = dayOfWeek || startDayOfWeek;
+
     const daysOfWeek = [
       "sunday",
       "monday",
@@ -259,8 +381,9 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
       "friday",
       "saturday",
     ];
+
     const today = new Date();
-    const dayIndex = daysOfWeek.indexOf(dayOfWeek.toLowerCase());
+    const dayIndex = daysOfWeek.indexOf(finalDayOfWeek.toLowerCase());
     const todayIndex = today.getDay();
 
     let daysUntilNext = dayIndex - todayIndex;
@@ -277,41 +400,68 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
-    let nextDate = new Date(currentYear, currentMonth, dayOfMonth);
+    let nextDate = new Date(currentYear, currentMonth, Number(dayOfMonth));
 
-    // if next month has fewer days then add the extra days to the next month in order to get the correct date
-    // if next month does not have 30 or 31 then add another month until it does have 30 or 31
     if (nextDate.getMonth() !== currentMonth) {
-      while (nextDate.getDate() < dayOfMonth) {
+      while (nextDate.getDate() < Number(dayOfMonth)) {
         nextDate = new Date(currentYear, nextDate.getMonth() + 1, 0);
       }
-    } else if (dayOfMonth < today.getDate()) {
-      nextDate = new Date(currentYear, nextDate.getMonth() + 1, dayOfMonth);
+    } else if (Number(dayOfMonth) < today.getDate()) {
+      nextDate = new Date(
+        currentYear,
+        nextDate.getMonth() + 1,
+        Number(dayOfMonth)
+      );
     }
 
-    // Ensure the date is correct even if the next month has fewer days
-    nextDate = new Date(currentYear, nextDate.getMonth(), dayOfMonth);
-    //add 1 day to the next month
+    nextDate = new Date(currentYear, nextDate.getMonth(), Number(dayOfMonth));
     nextDate.setDate(nextDate.getDate() + 1);
 
     return nextDate.toISOString().split("T")[0];
   };
 
+  const filteredLineNames = [...new Set(allLineName)].filter((lineName) =>
+    lineName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
       <form
-        className="bg-white px-20 py-9 rounded-lg w-600  flex flex-col gap-8 relative overflow-auto"
+        className="bg-white px-20 py-9 rounded-lg w-[900px] max-h-[81vh] flex flex-col gap-2 relative overflow-auto"
+        style={{ transform: "scale(0.95)", transformOrigin: "top center" }}
         onSubmit={handleSubmit}
       >
-      
-        <h1 className="text-2xl font-bold"><HelpIcon
-                    className="text-blue-600"
-                    onClick={() => handleHelpButton()}
-        />Plan : <a id='planing-tag' style={{color:'blue'}}>{data.jobTemplateName}</a>
-        
+        <h1 className="text-2xl font-bold">
+          <HelpIcon
+            className="text-blue-600 cursor-pointer mr-2"
+            onClick={handleHelpButton}
+          />
+          Plan :{" "}
+          <span id="planing-tag" className="text-blue-600">
+            {data.jobTemplateName}
+          </span>
         </h1>
+
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
+            <input
+              type="checkbox"
+              id="recurring"
+              name="recurring"
+              checked={showRecurring}
+              onChange={handleRecurringChange}
+              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
+            />
+            <label htmlFor="recurring" className="text-md font-semibold">
+              Recurring
+            </label>
+          </div>
+
+          <div
+            className={`flex items-center gap-4 ${
+              !showRecurring ? "opacity-50 pointer-events-none" : ""
+            }`}
+          >
             <label className="text-md font-semibold flex items-center gap-1">
               <input
                 type="checkbox"
@@ -319,12 +469,12 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                 name="dateType"
                 checked={dateType === "dayOfWeek"}
                 onChange={() => handleDateTypeChange("dayOfWeek")}
-                className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
+                disabled={!showRecurring}
+                className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center disabled:cursor-not-allowed"
               />
-              <span>Day of the Week</span>
-              
-
+              <span>&nbsp;&nbsp; Day of the Week</span>
             </label>
+
             <label className="text-md font-semibold flex items-center gap-1">
               <input
                 type="checkbox"
@@ -332,9 +482,10 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
                 name="dateType"
                 checked={dateType === "dayOfMonth"}
                 onChange={() => handleDateTypeChange("dayOfMonth")}
-                className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
+                disabled={!showRecurring}
+                className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center disabled:cursor-not-allowed"
               />
-              <span>Day of the Month</span>
+              <span>&nbsp;&nbsp;Day of the Month</span>
             </label>
           </div>
 
@@ -366,7 +517,6 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
           {dateType === "dayOfMonth" && (
             <div className="flex flex-col gap-2">
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               <label htmlFor="date" className="text-md font-semibold">
                 Select Day of the Month
               </label>
@@ -389,156 +539,305 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="recurring"
-              name="recurring"
-              checked={showRecurring}
-              onChange={handleRecurringChange}
-              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
-            />
-            <label htmlFor="recurring" className="text-md font-semibold">
-              Recurring
-            </label>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <div
+            className={`flex items-center gap-2 ${
+              !showRecurring ? "opacity-50 pointer-events-none" : ""
+            }`}
+          >
             <input
               type="checkbox"
               id="shift-date"
               name="shift-date"
-              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
+              checked={shiftDate}
+              onChange={(e) => setShiftDate(e.target.checked)}
+              disabled={!showRecurring}
+              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center disabled:cursor-not-allowed"
             />
             <label htmlFor="shift-date" className="text-md font-semibold">
-              Shift Date
+              &nbsp; Shift Date
             </label>
 
-            &nbsp;&nbsp;&nbsp;
+            <span className="mx-2" />
+
             <input
               type="checkbox"
               id="weekend-skip"
               name="weekend-skip"
-              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center"
+              checked={weekendSkip}
+              onChange={(e) => setWeekendSkip(e.target.checked)}
+              disabled={!showRecurring}
+              className="transform scale-150 rounded-full h-3 w-3 flex items-center justify-center disabled:cursor-not-allowed"
             />
             <label htmlFor="weekend-skip" className="text-md font-semibold">
-              Weekend Skip
+              &nbsp;&nbsp;Weekend Skip
             </label>
-
           </div>
 
-
           {showRecurring && (
-            <div className="flex flex-col gap-2">
-              <label htmlFor="recurrence" className="text-sm font-semibold">
-                Recurrence
-              </label>
-              <select
-                id="recurrence"
-                name="recurrence"
-                value={recurrenceOption}
-                onChange={(e) => setRecurrenceOption(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="2monthly">2Monthly</option>
-                <option value="3monthly">3Monthly</option>
-                <option value="6monthly">6Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-
-              <label htmlFor="end-date" className="text-sm font-semibold">
-                Start Date
-              </label>
-
-              <input
-                type="date"
-                id="start-date"
-                name="start-date"
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              />
-
-              <label htmlFor="end-date" className="text-sm font-semibold">
-                End Date
-              </label>
-              <input
-                type="date"
-                id="end-date"
-                name="end-date"
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              />
-              <label htmlFor="activate-time" className="text-sm font-semibold">
-                Activate Time
-              </label>
-              <input
-                type="time"
-                id="activate-time"
-                name="activate-time"
-                //value="07:00"
-                //onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              />
-              <label htmlFor="activate-time" className="text-sm font-semibold">
-                Select Line Name
-              </label>
-              <div
-                id={"allLinePanel-" + data.jobTemplateID}
-                className="relative"
-              >
-                {/* ปุ่มที่แสดงสำหรับคลิกเปิดเมนู */}
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="border border-gray-300 rounded-md p-2 w-full text-left"
+            <div className="relative grid grid-cols-2 items-start gap-4 w-full">
+              <div className="relative flex flex-col gap-2 min-w-0">
+                <label
+                  htmlFor="recurrence"
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1 text-gray-500 text-sm transition-all z-10"
                 >
-                  {selectedLineName.length > 0
-                    ? `${selectedLineName.length} item selected`
-                    : "Select Line Name"}
-                </button>
+                  Recurrence
+                </label>
 
-                {/* เมนูที่สามารถเปิด/ปิดได้ */}
-                {isOpen && (
-                  <div className="absolute left-0 bottom-full -translate-y-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10">
-                    {/* ช่องค้นหาหรือกรอง */}
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="border-b p-2 w-full"
-                    />
-                    <div className="max-h-60 overflow-auto">
-                      {/* แสดงรายการ checkbox */}
-                      {[...new Set(allLineName)] // ลบค่าซ้ำ
-                        .filter((lineName) =>
-                          lineName
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase())
-                        ) // ฟิลเตอร์ตามคำค้นหา
-                        .map((lineName) => (
-                          <label
-                            key={lineName} // ใช้ lineName เป็น key เพราะตอนนี้ไม่ซ้ำแล้ว
-                            className="flex items-center gap-2 p-2"
-                          >
-                            <input
-                              type="checkbox"
-                              value={lineName}
-                              checked={selectedLineName.includes(lineName)} // ตรวจสอบการเลือก
-                              onChange={() => handleLineNameChange(lineName)} // อัปเดตค่าเมื่อเลือก
-                              className="rounded-md"
-                            />
-                            {lineName}
-                          </label>
-                        ))}
-                    </div>
+                <select
+                  id="recurrence"
+                  name="recurrence"
+                  value={recurrenceOption}
+                  onChange={(e) => setRecurrenceOption(e.target.value)}
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="2monthly">2Monthly</option>
+                  <option value="3monthly">3Monthly</option>
+                  <option value="6monthly">6Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+
+                <div className="relative">
+                  <label
+                    htmlFor="start-date"
+                    className="pointer-events-none absolute left-3 top-0 bg-white px-1 text-gray-500 text-sm transition-all z-10"
+                  >
+                    Start Date
+                  </label>
+
+                  <input
+                    type="date"
+                    id="start-date"
+                    name="start-date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="relative">
+                  <label
+                    htmlFor="end-date"
+                    className="pointer-events-none absolute left-3 top-0 bg-white px-1 text-gray-500 text-sm transition-all z-10"
+                  >
+                    End Date
+                  </label>
+
+                  <input
+                    type="date"
+                    id="end-date"
+                    name="end-date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="relative">
+                  <label
+                    htmlFor="activate-time"
+                    className="pointer-events-none absolute left-3 top-0 bg-white px-1 text-gray-500 text-sm transition-all z-10"
+                  >
+                    Activate Time
+                  </label>
+
+                  <input
+                    type="time"
+                    id="activate-time"
+                    name="activate-time"
+                    className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+                    defaultValue="07:00"
+                  />
+                </div>
+
+                <div className="relative">
+                  <label htmlFor="line-name" className="text-sm font-semibold">
+                    เลือก Line Name
+                  </label>
+
+                  <div
+                    id={"allLinePanel-" + data.jobTemplateID}
+                    className="relative"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(!isOpen)}
+                      className="border border-gray-300 rounded-md p-2 w-full text-left"
+                    >
+                      {lineItems.length > 0
+                        ? `${lineItems.length} row selected`
+                        : "Select Line Name"}
+                    </button>
+
+                    {isOpen && (
+                      <div className="absolute left-0 bottom-full -translate-y-2 w-full bg-white border border-gray-300 rounded-md shadow-lg z-10">
+                        <input
+                          type="text"
+                          placeholder="Search..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="border-b p-2 w-full"
+                        />
+
+                        <div className="max-h-60 overflow-auto">
+                          {filteredLineNames.map((lineName) => (
+                            <button
+                              key={lineName}
+                              type="button"
+                              onClick={() => handleAddLineName(lineName)}
+                              className="w-full flex items-center gap-2 text-left px-3 py-2 hover:bg-blue-50 border-b last:border-b-0"
+                            >
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">
+                                +
+                              </span>
+                              <span className="break-all">{lineName}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+              </div>
+
+              <div className="relative flex flex-col gap-2 min-w-0">
+                <div className="relative block">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-sm font-semibold">Additional</label>
+
+                    <button
+                      type="button"
+                      onClick={clearAllLineItems}
+                      className="px-2 py-1 rounded bg-red-50 text-red-600 text-xs hover:bg-red-100"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+
+                  <div
+                    id="line-container"
+                    className="border border-gray-300 rounded-md p-3 h-[300px] overflow-y-auto flex flex-col gap-3"
+                  >
+                    {lineItems.length === 0 ? (
+                      <div className="text-sm text-gray-400">
+                        ยังไม่ได้เลือก Line
+                      </div>
+                    ) : (
+                      lineItems.map((item, index) => {
+                        const machineKeyword =
+                          typeof item.mc_tag === "object"
+                            ? `${item.mc_tag.WD_TAG || ""} ${item.mc_tag.MACHINE_NAME || ""}`
+                            : item.mc_tag || "";
+
+                        const filteredMachines = getFilteredMachines(machineKeyword);
+
+                        //console.log("🔍 filter keyword:", machineKeyword);
+                        //console.log("🔍 filteredMachines:", filteredMachines);
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="border rounded-md px-3 py-3 bg-gray-50 flex flex-col gap-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm break-all">
+                                  {index + 1}. {item.name}
+                                </div>
+
+                                <div className="text-[0.8em] text-gray-700 break-all mt-2">
+                                  {typeof item.mc_tag === "object"
+                                    ? `${item.mc_tag.WD_TAG || ""}${
+                                        item.mc_tag.WD_TAG && item.mc_tag.MACHINE_NAME
+                                          ? " - "
+                                          : ""
+                                      }${item.mc_tag.MACHINE_NAME || ""}`
+                                    : item.mc_tag || ""}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleLineInput(item.id)}
+                                  className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
+                                >
+                                  {item.showInput ? "Hide Tag" : "Add Tag"}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeLineItem(item.id)}
+                                  className="px-2 py-1 rounded bg-gray-700 text-white text-xs"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+
+                            {item.showInput && (
+                              <div className="flex flex-col gap-1 relative">
+                                <input
+                                  type="text"
+                                  value={
+                                    typeof item.mc_tag === "object"
+                                      ? item.mc_tag.MACHINE_NAME || item.mc_tag.WD_TAG || ""
+                                      : item.mc_tag || ""
+                                  }
+                                  onChange={(e) => {
+                                    handleLineNoteChange(item.id, {
+                                      ...(typeof item.mc_tag === "object" &&
+                                      item.mc_tag !== null
+                                        ? item.mc_tag
+                                        : { WD_TAG: "", MACHINE_NAME: "" }),
+                                      MACHINE_NAME: e.target.value,
+                                    });
+                                    setOpenMachineDropdownId(item.id);
+                                  }}
+                                  onFocus={() => setOpenMachineDropdownId(item.id)}
+                                  placeholder="ค้นหา Machine หรือ WD_TAG"
+                                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                                />
+
+                                {openMachineDropdownId === item.id &&
+                                  ((typeof item.mc_tag === "object" &&
+                                    (((item.mc_tag.WD_TAG || "").trim() !== "") ||
+                                      ((item.mc_tag.MACHINE_NAME || "").trim() !== ""))) ||
+                                    (typeof item.mc_tag !== "object" && item.mc_tag !== "")) &&
+                                  filteredMachines.length > 0 && (
+                                    <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-md shadow max-h-40 overflow-auto z-20">
+                                      {filteredMachines.map((m, i) => (
+                                        <button
+                                          key={`${item.id}_${m.wd_tag}_${i}`}
+                                          type="button"
+                                          onClick={() => handleSelectMachine(item.id, m)}
+                                          className="w-full text-left px-3 py-2 hover:bg-blue-50 cursor-pointer border-b last:border-b-0"
+                                        >
+                                          <div className="text-sm font-medium">
+                                            {m.name}
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            {m.wd_tag}
+                                          </div>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </div>
+
         <button
           type="button"
           className="bg-red-700 text-white font-bold py-2 px-4 self-end absolute top-0 right-0 hover:bg-red-800 shadow-lg rounded-sm"
@@ -549,12 +848,15 @@ const JobPlan = ({ data, onClose, setRefresh }) => {
 
         <button
           type="submit"
-          className="bg-blue-700 text-white font-bold py-2 px-4 self-end hover:bg-blue-800 shadow-lg rounded-sm"
+          disabled={isSubmitting}
+          className={`text-white font-bold py-2 px-4 self-end shadow-lg rounded-sm ${
+            isSubmitting
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-700 hover:bg-blue-800"
+          }`}
         >
-          Save
+          {isSubmitting ? "Waiting..." : "Save"}
         </button>
-
-
       </form>
     </div>
   );

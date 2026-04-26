@@ -1,13 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
-import HomeIcon from "@mui/icons-material/Home";
 import Image from "next/image";
 import useFetchCards from "@/lib/hooks/useFetchCards";
 import { usePathname } from "next/navigation";
 import Denied from "./Denied";
 import LoadingComponent from "./LoadingComponent";
+
+
+
+//------------------ ENV / CONFIG ----------------->>
+const PAGE_TIMEOUT = Number(process.env.NEXT_PUBLIC_PAGE_TIMEOUT) || 60; // วินาที
+
 
 const Layout = ({ children, className = "" }) => {
   const [refresh, setRefresh] = useState(false);
@@ -16,115 +21,137 @@ const Layout = ({ children, className = "" }) => {
   const pathname = usePathname();
   const [authorized, setAuthorized] = useState(true);
   const [authCheckComplete, setAuthCheckComplete] = useState(false);
+  const [mqttConnected, setMqttConnected] = useState(true);
 
-  // useEffect(() => {
-  //   const updateMenus = () => {
-  //     const updatedMenus = [
-  //       {
-  //         name: (
-  //           <div className="flex justify-start items-center gap-2">
-  //             <HomeIcon className="size-6" />
-  //             <p className="text-xl">Home</p>
-  //           </div>
-  //         ),
-  //         path: "/pages/dashboard"
-  //       }
-  //     ];
+  // ✅ ใช้ Number() เพื่อให้เป็นตัวเลขแน่ๆ
+  const [timeLeft, setTimeLeft] = useState(PAGE_TIMEOUT);
+  const [pageExpire, setPageExpire] = useState(false);
+  
 
-  //     updatedMenus.push(
-  //       ...cards.map((card) => ({
-  //         name: (
-  //           <div className="flex justify-start items-center gap-3">
-  //             <Image
-  //               src={card.LOGO_PATH}
-  //               width={24}
-  //               height={24}
-  //               style={{ filter: "invert(100%)" }}
-  //             />
-  //             <p className="text-xl">{card.TITLE}</p>
-  //           </div>
-  //         ),
-  //         path: card.LINK[0] // Assuming LINK is an array and taking the first item for simplicity
-  //       }))
-  //     );
 
-  //     setMenus(updatedMenus);
-  //   };
+  // ✅ ฟังก์ชันรีเซ็ตตัวนับให้เป็นค่าสูงสุดเสมอ
+  const resetTimer = useCallback(() => {
+    setTimeLeft(PAGE_TIMEOUT);
+  }, []);
 
-  //   updateMenus();
-  // }, [cards]);
-
+  // ✅ ตัวจับเวลานับถอยหลัง + แจ้งเตือนหมดเวลา
   useEffect(() => {
-    const updateMenus = () => {
-      const updatedMenus = [
-        {
-          name: (
-            <div className="flex justify-start items-center gap-2">
-              <img
-                src="/assets/card-logo/dashboard.png"
-                alt="Home Icon"
-                className="w-5 h-5"
-              />
-              <p className="text-xl">Home</p>
-            </div>
-          ),
-          path: "/pages/dashboard",
-        },
-      ];
+    console.log("⏳ Page timeout set to", PAGE_TIMEOUT, "seconds");
+    let alive = true;
+    const timer = setInterval(() => {
+      if (!alive) return;
 
-      // ตรวจสอบว่ามี cards และเป็น array ก่อนใช้ .map()
-      if (Array.isArray(cards) && cards.length > 0) {
-        updatedMenus.push(
-          ...cards.map((card) => ({
-            name: (
-              <div className="flex justify-start items-center gap-3">
-                <Image
-                  src={card.LOGO_PATH}
-                  width={24}
-                  height={24}
-                  alt="path-logo"
-                />
-                <p className="text-xl">{card.TITLE}</p>
-              </div>
-            ),
-            path: card.LINK[0], // Assuming LINK is an array and taking the first item for simplicity
-          }))
-        );
-      }
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        //console.log("⏳ Time left:", newTime, "seconds");
+        if (newTime <= 0) {
+          setPageExpire(true);
+          clearInterval(timer);
+          import("sweetalert2").then((Swal) => {
+            Swal.default.fire({
+              title: "Session Timeout!",
+              text: "Please refresh the webpage to continue.",
+              icon: "warning",
+              showCancelButton: false,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              confirmButtonText: "รีเฟรช",
+            }).then(() => window.location.reload());
+          });
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
 
-      setMenus(updatedMenus);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, []);
+
+  // ✅ ดัก event ผู้ใช้ → รีเซ็ตตัวนับเป็นค่า maximum เสมอ (มี debounce)
+  useEffect(() => {
+    const last = { t: 0 };
+    const handler = () => {
+      if (pageExpire==true) return;
+      const now = Date.now();
+      if (now - last.t < 250) return; // debounce 250ms กัน spam event เช่น mousemove
+      last.t = now;
+      resetTimer();
     };
 
-    updateMenus();
+    // Event ที่ถือว่าเป็น activity
+    window.addEventListener("mousemove", handler, { passive: true });
+    window.addEventListener("keydown", handler);
+    window.addEventListener("click", handler, { passive: true });
+    window.addEventListener("scroll", handler, { passive: true });
+    window.addEventListener("touchstart", handler, { passive: true });
+
+    // กลับมาโฟกัสแท็บ/หน้าต่าง → รีเซ็ตด้วย
+    const onVis = () => { if (!document.hidden) resetTimer(); };
+    document.addEventListener("visibilitychange", onVis);
+
+    return () => {
+      window.removeEventListener("mousemove", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("click", handler);
+      window.removeEventListener("scroll", handler);
+      window.removeEventListener("touchstart", handler);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [resetTimer]);
+
+  // ---------- ด้านล่างโค้ดของคุณคงเดิม ---------- //
+  useEffect(() => {
+    const updatedMenus = [
+      {
+        name: (
+          <div className="flex justify-start items-center gap-2">
+            <img src="/assets/card-logo/dashboard.png" alt="Home Icon" className="w-5 h-5" />
+            <p className="text-xl">Home</p>
+          </div>
+        ),
+        path: "/pages/dashboard",
+      },
+    ];
+
+    if (Array.isArray(cards) && cards.length > 0) {
+      updatedMenus.push(
+        ...cards.map((card) => ({
+          name: (
+            <div className="flex justify-start items-center gap-3">
+              <Image src={card.LOGO_PATH} width={24} height={24} alt="path-logo" />
+              <p className="text-xl">{card.TITLE}</p>
+            </div>
+          ),
+          path: card.LINK?.[0],
+        }))
+      );
+    }
+
+    setMenus(updatedMenus);
   }, [cards]);
 
   useEffect(() => {
-    // Check if the current pathname is authorized
     let isAuthorized = false;
-
-    for (let card of cards) {
-      if (card.LINK.includes(pathname)) {
-        isAuthorized = true;
-        break;
-      }
+    for (let card of cards || []) {
+      if (card.LINK?.includes(pathname)) { isAuthorized = true; break; }
     }
 
-    // Allow access to specific pages regardless
     if (
       pathname === "/pages/dashboard" ||
       pathname.startsWith("/pages/view-jobs") ||
       pathname.startsWith("/pages/job-renew") ||
-      pathname.startsWith("/pages/job-review")
+      pathname.startsWith("/pages/job-review") ||
+      pathname.startsWith("/pages/report/dynamic")
     ) {
       isAuthorized = true;
     }
 
     setAuthorized(isAuthorized);
-
-    if (cards && cards.length > 0) {
-      setAuthCheckComplete(true);
-    }
-  }, [cards]);
+    if (cards && cards.length > 0) setAuthCheckComplete(true);
+  }, [cards, pathname]);
 
   if (cardsLoading || !cards || !pathname || !authCheckComplete) {
     return <LoadingComponent />;
@@ -134,17 +161,18 @@ const Layout = ({ children, className = "" }) => {
     return <Denied />;
   }
 
-  // Render layout if authorized
   return (
-    <div
-      className="flex flex-col min-h-screen"
-      style={{ backgroundColor: "#f5f5f7" }}
-    >
-      <Navbar menu={menus} />
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#f5f5f7" }}>
+      {/* monitor ค่า (debug) */}
+      {/* <div className="fixed top-24 right-4 text-xs text-gray-500">⏳ {timeLeft}s</div> */}
+      {<div id="timeout-monitor" className="fixed top-24 right-4 text-xs text-gray-500 hidden">{timeLeft}</div>}
+      {<div id="page-expire" className="fixed top-24 right-4 text-xs text-gray-500 hidden">{pageExpire?"true":"false"}</div>}
+      
+      <Navbar menu={menus} mqttStatus={mqttConnected} />
       <div className={`flex-1 ${className} pt-24 pb-36`}>{children}</div>
       <Footer />
     </div>
   );
-};
+}
 
 export default Layout;

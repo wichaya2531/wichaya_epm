@@ -1,13 +1,10 @@
 import { connectToDb } from "@/app/api/mongo/index";
-import { User } from "@/lib/models/User";
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
+
 import { Workgroup } from "@/lib/models/Workgroup.js";
 import { Job } from "@/lib/models/Job.js";
-import { JobItem } from "@/lib/models/JobItem";
 import { Status } from "@/lib/models/Status.js";
-
-
 
 function addTime(date, hours, minutes) {
   const newDate = new Date(date);
@@ -15,258 +12,137 @@ function addTime(date, hours, minutes) {
   newDate.setMinutes(newDate.getMinutes() + minutes);
   return newDate;
 }
-async function getStatusNameById(status_id) {
-        try {
-                const status=await Status.findById(status_id);
-                //console.log('status',status);
-                return status.status_name;
-        } catch (error) {
-                return "Error";
-        }
+
+// ✅ cache ระดับ process (ไม่ query statuses ทุก request)
+let statusCache = null;
+let statusCacheAt = 0;
+const STATUS_TTL_MS = 10 * 60 * 1000; // 10 นาที
+
+async function getStatusMapCached() {
+  const now = Date.now();
+  if (statusCache && (now - statusCacheAt) < STATUS_TTL_MS) return statusCache;
+
+  const statuses = await Status.find({}, { status_name: 1 }).lean();
+  const map = Object.create(null);
+  for (const s of statuses) map[s._id.toString()] = s.status_name;
+
+  statusCache = map;
+  statusCacheAt = now;
+  return map;
 }
 
-
-export const GET = async (req, res) => {
+export const GET = async (req) => {
   await connectToDb();
-  //console.time("Query Execution Time"); // เริ่มจับเวลา
-  //console.log("get report start ",new Date());
+  console.time("Query Execution Time");
+
   const searchParams = req.nextUrl.searchParams;
-  //console.log('searchParams',searchParams); 
 
+  // ⚠️ อันนี้คุณลบ 24 ชม. จริงไหม? (ถ้าไม่ตั้งใจ มันทำให้ช่วงกว้างขึ้นและช้าขึ้น)
+  const startDate = addTime(new Date(searchParams.get("start")), -24, 0);
+  const endDate = addTime(new Date(searchParams.get("end")), 23, 59);
 
-  
-  const startDate = addTime(new Date(searchParams.get('start')), -24,0); // เพิ่ม 7 ชั่วโมง
-
-  const rawEndDate = addTime(new Date(searchParams.get('end')), 23, 59);
-  // const now = new Date();
-  // now.setDate(now.getDate() + 1); // บวก 1 วัน
-  const endDate = rawEndDate;
-  // const endDate = rawEndDate > now ? now : rawEndDate;
-
-  //console.log('startDate',startDate);
-  //console.log('endDate',endDate);
+  //console.log("startDate", startDate);
+  //console.log("endDate", endDate);
  
-  const workgroup_name =searchParams.get('workgroup');   // กลุ่มงาน 
-  //console.log('workgroup_name',workgroup_name);
-  const workgroupID = await Workgroup.findOne({WORKGROUP_NAME:workgroup_name})||{_id:0};  
 
+
+  const workgroup_name = searchParams.get("workgroup");
+  const workgroup = await Workgroup.findOne({ WORKGROUP_NAME: workgroup_name }, { _id: 1 }).lean();
+
+  // ✅ ไม่เจอ workgroup return เร็ว ๆ ไม่ต้อง aggregate
+  if (!workgroup?._id) {
+    console.timeEnd("Query Execution Time");
+    return NextResponse.json([]);
+  }
 
   try {
-   // console.time("Query Execution Time"); // เริ่มจับเวลา
-      var jobValues;
-      {
-           jobValues = await Job.aggregate([
-                {
-                  $match: {
-                    updatedAt: {
-                      $gte: startDate,
-                      $lte: endDate
-                    },
-                    WORKGROUP_ID:workgroupID._id.toString() // หรือ workgroupID._id ถ้าใน DB เก็บเป็น ObjectId
-                  }
-                },
-                {
-                  $lookup: {
-                    from: "jobitems",
-                    localField: "_id",
-                    foreignField: "JOB_ID",
-                    as: "jobItems"
-                  }
-                },
-                {
-                  $unwind: {
-                    path: "$jobItems",
-                    preserveNullAndEmptyArrays: false
-                  }
-                },
-                {
-                  $match: {
-                  //  "jobItems.ACTUAL_VALUE": { $ne: null },
-                    "jobItems.updatedAt": { $ne: null },
-                    "LINE_NAME": { $ne: null },
-                    "WD_TAG": { $ne: null },
-                    "DOC_NUMBER": { $ne: null },
-                    "JOB_STATUS_ID":{ $ne: null },
-                    "jobItems.JOB_ITEM_NAME": { $ne: null },
-                    "jobItems.JOB_ITEM_TITLE": { $ne: null },
-                    //"jobItems.FILE": { $ne: null },
-                    //"jobItems._id": { $ne: null },
-                  }
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    WORKGROUP_NAME: workgroup_name,
-                    LINE_NAME: "$LINE_NAME",
-                    DOC_NUMBER: "$DOC_NUMBER",
-                    JOB_STATUS:"$JOB_STATUS_ID",
-                    JOB_ITEM_NAME: "$jobItems.JOB_ITEM_NAME",
-                    JOB_ITEM_TITLE: "$jobItems.JOB_ITEM_TITLE",
-                    jobItemsUpdatedAt: "$jobItems.updatedAt",
-                    ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
-                    UPPER:"$jobItems.UPPER_SPEC",
-                    LOWER:"$jobItems.LOWER_SPEC",
-                    FILE:"$jobItems.IMG_ATTACH",
-                    WD_TAG: "$WD_TAG" // เพิ่มบรรทัดนี้
-                  }
-                },
-                {
-                  $sort: {
-                    jobItemsUpdatedAt: 1
-                  }
-                }
-              ]);
+    const statusMap = await getStatusMapCached(); // ✅ ดึงครั้งเดียว (ส่วนใหญ่ hit cache)
 
-      }
+          const jobValues = await Job.aggregate([
+            {
+              $match: {
+                WORKGROUP_ID: workgroup._id.toString(),
+                updatedAt: { $gte: startDate, $lte: endDate },
+                CHECKLIST_VERSION: { $ne: null },
+                LINE_NAME: { $ne: null },
+                WD_TAG: { $ne: null },
+                DOC_NUMBER: { $ne: null },
+                JOB_STATUS_ID: { $ne: null },
+              },
+            },
 
-      {
-              //console.log('jobValues',jobValues);  
-                //-------------------------------------------
-              //   const jobValues = await User.aggregate([
-              //     {
-              //       $lookup: {
-              //         from: "jobs",
-              //         localField: "_id",
-              //         foreignField: "ACTIVATE_USER",
-              //         as: "jobs",
-              //       },
-              //     },      
-              //     {
-              //       $unwind: {
-              //         path: "$jobs",
-              //         preserveNullAndEmptyArrays: false,
-              //       },
-              //     },    
-              //     {
-              //       $match: {
-              //         "jobs.updatedAt": {
-              //           $gte: startDate,
-              //           $lte: endDate
-              //           },
-              //           "jobs.WORKGROUP_ID": workgroupID._id.toString() 
-              //       }
-              //     }        
-              //     ,
-              //     {
-              //       $lookup: {
-              //         from: "jobitems",
-              //         localField: "jobs._id",
-              //         foreignField: "JOB_ID",
-              //         as: "jobItems",
-              //       },
-              //     },
-              //     {
-              //       $unwind: {
-              //         path: "$jobItems",
-              //         preserveNullAndEmptyArrays: false,
-              //       },
-              //     },      
-              // {
-              //     $lookup: {
-              //       from: "workgroups",
-              //       let: { workgroupId: "$jobs.WORKGROUP_ID" },
-              //       pipeline: [
-              //         {
-              //           $match: {
-              //             $expr: {
-              //               $eq: ["$_id", { $toObjectId: "$$workgroupId" }],
-              //             },
-              //           },
-              //         },
-              //         {
-              //           $project: {
-              //             WORKGROUP_NAME: 1,
-              //           },
-              //         },
-              //       ],
-              //       as: "workgroupInfo",
-              //     },
-              //   },
-              //   {
-              //     $unwind: {
-              //       path: "$workgroupInfo",
-              //       preserveNullAndEmptyArrays: false,
-              //     },
-              //   },
-              //   {
-              //     $match: {
-              //       "jobItems.ACTUAL_VALUE": { $ne: null },
-              //       "jobItems.updatedAt": { $ne: null },
-              //       "jobs.LINE_NAME": { $ne: null },
-              //       "workgroupInfo.WORKGROUP_NAME": { $ne: null },
-              //       "jobs.DOC_NUMBER": { $ne: null },
-              //       "jobItems.JOB_ITEM_NAME": { $ne: null },
-              //       "jobItems.JOB_ITEM_TITLE": { $ne: null },
-              //     },
-              //   },
-              //   {
-              //     $project: {
-              //       _id: 0,
-              //       WORKGROUP_NAME: "$workgroupInfo.WORKGROUP_NAME",
-              //       LINE_NAME: "$jobs.LINE_NAME",
-              //       DOC_NUMBER: "$jobs.DOC_NUMBER",
-              //       JOB_ITEM_NAME: "$jobItems.JOB_ITEM_NAME",
-              //       JOB_ITEM_TITLE: "$jobItems.JOB_ITEM_TITLE",
-              //       jobItemsUpdatedAt: "$jobItems.updatedAt",
-              //       ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
-              //     },
-              //   },
-              //   {
-              //     $sort: {
-              //       jobItemsUpdatedAt: 1,
-              //     },
-              //   },
-              //   ]);
-      }
-    
-    
+            {
+              $lookup: {
+                from: "jobitems",
+                localField: "_id",
+                foreignField: "JOB_ID",
+                as: "jobItems",
+              },
+            },
+            { $unwind: "$jobItems" },
 
-    // // ลบข้อมูลที่ไม่มีค่าหรือ null ออก
-    
-   //console.log('jobValues count ',jobValues.length);
-   // jobValues.forEach(element => {
-             //   console.log(element._id);
-   // });    
+            // ✅ กรองหลัง unwind ใน DB เลย ลด payload ไป JS
+            {
+              $match: {
+                "jobItems.updatedAt": { $ne: null },
+                "jobItems.JOB_ITEM_NAME": { $ne: null },
+                "jobItems.JOB_ITEM_TITLE": { $ne: null },
 
-    const cleanedJobValues = jobValues.filter(
-      (item) =>
-        item.LINE_NAME &&
-        item.WORKGROUP_NAME &&
-        item.JOB_ITEM_NAME &&
-        item.JOB_ITEM_TITLE &&
-        item.DOC_NUMBER &&
-        item.ACTUAL_VALUE &&
-        item.jobItemsUpdatedAt 
-    );
+                // ถ้าต้องการให้มีค่าเท่านั้น (และไม่ทำ 0 หาย)
+                "jobItems.ACTUAL_VALUE": { $ne: null },
+              },
+            },
 
-    //console.log("Job values after aggregation:", cleanedJobValues);
-    if (cleanedJobValues.length === 0) {
-          //console.log("No data found for the given filters.");
+            // ✅ ดึง status_name ใน pipeline เลย ตัด statusMap
+            {
+              $lookup: {
+                from: "statuses",
+                localField: "JOB_STATUS_ID",
+                foreignField: "_id",
+                as: "statusInfo",
+              },
+            },
+            { $unwind: { path: "$statusInfo", preserveNullAndEmptyArrays: true } },
+
+            {
+              $project: {
+                _id: 0,
+                WORKGROUP_NAME: workgroup_name,
+                LINE_NAME: 1,
+                DOC_NUMBER: 1,
+                JOB_NAME:1,
+                WD_TAG: 1,
+                CHECKLIST_VERSION: 1,  
+                SUBMITTED_BY: "$SUBMITTED_BY.EMP_NAME",
+                JOB_STATUS: { $ifNull: ["$statusInfo.status_name", "Unknown"] },
+
+                JOB_ITEM_NAME: "$jobItems.JOB_ITEM_NAME",
+                JOB_ITEM_TITLE: "$jobItems.JOB_ITEM_TITLE",
+                jobItemsUpdatedAt: "$jobItems.updatedAt",
+                ACTUAL_VALUE: "$jobItems.ACTUAL_VALUE",
+                VALUE: "$jobItems.VALUE",
+                UPPER: "$jobItems.UPPER_SPEC",
+                LOWER: "$jobItems.LOWER_SPEC",
+                FILE: "$jobItems.FILE", // ใน jobitems ของคุณชื่อ FILE ไม่ใช่ IMG_ATTACH
+         
+              },
+            },
+
+            { $sort: { jobItemsUpdatedAt: 1 } },
+          ]).allowDiskUse(true);
+
+    // ✅ map status แบบเร็ว + ไม่ต้อง filter ซ้ำ
+    for (const row of jobValues) {
+      const id = row.JOB_STATUS_ID?.toString();
+      row.JOB_STATUS = statusMap[id] || "Unknown";
+      delete row.JOB_STATUS_ID;
     }
 
-      //getStatusNameById
-     //console.log('cleanedJobValues',cleanedJobValues); 
-     for (let index = 0; index < cleanedJobValues.length; index++) {
-          cleanedJobValues[index].JOB_STATUS=await getStatusNameById(cleanedJobValues[index].JOB_STATUS);
-          //cleanedJobValues[index].FILE=await getAttachImageFromJobItem(cleanedJobValues[index].JOBITEM_ID);
-     } 
-
-    // console.log('cleanedJobValues count ',cleanedJobValues.length); 
-    //console.log("get report end ",new Date());
-  
-    //console.timeEnd("Query Execution Time"); // แสดงเวลาที่ใช้ในการ query    
-    //  return NextResponse.json({ 
-    //         status: 200
-    //       });
-    
-    /*cleanedJobValues.forEach(element => {
-            console.log(element);
-    });*/ 
-   // console.timeEnd("Query Execution Time"); // แสดงเวลาที่ใช้ในการ query   
-
-    return NextResponse.json(cleanedJobValues);
+    console.timeEnd("Query Execution Time");
+    return NextResponse.json(jobValues);
   } catch (error) {
     console.error("Error fetching job values:", error);
-    return NextResponse.error([]);
+    console.timeEnd("Query Execution Time");
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 };

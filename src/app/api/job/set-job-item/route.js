@@ -26,13 +26,13 @@ export const GET = async (req, res) => {
    try {  
      const jobItem = await JobItem.findOne({ _id: JobItemID });
 
-     //console.log('jobItem',jobItem);
+     //console.log('set jobItem by aoi',jobItem);
 
-    //  if(jobItem.INPUT_CONVERT===true){
-    //       jobItem.ACTUAL_VALUE = JobItemvalue==="1"?"Pass":"Fail";
-    //  }else{
-    //       jobItem.ACTUAL_VALUE = JobItemvalue;
-    //  }      
+      if(jobItem.INPUT_CONVERT===true){
+           jobItem.ACTUAL_VALUE = JobItemvalue==="1"?"Pass":"Fail";
+      }else{
+           jobItem.ACTUAL_VALUE = JobItemvalue;
+      }      
      
      await jobItem.save();
 
@@ -43,7 +43,10 @@ export const GET = async (req, res) => {
         // jobItemData: jobItemData,
       });
   } catch (err) {
-      console.log(err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+          console.log(err);
+          console.log("Error Code : 034");
+     }
       return NextResponse.json({
         status: 500,      
         error: err.message,

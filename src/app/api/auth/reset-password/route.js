@@ -31,6 +31,9 @@ export const POST = async (req, res) => {
         return NextResponse.json({ message: "Password updated successfully" , status: 200 });
        
     } catch (err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 018");
+        }
         return NextResponse.json({ error: "User login failed", file: __filename, error: err.message });
     }
 };

@@ -49,7 +49,10 @@ export const DELETE = async (req, res) => {
 
     return NextResponse.json({ status: 200, jobTemplate });
   } catch (err) {
-    console.lop("Delete Error=>", err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+          console.log("Error Code : 061");
+          console.lop("Delete Error=>", err);
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

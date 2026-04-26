@@ -10,471 +10,384 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 
+// ── Reusable Section Header ────────────────────────────────────────────────────
+const SectionHeader = ({ title, isOpen, onToggle }) => (
+  <h2
+    className="text-2xl font-bold text-primary flex items-center cursor-pointer select-none"
+    onClick={onToggle}
+  >
+    {title}
+    {isOpen ? (
+      <ArrowDropUpIcon style={{ fontSize: "3rem" }} />
+    ) : (
+      <ArrowDropDownIcon style={{ fontSize: "3rem" }} />
+    )}
+  </h2>
+);
 
+// ── Reusable Field ─────────────────────────────────────────────────────────────
+const Field = ({ label, children }) => (
+  <div>
+    <label className="block mb-1.5 text-sm font-medium text-gray-700">{label}</label>
+    {children}
+  </div>
+);
 
+const inputCls =
+  "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 block w-full p-2.5 outline-none transition";
 
+// ── Page ───────────────────────────────────────────────────────────────────────
 const Page = () => {
-  const { user } = useFetchUser();
-  const [formData, setFormData] = useState({
-    emp_number: "",
-    full_name: "",
-    email: "",
-    work_team: "",
-    username: "",
-    password: "",
-    confirm_password: "",
-    remember: false,
-  });
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
-  const [isShowUserInfo, setIsShowUserInfo] = useState(false); // State to manage password visibility
-  const [isShowUserImage, setIsShowUserImage] = useState(true);
-  const [isShowPassword, setIsShowPassword] = useState(false);
+  const { user, isLoading } = useFetchUser();
 
+  const [selectedFile, setSelectedFile]     = useState(null);
+  const [isShowUserImage, setIsShowUserImage] = useState(true);
+  const [isShowUserInfo, setIsShowUserInfo]   = useState(true);
+  const [isShowPassword, setIsShowPassword]   = useState(false);
+
+  // Password section state
+  const [password, setPassword]               = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswordText, setShowPasswordText] = useState(false);
+
+  // Loading states for each submit
+  const [savingInfo, setSavingInfo]           = useState(false);
+  const [savingPassword, setSavingPassword]   = useState(false);
+
+  // ── Dropzone ─────────────────────────────────────────────────────────────────
   const onDrop = (acceptedFiles) => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      setSelectedFile(acceptedFiles[0]);
+    if (acceptedFiles?.length > 0) setSelectedFile(acceptedFiles[0]);
+  };
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: { "image/*": [] },
+  });
+
+  // ── Submit: Information + Profile Picture ─────────────────────────────────────
+  const handleSubmitInfo = async (e) => {
+    e.preventDefault();
+    setSavingInfo(true);
+
+    const payload = new FormData();
+    payload.append("user_id",    user._id);
+    payload.append("mode",       "info");
+    payload.append("emp_number", e.target.emp_number.value);
+    payload.append("emp_name",   e.target.full_name.value);
+    payload.append("email",      e.target.email.value);
+    payload.append("team",       e.target.work_team.value);
+    payload.append("username",   e.target.username.value);
+    if (selectedFile) payload.append("file", selectedFile);
+
+    try {
+      const res  = await fetch("/api/auth/edit-user", { method: "PUT", body: payload });
+      const data = await res.json();
+
+      if (data.status === 200) {
+        await Swal.fire({ icon: "success", title: "Saved", text: "Information updated successfully." });
+        window.location.reload();
+      } else {
+        Swal.fire({ icon: "error", title: "Error", text: data.error || "An error occurred." });
+      }
+    } catch {
+      Swal.fire({ icon: "error", title: "Error", text: "Network error. Please try again." });
+    } finally {
+      setSavingInfo(false);
     }
   };
 
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: "image/*",
-  });
-
-  const handleClearImage = () => {
-    setSelectedFile(null);
-  };
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const handleSubmit = async (e) => {
+  // ── Submit: Password ──────────────────────────────────────────────────────────
+  const handleSubmitPassword = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    const emp_number = e.target.emp_number.value;
-    const emp_name = e.target.full_name.value;
-    const email = e.target.email.value;
-    const team = e.target.work_team.value;
-    const username = e.target.username.value;
-    const password = e.target.password.value || null;
-    const confirm_password = e.target.confirm_password.value || null;
-    const file = selectedFile || null;
-    if (password !== confirm_password) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Passwords do not match",
-        confirmButtonText: "OK",
-      });
+
+    if (!password) {
+      Swal.fire({ icon: "warning", title: "Warning", text: "Please enter a new password." });
+      return;
+    }
+    if (password !== confirmPassword) {
+      Swal.fire({ icon: "error", title: "Error", text: "Passwords do not match." });
       return;
     }
 
+    setSavingPassword(true);
 
-    formData.append("user_id", user._id);
-    formData.append("emp_number", emp_number);
-    formData.append("emp_name", emp_name);
-    formData.append("email", email);
-    formData.append("team", team);
-    formData.append("username", username);
-    formData.append("password", password);
-    formData.append("file", file);
+    const payload = new FormData();
+    payload.append("user_id",  user._id);
+    payload.append("mode",     "password");
+    payload.append("password", password);
 
-    const res = await fetch("/api/auth/edit-user", {
-      method: "PUT",
-      body: formData,
-    });
+    try {
+      const res  = await fetch("/api/auth/edit-user", { method: "PUT", body: payload });
+      const data = await res.json();
 
-    const data = await res.json();
-    if (data.status === 200) {
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "User updated successfully",
-        confirmButtonText: "OK",
-      });
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: data.error,
-        confirmButtonText: "OK",
-      });
+      if (data.status === 200) {
+        await Swal.fire({ icon: "success", title: "Saved", text: "Password changed successfully." });
+        window.location.reload();
+      } else {
+        Swal.fire({ icon: "error", title: "Error", text: data.error || "An error occurred." });
+      }
+    } catch {
+      Swal.fire({ icon: "error", title: "Error", text: "Network error. Please try again." });
+    } finally {
+      setSavingPassword(false);
     }
   };
 
-  const toggleUserInfo = () => {
-    setIsShowUserInfo((prev) => !prev);
-  };
+  // ── Loading ───────────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-64 text-gray-400 text-lg animate-pulse">
+          Loading...
+        </div>
+      </Layout>
+    );
+  }
 
-  const toggleUserImage = () => {
-    setIsShowUserImage((prev) => !prev);
-  };
-
-  const togglePassword = () => {
-    setIsShowPassword((prev) => !prev);
-  };
-
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
-      <div className="flex flex-col items-start gap-4 mb-4 p-4 bg-white rounded-xl">
+
+      {/* Page Header */}
+      <div className="flex flex-col items-start gap-3 mb-4 p-4 bg-white rounded-xl shadow-sm">
         <div className="flex items-center gap-4">
           <Link href="/pages/dashboard">
-            <ArrowBackIosNewIcon />
+            <ArrowBackIosNewIcon className="text-gray-600 hover:text-primary transition" />
           </Link>
-          <Image
-            src="/assets/card-logo/profile.png"
-            alt="wd logo"
-            width={50}
-            height={50}
-          />
-          <h1 className="text-3xl font-bold text-slate-900">
-            Edit User Profile
-          </h1>
+          <Image src="/assets/card-logo/profile.png" alt="profile" width={46} height={46} />
+          <h1 className="text-3xl font-bold text-slate-900">Edit User Profile</h1>
         </div>
-        <h1 className="text-sm font-bold text-secondary flex  items-center">
-          Edit user information, adding profile image.
-        </h1>
+        <p className="text-sm text-secondary font-medium">
+          Edit user information and profile picture, or change your password separately.
+        </p>
       </div>
-      <form onSubmit={handleSubmit} className="mb-4 p-4 bg-white rounded-xl">
-        {/* Profile Picture Dropzone */}
-        <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
-          Edit Profile Picture
-          {isShowUserImage ? (
-            <ArrowDropUpIcon
-              style={{ fontSize: "5rem" }}
-              onClick={toggleUserImage}
-            />
-          ) : (
-            <ArrowDropDownIcon
-              style={{ fontSize: "5rem" }}
-              onClick={toggleUserImage}
-            />
-          )}
-        </h1>
 
-        <div
-          className={`flex flex-col gap-4 justify-center items-center mb-10 ${
-            isShowUserImage ? "" : "hidden"
-          }`}
-        >
-          <div
-            {...getRootProps()}
-            id="fileInputDropzone"
-            className="h-64 w-64 bg-white rounded-full border-2 border-black flex justify-center items-center overflow-hidden"
-          >
-            <input {...getInputProps()} id="fileInput" />
+      {/* ════════════════════════════════════════════════════════════════
+          FORM 1 — Profile Picture + Information
+      ════════════════════════════════════════════════════════════════ */}
+      <form
+        onSubmit={handleSubmitInfo}
+        className="mb-4 p-6 bg-white rounded-xl shadow-sm flex flex-col gap-6"
+      >
+        {/* Section: Profile Picture */}
+        <div>
+          <SectionHeader
+            title="Profile Picture"
+            isOpen={isShowUserImage}
+            onToggle={() => setIsShowUserImage((p) => !p)}
+          />
 
-            <div className="flex flex-col justify-center items-center w-full h-full">
-              {selectedFile ? (
-                <img
-                  src={URL.createObjectURL(selectedFile)}
-                  alt="selected"
-                  width={300}
-                  height={300}
-                  className="rounded-full object-cover"
-                  style={{ width: "300px", height: "300px" }}
-                />
-              ) : user && user.image ? (
-                <img
-                  src={user.image}
-                  alt="selected"
-                  width={300}
-                  height={300}
-                  className="rounded-full object-cover"
-                  style={{ width: "300px", height: "300px" }}
-                />
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-20 w-20 text-gray-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          {isShowUserImage && (
+            <div className="flex flex-col items-center gap-4 mt-4">
+              <div
+                {...getRootProps()}
+                className="h-56 w-56 rounded-full border-2 border-dashed border-gray-300 flex justify-center items-center overflow-hidden cursor-pointer hover:border-blue-400 transition"
+              >
+                <input {...getInputProps()} id="fileInput" />
+                {selectedFile ? (
+                  <img
+                    src={URL.createObjectURL(selectedFile)}
+                    alt="preview"
+                    className="object-cover w-full h-full"
                   />
-                </svg>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-4 mb-6">
-            <button
-              className="bg-[#347EC2] text-white text-sm px-4 py-2 rounded-sm  hover:bg-[#4398E7] hover:text-white"
-              type="button"
-              onClick={() => document.getElementById("fileInput").click()}
-            >
-              <div className="flex justify-center items-center gap-2 font-bold">
-                <p>+ Add profile picture</p>
+                ) : user?.image ? (
+                  <img
+                    src={user.image}
+                    alt="profile"
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center text-gray-400 gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="text-xs">Click or drop image</span>
+                  </div>
+                )}
               </div>
-            </button>
-          </div>
-        </div>
-        <hr className="border-gray-300 dark:border-gray-600" />
 
-        <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
-          Edit Information
-          {isShowUserInfo ? (
-            <ArrowDropUpIcon
-              style={{ fontSize: "5rem" }}
-              onClick={toggleUserInfo}
-            />
-          ) : (
-            <ArrowDropDownIcon
-              style={{ fontSize: "5rem" }}
-              onClick={toggleUserInfo}
-            />
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("fileInput").click()}
+                  className="bg-[#347EC2] text-white text-sm px-4 py-2 rounded-md font-semibold hover:bg-[#4398E7] transition"
+                >
+                  + Choose Picture
+                </button>
+                {selectedFile && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFile(null)}
+                    className="border border-red-400 text-red-500 text-sm px-4 py-2 rounded-md hover:bg-red-50 transition"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
           )}
-        </h1>
-        <div className={`${isShowUserInfo ? "" : "hidden"}`}>
-          {/* Grid for Form Inputs */}
-          <div className="grid gap-6 mb-6 md:grid-cols-2">
-            {/* Employee Number */}
-            <div>
-              <label
-                htmlFor="emp_num"
-                className="block mb-2 text-sm font-medium text-black"
-              >
-                Employee Number
-              </label>
-              <input
-                type="text"
-                name="emp_number"
-                onChange={handleChange}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="123456"
-                defaultValue={user.emp_number}
-                required
-              />
-            </div>
-            {/* Full Name */}
-            <div>
-              <label
-                htmlFor="full_name"
-                className="block mb-2 text-sm font-medium text-black"
-              >
-                Name
-              </label>
-              <input
-                type="text"
-                name="full_name"
-                defaultValue={user.name}
-                onChange={handleChange}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="John Doe"
-                required
-              />
-            </div>
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block mb-2 text-sm font-medium text-black"
-              >
-                Email address
-              </label>
-              <input
-                type="email"
-                name="email"
-                defaultValue={user.email}
-                onChange={handleChange}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="john.doe@company.com"
-                required
-              />
-            </div>
-            {/* Work Team */}
-            <div>
-              <label
-                htmlFor="work_team"
-                className="block mb-2 text-sm font-medium text-black"
-              >
-                Work team
-              </label>
-              <select
-                name="work_team"
-                value={formData.work_team}
-                onChange={handleChange}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                required
-              >
-                <option value={user.team} selected>
-                  {user.team}
-                </option>
-                <option value="Team A">Team A</option>
-                <option value="Team B">Team B</option>
-                <option value="Team C">Team C</option>
-                <option value="Office">Office</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Username */}
-          <div className="mb-6">
-            <label
-              htmlFor="username"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Username
-            </label>
-            <input
-              autoComplete="off"
-              type="text"
-              name="username"
-              value={user.username}
-              onChange={handleChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="john"
-              required
-            />
-          </div>
         </div>
-        <hr className="border-gray-300 dark:border-gray-600" />
-        <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
-          Edit Password
-          {isShowPassword ? (
-            <ArrowDropUpIcon
-              style={{ fontSize: "5rem" }}
-              onClick={togglePassword}
-            />
-          ) : (
-            <ArrowDropDownIcon
-              style={{ fontSize: "5rem" }}
-              onClick={togglePassword}
-            />
+
+        <hr className="border-gray-200" />
+
+        {/* Section: Information */}
+        <div>
+          <SectionHeader
+            title="Information"
+            isOpen={isShowUserInfo}
+            onToggle={() => setIsShowUserInfo((p) => !p)}
+          />
+
+          {isShowUserInfo && (
+            <div className="mt-4 flex flex-col gap-5">
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field label="Employee Number">
+                  <input
+                    type="text"
+                    name="emp_number"
+                    defaultValue={user?.emp_number ?? ""}
+                    className={inputCls}
+                    placeholder="123456"
+                    required
+                  />
+                </Field>
+
+                <Field label="Full Name">
+                  <input
+                    type="text"
+                    name="full_name"
+                    defaultValue={user?.name ?? ""}
+                    className={inputCls}
+                    placeholder="John Doe"
+                    required
+                  />
+                </Field>
+
+                <Field label="Email Address">
+                  <input
+                    type="email"
+                    name="email"
+                    defaultValue={user?.email ?? ""}
+                    className={inputCls}
+                    placeholder="john.doe@company.com"
+                    required
+                  />
+                </Field>
+
+                <Field label="Work Team">
+                  <select
+                    name="work_team"
+                    defaultValue={user?.team ?? ""}
+                    className={inputCls}
+                    required
+                  >
+                    <option value="" disabled>— Select team —</option>
+                    <option value="Team A">Team A</option>
+                    <option value="Team B">Team B</option>
+                    <option value="Team C">Team C</option>
+                    <option value="Office">Office</option>
+                  </select>
+                </Field>
+              </div>
+
+              <Field label="Username">
+                <input
+                  type="text"
+                  name="username"
+                  value={user?.username ?? ""}
+                  readOnly
+                  className={`${inputCls} bg-gray-100 text-gray-400 cursor-not-allowed`}
+                />
+              </Field>
+            </div>
           )}
-        </h1>
-        {/* Password and Confirm Password */}
-        {/* <div
-          className={`mb-6 grid grid-rows-2 ${isShowPassword ? "" : "hidden"}`}
-        >
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Password
-            </label>
-            <input
-              autoComplete="off"
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value=""
-              onChange={handleChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="•••••••••"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="confirm_password"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Confirm password
-            </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              name="confirm_password"
-              onChange={handleChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="•••••••••"
-            />
-          </div>
-          <div className="-translate-y-2">
-            <input
-              type="checkbox"
-              id="togglePassword"
-              name="togglePassword"
-              checked={showPassword}
-              onChange={handleTogglePasswordVisibility}
-              className="mr-2"
-            />
-            <label
-              htmlFor="togglePassword"
-              className="text-sm text-gray-900 dark:text-white"
-            >
-              Show passwords
-            </label>
-          </div>
-        </div> */}
-        <div
-          className={`mb-6 grid grid-rows-2 ${isShowPassword ? "" : "hidden"}`}
-        >
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Password
-            </label>
-            <input
-              autoComplete="off"
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={formData.password || ""} // อ้างอิงค่า password จาก state
-              onChange={handleChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="•••••••••"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="confirm_password"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Confirm password
-            </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              name="confirm_password"
-              value={formData.confirm_password || ""} // อ้างอิงค่า confirm_password จาก state
-              onChange={handleChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="•••••••••"
-            />
-          </div>
-          <div className="-translate-y-2">
-            <input
-              type="checkbox"
-              id="togglePassword"
-              name="togglePassword"
-              checked={showPassword}
-              onChange={handleTogglePasswordVisibility}
-              className="mr-2"
-            />
-            <label
-              htmlFor="togglePassword"
-              className="text-sm text-gray-900 text-dark"
-            >
-              Show passwords
-            </label>
-          </div>
         </div>
 
-        <hr className="border-gray-300 dark:border-gray-600" />
+        <hr className="border-gray-200" />
 
-        <button
-          type="submit"
-          className="mt-10 bg-transparent border border-[#347EC2] text-[#347EC2] text-sm px-4 py-2 rounded-md hover:bg-[#347EC2] hover:text-white transition duration-200 ease-in-out shadow-sm hover:shadow-lg"
-        >
-          <div className="flex justify-center items-center gap-2 font-semibold">
-            <p>Save Changes</p>
-          </div>
-        </button>
+        {/* Submit Info */}
+        <div>
+          <button
+            type="submit"
+            disabled={savingInfo}
+            className="border border-[#347EC2] text-[#347EC2] text-sm px-6 py-2 rounded-md font-semibold
+                       hover:bg-[#347EC2] hover:text-white transition duration-200 shadow-sm hover:shadow-md
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {savingInfo ? "Saving..." : "Save Information"}
+          </button>
+        </div>
       </form>
+
+      {/* ════════════════════════════════════════════════════════════════
+          FORM 2 — Password
+      ════════════════════════════════════════════════════════════════ */}
+      <form
+        onSubmit={handleSubmitPassword}
+        className="mb-4 p-6 bg-white rounded-xl shadow-sm flex flex-col gap-6"
+      >
+        <SectionHeader
+          title="Change Password"
+          isOpen={isShowPassword}
+          onToggle={() => setIsShowPassword((p) => !p)}
+        />
+
+        {isShowPassword && (
+          <div className="flex flex-col gap-4">
+            <Field label="New Password">
+              <input
+                autoComplete="new-password"
+                type={showPasswordText ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputCls}
+                placeholder="•••••••••"
+              />
+            </Field>
+
+            <Field label="Confirm New Password">
+              <input
+                autoComplete="new-password"
+                type={showPasswordText ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={`${inputCls} ${
+                  confirmPassword && password !== confirmPassword
+                    ? "border-red-400 focus:ring-red-300"
+                    : ""
+                }`}
+                placeholder="•••••••••"
+              />
+              {confirmPassword && password !== confirmPassword && (
+                <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+              )}
+            </Field>
+
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer w-fit">
+              <input
+                type="checkbox"
+                checked={showPasswordText}
+                onChange={() => setShowPasswordText((p) => !p)}
+                className="w-4 h-4 accent-blue-500"
+              />
+              Show passwords
+            </label>
+
+            <div>
+              <button
+                type="submit"
+                disabled={savingPassword}
+                className="border border-red-500 text-red-500 text-sm px-6 py-2 rounded-md font-semibold
+                           hover:bg-red-500 hover:text-white transition duration-200 shadow-sm hover:shadow-md
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {savingPassword ? "Saving..." : "Change Password"}
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
+
     </Layout>
   );
 };

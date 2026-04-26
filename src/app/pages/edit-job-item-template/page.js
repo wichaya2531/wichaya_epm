@@ -1,10 +1,8 @@
 "use client";
 import Layout from "@/components/Layout.js";
-//import { config } from "@/config/config.js";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import useFetchTestLocations from "@/lib/hooks/useFetchTestLocations";
-import Select from "react-select";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import useFetchJobItemTemplate from "@/lib/hooks/useFetchJobItemTemplate";
 import Swal from "sweetalert2";
@@ -23,18 +21,15 @@ const Page = ({ searchParams }) => {
   const { locations, isLoading: locationsLoading } =
     useFetchTestLocations(refresh);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [preview, setPreview] = useState(null);
 
-  const handleToShowOnClick = (item) => {
+  const handleToShowOnClick = (src) => {
     Swal.fire({
-      title: item.title,
       html: `
-          <div style="display: flex; justify-content: center; align-items: center;">
-            <img src="${item}" alt="${item}" style="max-width: 70%; max-height: 70%; object-fit: contain;" />
-          </div>`,
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="${src}" alt="preview" style="max-width: 70%; max-height: 70%; object-fit: contain;" />
+        </div>`,
       confirmButtonText: "OK",
       width: "auto",
-      height: "auto",
     });
   };
 
@@ -42,69 +37,36 @@ const Page = ({ searchParams }) => {
     setSelectedFile(null);
   };
 
-  // const handleUploadFileToJob = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     const filePath = await uploadJobPictureToServer(file);
-  //     if (filePath) {
-  //       setSelectedFile(filePath); // เก็บพาธไฟล์ที่อัปโหลดสำเร็จ
-  //       setPreview(URL.createObjectURL(file));
-  //     }
-  //   }
-  // };
-
   const uploadJobPictureToServer = async (inputFile) => {
     if (!inputFile) {
       alert("Please select a file first.");
-      return null; // คืนค่า null หากไม่มีไฟล์
+      return null;
     }
     const formData = new FormData();
     formData.append("file", inputFile);
     formData.append("JOB_Template_ID", jobTemplate_id);
 
-    // เลือก URL ตามโหมดการอัปโหลด
     const url =
       uploadMode === "resize"
         ? "/api/uploadPicture/Item-templateResize"
         : "/api/uploadPicture/Item-template";
 
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch(url, { method: "POST", body: formData });
       const data = await res.json();
-      if (data.result) {
-        return data.filePath; // คืนค่าพาธไฟล์เมื่ออัปโหลดสำเร็จ
-      } else {
-        alert("An error occurred while uploading the file.");
-        return null; // คืนค่า null หากเกิดข้อผิดพลาด
-      }
+      if (data.result) return data.filePath;
+      alert("An error occurred while uploading the file.");
+      return null;
     } catch (error) {
       console.error(error);
       alert("An error occurred while uploading the file.");
-      return null; // คืนค่า null หากเกิดข้อผิดพลาด
+      return null;
     }
   };
-  
-  const HandleSubmit = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // if (!e.target.test_location.value) {
-    //   Swal.fire({
-    //     icon: "error",
-    //     title: "Oops...",
-    //     text: "Please select a test location!",
-    //   });
-    //   return;
-    // }
-
-
-
     const form = new FormData(e.target);
-
-    //console.log('form.get("input-convert")',form.get("input-convert"));  
-    //return;
 
     const data = {
       jobTemplate_id,
@@ -115,50 +77,31 @@ const Page = ({ searchParams }) => {
       upper_spec: form.get("upper_spec"),
       lower_spec: form.get("lower_spec"),
       test_method: form.get("test_method"),
-      test_location: "667b915a596b4d721ec60c40", //TEST_LOCATION_ID: '667b915a596b4d721ec60c40'
-      input_convert:form.get("input-convert")==='on'?true:false,
+      test_location: "667b915a596b4d721ec60c40",
+      input_convert: form.get("input-convert") === "on" ? true : false,
     };
-    // เพิ่มการจัดเก็บ filePath ที่ได้จากการอัปโหลด
+
     if (selectedFile) {
       const filePath = await uploadJobPictureToServer(selectedFile);
-      if (filePath) {
-        data.filePath = filePath; // เก็บค่าพาธไฟล์ที่อัปโหลดสำเร็จ
-      }
+      if (filePath) data.filePath = filePath;
     }
 
     try {
       const res = await fetch(`/api/job-item-template/edit-job-item-template`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-        next: { revalidate: 10 },
       });
       if (res.ok) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Checklist Item Template Updated Successfully!",
-        });
+        Swal.fire({ icon: "success", title: "Success", text: "Checklist Item Template Updated Successfully!" });
         setRefresh(!refresh);
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Something went wrong!",
-        });
+        Swal.fire({ icon: "error", title: "Oops...", text: "Something went wrong!" });
       }
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Something went wrong!",
-      });
+      Swal.fire({ icon: "error", title: "Oops...", text: "Something went wrong!" });
     }
   };
-
-  // console.log("jobItemTemplate: ", jobItemTemplate);
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6 gap-7">
@@ -175,117 +118,109 @@ const Page = ({ searchParams }) => {
                 <ArrowBackIosNewIcon />
               </Link>
             </span>
-            {jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE}{" "}
+            {jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE}
           </h1>
-          <h1 className="text-1xl font-semibold">
-            Edit Item to Checklist Template
-          </h1>
+          <h1 className="text-1xl font-semibold">Edit Item to Checklist Template</h1>
         </div>
       </div>
+
       <div className="flex flex-col gap-3 mb-4 p-4 bg-white rounded-xl">
-        <form onSubmit={HandleSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className="grid gap-6 mb-6 md:grid-cols-3">
-            <div>
-              <label
-                for="author"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
+
+            {/* ── Author ─────────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="author" className="block text-sm font-medium text-gray-600 mb-1">
                 Author
               </label>
-              <input
-                type="text"
+              <textarea
                 id="author"
-                className="bg-gray-200 border cursor-not-allowed border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50  "
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none resize-none"
                 value={user.name || ""}
                 disabled
                 name="author"
-                required
+                readOnly
               />
             </div>
-            <div>
-              <label
-                for="job_item_template_title"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
-                Checklist Item Template Title
+
+            {/* ── Item Title ──────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="job_item_template_title" className="block text-sm font-medium text-gray-600 mb-1">
+                {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE || "Checklist Item Template Title"}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="job_item_template_title"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="title"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 defaultValue={jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE || ""}
                 name="job_item_template_title"
                 required
               />
             </div>
-            <div>
-              <label
-                for="job_item_template_name"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
-                Checklist Item Template Name
+
+            {/* ── Item Name ───────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="job_item_template_name" className="block text-sm font-medium text-gray-600 mb-1">
+                {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME || "Checklist Item Template Name"}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="job_item_template_name"
-                placeholder="name"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 defaultValue={jobItemTemplate.JOB_ITEM_TEMPLATE_NAME || ""}
                 name="job_item_template_name"
                 required
               />
             </div>
-            <div>
-              <label
-                for="Upper_Spec"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
-                Upper Spec
+
+            {/* ── Upper Spec ──────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="upper_spec" className="block text-sm font-medium text-gray-600 mb-1">
+                {process.env.NEXT_PUBLIC_UPPER_SPEC || "Upper Spec"}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="upper_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 defaultValue={jobItemTemplate.UPPER_SPEC || ""}
                 name="upper_spec"
                 required
               />
             </div>
-            <div>
-              <label
-                for="lower_spec"
-                class="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
-                Lower Spec
+
+            {/* ── Lower Spec ──────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="lower_spec" className="block text-sm font-medium text-gray-600 mb-1">
+                {process.env.NEXT_PUBLIC_LOWER_SPEC || "Lower Spec"}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="lower_spec"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
                 defaultValue={jobItemTemplate.LOWER_SPEC || ""}
                 name="lower_spec"
                 required
               />
             </div>
-            <div>
-              <label
-                for="test_method"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
-                Test Method
+
+            {/* ── Test Method ─────────────────────────────────── */}
+            <div className="flex flex-col">
+              <label htmlFor="test_method" className="block text-sm font-medium text-gray-600 mb-1">
+                {process.env.NEXT_PUBLIC_TEST_METHODE || "Test Method"}
               </label>
-              <input
-                type="text"
+              <textarea
                 id="test_method"
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                defaultValue={jobItemTemplate.TEST_METHOD || "-"}
+                rows="2"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
+                defaultValue={jobItemTemplate.TEST_METHOD || ""}
                 name="test_method"
                 required
               />
             </div>
 
-           <div className="select-none">
+            {/* ── Input Converter ─────────────────────────────── */}
+            <div className="select-none flex items-center">
               <label
                 htmlFor="input-convert"
                 className="flex items-center space-x-2 text-sm font-medium text-gray-900"
@@ -295,80 +230,39 @@ const Page = ({ searchParams }) => {
                   id="input-convert"
                   name="input-convert"
                   className="w-5 h-5 bg-white border border-gray-300 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
-                  defaultChecked={jobItemTemplate.INPUT_CONVERT||false}
-                  // onChange={(e) =>
-                  //   setJobItemTemplate((prev) => ({
-                  //     ...prev,
-                  //     INPUT_CONVERT: e.target.checked,
-                  //   }))
-                  // }
-                  // required
+                  defaultChecked={jobItemTemplate.INPUT_CONVERT || false}
                 />
                 <span>Input Converter( 1 to "Pass" , 0 to "Fail")</span>
               </label>
             </div>
 
+            {/* ── Image ───────────────────────────────────────── */}
             <div>
-              {/* <label
-                for="test_method"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
-                Test location
-              </label>
-              <Select
-                name="test_location"
-                id="test_location"
-                className=" text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full "
-                options={locations.map((location) => {
-                  return {
-                    value: location._id,
-                    label: location.LocationName,
-                  };
-                })}
-                isSearchable={true}
-              /> */}
-            </div>
-            <div>
-              <label
-                htmlFor="Image"
-                className="block mb-2 text-sm font-medium text-gray-900 text-black"
-              >
+              <label htmlFor="Image" className="block text-sm font-medium text-gray-600 mb-1">
                 Image
               </label>
               <div className="flex justify-evenly space-x-4 mb-2">
-                <div>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-lg ${
-                      uploadMode === "resize"
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                    onClick={() => setUploadMode("resize")}
-                  >
-                    Resize
-                  </button>
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-lg ${
-                      uploadMode === "default"
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                    onClick={() => setUploadMode("default")}
-                  >
-                    Default
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-lg ${uploadMode === "resize" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+                  onClick={() => setUploadMode("resize")}
+                >
+                  Resize
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-lg ${uploadMode === "default" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+                  onClick={() => setUploadMode("default")}
+                >
+                  Default
+                </button>
               </div>
               <div className="flex justify-center mb-4">
                 <img
                   src={
                     selectedFile && selectedFile instanceof File
-                      ? URL.createObjectURL(selectedFile) // ใช้ไฟล์ที่เลือก
-                      : `/api/viewItem-template?imgName=` + jobItemTemplate.FILE // ใช้ไฟล์เก่า
+                      ? URL.createObjectURL(selectedFile)
+                      : `/api/viewItem-template?imgName=` + jobItemTemplate.FILE
                   }
                   alt="Item-template"
                   width={200}
@@ -377,8 +271,7 @@ const Page = ({ searchParams }) => {
                     handleToShowOnClick(
                       selectedFile && selectedFile instanceof File
                         ? URL.createObjectURL(selectedFile)
-                        : `/api/viewItem-template?imgName=` +
-                            jobItemTemplate.FILE
+                        : `/api/viewItem-template?imgName=` + jobItemTemplate.FILE
                     )
                   }
                 />
@@ -390,7 +283,6 @@ const Page = ({ searchParams }) => {
                     <UploadFileIcon />
                   </span>
                 </label>
-
                 <input
                   type="file"
                   id="file"
@@ -398,13 +290,11 @@ const Page = ({ searchParams }) => {
                   accept="image/*"
                   onChange={(event) => {
                     const file = event.target.files[0];
-                    if (file) {
-                      setSelectedFile(file);
-                    }
+                    if (file) setSelectedFile(file);
                   }}
                 />
                 <button
-                  className="bg-red-500 text-sm font-bold text-white px-4 py-2 rounded-lg drop-shadow-lg hover:bg-red-700 hover:text-white"
+                  className="bg-red-500 text-sm font-bold text-white px-4 py-2 rounded-lg drop-shadow-lg hover:bg-red-700"
                   type="button"
                   onClick={handleClearImage}
                 >
@@ -415,10 +305,12 @@ const Page = ({ searchParams }) => {
                 </button>
               </div>
             </div>
+
           </div>
+
           <button
             type="submit"
-            className={`text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center bg-blue-500 hover:bg-blue-700`}
+            className="text-white font-bold rounded-lg text-sm px-5 py-2.5 text-center bg-blue-500 hover:bg-blue-700"
           >
             Save Checklist Item Template
           </button>

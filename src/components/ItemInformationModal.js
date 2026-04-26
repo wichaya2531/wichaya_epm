@@ -57,7 +57,9 @@ const ItemInformationModal = ({ setJobItemDetail, jobItemDetail }) => {
                                     </p>
                                 </div>
                                 <div className="mt-2">
-                                    <p className="text-[12px] ipadmini:text-sm text-gray-500">
+                                    <p className="text-[12px] ipadmini:text-sm text-gray-500"
+                                        style={{display:'none'}}
+                                    >
                                         Test Location: {jobItemDetail.TestLocationName || "N/A"}
                                     </p>
                                 </div>

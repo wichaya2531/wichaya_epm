@@ -1,47 +1,13 @@
-// {
-//     "activationDate": "2024-05-28",
-//     "recurrence": "daily",
-//     "jobTemplateID": "6645834c66167e4286abad6e",
-//     "jobTemplateCreateID": "18f7f88e15c-e357ef12d244b",
-//     "ACTIVATER_ID": "6632fae0a67bf44b884f39be"
-// }
-// import mongoose from "mongoose";
-
-// const JobTemplateActivateSchema = new mongoose.Schema({
-//     JobTemplateID: { type: mongoose.Schema.Types.ObjectId, ref: "JobTemplate" },
-//     JobTemplateCreateID: { type: String, required: true },
-//     JOB_ID: { type: mongoose.Schema.Types.ObjectId, ref: "Job" },
-//     RECURRING_TYPE: { type: String, default: null }
-// }, { timestamps: true });
-
-// export const JobTemplateActivate = mongoose.models?.JobTemplateActivate || mongoose.model("JobTemplateActivate", JobTemplateActivateSchema)
 import { NextResponse } from "next/server.js";
-import { JobTemplateActivate } from "@/lib/models/AE/JobTemplateActivate";
-import { JobItemTemplateActivate } from "@/lib/models/AE/JobItemTemplateActivate.js";
-import { Approves } from "@/lib/models/Approves.js";
-import { Job } from "@/lib/models/Job.js";
-import { JobItem } from "@/lib/models/JobItem.js";
-import { JobItemTemplate } from "@/lib/models/JobItemTemplate.js";
 import { JobTemplate } from "@/lib/models/JobTemplate.js";
-import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
 import { Schedule } from "@/lib/models/Schedule.js";
-import { ObjectId } from "mongodb"; // นำเข้า ObjectId จาก mongodb library
-// import mongoose from 'mongoose';
-
-// const scheduleSchema = new mongoose.Schema({
-//     JOB_TEMPLATE_ID : { type: mongoose.Schema.Types.ObjectId, ref: 'JobTemplate', required: true },
-//     ACTIVATE_DATE: { type: Date, required: true },
-// }, { timestamps: true });
-
-// export const Schedule = mongoose.models?.Schedule || mongoose.model('Schedule', scheduleSchema);
+import { broadcast } from "@/lib/server/sseHub";
 
 function isWeekend(today) {
- // const today = new Date();
-  const day = today.getDay(); // 0 = Sunday, 6 = Saturday
+  const day = today.getDay();
   return day === 0 || day === 6;
 }
-
 
 function formatDateToString(dateObj) {
   if (!(dateObj instanceof Date) || isNaN(dateObj)) return "Invalid Date";
@@ -53,9 +19,7 @@ function formatDateToString(dateObj) {
   return `${year}-${month}-${day}`;
 }
 
-export const POST = async (req, res) => {
-  //console.log("************use job planning******************");
-
+export const POST = async (req) => {
   await connectToDb();
   const body = await req.json();
 
@@ -65,177 +29,172 @@ export const POST = async (req, res) => {
     recurrence,
     jobTemplateID,
     jobTemplateCreateID,
-    ACTIVATER_ID,
-    LINE_NAME,
+    LINE_ITEMS,
     endDate,
     startDate,
     shift_date,
     weekend_skip,
   } = body;
 
- // console.log('body',body);  
- // console.log('holiday_skip',holiday_skip);  
-
+  //console.log("📦 BODY:", JSON.stringify(body, null, 2));
 
   try {
     const jobTemplate = await JobTemplate.findOne({ _id: jobTemplateID });
+
     if (!jobTemplate) {
       return NextResponse.json({
         status: 404,
-        file: __filename,
         error: "Job template not found",
       });
     }
 
-    //console.log("activationDate:", activationDate);
-    //console.log("startDate:", startDate);
-    
-    var pre_startDate = activationDate || startDate;
+    // -------------------------------
+    // Normalize LINE_ITEMS
+    // -------------------------------
+    const normalizedLineItems = Array.isArray(LINE_ITEMS)
+      ? LINE_ITEMS.map((item) => ({
+          name: item?.name || "",
+          mc_tag:
+            item?.mc_tag && typeof item.mc_tag === "object"
+              ? {
+                  WD_TAG: item.mc_tag.WD_TAG || "",
+                  MACHINE_NAME: item.mc_tag.MACHINE_NAME || "",
+                }
+              : {
+                  WD_TAG: "",
+                  MACHINE_NAME: item?.mc_tag || "",
+                },
+        }))
+      : [];
+
+    //console.log("✅ normalizedLineItems:", normalizedLineItems);
+
+    // -------------------------------
+    // Prepare date
+    // -------------------------------
+    console.log("activationDate Date",activationDate);
+    console.log("startDate ",startDate);
+    //let pre_startDate = activationDate || startDate;
+    let pre_startDate = startDate;
+    console.log("วันที่ร้องขอในการเปิด Job" , pre_startDate);     
+
+
     if (!pre_startDate) {
       pre_startDate = new Date();
     }
-    //console.log("pre_startDate (before split):", pre_startDate);
-    
-    pre_startDate = pre_startDate.split("T")[0];
-    //console.log("pre_startDate (after split):", pre_startDate);
-    
+
+    if (typeof pre_startDate === "string" && pre_startDate.includes("T")) {
+      pre_startDate = pre_startDate.split("T")[0];
+    } else {
+      pre_startDate = formatDateToString(new Date(pre_startDate));
+    }
+
     let startDateActive = new Date(`${pre_startDate}T${activationTime}`);
-    //console.log("startDateActive:", startDateActive);
-
-
     startDateActive.setHours(
       startDateActive.getHours() +
         parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
     );
 
-    if (
-      recurrence === "weekly" ||
-      recurrence == "monthly" ||
-      recurrence === "yearly" || 
-      recurrence === "2monthly" ||
-      recurrence === "3monthly" ||
-      recurrence === "6monthly"         
-    ) {
-      startDateActive = new Date(
-        formatDateToString(new Date(activationDate)) +
-          "T" +
-          activationTime
-      );
-      startDateActive.setHours(
-        startDateActive.getHours() +
-          parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
-      );
-    }
     let endDateActive = new Date(
-      formatDateToString(new Date(endDate)) + "T" + activationTime
+      formatDateToString(new Date(endDate)) + "T23:59:00"
     );
+
     endDateActive.setHours(
       endDateActive.getHours() +
         parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
     );
-    let rolling_Datetime = startDateActive;
 
-    
-    // console.log("startDateActive",startDateActive);
-    // console.log("rolling_Datetime",rolling_Datetime);
-    // console.log("endDateActive",endDateActive);
-    // console.log("recurrence",recurrence);
+    let rolling_Datetime = new Date(startDateActive);
 
-    // return NextResponse.json({
-    //   status: 200,
-    //   message: "Jobs activated successfully",
-    // });
+     console.log("วันที่สร้าง Plan",rolling_Datetime);
 
-
-
-
-    var counter=0; 
+    // -------------------------------
+    // LOOP CREATE SCHEDULE
+    // -------------------------------
+    let counter = 0;
 
     while (rolling_Datetime < endDateActive) {
-      
-      //console.log('rolling_Datetime',rolling_Datetime);
       counter++;
-      if(counter>512){
-              console.log("Break over!!");
-              break;
-      }
-      
-      
-      
+      if (counter > 512) break;
 
-
-      // Create a new job
       const AdvanceActivationDate = new Date(rolling_Datetime);
       AdvanceActivationDate.setHours(
         AdvanceActivationDate.getHours() -
           parseInt(process.env.NEXT_PUBLIC_TIMEZONE_OFFSET, 10)
       );
-      const schedulePromises = LINE_NAME.map(async (lineName) => {
+
+      const schedulePromises = normalizedLineItems.map(async (item, index) => {
+        //console.log("🟢 SAVE:", item);
+
         const schedule1 = new Schedule({
-          JOB_TEMPLATE_ID: jobTemplate._id,//new ObjectId(),
+          JOB_TEMPLATE_ID: jobTemplate._id,
           JOB_TEMPLATE_CREATE_ID: jobTemplateCreateID,
           JOB_TEMPLATE_NAME: jobTemplate.JOB_TEMPLATE_NAME,
           ACTIVATE_DATE: AdvanceActivationDate,
-          LINE_NAME: lineName,
+          LINE_NAME: item.name,
+
+          // 🔥 ตรงนี้คือจุดสำคัญ
+          MC_TAG: {
+            WD_TAG: item.mc_tag.WD_TAG,
+            MACHINE_NAME: item.mc_tag.MACHINE_NAME,
+          },
+
           DOC_NUMBER: jobTemplate.DOC_NUMBER,
           WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
-          PLAN_TYPE:recurrence,          
+          PLAN_TYPE: recurrence,
+          PROFILE_GROUP: jobTemplate.PROFILE_GROUP || "Unknown",
         });
-        //console.log(`Saving Schedule `, schedule1);
-        //console.log(`Saving Schedule for lineName: ${lineName}`, schedule1);
-        if(weekend_skip==true && isWeekend(AdvanceActivationDate)){
-          // เช็คว่า เป็นวันหยุด เสาร์ - อาทิตย์หรือไม่
-          // หากว่าใช่ ให้ ไม่ต้องทำการ Active Schedual    
-        }else{
+
+        if (!(weekend_skip && isWeekend(AdvanceActivationDate))) {
           await schedule1.save();
         }
 
-        // ถ้า shift_date เป็น true ให้สร้าง schedule ที่มีเวลาเพิ่มขึ้น 12 ชั่วโมง
+        // shift
         if (shift_date === true) {
           const schedule2 = new Schedule({
-            ...schedule1.toObject(), // คัดลอกข้อมูลทั้งหมด
-            _id: undefined, // ลบ _id ออกเพื่อให้ MongoDB สร้างใหม่
+            ...schedule1.toObject(),
+            _id: undefined,
             ACTIVATE_DATE: new Date(
               AdvanceActivationDate.getTime() + 12 * 60 * 60 * 1000
-            ), // เพิ่ม 12 ชั่วโมง
+            ),
           });
 
-          // console.log(
-          //   `Saving Shifted Schedule for lineName: ${lineName}`,
-          //   schedule2
-          // );
-          if(weekend_skip==true && isWeekend(AdvanceActivationDate)){
-            // เช็คว่า เป็นวันหยุด เสาร์ - อาทิตย์หรือไม่
-            // หากว่าใช่ ให้ ไม่ต้องทำการ Active Schedual    
-          }else{
-               await schedule2.save();
+          if (!(weekend_skip && isWeekend(AdvanceActivationDate))) {
+            await schedule2.save();
           }
-  
-         
         }
       });
 
-      // ใช้ Promise.all เพื่อรอให้ทุกคำขอทำงานพร้อมกัน
       await Promise.all(schedulePromises);
 
-      // Increment currentDate based on the recurrence type
+      // recurrence
       if (recurrence === "daily") {
-        rolling_Datetime.setDate(rolling_Datetime.getDate() + 1); // Add one day for daily recurrence
+        rolling_Datetime.setDate(rolling_Datetime.getDate() + 1);
       } else if (recurrence === "weekly") {
-        rolling_Datetime.setDate(rolling_Datetime.getDate() + 7); // Add seven days for weekly recurrence
+        rolling_Datetime.setDate(rolling_Datetime.getDate() + 7);
       } else if (recurrence === "monthly") {
-        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 1); // Add one month for monthly recurrence
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 1);
       } else if (recurrence === "2monthly") {
-        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 2); // Add one month for monthly recurrence
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 2);
       } else if (recurrence === "3monthly") {
-        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 3); // Add one month for monthly recurrence
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 3);
       } else if (recurrence === "6monthly") {
-        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 6); // Add one month for monthly recurrence
+        rolling_Datetime.setMonth(rolling_Datetime.getMonth() + 6);
       } else if (recurrence === "yearly") {
-        rolling_Datetime.setFullYear(rolling_Datetime.getFullYear() + 1); // Add one year for yearly recurrence
+        rolling_Datetime.setFullYear(rolling_Datetime.getFullYear() + 1);
       } else {
-        break; // If recurrence type is not specified or invalid, exit the loop
+        break;
       }
+    }
+
+    // -------------------------------
+    // SSE Refresh
+    // -------------------------------
+    try {
+      let workgroup_id = jobTemplate.WORKGROUP_ID?.toString();
+      broadcast(workgroup_id, "refresh");
+    } catch (err) {
+      console.log("SSE error", err);
     }
 
     return NextResponse.json({
@@ -243,10 +202,10 @@ export const POST = async (req, res) => {
       message: "Jobs activated successfully",
     });
   } catch (err) {
-    console.log("Error", err);
+    console.log("❌ ERROR:", err);
+
     return NextResponse.json({
       status: 500,
-      file: __filename,
       error: err.message,
     });
   }

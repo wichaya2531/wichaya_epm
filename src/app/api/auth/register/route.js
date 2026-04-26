@@ -109,6 +109,11 @@ export const POST = async (req, res) => {
       user: new_user,
     });
   } catch (err) {
+            if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                  console.log("Error Code : 017");
+            }
+          
+
     return NextResponse.json({
       status: 500,
       file: __filename,

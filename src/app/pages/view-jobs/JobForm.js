@@ -3,33 +3,25 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import InfoIcon from "@mui/icons-material/Info";
 import Select from "react-select";
-import { useState } from "react";
+import { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import TripOriginIcon from "@mui/icons-material/TripOrigin";
-import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import Link from "next/link";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import { blue } from "@mui/material/colors";
 import Swal from "sweetalert2";
 import ChatIcon from "@mui/icons-material/Chat";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
-
-import EditNoteIcon from '@mui/icons-material/EditNote';
-
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-
-
-
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import HistoryIcon from "@mui/icons-material/History";
+import Tooltip from "@mui/material/Tooltip";
+import Link from "next/link";
 
 const JobForm = ({
   jobData,
   jobItems,
   machines,
-  machineName,
   handleInputChange,
   handleBeforeValue,
-  handleWdChange,
+  handleOptionInputChange,
   handleSubmit,
   handleShowJobItemDescription,
   handleShowTestMethodDescription,
@@ -41,121 +33,301 @@ const JobForm = ({
   toggleAddComment,
   handleUploadFileToJob,
   onItemImgChange,
-  //handleUploadFileToJobItem,
   preview_1,
   preview_2,
   onclicktoShow,
-  machineAsLinename,
-  user
+  user,
+  wdTagOptions,
+  machineOptions,
+  wdTagEnabled,
+  onWdTagEnabledChange,
+  machinesLoaded = false,
 }) => {
-  //view=false;
-  //console.log('user',user);
-  //console.log('jobData',jobData);
-  //console.log("jobData.WD_TAG",jobData.WD_TAG);
-  // console.log("machines",machines);
-  //const existsLinenameInMachine = machines.some(machine => machine.wd_tag === jobData.LINE_NAME);
- 
-  //console.log(' jobData.Name',jobData.Name);
-  //const text = "Test1[TD-123]";
+  // -------------------- Machine state (ย้ายมาอยู่ใน JobForm เพื่อกัน page.js re-render) --------------------
+  const [machineAsLinename, setMachineAsLinename] = useState({ value: "....", label: "Select..." });
+  const [machineName, setMachineName] = useState(null);
+  const [selectedMachine, setSelectedMachine] = useState(null);
 
- 
-  // if(machineNameTrap[1]){
-  //       console.log('machineName from trap',machineNameTrap[1]);
-  // }
-  //var wdtagMatchLinename=false;
+  const handleWdChange = useCallback((selectedOption) => {
+    const wd_tag = selectedOption?.value;
+    if (!wd_tag) return;
+    const m = (machines || []).find((x) => x.wd_tag === wd_tag);
+    if (!m) {
+      setMachineAsLinename({ value: wd_tag, label: wd_tag });
+      setMachineName("");
+      setSelectedMachine(null);
+      return;
+    }
+    setMachineAsLinename({ value: wd_tag, label: wd_tag });
+    setMachineName(m.name);
+    setSelectedMachine({ value: m._id || m.name, label: m.name, wd_tag: m.wd_tag });
+  }, [machines]);
 
+  const handleMachineChange = useCallback((opt) => {
+    if (!opt) return;
+    setSelectedMachine(opt);
+    setMachineName(opt.label);
+    if (opt.wd_tag) setMachineAsLinename({ value: opt.wd_tag, label: opt.wd_tag });
+  }, []);
 
+  // init จาก jobData เมื่อ machines พร้อม
+  useEffect(() => {
+    if (!machines?.length || !jobData) return;
+    if (jobData?.WD_TAG) {
+      handleWdChange({ value: jobData.WD_TAG, label: jobData.WD_TAG });
+      return;
+    }
+    const m = machines.find((x) => x.wd_tag === jobData?.LINE_NAME);
+    if (m) handleWdChange({ value: m.wd_tag, label: m.wd_tag });
+  }, [machines, jobData]);
 
-  
-
-  //   machineAsLinename={
-  //     value:jobData.WD_TAG,
-  //     label:jobData.WD_TAG
-  //   }
-  
-
-  // console.log('jobData',jobData);
-  // console.log('wd tag ตรงกับ line name  ',wdtagMatchLinename);
-  // console.log('linename',jobData.LINE_NAME);
-  // console.log('wd_tag',jobData.WD_TAG);
-  // console.log('machinename',jobData.MachineName);
-
-  
-  // if(!wdtagMatchLinename){
-  //         //console.log('OK');
-  //           machineAsLinename={
-  //            value:jobData.WD_TAG,
-  //            label:jobData.WD_TAG
-  //          }
-  // }
-
-
-const [isMenuVisible, setIsMenuVisible] = useState(false);
-
+  const [pageLoading, setPageLoading] = useState(true);
+  const [showWdTagTip, setShowWdTagTip] = useState(false);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const toggleMenu = () => {
-    setIsMenuVisible((prev) => !prev);
-    setRotation((prev) => prev + 90); // เพิ่มรอบละ 360°
-  };
 
- const autoFullItems = (dataValue) => {
-      toggleMenu();
-        //setIsMenuVisible((prev) => !prev);
-        //setRotation((prev) => prev + 90); // เพิ่มรอบละ 360°
-         //jmp:1
-        jobItems.forEach(element => {
-                  //console.log('element',element.JobItemID);
-                  try {
-                          document.getElementById(element.JobItemID+"/"+jobData.LINE_NAME).value=dataValue;
-                  } catch (error) {
-                          console.log(error);
-                  }  
+  // -------------------- Portrait mode: hide Item Title column --------------------
+  const [isPortrait, setIsPortrait] = useState(false);
+  // auto-hide on mount if portrait; user can still toggle manually after that
+  const [showTitleCol, setShowTitleCol] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= window.innerHeight; // true = landscape → show, false = portrait → hide
+  });
+  const [showAttachCol, setShowAttachCol] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= window.innerHeight;
+  });
 
-                  try {
-                    handleInputChange({ target: { value: dataValue } }, element);
-                  } catch (error) {
-                    console.log(error);
-                  }
-                  
-  
-          })
-      
-
-        // console.log('jobItems',jobItems);
-        //   const updatedJobItems = jobItems.map(item => ({
-        //     ...item,
-        //     ActualValue: "OK"
-        //   }));
-        //   setJobItems(updatedJobItems); // <- สำคัญ
-        //   console.log('jobItems',jobItems);
-  };
-
-   
-   let imgItemSelectBeforeUpload=0;
-
+  useEffect(() => {
+    const onResize = () => {
+      setIsPortrait(window.innerWidth < window.innerHeight);
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const [showPanel, setShowPanel] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [multiValues, setMultiValues] = useState({});
 
+  const jobItemSelectedRef = useRef(null);
+  const imgItemSelectBeforeUploadRef = useRef(0);
 
-  const isPictureRequired = jobData.PICTURE_EVEDENT_REQUIRE;
-
-  const [showWebcam, setShowWebcam] = useState(false);
-  const [previewItemPicture, setPreviewItemPicture] = useState(null);
-
-  var jobItemSelected = null;
-
-  const handleUploadFileToJobItem = (item) => {
-    jobItemSelected = item;
-    try {
-      const fileInput = document.getElementById("item-fileInput");
-      fileInput.setAttribute("data-upload-type", "default");
-      fileInput.click();
-    } catch (error) {}
+  const toggleMenu = () => {
+    setIsMenuVisible((prev) => !prev);
+    setRotation((prev) => prev + 90);
   };
 
-  const handleUploadFileToJobItemResize = (item,InputSelect) => {
-    jobItemSelected = item;
-    imgItemSelectBeforeUpload=InputSelect;
+  useEffect(() => {
+    const done = Array.isArray(jobItems);
+    setPageLoading(!done);
+  }, [jobItems]);
+
+  useEffect(() => {
+    setShowWdTagTip(true);
+
+    const timer = setTimeout(() => {
+      setShowWdTagTip(false);
+      localStorage.setItem("wdTagEnabled_tip_shown", "true");
+    }, 9000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const autoFullItems = (dataValue) => {
+    toggleMenu();
+
+    const nextMultiValues = {};
+
+    jobItems.forEach((element) => {
+      // ข้าม Numeric input — ไม่ใส่ค่าลงไป
+      if (element?.input_type === "Numeric") return;
+
+      const keys = parseKeysInBrace(element?.JobItemName || "");
+
+      if (keys.length > 0) {
+        // Multi-field item: build merged "Zone1:Pass,Zone2:Pass" value
+        const row = {};
+        keys.forEach((k) => { row[k] = dataValue; });
+        nextMultiValues[element.JobItemID] = row;
+
+        const merged = keys.map((k) => `${k}:${dataValue}`).join(",");
+        try {
+          handleInputChange({ target: { value: merged } }, element);
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        // Simple field: update DOM + handleInputChange
+        try {
+          const el = document.getElementById(
+            `${element.JobItemID}/${jobData.LINE_NAME}`
+          );
+          if (el) el.value = dataValue;
+        } catch (error) {
+          console.log(error);
+        }
+
+        try {
+          handleInputChange({ target: { value: dataValue } }, element);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    });
+
+    // Update multiValues state once for all multi-field items
+    if (Object.keys(nextMultiValues).length > 0) {
+      setMultiValues((prev) => ({ ...prev, ...nextMultiValues }));
+    }
+  };
+
+
+
+const isEmptyValue = (v) => {
+  return v === null || v === undefined || String(v).trim() === "";
+};
+
+const isMultiFieldMissing = (item, key) => {
+  return isEmptyValue(multiValues?.[item.JobItemID]?.[key]);
+};
+
+
+  const shouldUseMulti = (jobItemName = "") => {
+    const s = String(jobItemName);
+    return s.includes("{") && s.includes(",");
+  };
+
+  const parseKeysInBrace = (jobItemName = "") => {
+    if (!shouldUseMulti(jobItemName)) return [];
+    const m = String(jobItemName).match(/\{([^}]+)\}/);
+    if (!m) return [];
+    return m[1]
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+  };
+
+  const parseKeyValuePairs = (s = "") => {
+    const out = {};
+    String(s || "")
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .forEach((part) => {
+        const [k, ...rest] = part.split(":");
+        const key = (k || "").trim();
+        const val = rest.join(":").trim();
+        if (key) out[key] = val;
+      });
+    return out;
+  };
+
+  useEffect(() => {
+    const next = {};
+
+    (jobItems || []).forEach((item) => {
+      const keys = parseKeysInBrace(item.JobItemName);
+      if (keys.length === 0) return;
+
+      const raw = String(item.ActualValue || "").trim();
+      const mapByPair = raw.includes(":") ? parseKeyValuePairs(raw) : null;
+
+      const parts = raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s !== "");
+
+      next[item.JobItemID] = {};
+      keys.forEach((k, i) => {
+        next[item.JobItemID][k] =
+          (mapByPair && mapByPair[k] !== undefined ? mapByPair[k] : parts[i]) ??
+          "";
+      });
+    });
+
+    setMultiValues(next);
+  }, [jobItems]);
+
+const handleMultiChange = (item, key, value) => {
+  setMultiValues((prev) => {
+    const id = item.JobItemID;
+    const row = { ...(prev[id] || {}), [key]: value };
+    const keys = parseKeysInBrace(item.JobItemName);
+    const merged = keys.map((k) => `${k}:${row[k] ?? ""}`).join(",");
+
+    try {
+      handleInputChange({ target: { value: merged } }, item);
+    } catch (err) {
+      console.log(err);
+    }
+
+    return { ...prev, [id]: row };
+  });
+};
+
+  const handleToviewApproves = async (jobDataInfo) => {
+    try {
+      const response = await fetch(
+        `/api/job/get-approves-by-job-id?job_id=${encodeURIComponent(
+          jobDataInfo.JobID
+        )}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          next: { revalidate: 10 },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch roles");
+
+      const responseData = await response.json();
+
+      const tableHtml = `
+        <table style="width:100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="border-bottom:1px solid #ddd; padding:8px;">Name</th>
+              <th style="border-bottom:1px solid #ddd; padding:8px;">Username</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(responseData.Approvers || [])
+              .map(
+                (u) => `
+                <tr>
+                  <td style="padding:6px; border-bottom:1px solid #eee;">👤 ${u.EMP_NAME}</td>
+                  <td style="padding:6px; border-bottom:1px solid #eee;">${u.USERNAME}</td>
+                </tr>`
+              )
+              .join("")}
+          </tbody>
+        </table>
+      `;
+
+      Swal.fire({
+        title: "Approver List",
+        html: tableHtml,
+        width: 500,
+        icon: "info",
+        confirmButtonText: "Close",
+      });
+    } catch (error) {
+      console.error("Failed to fetch roles:", error);
+    }
+  };
+
+  const preHandleSubmit = (e) => {
+    setIsSubmitting(true);
+    handleSubmit(e);
+    setTimeout(() => setIsSubmitting(false), 15000);
+  };
+
+  const handleUploadFileToJobItemResize = (item, inputSelect) => {
+    jobItemSelectedRef.current = item;
+    imgItemSelectBeforeUploadRef.current = inputSelect;
+
     try {
       const fileInput = document.getElementById("item-fileInput");
       fileInput.setAttribute("data-upload-type", "resize");
@@ -166,8 +338,6 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
   };
 
   const handleShowComment = (item) => {
-    //console.log("jobForm item=>",item);
-
     Swal.fire({
       title: "Comment",
       text: item.Comment || "No comment available",
@@ -177,88 +347,73 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
   };
 
   const handleGuideItemSelected = (valueItem, item) => {
-
-        // console.log("Line name ",jobData.LINE_NAME);
-        // console.log("item",item);
-
-
     try {
-      document.getElementById(item.JobItemID+"/"+jobData.LINE_NAME).value = valueItem;
+      const el = document.getElementById(
+        `${item.JobItemID}/${jobData.LINE_NAME}`
+      );
+      if (el) el.value = valueItem;
     } catch (error) {}
 
     try {
       handleInputChange({ target: { value: valueItem } }, item);
     } catch (error) {}
-
-    try {
-      document.getElementById(
-        "guide-input-panel-" + item.JobItemID
-      ).style.display = "none";
-    } catch (error) {}
   };
 
   const handleHiddenSelectGuideInput = (item) => {
-    //console.log("item",item);
     try {
-      document.getElementById(
-        "guide-input-panel-" + item.JobItemID
-      ).style.display = "none";
+      const el = document.getElementById(`guide-input-panel-${item.JobItemID}`);
+      if (el) el.style.display = "none";
     } catch (error) {}
   };
 
   const handleOnFocusItemInput = (item) => {
-    //console.log("handleOnFocus ->",item);
-    if (item.input_type==="Numeric") {
-          return;
-    }
+    if (item.input_type === "Numeric") return;
+
     jobItems.forEach((element) => {
-      if (element.JobItemID === item.JobItemID) {
-        return;
-      }
+      if (element.JobItemID === item.JobItemID) return;
       try {
-        document.getElementById(
-          "guide-input-panel-" + element.JobItemID
-        ).style.display = "none";
+        const el = document.getElementById(
+          `guide-input-panel-${element.JobItemID}`
+        );
+        if (el) el.style.display = "none";
       } catch (error) {}
     });
 
-    var toggleInput = document.getElementById(
-      "guide-input-panel-" + item.JobItemID
-    ).style.display;
-    if (toggleInput === "block") {
-      document.getElementById(
-        "guide-input-panel-" + item.JobItemID
-      ).style.display = "none";
+    const target = document.getElementById(`guide-input-panel-${item.JobItemID}`);
+    if (!target) return;
+
+    if (target.style.display === "block") {
+      target.style.display = "none";
     } else {
-      document.getElementById(
-        "guide-input-panel-" + item.JobItemID
-      ).style.display = "block";
+      target.style.display = "block";
     }
   };
 
   const handleUploadFileToJobItemOnChange = async (event) => {
-    const file = event.target.files[0];
-    //setPreviewItemPicture(URL.createObjectURL(file)); // แสดง preview ของไฟล์
-    //console.log("jobItemSelected",jobItemSelected);
+    const file = event.target.files?.[0];
+    const jobItemSelected = jobItemSelectedRef.current;
+    const imgItemSelectBeforeUpload = imgItemSelectBeforeUploadRef.current;
+
+    if (!file || !jobItemSelected) return;
+
     try {
-      document.getElementById(
-        "item-img-" + jobItemSelected.JobItemID
-      ).style.display = "block";
+      const valuePath = await uploadJobItemPictureToServer(file);
+
+      const imgEl = document.getElementById(
+        `item-img-${imgItemSelectBeforeUpload}-${jobItemSelected.JobItemID}`
+      );
+
+      if (imgEl) {
+        imgEl.src = URL.createObjectURL(file);
+        imgEl.style.display = "block";
+      }
+
+      onItemImgChange(valuePath, jobItemSelected, imgItemSelectBeforeUpload);
     } catch (error) {
-      console.error(error);
+      alert("Code 01 => " + error.message);
+    } finally {
+      event.target.value = "";
     }
-    try {
-      var valuePath = await uploadJobItemPictureToServer(file);
-      //console.log("imgItemSelectBeforeUpload", imgItemSelectBeforeUpload);
-      document.getElementById("item-img-"+imgItemSelectBeforeUpload+"-"+jobItemSelected.JobItemID).src =
-        URL.createObjectURL(file);
-      document.getElementById("item-img-"+imgItemSelectBeforeUpload+"-"+jobItemSelected.JobItemID).style.display = "block";  
-      //console.log("valuePath",valuePath);
-      onItemImgChange(valuePath, jobItemSelected,imgItemSelectBeforeUpload);
-    } catch (error) {
-      alert(error.message);
-    }
-    //alert(itemIdSelected);
   };
 
   const uploadJobItemPictureToServer = async (inputFile) => {
@@ -269,7 +424,8 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
 
     const uploadType = document
       .getElementById("item-fileInput")
-      .getAttribute("data-upload-type");
+      ?.getAttribute("data-upload-type");
+
     const uploadUrl =
       uploadType === "resize"
         ? "/api/uploadPicture/ItemResize"
@@ -277,31 +433,19 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
 
     const formData = new FormData();
     formData.append("file", inputFile);
-    formData.append("job_item_id", jobItemSelected.JobItemID);
+    formData.append("job_item_id", jobItemSelectedRef.current?.JobItemID);
 
     try {
-      const res = await fetch(uploadUrl, {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch(uploadUrl, { method: "POST", body: formData });
       const data = await res.json();
 
-      if (data.result) {
-        return data.filePath;
-      } else {
-        alert("Failed to upload file. Error " + data.error);
-      }
+      if (data.result) return data.filePath;
+      throw new Error(data.error || "Upload failed");
     } catch (error) {
-      alert("An error occurred while uploading the file." + error.message);
+      alert("An error occurred while uploading the file. " + error.message);
+      throw error;
     }
   };
-
-  // const handleCloseWebcam = () => {
-  //   //setShowWebcam(false);
-  // };
-
-  // console.log("jobData",jobData);
 
   const colorValues = [
     "Pass",
@@ -310,11 +454,11 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
     "Not Change",
     "Fail",
     "Change",
-    "Not Change",
     "Done",
     "Check",
     "Unknown",
   ];
+
   const getPastelColorForValue = (value) => {
     const colors = new Map([
       ["pass", "rgba(198, 255, 198, 0.6)"],
@@ -326,839 +470,1044 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
       ["done", "rgba(221, 160, 221, 0.6)"],
       ["check", "rgba(255, 255, 204, 0.6)"],
     ]);
-    return colors.get(value.toLowerCase()) || "rgba(0, 0, 0, 0)"; // ค่าโปร่งใสสำหรับกรณีอื่น ๆ
+    return colors.get(String(value || "").toLowerCase()) || "rgba(0, 0, 0, 0)";
   };
 
+  function handleShowHistory(item) {
+    const safe = (v) =>
+      v === null || v === undefined || v === "" ? "-" : String(v);
+
+    Swal.fire({
+      title: "History",
+      html: `
+        <div style="text-align:left;font-size:14px;line-height:1.6">
+          <div style='display:none;'><b>BeforeValue2:</b> ${safe(
+            item.BeforeValue2
+          )}</div>
+          <div><b>BeforeValue:</b> ${safe(item.BeforeValue)}</div>
+          <div><b>LastestUpdate:</b> ${safe(item.LastestUpdate)}</div>
+        </div>
+      `,
+      icon: "info",
+      showCloseButton: true,
+      confirmButtonText: "Close",
+      width: 420,
+    });
+  }
+
+  const selectedWdTagValue =
+    machineAsLinename?.value && machineAsLinename?.label
+      ? machineAsLinename
+      : jobData?.WD_TAG
+      ? { value: jobData.WD_TAG, label: jobData.WD_TAG }
+      : null;
+
+  const selectedMachineValue = selectedMachine
+    ? selectedMachine
+    : jobData?.MachineName
+    ? {
+        value: jobData?.WD_TAG || jobData?.MachineName,
+        label: jobData.MachineName,
+        wd_tag: jobData?.WD_TAG || "",
+      }
+    : null;
+
   return (
-    <form
-      className="flex flex-col gap-8 p-4 bg-white rounded-xl"
-      onSubmit={handleSubmit}
-    >
-      <input
-        type="file"
-        style={{ display: "none" }}
-        id="item-fileInput"
-        onChange={handleUploadFileToJobItemOnChange}
-      />
+    <>
+      {pageLoading && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl px-8 py-6 flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full border-4 border-gray-300 border-t-blue-600 animate-spin" />
+            <div className="text-gray-800 font-semibold">
+              Loading checklist items...
+            </div>
+            <div className="text-gray-500 text-sm">Please wait</div>
+          </div>
+        </div>
+      )}
 
-      <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
-        <Link href="/pages/dashboard">
-          <ArrowBackIosNewIcon />
-        </Link>
-        Checklist Header
-        {isShowJobInfo ? (
-          <ArrowDropUpIcon
-            style={{ fontSize: "5rem" }}
-            onClick={toggleJobInfo}
-          />
-        ) : (
-          <ArrowDropDownIcon
-            style={{ fontSize: "5rem" }}
-            onClick={toggleJobInfo}
-          />
-        )}
-      </h1>
-      <div
-        className={`grid grid-cols-4 ipadmini:grid-cols-4 gap-x-6 w-full gap-y-2 ${
-          isShowJobInfo ? "" : "hidden"
-        }`}
+      <form
+        className="flex flex-col gap-8 p-4 bg-white rounded-xl"
+        onSubmit={preHandleSubmit}
       >
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Checklist Id
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.JobID}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Checklist Name
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.Name}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Document No.
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.DocumentNo}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Line Name.
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.LINE_NAME}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Checklist Version
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.ChecklistVer}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Workgroup Name
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.WorkgroupName}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Activated By
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.ActivatedBy}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Submitted By
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.SubmittedBy}
-            disabled
-          />
-        </div>
+        <input
+          type="file"
+          style={{ display: "none" }}
+          id="item-fileInput"
+          onChange={handleUploadFileToJobItemOnChange}
+        />
 
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Timeout
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.Timeout}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Activated At
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.ActivatedAt}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            LastestUpdate At
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.LastestUpdate}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Submitted At
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.SubmitedAt}
-            disabled
-          />
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            Status
-          </label>
-          <input
-            type="text"
-            id="disabled-input"
-            aria-label="disabled input"
-            className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-            value={jobData.Status}
-            disabled
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            {/* WD Tag / Machine ID */}
-            {process.env.NEXT_PUBLIC_LABEL_WD_TAG}
-          </label>
-          {view ? (
-            /* view mode และมีข้อมูล WD tag อยู่แล้ว */    
-            <input
-              type="text"
-              id="disabled-input"
-              aria-label="disabled input"
-              className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-              value={jobData.WD_TAG}
-              disabled
+        <h1 className="text-3xl font-bold text-primary flex items-center cursor-pointer">
+          <Link href="/pages/dashboard" className="inline-flex items-center">
+            <ArrowBackIosNewIcon />
+          </Link>
+          Checklist Header
+          {isShowJobInfo ? (
+            <ArrowDropUpIcon
+              style={{ fontSize: "5rem" }}
+              onClick={toggleJobInfo}
             />
-          )
-          //  : jobData.WD_TAG ? (
-          //   /* edit mode และมีข้อมูล WD tag อยู่แล้ว */    
-          //   <Select
-          //     className="mb-5"
-          //     options={machines.map((item) => ({
-          //       value: item.wd_tag,
-          //       label: item.wd_tag,
-          //     }))}
-               
-          //     onChange={(selectedOption) => handleWdChange(selectedOption)}
-          //     name="wd_tag"
-          //     placeholder={jobData.WD_TAG}
-          //     disabled
-          //   />
-          // ) 
-          : (
-            /* edit mode กรณีที่ไม่มี wd tag */    
-            <Select
-              className="mb-5"
-              inputId="my-wd-tag-select"   // 👈 ตั้ง id ที่นี่
-              options={machines.map((item) => ({
-                value: item.wd_tag,
-                label: item.wd_tag,
-              }))}
-
-               value={{
-                 value: machineAsLinename.value, // นี่คือค่าที่คุณ set (string หรือ object)
-                 label: machineAsLinename.label,
-               }}
-
-              onChange={(selectedOption) => handleWdChange(selectedOption)}
-              name="wd_tag"
+          ) : (
+            <ArrowDropDownIcon
+              style={{ fontSize: "5rem" }}
+              onClick={toggleJobInfo}
             />
           )}
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="text-input"
-            className="text-sm ipadmini:text-md font-bold text-gray-600"
-          >
-            {/* Machine Name */}
-            {process.env.NEXT_PUBLIC_LABEL_MACHINE_NAME}
-          </label>
-          {view ? (
-            jobData.MachineName ? (
+        </h1>
+
+        <div
+          className={`grid grid-cols-4 ipadmini:grid-cols-4 gap-x-6 w-full gap-y-2 ${
+            isShowJobInfo ? "" : "hidden"
+          }`}
+        >
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Checklist Id
+            </label>
+            <textarea
+              rows={2}
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 bg-gray-100 resize-none whitespace-pre-wrap break-words leading-snug"
+              value={String(jobData?.JobID ?? "")}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Checklist Name
+            </label>
+            <textarea
+              rows={2}
+              value={jobData?.Name || ""}
+              disabled
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 bg-gray-100 resize-none whitespace-pre-wrap break-all"
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Document No.
+            </label>
+            <textarea
+              rows={2}
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 bg-gray-100 resize-none whitespace-pre-wrap break-words leading-snug"
+              value={String(jobData?.DocumentNo ?? "")}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Line Name.
+            </label>
+            <textarea
+              rows={2}
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 bg-gray-100 resize-none whitespace-pre-wrap break-words leading-snug"
+              value={String(jobData?.LINE_NAME ?? "")}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Checklist Version
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.ChecklistVer || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Workgroup Name
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.WorkgroupName || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Activated By
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.ActivatedBy || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Submitted By
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.SubmittedBy || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Timeout
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.Timeout || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Activated At
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.ActivatedAt || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              LastestUpdate At
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.LastestUpdate || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Submitted At
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.SubmitedAt || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="pointer-events-none absolute left-3 bg-white px-1 text-gray-500 text-sm z-10">
+              Status
+            </label>
+            <input
+              type="text"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2"
+              value={jobData?.Status || ""}
+              disabled
+            />
+          </div>
+
+          <div className="relative flex flex-col">
+            {!view ? (
+              <label className="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                <span>
+                  {process.env.NEXT_PUBLIC_LABEL_WD_TAG || "WD Tag"}
+                </span>
+
+                <Tooltip
+                  title="" /*</label>"ปุ่มสำหรับกรองเครื่องที่ถูกสร้างภายใน workgroup นี้ Slide ปิด เพื่อแสดงจำนวนเครื่องทั้งหมด"*/
+                  placement="top"
+                  arrow
+                  open={showWdTagTip}
+                  disableHoverListener
+                  disableFocusListener
+                  disableTouchListener
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        backgroundColor: "#5577e6ff",
+                        color: "#FFFFFF",
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+                      },
+                    },
+                    arrow: {
+                      sx: {
+                        color: "#1E40AF",
+                      },
+                    },
+                  }}
+                >
+                  <span className="inline-block w-0 h-0" />
+                </Tooltip>
+
+                <button
+                  type="button"
+                  onClick={() => onWdTagEnabledChange?.(!wdTagEnabled)}
+                  className={`relative inline-flex h-5 w-10 items-center rounded-full transition ${
+                    wdTagEnabled ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                  aria-pressed={wdTagEnabled}
+                  aria-label="Toggle WD Tag"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                      wdTagEnabled ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </label>
+            ) : (
+              <label className="text-sm text-gray-600 font-semibold">
+                {process.env.NEXT_PUBLIC_LABEL_WD_TAG || "WD Tag"}
+              </label>
+            )}
+
+            {view ? (
               <input
-                type="text"
-                id="disabled-input"
-                aria-label="disabled input"
-                className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-                value={jobData.MachineName}
+                className="border rounded-md px-3 py-2 bg-gray-100"
+                value={jobData?.WD_TAG || ""}
                 disabled
               />
             ) : (
+              <>
+                {/* hidden input เพื่อให้ form submit อ่านค่าได้ */}
+                <input
+                  type="hidden"
+                  id="my-wd-tag-select"
+                  name="wd_tag"
+                  value={selectedWdTagValue?.value || ""}
+                  readOnly
+                />
+                {/* ปุ่มเปิด Swal แทน select — ไม่ render options ใน DOM */}
+                <button
+                  type="button"
+                  disabled={!machinesLoaded}
+                  onClick={() => {
+                    const openWdSwal = () => {
+                      const opts = (machines || [])
+                        .filter((m) => m?.wd_tag)
+                        .map((m) => ({
+                          value: m.wd_tag,
+                          wdTag: m.wd_tag,
+                          machineName: m.name || m.MACHINE_NAME || "-",
+                          search: (m.wd_tag + " " + (m.name || m.MACHINE_NAME || "")).toLowerCase(),
+                        }));
+
+                      // สร้าง HTML rows จาก array (เร็วกว่า forEach toggle)
+                      const buildRows = (list, selectedVal) =>
+                        list.map((o) => `
+                          <tr
+                            data-value="${o.value}"
+                            style="cursor:pointer;background:${o.value === selectedVal ? "#dbeafe" : "white"};"
+                          >
+                            <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;">${o.wdTag}</td>
+                            <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151;">${o.machineName}</td>
+                          </tr>`).join("");
+
+                      let currentVal = selectedWdTagValue?.value || "";
+
+                      Swal.fire({
+                        title: process.env.NEXT_PUBLIC_LABEL_WD_TAG || "Select WD-Tag",
+                      width: "520px",
+                      html: `
+                        <div style="display:flex;gap:6px;margin-bottom:8px;">
+                          <input
+                            id="swal-wd-search"
+                            type="text"
+                            placeholder="🔍  Search WD-Tag or Machine Name..."
+                            style="flex:1;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;"
+                          />
+                          <button
+                            id="swal-wd-search-btn"
+                            type="button"
+                            style="padding:8px 14px;background:#1e40af;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;"
+                          >ค้นหา</button>
+                        </div>
+                        <div style="max-height:300px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;">
+                          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                            <thead>
+                              <tr style="background:#1e40af;color:white;position:sticky;top:0;">
+                                <th style="padding:7px 10px;text-align:left;font-weight:600;">WD-Tag</th>
+                                <th style="padding:7px 10px;text-align:left;font-weight:600;">Machine Name</th>
+                              </tr>
+                            </thead>
+                            <tbody id="swal-wd-tbody">
+                              ${buildRows(opts, currentVal)}
+                            </tbody>
+                          </table>
+                        </div>
+                        <input type="hidden" id="swal-wd-value" value="${currentVal}" />
+                      `,
+                      showCancelButton: true,
+                      confirmButtonText: "OK",
+                      cancelButtonText: "Cancel",
+                      didOpen: () => {
+                        const searchEl = document.getElementById("swal-wd-search");
+                        const tbody    = document.getElementById("swal-wd-tbody");
+
+                        // เลื่อน scroll ไปหา row ที่ selected
+                        const scrollToSelected = () => {
+                          const sel = tbody.querySelector(`tr[data-value="${currentVal}"]`);
+                          if (sel) sel.scrollIntoView({ block: "center" });
+                        };
+                        scrollToSelected();
+
+                        // Event delegation — click บน tbody ทั้งก้อน (ไม่ต้อง attach ทีละ row)
+                        tbody.addEventListener("click", (e) => {
+                          const row = e.target.closest("tr[data-value]");
+                          if (!row) return;
+                          currentVal = row.dataset.value;
+                          document.getElementById("swal-wd-value").value = currentVal;
+                          // highlight row ที่เลือก
+                          tbody.querySelectorAll("tr").forEach((r) => {
+                            r.style.background = r === row ? "#dbeafe" : "white";
+                          });
+                        });
+
+                        // Double-click → confirm ทันที
+                        tbody.addEventListener("dblclick", (e) => {
+                          if (e.target.closest("tr[data-value]")) Swal.clickConfirm();
+                        });
+
+                        // Search — fire เฉพาะเมื่อกดปุ่ม "ค้นหา" หรือกด Enter
+                        const doSearch = () => {
+                          const q = searchEl.value.toLowerCase().trim();
+                          const filtered = q ? opts.filter((o) => o.search.includes(q)) : opts;
+                          tbody.innerHTML = buildRows(filtered, currentVal);
+                        };
+
+                        document.getElementById("swal-wd-search-btn").addEventListener("click", doSearch);
+
+                        searchEl.addEventListener("keydown", (e) => {
+                          if (e.key === "Enter") { e.preventDefault(); doSearch(); }
+                        });
+
+                        searchEl.focus();
+                      },
+                      preConfirm: () => {
+                        const val = document.getElementById("swal-wd-value").value;
+                        if (!val) {
+                          Swal.showValidationMessage("Please select a WD-Tag");
+                          return false;
+                        }
+                        return val;
+                      },
+                      }).then((result) => {
+                        if (result.isConfirmed && result.value) {
+                          handleWdChange({ value: result.value, label: result.value });
+                        }
+                      });
+                    }; // end openWdSwal
+
+                    // Toggle ปิด (แสดงเครื่องทั้งหมด) → มีข้อมูลมาก → แสดง Loading ก่อน
+                    if (!wdTagEnabled) {
+                      Swal.fire({
+                        title: "กำลังโหลด...",
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                          Swal.showLoading();
+                          setTimeout(openWdSwal, 50);
+                        },
+                      });
+                    } else {
+                      // Toggle เปิด (กรองเฉพาะ workgroup) → ข้อมูลน้อย → เปิดตรงได้เลย
+                      openWdSwal();
+                    }
+                  }}
+                  className="w-full text-left border border-gray-300 rounded-md px-3 py-2 bg-white hover:bg-gray-50 focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400 flex items-center justify-between"
+                >
+                  <span className={selectedWdTagValue?.value ? "text-gray-900" : "text-gray-400"}>
+                    {selectedWdTagValue?.value || (machinesLoaded ? "Select WD-Tag..." : "Wait..")}
+                  </span>
+                  <span className="text-gray-400 ml-2">▼</span>
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="relative flex flex-col">
+            <label className="text-sm text-gray-600 font-semibold">
+              {process.env.NEXT_PUBLIC_LABEL_MACHINE_NAME || "Machine"}
+            </label>
+
+            {view ? (
               <input
-                type="text"
-                id="disabled-input"
-                aria-label="disabled input"
-                className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
+                className="border rounded-md px-3 py-2 bg-gray-100"
+                value={jobData?.MachineName || "No Machine Assigned"}
+                disabled
               />
-            )
-          ) : (
-            <input
-              type="text"
-              id="disabled-input"
-              aria-label="disabled input"
-              className="mb-5 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-default"
-              value={machineName}
-              placeholder={jobData.MachineName}
-              disabled
-            />
-          )}
+            ) : (
+              <Select
+                inputId="my-machine-select"
+                options={machineOptions}
+                value={selectedMachineValue}
+                onChange={handleMachineChange}
+                placeholder="Select Machine..."
+              />
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <div
+              onClick={() => setShowPanel(!showPanel)}
+              className="cursor-pointer w-full border text-right text-sm ipadmini:text-md font-bold text-gray-800 pb-1"
+              style={{ borderRadius: "0.5em" }}
+            >
+              Job Evident &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              {showPanel ? <VisibilityOffIcon /> : <VisibilityIcon />}
+            </div>
+
+            <div
+              className={`${showPanel ? "" : "hidden"}`}
+              style={{ position: "relative" }}
+            >
+              <div className="flex flex-col" style={{ position: "relative" }}>
+                <label className="text-sm ipadmini:text-md font-bold text-gray-600">
+                  &nbsp; Sticker Before
+                </label>
+
+                <div
+                  className="flex flex-col items-center"
+                  style={{ position: "absolute", right: "5px" }}
+                >
+                  <input
+                    type="file"
+                    id="fileInput-1"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleUploadFileToJob(e.target.files[0], "fileInput-1")
+                    }
+                    accept="image/*"
+                  />
+
+                  {user?.role === "Admin Group" ? (
+                    <label htmlFor="fileInput-1" className="cursor-pointer">
+                      <img
+                        src="/assets/images/image.png"
+                        alt="upload"
+                        width={30}
+                        height={30}
+                      />
+                    </label>
+                  ) : null}
+                </div>
+
+                {preview_1 && (
+                  <img src={preview_1} alt="Preview" width={200} className="mt-4" />
+                )}
+
+                {jobData?.IMAGE_FILENAME && (
+                  <img
+                    src={`/api/viewPicture?imgName=${jobData.IMAGE_FILENAME}`}
+                    alt="Preview"
+                    width={200}
+                    className="mt-4"
+                    onClick={() =>
+                      onclicktoShow(`/api/viewPicture?imgName=${jobData.IMAGE_FILENAME}`)
+                    }
+                  />
+                )}
+              </div>
+
+              <p style={{ borderBottom: "2px solid gray", padding: "5px" }}></p>
+
+              <div
+                className="flex flex-col"
+                style={{ position: "relative", paddingTop: "5px" }}
+              >
+                <label className="text-sm ipadmini:text-md font-bold text-gray-600">
+                  &nbsp; Sticker After
+                </label>
+
+                <div
+                  className="flex flex-col items-center"
+                  style={{ position: "absolute", right: "5px" }}
+                >
+                  <input
+                    type="file"
+                    id="fileInput-2"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleUploadFileToJob(e.target.files[0], "fileInput-2")
+                    }
+                    accept="image/*"
+                  />
+
+                  {user?.role === "Admin Group" ? (
+                    <label htmlFor="fileInput-2" className="cursor-pointer">
+                      <img
+                        src="/assets/images/image.png"
+                        alt="upload"
+                        width={30}
+                        height={30}
+                      />
+                    </label>
+                  ) : null}
+                </div>
+
+                {preview_2 && (
+                  <img src={preview_2} alt="Preview" width={200} className="mt-4" />
+                )}
+
+                {jobData?.IMAGE_FILENAME_2 && (
+                  <img
+                    src={`/api/viewPicture?imgName=${jobData.IMAGE_FILENAME_2}`}
+                    alt="Preview"
+                    width={200}
+                    className="mt-4"
+                    onClick={() =>
+                      onclicktoShow(`/api/viewPicture?imgName=${jobData.IMAGE_FILENAME_2}`)
+                    }
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="p-5">
+              {jobData?.DISAPPROVE_REASON ? (
+                <div>
+                  <ChatIcon className="text-blue-600 size-8 cursor-default" />
+                  {" : " + jobData.DISAPPROVE_REASON}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm ipadmini:text-md font-bold text-gray-600">
+              <InfoIcon onClick={() => handleToviewApproves(jobData)} /> Approve By :
+              <a href="#" style={{ color: "blue", textDecorationLine: "underline" }}>
+                {" "}
+                {jobData?.ApproverName || ""}
+              </a>
+            </label>
+          </div>
         </div>
 
+        <hr />
 
-
-        <div className="flex flex-col">
-
-
-            {/* ปุ่ม Hide/Unhide */}
-            <div
-               onClick={() => setShowPanel(!showPanel)}
-               className="cursor-pointer w-full border text-right text-sm ipadmini:text-md font-bold text-gray-800 pb-1 cursor-pointer"
-               style={{borderRadius:'0.5em'}} 
-            >
-              Job Evident &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   {showPanel ? <VisibilityOffIcon /> : <VisibilityIcon />}
+        <div className="flex flex-col gap-2">
+          <div style={{ position: "relative", display: "inline-block", width: "100%" }}>
+            <div style={{ position: "relative", display: "inline-block", width: "20em" }}>
+              <h1 className="text-2xl font-bold text-primary flex items-center cursor-pointer">
+                Checklist Items
+                {isShowJobItem ? (
+                  <ArrowDropUpIcon style={{ fontSize: "5rem" }} onClick={toggleJobItem} />
+                ) : (
+                  <ArrowDropDownIcon style={{ fontSize: "5rem" }} onClick={toggleJobItem} />
+                )}
+              </h1>
             </div>
-            <div className={`${showPanel ? "" : "hidden"}`} style={{border:'1px solid none',position:'relative'}}>
 
-                      <div className={`flex flex-col `}
-                           style={{border:'1px solid none',position:'relative'}} 
+            {!view && (
+              <div
+                onClick={toggleMenu}
+                className="absolute right-1 inline-block w-8 hover:border-[3px] transition-transform duration-200 hover:scale-125"
+              >
+                <AutorenewIcon
+                  className="text-black text-[32px] transition-transform duration-[5500ms] ease-in-out"
+                  style={{ transform: `rotate(${rotation}deg)` }}
+                />
+              </div>
+            )}
+
+            {isMenuVisible && (
+              <div className="absolute top-10 right-0 bg-white border border-green-500 shadow-lg p-4 rounded-lg w-48 z-20">
+                <p className="text-sm text-gray-800 border-b border-gray-400 cursor-default">
+                  ***Fill Items***
+                </p>
+                <ul className="mt-2 space-y-1 text-sm text-gray-600 cursor-default">
+                  <li
+                    onClick={() => autoFullItems("Pass")}
+                    className="hover:bg-yellow-100 cursor-pointer px-2 py-1"
+                  >
+                    ⚙️ All "Pass"
+                  </li>
+                  <li
+                    onClick={() => autoFullItems("Line not run")}
+                    className="hover:bg-yellow-100 cursor-pointer px-2 py-1"
+                  >
+                    ⚙️ All "Line not run"
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className={`overflow-x-auto ${isShowJobItem ? "" : "hidden"} flex flex-col gap-1`}>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {colorValues.map((value) => (
+                <div key={value} className="flex items-center space-x-2">
+                  <span
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: getPastelColorForValue(value) }}
+                  ></span>
+                  <span className="text-sm text-gray-700">{value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Toggle column buttons */}
+            <div className="flex justify-end gap-2 mb-1">
+              <button
+                type="button"
+                onClick={() => setShowTitleCol((v) => !v)}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 text-gray-600 shadow-sm"
+                title={showTitleCol ? "ซ่อนคอลัมน์ Item Title" : "แสดงคอลัมน์ Item Title"}
+              >
+                {showTitleCol ? (
+                  <>
+                    <VisibilityOffIcon style={{ fontSize: 14 }} />
+                    <span>ซ่อน {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE || "Item Title"}</span>
+                  </>
+                ) : (
+                  <>
+                    <VisibilityIcon style={{ fontSize: 14 }} />
+                    <span>แสดง {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE || "Item Title"}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowAttachCol((v) => !v)}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 text-gray-600 shadow-sm"
+                title={showAttachCol ? "ซ่อนคอลัมน์ Attach" : "แสดงคอลัมน์ Attach"}
+              >
+                {showAttachCol ? (
+                  <>
+                    <VisibilityOffIcon style={{ fontSize: 14 }} />
+                    <span>ซ่อน Attach</span>
+                  </>
+                ) : (
+                  <>
+                    <VisibilityIcon style={{ fontSize: 14 }} />
+                    <span>แสดง Attach</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <table className="table-auto border-collapse w-full text-sm">
+              <thead className="text-center">
+                <tr className="bg-gray-200">
+                  {showTitleCol && (
+                    <th className="w-[50px]">
+                      {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE}[{jobItems.length}]
+                    </th>
+                  )}
+                  <th className="w-[50px]">
+                    {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME}
+                  </th>
+                  <th className="w-[150px] px-4 py-2">
+                    {process.env.NEXT_PUBLIC_UPPER_SPEC}/{process.env.NEXT_PUBLIC_LOWER_SPEC}
+                  </th>
+                  <th className="w-[150px] px-4 py-2">Actual Value</th>
+                  {showAttachCol && <th className="w-[150px] px-4 py-2">Attach</th>}
+                </tr>
+              </thead>
+
+              <tbody className="text-center">
+                {jobItems.map((item, index) => (
+                  <tr key={index}>
+                    {showTitleCol && (
+                      <td className="border px-4 py-2 w-[25vw] max-w-[25vw] align-middle">
+                        <div className="whitespace-normal break-words">
+                          {item.JobItemTitle}
+                        </div>
+                      </td>
+                    )}
+
+                    <td className="border px-3 py-2 relative w-[25vw] max-w-[25vw]">
+                      <div
+                        className="pr-10 whitespace-normal break-words"
+                        title={item.JobItemName?.replace(/\{[^}]*\}/g, "").trim()}
                       >
-                        {
-                          <label
-                            htmlFor="text"
-                            className=" text-sm ipadmini:text-md font-bold text-gray-600 "
-                          >
-                            &nbsp; Sticker Before {" "}
-                          </label>
-                        }
+                        {item.JobItemName?.replace(/\{[^}]*\}/g, "").trim()}
+                      </div>
 
-                        {(
-                          <div 
-                              className="flex flex-col items-center"
-                              style={{position:'absolute',border:'1px solid none',right:'5px'}}
-                          >
-                            {/* ซ่อน input อัปโหลดไฟล์ */}
-                                <input
-                                  type="file"
-                                  id="fileInput-1"
-                                  className="hidden"
-                                  onChange={(e) =>
-                                    handleUploadFileToJob(e.target.files[0], "fileInput-1")
+                      <InfoIcon
+                        className="absolute bottom-1 right-1 text-blue-600 size-5 cursor-pointer"
+                        onClick={() => handleShowTestMethodDescription(item)}
+                      />
+                    </td>
+
+                    <td className="border px-4 py-2 w-[150px]">
+                      <div>
+                        {process.env.NEXT_PUBLIC_UPPER_SPEC}{" "}
+                        <b style={{ color: "red", fontWeight: "1200" }}>↑</b> : {item.UpperSpec}
+                      </div>
+                      <div>
+                        {process.env.NEXT_PUBLIC_LOWER_SPEC}{" "}
+                        <b style={{ color: "blue", fontWeight: "1200" }}>↓</b> : {item.LowerSpec}
+                      </div>
+                    </td>
+
+                    <td className="border px-4 py-2 relative w-[25vw] max-w-[25vw]">
+                      <div className="flex items-center gap-3 w-full">
+                        <span className="absolute bottom-1 right-1 cursor-pointer">
+                          <HistoryIcon
+                            sx={{ color: "#1E40AF", fontSize: 25 }}
+                            onClick={() => handleShowHistory(item)}
+                          />
+                        </span>
+
+                        <div className="flex-1">
+                          {(() => {
+                            const keys = parseKeysInBrace(item.JobItemName);
+                            const isMulti = keys.length > 0;
+
+                            const combined = [
+                              item.ActualValue ?? "",
+                              item.Value !== null &&
+                              item.Value !== undefined &&
+                              item.Value !== ""
+                                ? item.Value
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(",");
+
+                            const viewMap = isMulti ? parseKeyValuePairs(combined) : null;
+
+                           if (view) {
+                                  if (isMulti) {
+                                    return (
+                                      <div className="grid grid-cols-2 gap-4 w-[90%] place-items-start">
+                                        {keys.map((k) => (
+                                          <div key={k} className="w-full">
+                                            <div className="rounded-lg border border-gray-300 bg-white overflow-hidden">
+                                              <div className="bg-blue-50 text-blue-700 text-sm font-semibold px-3 py-1.5 border-b border-gray-200">
+                                                {k}
+                                              </div>
+
+                                              <div className="p-2">
+                                                <input
+                                                  type="text"
+                                                  value={multiValues?.[item.JobItemID]?.[k] ?? ""}
+                                                  disabled={view}
+                                                  onChange={(e) => handleMultiChange(item, k, e.target.value)}
+                                                  className={`w-full text-center rounded-lg border px-3 py-1.5 text-sm ${
+                                                    isMultiFieldMissing(item, k)
+                                                      ? "border-red-400 bg-red-50"
+                                                      : "border-gray-300"
+                                                  }`}
+                                                  placeholder={`Enter ${k}`}
+                                                />
+
+                                                {isMultiFieldMissing(item, k) && (
+                                                  <div className="mt-1 text-xs text-red-500 text-center">
+                                                    Please enter {k}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    );
                                   }
-                                  accept="image/*"
+
+                                  return (
+                                    <div className="grid gap-2 w-[90%]">
+                                      <input
+                                        type="text"
+                                        id={item.JobItemID}
+                                        value={combined}
+                                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg text-center w-full p-1.5 cursor-default"
+                                        disabled
+                                        style={{
+                                          backgroundColor: getPastelColorForValue(item.ActualValue || ""),
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                }
+
+                            if (item.input_type === "Numeric") {
+                              return (
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  id={`${item.JobItemID}/${jobData.LINE_NAME}`}
+                                  defaultValue={item.ActualValue || ""}
+                                  onChange={(e) => handleInputChange(e, item)}
+                                  className="bg-white border w-[80%] border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center p-1.5 rounded-lg"
+                                  placeholder="Enter value"
+                                  onFocus={() => handleOnFocusItemInput(item)}
+                                  autoComplete="on"
                                 />
+                              );
+                            }
 
-                            {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
+                            if (isMulti) {
+                              return (
+                                <div className="grid grid-cols-2 gap-4 w-[90%] place-items-start">
+                                  {keys.map((k) => (
+                                    <div key={k} className="w-full">
+                                      <div className="rounded-lg border border-gray-300 bg-white overflow-hidden">
+                                        <div className="bg-blue-50 text-blue-700 text-sm font-semibold px-3 py-1.5 border-b border-gray-200">
+                                          {k}
+                                        </div>
 
-                            {user.role==="Admin Group"?(
-                                  <label
-                                        htmlFor="fileInput-1"
-                                        className="cursor-pointer"
-                                  >
-                                    <img
-                                      src="/assets/images/image.png"
-                                      alt="person"
-                                      width={30}
-                                      height={30}
-                                    />
-                                </label>
-                            ):""}
-                                
-                                
+                                        <div className="p-2">
+                                          <input
+                                            type="text"
+                                            value={multiValues?.[item.JobItemID]?.[k] ?? ""}
+                                            onChange={(e) =>
+                                              handleMultiChange(item, k, e.target.value)
+                                            }
+                                            className="w-full text-center rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            }
 
+                            return (
+                              <input
+                                type="text"
+                                id={`${item.JobItemID}/${jobData.LINE_NAME}`}
+                                defaultValue={item.ActualValue || ""}
+                                onChange={(e) => handleInputChange(e, item)}
+                                className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-[80%] p-1.5 rounded-lg"
+                                placeholder="Enter value"
+                                onFocus={() => handleOnFocusItemInput(item)}
+                                autoComplete="on"
+                              />
+                            );
+                          })()}
+                        </div>
+
+                        <span className="shrink-0 absolute top-1 right-1 cursor-pointer">
+                          {view ? (
+                            item.Comment !== null ? (
+                              <ChatIcon
+                                className="text-blue-600 size-6 cursor-pointer"
+                                onClick={() => handleShowComment(item)}
+                                title="Show comment"
+                              />
+                            ) : (
+                              <span className="w-6 h-6 inline-block" />
+                            )
+                          ) : (
+                            <ChatIcon
+                              className="text-blue-600 size-6 cursor-pointer"
+                              onClick={() => toggleAddComment(item)}
+                              title="Add comment"
+                            />
+                          )}
+                        </span>
+                      </div>
+
+                      <div
+                        id={`guide-input-panel-${item.JobItemID}`}
+                        style={{ padding: "10px", display: "none" }}
+                        className="w-full"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-1">
+                            <select
+                              id={`item-${item.JobItemID}`}
+                              name="item-guide-select"
+                              defaultValue=""
+                              onChange={(e) => handleGuideItemSelected(e.target.value, item)}
+                              className="w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2 pr-9 text-sm text-gray-900 shadow-sm outline-none transition hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            >
+                              <option value="" disabled>
+                                — Select —
+                              </option>
+                              <option value="Pass">✅ Pass</option>
+                              <option value="Fail">❌ Fail</option>
+                              {item.guide_input?.map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
+                              ▾
+                            </span>
                           </div>
-                        )}
 
-                        {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-                        {preview_1 && (
-                          <img src={preview_1} alt="Preview" width={200} className="mt-4" />
-                        )}
-                        {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                        {jobData.IMAGE_FILENAME && (
+                          <div className="relative flex-1">
+                            <input
+                              type="text"
+                              className="w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2 pr-9 text-sm text-gray-900 shadow-sm outline-none transition hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                              placeholder="Optional"
+                              defaultValue={item.Value || ""}
+                              onChange={(e) => handleOptionInputChange(e, item)}
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleHiddenSelectGuideInput(item)}
+                            title="Hide panel"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-red-600 text-white text-sm font-medium shadow-sm hover:bg-red-700 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-300 cursor-pointer select-none"
+                          >
+                            X
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+
+                    {showAttachCol && <td className="border py-2 relative">
+                      <center>
+                        {item.IMG_ATTACH && (
                           <img
-                            src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME} // ใช้เพียงชื่อไฟล์
+                            src={`/api/viewPictureItem?imgName=${item.IMG_ATTACH}`}
                             alt="Preview"
                             width={200}
                             className="mt-4"
                             onClick={() =>
-                              onclicktoShow(
-                                `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME
-                              )
+                              onclicktoShow(`/api/viewPictureItem/?imgName=${item.IMG_ATTACH}`)
                             }
                           />
                         )}
-                      </div>
 
-                      {
-                        //-------------------------------------------------------------------------------------------->>
-                        <p style={{borderBottom:'2px solid gray',padding:'5px'}}></p>  
-                      }    
+                        {item.IMG_ATTACH_1 && (
+                          <img
+                            src={`/api/viewPictureItem?imgName=${item.IMG_ATTACH_1}`}
+                            alt="Preview"
+                            width={200}
+                            className="mt-4"
+                            onClick={() =>
+                              onclicktoShow(`/api/viewPictureItem/?imgName=${item.IMG_ATTACH_1}`)
+                            }
+                          />
+                        )}
+                      </center>
 
-                        <div className={`flex flex-col`}
-                             style={{borderTop:'1px solid none',position:'relative',paddingTop:'5px'}}  
-                        >
-                          {
-                            <label
-                              htmlFor="text"
-                              className="text-sm ipadmini:text-md font-bold text-gray-600"
-                            >
-                              &nbsp;  Sticker After{" "}
-                            </label>
-                          }
-
-                          {(
-                            <div className="flex flex-col items-center"
-                                style={{position:'absolute',border:'1px solid none',right:'5px'}}
-                            >
-                              {/* ซ่อน input อัปโหลดไฟล์ */}
-                              <input
-                                type="file"
-                                id="fileInput-2"
-                                className="hidden"
-                                onChange={(e) =>
-                                  handleUploadFileToJob(e.target.files[0], "fileInput-2")
-                                }
-                                accept="image/*"
-                              />
-
-                              {/* ปุ่มอัปโหลดไฟล์ที่ตกแต่ง */}
-                                {user.role==="Admin Group"?(
-                                    <label
-                                      htmlFor="fileInput-2"
-                                        className="cursor-pointer"
-                                    // className="cursor-pointer bg-blue-700 hover:bg-blue-800 text-white font-bold py-1 px-1 rounded-lg flex items-center gap-2 focus:ring-4 focus:outline-none"
-                                    >
-                                        <img
-                                          src="/assets/images/image.png"
-                                          alt="person"
-                                          width={30}
-                                          height={30}
-                                        />
-                                     </label>
-                                ):""}
-                              
-                            </div>
-                          )}
-
-                          {/* แสดงตัวอย่างรูปภาพถ้ามี */}
-                          {preview_2 && (
-                            <img src={preview_2} alt="Preview" width={200} className="mt-4" />
-                          )}
-                          {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                          {jobData.IMAGE_FILENAME_2 && (
-                            <img
-                              src={`/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2} // ใช้เพียงชื่อไฟล์
-                              alt="Preview"
-                              width={200}
-                              className="mt-4"
-                              onClick={() =>
-                                onclicktoShow(
-                                  `/api/viewPicture?imgName=` + jobData.IMAGE_FILENAME_2
-                                )
-                              }
-                            />
-                          )}
-                        </div>
-            </div>
-             <div
-               className="p-5"
-             >
-              {
-                  jobData.DISAPPROVE_REASON!=""?(<div>
-                     <ChatIcon
-                        className="text-blue-600 size-8 cursor-default"
-                  />
-                  {
-                    " : "+jobData.DISAPPROVE_REASON
-                  }
-                  </div>):""
-
-              }
-                
-            </div> 
-        </div>
-        <div className="flex flex-col">
-            <label
-              htmlFor="text-input"
-              className="text-sm ipadmini:text-md font-bold text-gray-600"
-            >
-                    Approve By :<a href="#" style={{color:'blue',textDecorationLine:'underline'}}> {jobData.ApproverName||""}</a>
-            </label>
-        </div>
-
-      </div>
-      <hr />
-      <div className="flex flex-col gap-2">
-
-
-        <div style={{position:'relative',border:'1px solid none',display:'inline-block',width:'100%'}}>
-              <div style={{position:'relative',border:'1px solid none',display:'inline-block',width:'20em'}}>
-                <h1 className="text-2xl font-bold text-primary flex items-center cursor-pointer">
-                    Checklist Items
-                    {isShowJobItem ? (
-                      <ArrowDropUpIcon
-                        style={{ fontSize: "5rem" }}
-                        onClick={toggleJobItem}
-                      />
-                    ) : (
-                      <ArrowDropDownIcon
-                        style={{ fontSize: "5rem" }}
-                        onClick={toggleJobItem}
-                      />
-                    )}
-                </h1>          
-              </div>   
-              { !view && (
-                    <div 
-                      onClick={toggleMenu}
-                      className="absolute right-1 inline-block w-8  hover:border-[3px] hover:border-gradient-to-r hover:from-blue-500 hover:to-cyan-400 transition-transform duration-200 hover:scale-125"              
-                    >
-                        <AutorenewIcon
-                          className="text-black text-[32px] transition-transform duration-[5500ms] ease-in-out"
-                          style={{ transform: `rotate(${rotation}deg)` }}
-                        />
-                    </div>
-                  )              
-               }           
-                    
-
-                    {/* แถบเมนูลับ */}
-                    {isMenuVisible && (
-                      <div className="absolute top-10 right-0 bg-white border border-green-500 shadow-lg p-4 rounded-lg w-48">
-                        <p className="text-sm text-gray-800 border-b border-gray-400 cursor-default">***Fill Items***</p>
-                        <ul className="mt-2 space-y-1 text-sm text-gray-600 cursor-default">
-                         <li onClick={() => autoFullItems("Pass")}
-                                className="hover:bg-yellow-100 cursor-pointer px-2 py-1"
-                          >⚙️ All "Pass"</li>
-                         <li onClick={() => autoFullItems("Line not run")}
-                                className="hover:bg-yellow-100 cursor-pointer px-2 py-1"
-                          >⚙️ All "Line not run"</li>
-                        </ul>
-                      </div>
-                    )}
-        </div>                    
-         
-      
-        <div
-          className={`overflow-x-auto ${
-            isShowJobItem ? "" : "hidden"
-          } flex flex-col gap-1`}
-        >
-          {/* <div>
-                    xxxx
-            </div> */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {colorValues.map((value) => (
-              <div key={value} className="flex items-center space-x-2">
-                <span
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: getPastelColorForValue(value) }}
-                ></span>
-                <span className="text-sm text-gray-700">{value}</span>
-              </div>
-            ))}
-            
-          </div>
-          <table className="table-auto border-collapse w-full text-sm">
-            <thead className="text-center">
-              <tr className="bg-gray-200">
-                <th className="w-[50px]">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE} </th>
-                <th className="w-[50px]">{process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME} </th>
-                <th className="w-[50px] px-4 py-2">{process.env.NEXT_PUBLIC_UPPER_SPEC+"/"+  process.env.NEXT_PUBLIC_LOWER_SPEC}</th>
-                {/* <th className="w-[50px] px-4 py-2"></th> */}
-                <th className="w-[150px] px-4 py-2">Before Value</th>
-                <th className="w-[150px] px-4 py-2">Actual Value</th>
-                <th className="w-[150px] px-4 py-2">Attach</th>
-              </tr>
-            </thead>
-            <tbody className="text-center">
-              {jobItems.map((item, index) => (
-                <tr key={index}>
-                  <td className="border px-4 py-2 relative">
-                    <div>{item.JobItemTitle}</div>
-                  </td>
-                  <td className="border px-4 py-2 relative">
-                    <div>{item.JobItemName} </div>
-                    <InfoIcon
-                      className="absolute right-1 top-1 text-blue-600 size-8 cursor-pointer "
-                      style={{ display: "none" }}
-                      onClick={() => handleShowJobItemDescription(item)}
-                    />
-
-                    <InfoIcon
-                      className="absolute right-1 bottom-0 text-blue-600 size-8 cursor-pointer "
-                      onClick={() => handleShowTestMethodDescription(item)}
-                    />
-                  </td>
-                  <td className="border px-4 py-2">
-                    <div>
-                      {process.env.NEXT_PUBLIC_UPPER_SPEC}{" "}
-                      <b style={{ color: "red", fontWeight: "1200" }}>↑</b> :{" "}
-                      {item.UpperSpec}
-                    </div>
-                    <div>
-                      {process.env.NEXT_PUBLIC_LOWER_SPEC}{" "}
-                      <b style={{ color: "blue", fontWeight: "1200" }}>↓</b> :{" "}
-                      {item.LowerSpec}
-                    </div>
-                  </td>
-                  <td className="border px-4 py-2 relative">
-                    {view ? (
-                      <input
-                        type="text"
-                        id={`before_value_2${item.JobItemID}`}
-                        value={item.BeforeValue2 || item.BeforeValue || ""}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                        disabled
-                        title={"Lastest Update: " + item.LastestUpdate}
-                        style={{
-                          backgroundColor: getPastelColorForValue(
-                            item.BeforeValue2 || item.BeforeValue || ""
-                          ),
-                        }}
-                      />
-                    ) : item.input_type==="Numeric" ? (<input
-                      type="number"
-                      step="0.01"
-                      id={`before_value_2${item.JobItemID}`}
-                      onChange={(e) => handleBeforeValue(e, item)}
-                      className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                      placeholder={item.BeforeValue || ""}
-                      disabled
-                      title={"Lastest Update: " + item.LastestUpdate}
-                    />) : (
-                      <input
-                        type="text"
-                        id={`before_value_2${item.JobItemID}`}
-                        onChange={(e) => handleBeforeValue(e, item)}
-                        className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                        placeholder={item.BeforeValue || ""}
-                        disabled
-                        title={"Lastest Update: " + item.LastestUpdate}
-                      />
-                    )}
-                  </td>
-                  <td className="border px-4 py-2 relative">
-                    {view ? (
-                      <input
-                        type="text"
-                        id={item.JobItemID}
-                        value={item.ActualValue}
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 text-center w-3/4 p-1.5 cursor-default"
-                        disabled
-                        title="This is a tooltip"
-                        style={{
-                          backgroundColor: getPastelColorForValue(
-                            item.ActualValue || ""
-                          ),
-                        }}
-                      />
-                    ) : item.input_type=="Numeric" ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          id={item.JobItemID+"/"+jobData.LINE_NAME}
-                          defaultValue={item.ActualValue || ""}
-                          onChange={(e) => handleInputChange(e, item)}
-                          className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                          placeholder="Enter value"
-                          onFocus={() => handleOnFocusItemInput(item)}
-                          autoComplete="on"
-                        />
-                    ): (
-                        <div>
-                          <div>
-                            <input
-                              type="text"
-                              id={item.JobItemID+"/"+jobData.LINE_NAME}
-                              defaultValue={item.ActualValue || ""}
-                              onChange={(e) => handleInputChange(e, item)}
-                              className="bg-white border border-gray-300 text-gray-900 text-sm ring-secondary ring-1 focus:ring-blue-500 focus:border-blue-500 text-center w-full p-1.5 rounded-lg"
-                              placeholder="Enter value"
-                              onFocus={() => handleOnFocusItemInput(item)}
-                              autoComplete="on"
-                            />
-                          </div>
-                          <div
-                            id={"guide-input-panel-" + item.JobItemID}
-                            style={{ padding: "10px", display: "none" }}
-                          >
-                            <select
-                              className="mb-5"
-                              name="item-guide-select"
-                              id={'item-'+item.JobItemID}
-                              style={{
-                                padding: "5px",
-                                border: "1px solid green",
-                                borderRadius: "5px",
-                              }}
-                              onChange={(e) =>
-                                handleGuideItemSelected(e.target.value, item)
-                              }
-                            >
-                              <option value="เพิ่มเติม">--Select--</option>
-                              <option value="Pass">Pass</option>
-                              <option value="Fail">Fail</option>
-                              {item.guide_input.map((item) => (
-                                <option key={item} value={item}>
-                                  {item}
-                                </option>
-                              ))}
-                            </select>
-                            <span
-                              onClick={() => handleHiddenSelectGuideInput(item)}
-                              style={{
-                                paddingLeft: "10px",
-                                cursor: "default",
-                                color: "blue",
-                              }}
-                            >
-                              [hide]
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    
-                    }
-
-                    {view ? (
-                      item.Comment !== null ? (
-                        <ChatIcon
-                          className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
-                          onClick={() => handleShowComment(item)}
-                        />
-                      ) : (
-                        <div></div>
-                      )
-                    ) : (
-                      <ChatIcon
-                        className="absolute right-[2px] top-1 text-blue-600 size-8 cursor-pointer"
-                        onClick={() => toggleAddComment(item)}
-                      />
-                    )}
-                  </td>
-
-                  <td className="border py-2 relative">
-                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                    {item.IMG_ATTACH && (
-                      <img
-                        src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                        alt="Preview"
-                        width={200}
-                        className="mt-4"
-                        onClick={() =>
-                          onclicktoShow(
-                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
-                          )
-                        }
-                      />
-                    )}
-
-                    {/*  แสดงตัวอย่างรูปภาพถ้ามี*/}
-                    {item.IMG_ATTACH_1 && (
-                      <img
-                        src={`/api/viewPictureItem?imgName=` + item.IMG_ATTACH_1} // ใช้เพียงชื่อไฟล์
-                        alt="Preview"
-                        width={200}
-                        className="mt-4"
-                        onClick={() =>
-                          onclicktoShow(
-                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH_1
-                          )
-                        }
-                      />
-                    )}
-
-                    <center>
-                      {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
-                        {/* {<img
-                            `/api/viewPictureItem/?imgName=` + item.IMG_ATTACH
-                          )
-                        }
-                      />
-                    )}
-
-
-                    <center>
-                      {/* <p>IMG_ATTACH:{item.IMG_ATTACH}</p>   */}
-                        {/* {<img
-                        id={"item-img-" + item.JobItemID}
-                        style={{ display: "none" }}
-                        // src={`/api/viewPicture?imgName=`+item.IMG_ATTACH} // ใช้เพียงชื่อไฟล์
-                        width={200}
-                        className="mt-4"
-                        alt="Preview"
-                      />} */}
-                    </center>
-                    {view === false && (
-                      <div className="relative">
-                        <div className="grid grid-cols-2 gap-4 items-center">
-                            {/* ช่องที่ 1 */}
+                      {view === false && (
+                        <div className="relative">
+                          <div className="grid grid-cols-2 gap-4 items-center">
                             <div className="flex flex-col justify-center items-center p-2">
                               <img
-                                id={"item-img-1-" + item.JobItemID}
-                                style={{ display: "none",border:'1px solid gray',borderRadius:'0.1em' }}
+                                id={`item-img-1-${item.JobItemID}`}
+                                style={{
+                                  display: "none",
+                                  border: "1px solid gray",
+                                  borderRadius: "0.1em",
+                                }}
                                 width={200}
                                 className="mt-4"
                                 alt="Preview"
@@ -1174,11 +1523,14 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                               />
                             </div>
 
-                            {/* ช่องที่ 2 */}
                             <div className="flex flex-col justify-center items-center p-2">
                               <img
-                                id={"item-img-2-" + item.JobItemID}
-                               style={{ display: "none",border:'1px solid gray',borderRadius:'0.1em' }}
+                                id={`item-img-2-${item.JobItemID}`}
+                                style={{
+                                  display: "none",
+                                  border: "1px solid gray",
+                                  borderRadius: "0.1em",
+                                }}
                                 width={200}
                                 className="mt-4"
                                 alt="Preview"
@@ -1194,28 +1546,34 @@ const [isMenuVisible, setIsMenuVisible] = useState(false);
                               />
                             </div>
                           </div>
+                        </div>
+                      )}
+                    </td>}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div>
+            {!view && jobData?.Status && jobData.Status !== "complete" && (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`inline-flex justify-center rounded-md border border-transparent shadow-sm px-14 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm ${
+                  isSubmitting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-primary hover:bg-secondary"
+                }`}
+              >
+                {isSubmitting ? "Waiting..." : "Submit"}
+              </button>
+            )}
+          </div>
         </div>
-        <div>
-          {!view && jobData.Status && jobData.Status !== "complete" && (
-            <button
-              type="submit"
-              className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-14 py-3 bg-primary text-base font-medium text-white hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              Submit
-            </button>
-          )}
-        </div>
-      </div>
-    </form>
+      </form>
+    </>
   );
 };
 
-export default JobForm;
+export default memo(JobForm);

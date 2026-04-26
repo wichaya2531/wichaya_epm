@@ -13,6 +13,8 @@ import CommentReview from "@/components/CommentReview";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Link from "next/link";
 
+
+
 const Page = ({ searchParams }) => {
   const router = useRouter();
   const job_id = searchParams.job_id;
@@ -38,7 +40,9 @@ const Page = ({ searchParams }) => {
   const [preview_2, setPreview_2] = useState(null);  
 
 
- 
+
+
+
 
   useEffect(() => {
 
@@ -145,6 +149,8 @@ const Page = ({ searchParams }) => {
         cancelButtonText: "Cancel",
       });
       if (isDismissed) {
+        // Close current tab or window
+       
         return;
       }
       disapprove_reason=disapprove_reason_1;
@@ -175,8 +181,17 @@ const Page = ({ searchParams }) => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          setRefresh(!refresh);
-          router.push("/pages/job-approve");
+          //setRefresh(!refresh);
+          // setTimeout(() => {
+          //         handleEventToMqtt();
+          // }, 1000);  
+
+          setTimeout(() => {
+                  //router.push("/pages/job-approve");
+                  window.close();        
+          }, 1000);
+
+          
         });
       } else {
         Swal.fire({
@@ -251,7 +266,7 @@ const Page = ({ searchParams }) => {
                 <p><strong>Description&nbsp;:&nbsp;</strong> ${
                   item.description || ""
                 }</p>
-                <p><strong>Test Location&nbsp;:&nbsp;</strong> ${
+                <p style="display:none;"><strong>Test Location&nbsp;:&nbsp;</strong> ${
                   item.TestLocationName
                 }</p>
                 <p><strong>Test Method&nbsp;:&nbsp;</strong> ${

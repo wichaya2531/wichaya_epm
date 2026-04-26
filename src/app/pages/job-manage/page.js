@@ -3,20 +3,34 @@ import Layout from "@/components/Layout.js";
 import { useState } from "react";
 import Link from "next/link.js";
 import KeyboardTabIcon from "@mui/icons-material/KeyboardTab";
-import JobsTable from "@/components/JobsTable";
+import JobsTableQuickView from "@/components/JobsTable_quickview";
 import useFetchUser from "@/lib/hooks/useFetchUser";
 import Image from "next/image";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
-{
-  /* <div className="flex items-center gap-4 mb-4 p-4 bg-white ">
-                    <Image src="/assets/card-logo/template.png" alt="wd logo" width={50} height={50} className="rounded-full" />
-                    <h1 className="text-3xl font-bold text-slate-900">Create Checklist Template</h1>
-                </div> */
-}
-const Page = () => {
+import {  useRef, useCallback } from "react";
+
+export default function Page() {
+  const [jobIds, setJobIds] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const { user, isLoading: usersloading } = useFetchUser();
+
+  const [refreshSkip, setRefreshSkip] = useState(false);
+ 
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("jobIds");
+    if (stored) {
+      try {
+        setJobIds(JSON.parse(stored));
+      } catch {
+        console.error("Invalid JSON in sessionStorage");
+      }
+    }
+  }, []);
+
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
@@ -38,26 +52,30 @@ const Page = () => {
               </h1>
             </div>
           </div>
-          <h1 className="text-sm font-bold text-secondary flex items-center">
+          {/* <h1 className="text-sm font-bold text-secondary flex items-center">
             Acitvate Checklist, plan Checklist, and remove Checklist
-          </h1>
+          </h1> */}
         </div>
-        <Link
+        {/* <Link
           className="rounded-full bg-blue-600 text-white shadow-lg h-12 sm:w-96 flex flex-row gap-4 items-center font-sans text-md px-8 hover:drop-shadow-2xl hover:shadow-2xl mb-4"
           href="/pages/activate-remove-job"
         >
           Activate or Remove The Checklists.
           <KeyboardTabIcon />
-        </Link>
+        </Link> */}
       </div>
 
       <div className="flex flex-col gap-5 w-full text-sm font-thin mb-4 p-4 bg-white rounded-xl">
         <div className="min-w-full">
-          <JobsTable refresh={refresh} />
+          <JobsTableQuickView 
+              refresh={refresh}
+              jobIds={jobIds}
+             // handleEventToMqtt={handleEventToMqtt}              
+          />
         </div>
       </div>
     </Layout>
   );
 };
 
-export default Page;
+//export default Page;

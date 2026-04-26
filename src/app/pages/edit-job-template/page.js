@@ -7,11 +7,12 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import useFetchUser from "@/lib/hooks/useFetchUser.js";
 import useFetchJobTemplate from "@/lib/hooks/useFetchJobTemplate.js";
-// import useFetchUsers from "@/lib/hooks/useFetchUsers.js"; // ไม่ใช้
+import useFetchProfiles from "@/lib/hooks/useFetchProfiles.js";
 import Swal from "sweetalert2";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { getSession } from "@/lib/utils/utils.js";
 import useFetchWorkgroups from "@/lib/hooks/useFetchWorkgroups";
+import { border } from "@chakra-ui/react";
 
 // ---------------------- Timeout options & helpers (นอกคอมโพเนนต์) ----------------------
 const TIMEOUT_OPTIONS = [
@@ -71,11 +72,18 @@ const Page = ({ searchParams }) => {
   // checklist type ยังเก็บเป็นอ็อบเจ็กต์ได้ (ถ้าไม่เจอปัญหา)
   const [checklistType, setChecklistType] = useState(null);
 
+  // ✅ Profiles (Profile Group)
+  const [profileGroup, setProfileGroup] = useState("");
+
   const [dueDate, setDueDate] = useState("");
   const [refresh, setRefresh] = useState(false);
 
-  const [filteredOptions, setFilteredOptions] = useState([]);
-  const [allOptions, setAllOptions] = useState([]);
+  const [filteredOptions, setFilteredOptions] = useState([]); // users-only (สำหรับ Notify Active/Overdue/ฯลฯ)
+  const [allOptions, setAllOptions] = useState([]); // users-all (สำหรับ Notify Overdue)
+  const [approverOptions, setApproverOptions] = useState([]); // ✅ users + emailGroups (เฉพาะ Approver)
+  const [notifyOptions, setNotifyOptions] = useState([]); // ✅ groups + users (Notify Active)
+
+  const [emailGroups, setEmailGroups] = useState([]); // ✅ emailGroups ของ workgroup
 
   const [currentPageTableApprove, setCurrentPageTableApprove] = useState(1);
   const [currentPageTableNotify, setCurrentPageTableNotify] = useState(1);
@@ -96,6 +104,10 @@ const Page = ({ searchParams }) => {
   const [usersInActiveList, setUsersInActiveList] = useState([]);
   const [users, setUsers] = useState([]);
 
+
+
+
+
   // ใช้ ref กัน useEffect เซ็ตทับหลังผู้ใช้เลือกแล้ว
   const hasTouchedTimeout = useRef(false);
 
@@ -110,6 +122,9 @@ const Page = ({ searchParams }) => {
     isLoading: isJobTemplateLoading,
     error: jobTemplateError,
   } = useFetchJobTemplate(jobTemplate_id, refresh);
+
+  const { profiles, loading: profilesLoading, error: profilesError } =
+    useFetchProfiles(user?.workgroup_id);
 
   // เมื่อ jobTemplate มาแล้ว -> เซ็ตค่าเริ่มต้นทุกอย่าง (timeout ทำเฉพาะตอนยังไม่เคยแตะ)
   useEffect(() => {
@@ -141,6 +156,16 @@ const Page = ({ searchParams }) => {
     }
   }, [jobTemplate, isJobTemplateLoading]);
 
+  // ✅ set profile group จาก template
+  useEffect(() => {
+    if (!isJobTemplateLoading && jobTemplate) {
+      const pg = jobTemplate.PROFILE_GROUP
+        ? String(jobTemplate.PROFILE_GROUP)
+        : "";
+      setProfileGroup(pg);
+    }
+  }, [jobTemplate, isJobTemplateLoading]);
+
   // ดึงผู้ใช้ใน workgroup ของ user
   useEffect(() => {
     if (user?.workgroup_id) {
@@ -161,6 +186,36 @@ const Page = ({ searchParams }) => {
     }
   }, [user?.workgroup_id]);
 
+  // ✅ ดึง Email Groups ของ workgroup นี้ (POST)
+  useEffect(() => {
+    if (!user?.workgroup_id) return;
+
+    const run = async () => {
+      try {
+        const res = await fetch("/api/email-group/by-workgroup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            workgroup_id: user.workgroup_id,
+          }),
+          next: { revalidate: 10 },
+        });
+
+        const data = await res.json();
+        //console.log("Fetch email groups:", data);
+        setEmailGroups(data.emailGroups || []);
+      } catch (error) {
+        console.error("Fetch email groups error:", error);
+        setEmailGroups([]);
+      }
+    };
+
+    run();
+  }, [user?.workgroup_id]);
+
+
   // คำนวณ DueDate เริ่มต้น (+1 ปีจากวันนี้) ครั้งเดียว
   useEffect(() => {
     const currentDate = new Date();
@@ -169,90 +224,193 @@ const Page = ({ searchParams }) => {
     setDueDate(formatted);
   }, []);
 
-  // กรอง users ตาม workgroup ของ user สำหรับ Add Approver/Notify Active
-  useEffect(() => {
-    if (user && users && workgroups) {
-      const currentWorkgroup = workgroups.find(
-        (wg) => wg.WORKGROUP_NAME === user.workgroup
-      );
-      if (currentWorkgroup) {
-        const filteredUsers = users
-          .filter((u) => currentWorkgroup.USER_LIST.includes(u._id))
-          .map((u) => ({ value: u._id, label: u.name }));
-        setFilteredOptions(filteredUsers);
+  // ✅ สร้าง options รวม: (1) Users ใน workgroup + (2) Email Groups
+  // - filteredOptions: users-only (สำหรับ Notify Active/Approver ถ้าต้องการ)
+  // - approverOptions: groups + users (สำหรับ Approver Select)
+      useEffect(() => {
+            if (!user || !users || !workgroups) return;
+
+            const currentWorkgroup = workgroups.find(
+              (wg) => wg.WORKGROUP_NAME === user.workgroup
+            );
+            if (!currentWorkgroup) return;
+
+            const userOptions = users
+              .filter((u) => currentWorkgroup.USER_LIST.includes(u._id))
+              .map((u) => ({
+                kind: "user",
+                value: u._id,
+                label: u.name,
+              }));
+
+            const groupOptions = (emailGroups || []).map((g) => ({
+              kind: "group",
+              value: g._id,
+              label: `📧 ${g.EMAIL_GROUP_NAME}`,
+              groupName: g.EMAIL_GROUP_NAME,
+              userIds: g.USER_LIST || [],
+            }));
+
+            const merged = [...groupOptions, ...userOptions];
+
+            setApproverOptions(merged);
+            setNotifyOptions(merged); // ✅ อยู่ตรงนี้เท่านั้น
+            setFilteredOptions(userOptions.map((o) => ({ value: o.value, label: o.label })));
+          }, [users, workgroups, user, emailGroups]);
+
+
+        // สำหรับ Add Notify Overdue ใช้ผู้ใช้ทั้งหมด
+        useEffect(() => {
+          const all = users.map((u) => ({ value: u._id, label: u.name }));
+          setAllOptions(all);
+        }, [users]);
+
+
+
+
+        // สร้างข้อมูลให้ TableComponent
+        const dataApprover = (approvers || []).map((approver) => ({
+          Name: approver.EMP_NAME,
+          Action: (
+            <button
+              onClick={() => handleRemoveApprover(approver._id)}
+              className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+            >
+              Del
+            </button>
+          ),
+        }));
+
+        const dataNotify = (notifies || []).map((notify) => ({
+          Name: notify.EMP_NAME,
+          Action: (
+            <button
+              onClick={() => handleRemoveNotify(notify._id)}
+              className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+            >
+              Del
+            </button>
+          ),
+        }));
+
+        const dataNotifyOverdue = (notifiesOverdue || []).map((n) => ({
+          Name: n.EMP_NAME,
+          Action: (
+            <button
+              onClick={() => handleRemoveNotifyOverdue(n._id)}
+              className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+            >
+              Del
+            </button>
+          ),
+        }));
+
+        // Handlers: Add
+        const handleAddApprover = () => {
+        if (!selectedApprover) {
+          Swal.fire("Oops.....", "Please select an Approver!", "error");
+          return;
+        }
+
+        // ✅ เลือก "คน"
+        if (selectedApprover.kind === "user") {
+          const newApprover = { _id: selectedApprover.value, EMP_NAME: selectedApprover.label };
+
+          setApprovers((prev) => {
+            const exists = (prev || []).some((a) => String(a._id) === String(newApprover._id));
+            return exists ? prev : [...prev, newApprover];
+          });
+
+          setSelectedApprover(null);
+          return;
+        }
+
+        // ✅ เลือก "กลุ่ม"
+        if (selectedApprover.kind === "group") {
+          const ids = selectedApprover.userIds || [];
+
+          const pickedUsers = ids
+            .map((id) => users.find((u) => String(u._id) === String(id)))
+            .filter(Boolean)
+            .map((u) => ({ _id: u._id, EMP_NAME: u.name }));
+
+          if (pickedUsers.length === 0) {
+            Swal.fire(
+              "No users found",
+              "Users in this email group are not in current workgroup user list.",
+              "warning"
+            );
+            return;
+          }
+
+          setApprovers((prev) => {
+            const map = new Map((prev || []).map((a) => [String(a._id), a]));
+            pickedUsers.forEach((u) => map.set(String(u._id), u));
+            return Array.from(map.values());
+          });
+
+          Swal.fire("Done", `Added ${pickedUsers.length} users from "${selectedApprover.groupName}"`, "success");
+          setSelectedApprover(null);
+        }
+      };
+
+    const handleAddNotify = () => {
+      if (!selectedNotify) {
+        Swal.fire("Oops..", "Please select a Notify!", "error");
+        return;
       }
-    }
-  }, [approvers, notifies, users, workgroups, user]);
 
-  // สำหรับ Add Notify Overdue ใช้ผู้ใช้ทั้งหมด
-  useEffect(() => {
-    const all = users.map((u) => ({ value: u._id, label: u.name }));
-    setAllOptions(all);
-  }, [users]);
+      // ✅ เลือก "คน"
+      if (selectedNotify.kind === "user") {
+        const newNotify = {
+          _id: selectedNotify.value,
+          EMP_NAME: selectedNotify.label,
+        };
 
-  // สร้างข้อมูลให้ TableComponent
-  const dataApprover = (approvers || []).map((approver) => ({
-    Name: approver.EMP_NAME,
-    Action: (
-      <button
-        onClick={() => handleRemoveApprover(approver._id)}
-        className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
-      >
-        Del
-      </button>
-    ),
-  }));
+        setNotifies((prev) => {
+          if ((prev || []).some((n) => String(n._id) === String(newNotify._id)))
+            return prev;
+          return [...prev, newNotify];
+        });
 
-  const dataNotify = (notifies || []).map((notify) => ({
-    Name: notify.EMP_NAME,
-    Action: (
-      <button
-        onClick={() => handleRemoveNotify(notify._id)}
-        className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
-      >
-        Del
-      </button>
-    ),
-  }));
+        setSelectedNotify(null);
+        return;
+      }
 
-  const dataNotifyOverdue = (notifiesOverdue || []).map((n) => ({
-    Name: n.EMP_NAME,
-    Action: (
-      <button
-        onClick={() => handleRemoveNotifyOverdue(n._id)}
-        className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none font-bold rounded-lg text-sm px-3 py-2 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
-      >
-        Del
-      </button>
-    ),
-  }));
+      // ✅ เลือก "กลุ่ม" -> แตก USER_LIST เป็นคน
+      if (selectedNotify.kind === "group") {
+        const ids = selectedNotify.userIds || [];
 
-  // Handlers: Add
-  const handleAddApprover = () => {
-    if (!selectedApprover) {
-      Swal.fire("Oops.....", "Please select an Approver!", "error");
-      return;
-    }
-    const newApprover = {
-      _id: selectedApprover.value,
-      EMP_NAME: selectedApprover.label,
+        const pickedUsers = ids
+          .map((id) => users.find((u) => String(u._id) === String(id)))
+          .filter(Boolean)
+          .map((u) => ({ _id: u._id, EMP_NAME: u.name }));
+
+        if (pickedUsers.length === 0) {
+          Swal.fire(
+            "No users found",
+            "Users in this email group are not in current workgroup user list.",
+            "warning"
+          );
+          return;
+        }
+
+        setNotifies((prev) => {
+          const map = new Map((prev || []).map((n) => [String(n._id), n]));
+          pickedUsers.forEach((u) => map.set(String(u._id), u)); // กันซ้ำ
+          return Array.from(map.values());
+        });
+
+        Swal.fire(
+          "Done",
+          `Added ${pickedUsers.length} users from "${selectedNotify.groupName}"`,
+          "success"
+        );
+
+        setSelectedNotify(null);
+      }
     };
-    setApprovers((prev) => [...prev, newApprover]);
-    setSelectedApprover(null);
-  };
 
-  const handleAddNotify = () => {
-    if (!selectedNotify) {
-      Swal.fire("Oops..", "Please select a Notify!", "error");
-      return;
-    }
-    const newNotify = {
-      _id: selectedNotify.value,
-      EMP_NAME: selectedNotify.label,
-    };
-    setNotifies((prev) => [...prev, newNotify]);
-    setSelectedNotify(null);
-  };
 
   const handleAddNotifyOverdue = () => {
     if (!selectedNotifyOverdue) {
@@ -403,6 +561,7 @@ const Page = ({ searchParams }) => {
       checklist_ver: checklistVer,
       timeout: timeoutValue || jobTemplate?.TIMEOUT || null, // ✅ ใช้สตริงจาก state
       checklist_type: checklistType?.value ?? jobTemplate?.TYPE ?? null,
+      profile_group: profileGroup || null,
       approvers_id,
       notifies_id,
       notifiesOverdue_id,
@@ -457,18 +616,22 @@ const Page = ({ searchParams }) => {
       </h1>
 
       <div className="mb-4 p-4 bg-white rounded-xl">
-        <div className="grid gap-6 mb-6 md:grid-cols-3">
-          <div>
+        <div className=" grid gap-6 mb-6 md:grid-cols-3">
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="author"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Author
             </label>
             <input
               type="text"
               id="author"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={user?.name || ""}
               name="author"
               required
@@ -476,17 +639,21 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="workgroup"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Workgroup
             </label>
             <input
               type="text"
               id="workgroup"
-              className="bg-gray-200 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 opacity-50 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={user?.workgroup || ""}
               name="workgroup"
               required
@@ -494,10 +661,13 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="due_date"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Due Date
             </label>
@@ -506,23 +676,28 @@ const Page = ({ searchParams }) => {
               id="due_date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               name="due_date"
               required
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="job_template_name"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Checklist Template Name
             </label>
             <input
               type="text"
               id="job_template_name"
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={jobTemplateName}
               onChange={(e) => setJobTemplateName(e.target.value)}
               name="job_template_name"
@@ -530,17 +705,21 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="doc_num"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Document no.
             </label>
             <input
               type="text"
               id="doc_num"
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               name="doc_num"
               value={docNum}
               onChange={(e) => setDocNum(e.target.value)}
@@ -548,17 +727,21 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="checklist_ver"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Checklist Version
             </label>
             <input
               type="text"
               id="checklist_ver"
-              className="bg-white border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               name="checklist_ver"
               value={checklistVer}
               onChange={(e) => setChecklistVer(e.target.value)}
@@ -566,17 +749,21 @@ const Page = ({ searchParams }) => {
             />
           </div>
 
-          <div>
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="line_name"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Line Name
             </label>
             <select
               id="line_name"
               name="line_name"
-              className="max-w-[300px] bg-white border border-gray-300 text-[1em] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder-gray-400 text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
               value={lineName}
               onChange={(e) => setLineName(e.target.value)}
             >
@@ -584,7 +771,9 @@ const Page = ({ searchParams }) => {
                 {jobTemplate?.LINE_NAME || "—"}
                 {" (Current) "}
               </option>
-              <option value="N/A">&nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;</option>
+              <option value="N/A">
+                &nbsp;&nbsp;&nbsp;N/A&nbsp;&nbsp;&nbsp;
+              </option>
               {selectLineNames.map((ln) => (
                 <option key={ln._id} value={ln.name}>
                   {ln.name}
@@ -593,10 +782,13 @@ const Page = ({ searchParams }) => {
             </select>
           </div>
 
-          <div className="z-50">
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="timeout-select"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Timeout
             </label>
@@ -607,7 +799,8 @@ const Page = ({ searchParams }) => {
                 hasTouchedTimeout.current = true;
                 setTimeoutValue(e.target.value);
               }}
-              className="bg-white border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-black"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
             >
               <option value="">Select Timeout</option>
               {TIMEOUT_OPTIONS.map((opt) => (
@@ -618,10 +811,13 @@ const Page = ({ searchParams }) => {
             </select>
           </div>
 
-          <div className="z-50">
+          <div className="relative flex items-center gap-1 mb-1">
             <label
               htmlFor="checklist-type"
-              className="block mb-2 text-sm font-medium text-black"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
             >
               Checklist Type
             </label>
@@ -637,7 +833,8 @@ const Page = ({ searchParams }) => {
               name="checklist-type"
               value={checklistType}
               onChange={setChecklistType}
-              className="z-50"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -658,7 +855,10 @@ const Page = ({ searchParams }) => {
               </label>
             </div>
 
-            <div id="agile-skip-check-wrap" style={{ border: "1px solid none", padding: "5px" }}>
+            <div
+              id="agile-skip-check-wrap"
+              style={{ border: "1px solid none", padding: "5px" }}
+            >
               <input
                 type="checkbox"
                 id="agile-skip-check"
@@ -673,10 +873,13 @@ const Page = ({ searchParams }) => {
                 &nbsp;&nbsp;&nbsp;Agile Skip Check
               </label>
             </div>
-
           </div>
+
           <div className="z-50">
-            <div id="sort-item-wrap" style={{ border: "1px solid none", padding: "5px" }}>
+            <div
+              id="sort-item-wrap"
+              style={{ border: "1px solid none", padding: "5px" }}
+            >
               <input
                 type="checkbox"
                 id="sort-item-by-position"
@@ -692,7 +895,10 @@ const Page = ({ searchParams }) => {
               </label>
             </div>
 
-            <div id="public-edit-wrap" style={{ border: "1px solid none", padding: "5px" }}>
+            <div
+              id="public-edit-wrap"
+              style={{ border: "1px solid none", padding: "5px" }}
+            >
               <input
                 type="checkbox"
                 id="public-edit-in-workgroup"
@@ -707,29 +913,60 @@ const Page = ({ searchParams }) => {
                 &nbsp;&nbsp;&nbsp;Public edit in workgroup
               </label>
             </div>
-
           </div>
 
-          <div className="flex flex-col items-start space-y-2 border-red-300" >
+          <div className="relative flex flex-col items-start space-y-2 border-red-300">
+            <label
+              htmlFor="profileGroup"
+              className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
+            >
+              Profiles
+            </label>
+
+            <select
+              id="profileGroup"
+              name="profileGroup"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
+              value={profileGroup}
+              onChange={(e) => {
+                setProfileGroup(e.target.value);
+              }}
+              disabled={profilesLoading}
+            >
+              <option value="">N/A</option>
+              {(profiles || []).map((ln) => (
+                <option key={ln._id} value={String(ln._id)}>
+                  {ln.PROFILE_NAME}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Notify Active */}
           <div className="flex flex-col gap-5 ">
             <div className="flex gap-5 w-full">
-              <div className="flex flex-col w-full">
+              <div className="relative flex flex-col w-full">
                 <label
                   htmlFor="notify-active"
-                  className="block mb-2 text-sm font-medium text-black"
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
                 >
                   Add Notify Active
                 </label>
                 <Select
                   inputId="notify-active"
-                  options={filteredOptions}
+                  options={notifyOptions}     // ✅ เปลี่ยนตรงนี้
                   value={selectedNotify}
                   onChange={setSelectedNotify}
                   isSearchable
-                  className="z-30"
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                            focus:outline-none focus:border-blue-500"
                 />
               </div>
               <button
@@ -758,10 +995,13 @@ const Page = ({ searchParams }) => {
           {/* Notify Overdue */}
           <div className="flex flex-col gap-5">
             <div className="flex gap-5 w-full">
-              <div className="flex flex-col w-full">
+              <div className="relative flex flex-col w-full">
                 <label
                   htmlFor="notify-overdue"
-                  className="block mb-2 text-sm font-medium text-black"
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
                 >
                   Add Notify Overdue
                 </label>
@@ -771,7 +1011,9 @@ const Page = ({ searchParams }) => {
                   value={selectedNotifyOverdue}
                   onChange={setSelectedNotifyOverdue}
                   isSearchable
-                  className="z-20"
+                  style={{ border: "none" }}
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 
+                       focus:outline-none focus:border-blue-500"
                 />
               </div>
               <button
@@ -800,20 +1042,24 @@ const Page = ({ searchParams }) => {
           {/* Approver */}
           <div className="flex flex-col gap-5 ">
             <div className="flex gap-5 w-full">
-              <div className="flex flex-col w-full">
+              <div className="relative flex flex-col w-full">
                 <label
                   htmlFor="approver"
-                  className="block mb-2 text-sm font-medium text-black"
+                  className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10
+                        peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                        peer-valid:top-1 peer-valid:text-xs"
                 >
                   Add Approver
                 </label>
                 <Select
                   inputId="approver"
-                  options={filteredOptions}
+                  options={approverOptions} // ✅ users + emailGroups
                   value={selectedApprover}
                   onChange={setSelectedApprover}
                   isSearchable
-                  className="z-40"
+                  className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 />
               </div>
               <button

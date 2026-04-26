@@ -27,7 +27,6 @@ import { trusted } from "mongoose";
 
 
 
-
 async function getEmailfromUserID(userID) {
   try {
     const user = await User.findOne({ _id: new ObjectId(userID) });
@@ -60,29 +59,58 @@ const saveDatatoEmailStack = async (emailList,jobDataInfo) => {
   }
 
    const emailString = emailList.join(",");
-    try{
-           await connectToDb();
-           const _emailStacker = new EmailStack({
-               EMAIL_SUBJECT: `${jobDataInfo.linename} : ${jobDataInfo.name} - CheckList activated `,
-               EMAIL_TO:emailString,
-               EMIAL_SENDER: "epm-system@wdc.com",
-               EMAIL_CC:'',
-               EMAIL_BODY:`
-                        You have a new checklist to do. Please check the EPM system for more details.
-                        Details:
-                        Checklist Name : ${jobDataInfo.name}
-                        Job Line  : ${jobDataInfo.linename}
-                        Activated by: ${jobDataInfo.activatedBy}
-                        Timeout: ${jobDataInfo.timeout}
-                        Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
-                        `,
-          });      
-          //console.log('_emailStacker',_emailStacker);
-          await _emailStacker.save();
-          //console.log("บันทึกสำเร็จ");
-    }catch(err){
-      console.error(err);
-    }
+
+try {
+  await connectToDb();
+
+  const safeMcTag = jobDataInfo?.mc_tag || {};
+  const safeWdTag =
+    typeof safeMcTag === "object" && safeMcTag !== null
+      ? safeMcTag.WD_TAG || ""
+      : "";
+  const safeMachineName =
+    typeof safeMcTag === "object" && safeMcTag !== null
+      ? safeMcTag.MACHINE_NAME || ""
+      : typeof safeMcTag === "string"
+      ? safeMcTag
+      : "";
+
+  let detailsText = "";
+  if (safeWdTag || safeMachineName) {
+    detailsText = `Details: ${
+      safeWdTag ? `WD_TAG: ${safeWdTag}` : ""
+    }${
+      safeWdTag && safeMachineName ? " | " : ""
+    }${
+      safeMachineName ? `MACHINE_NAME: ${safeMachineName}` : ""
+    }`;
+  }
+
+  const _emailStacker = new EmailStack({
+          EMAIL_SUBJECT: `${jobDataInfo?.linename || "-"} : ${
+            jobDataInfo?.name || "-"
+          } - CheckList activated`,
+          EMAIL_TO: emailString,
+          EMIAL_SENDER: "epm-system@wdc.com",
+          EMAIL_CC: "",
+          EMAIL_BODY: `
+      You have a new checklist to do. Please check the EPM system for more details.
+      ${detailsText}
+      Checklist Name : ${jobDataInfo?.name || "-"}
+      Job Line : ${jobDataInfo?.linename || "-"}
+      Activated by: ${jobDataInfo?.activatedBy || "-"}
+      Timeout: ${jobDataInfo?.timeout || "-"}
+      Direct link : ${process.env.NEXT_PUBLIC_HOST_LINK}/pages/login
+      `,
+        });
+
+        await _emailStacker.save();
+      } catch (err) {
+        if (process.env.NEXT_PUBLIC_DEBUG == "true") {
+          console.log("Error Code : 002");
+          console.error("📄 Stack trace:\n", err.stack);
+        }
+      }
 }
 
 
@@ -121,6 +149,13 @@ const logText = async () => {
   // console.log("-----------------------------------------------------------");
 };
 
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
+
+
+
 export const POST = async (req, res) => {
   await connectToDb();
   //console.log("Checking for overdue jobs");
@@ -133,11 +168,34 @@ export const POST = async (req, res) => {
     updatedAt: { $gte: lrv_Date }
   })
 
-  //console.log("jobs ",jobs.length);
+ //อ่าน users เก็บไว้ใน Array ทั้งหมด 
+  const users = await User.find().select("_id EMAIL").lean();
+    const userMap = users.reduce((acc, u) => {
+      acc[u._id.toString()] = u.EMAIL;
+      return acc;
+    }, {});
+   
 
-  // jobs.forEach(job => {
-  //       console.log(job.updatedAt);
-  // });
+    const jobItemTemplatess = await JobItemTemplate.find()
+    .select(`
+      _id
+      JOB_ITEM_TEMPLATE_TITLE
+      JOB_ITEM_TEMPLATE_NAME
+      JobItemTemplateCreateID
+      JOB_TEMPLATE_ID
+      UPPER_SPEC
+      LOWER_SPEC
+      TEST_METHOD
+      TEST_LOCATION_ID
+      INPUT_TYPE
+      pos
+    `)
+    .lean();
+
+
+  //console.log('jobItemTemplateMap',jobItemTemplateMap);
+  //console.log('ค้นหา Item ',jobItemTemplateMap['688cdabff0e066c0f49f597d']);
+
 
   const now = new Date();
  // return NextResponse.json({ status: 200 });
@@ -273,16 +331,22 @@ export const POST = async (req, res) => {
     // console.log("scheduler=>",scheduler);
 
     //console.log("-------Checking for active by schedule (±60 minutes)--------");
-
-    const now = new Date(); // เวลาปัจจุบัน
-    const startTime = new Date(now); // สำเนาเวลาปัจจุบัน
-    startTime.setMinutes(now.getMinutes() - 60); // ลบ 60 นาที
     
-    const endTime = new Date(now); // สำเนาเวลาปัจจุบัน
-    endTime.setMinutes(now.getMinutes() + 600); // เพิ่ม 60 นาที
+    const baseDate = new Date();//เวลาปัจจุบัน
+    //const baseDate = new Date(2026, 2, 1, 0, 0, 0); // กำหนดเวลาใดๆ   เดือน ต้อง-1 เสมอ
+
+    //const now = new Date(); // เวลาปัจจุบัน
+    const startTime = new Date(baseDate); // สำเนาเวลาปัจจุบัน
+    startTime.setMinutes(startTime.getMinutes() - 60); // ลบ 60 นาที
+    console.log('startTime',startTime);
+    
+    const endTime = new Date(baseDate); // สำเนาเวลาปัจจุบัน
+    endTime.setMinutes(startTime.getMinutes() + 60); // เพิ่ม 60 นาที
+    console.log('endTime',endTime);
     //console.log("scheduler startTime:",startTime);  
     //console.log("scheduler endTime:",endTime);  
-    
+    // console.time("schedual-check-start");
+
     const scheduler = await Schedule.find({
       //_id:new ObjectId('685bafc08b0fe0aeab1b128c'),
       //WORKGROUP_ID:"66a083975eb2368f98ece93e",  คัดกรองเอาเฉพาะ กลุ่ม ESD-RT
@@ -291,24 +355,30 @@ export const POST = async (req, res) => {
          $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
        },
       STATUS:"plan", 
-    }).limit(60);
-   
+    }).limit(120);
+      
     console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
-    //return NextResponse.json({ status: 200 });
+    //  console.log("***********schedual ที่ค้นเจอ**********************");
+    //          console.log('scheduler',scheduler);
+    //  console.log("************************************************");
+    
+    //return NextResponse.json({ status: 200 });// เปิด เพื่อทำการทดสอบ
+    
+    var workgroup_id_list=new Array();
+
     scheduler.map(async (schedulers) => {
-      //console.log("scheduler=>",scheduler);
-      //if (
-      //  schedulers.ACTIVATE_DATE.toDateString() === now.toDateString() ||
-      //  schedulers.ACTIVATE_DATE < now
-      //) {
-       // console.log(" schedulers.JOB_TEMPLATE_ID => ", schedulers.JOB_TEMPLATE_ID );
-        //1 create job
-        //1.1 find job template where jobtemplateid = jobtemplateid and jobtemplatecreateid = jobtemplatecreateid
-        //console.log("ค้นหา jobTemplate._id ด้วย scheduler.JOB_TEMPLATE_ID ",schedulers.JOB_TEMPLATE_ID);
+      
+      const activateDate = schedulers.ACTIVATE_DATE;
+      
+      if (!workgroup_id_list.some(id => String(id) === String(schedulers.WORKGROUP_ID))) {
+        workgroup_id_list.push(schedulers.WORKGROUP_ID);
+      }
+
         const jobTemplate = await JobTemplate.findOne({
           //JobTemplateCreateID: schedulers.JOB_TEMPLATE_CREATE_ID,
           _id:schedulers.JOB_TEMPLATE_ID
         });
+
 
         //console.log('jobTemplate ที่ค้นเจอ ',jobTemplate);
         if (!jobTemplate) {
@@ -319,41 +389,28 @@ export const POST = async (req, res) => {
           return;
         }
 
+
+      
         //1.2 find approvers where jobtemplateid = jobtemplateid and jobtemplatecreateid = jobtemplatecreateid  1 job template can have multiple approvers
 
-       //console.log('jobTemplate_id',schedulers.JOB_TEMPLATE_ID);//jmp:1234
+      
        const _JobTemplate=await JobTemplate.findById(schedulers.JOB_TEMPLATE_ID);
-      // console.log('jobTemplate.JobTemplateCreateID',_JobTemplate.JobTemplateCreateID);
-
-        //console.log('schedulers',schedulers);  
-
+     
         const approvers = await Approves.find({
           JOB_TEMPLATE_ID: schedulers.JOB_TEMPLATE_ID,
           JobTemplateCreateID: _JobTemplate.JobTemplateCreateID,
         });
-
-        //const approvers = await Approves.find({
-        //  JobTemplateCreateID: schedulers.JOB_TEMPLATE_CREATE_ID,
-        //});
-
-        //console.log('approvers',approvers);  
-
         if (!approvers) {
-          //   return NextResponse.json({ status: 404, file: __filename, error: "Approvers not found" });
-          // console.log(
-          //   "Approvers not found :" + schedulers.JOB_TEMPLATE_CREATE_ID
-          // );
+          console.log("ไม่พบผู้ Approve");
           return;
         }
 
         const newID = await Status.findOne({ status_name: "new" });
         if (!newID) {
           console.log("Status not found :" + schedulers.JOB_TEMPLATE_CREATE_ID);
-          //return NextResponse.json({ status: 404, file: __filename, error: "Status not found" });
           return;
         }
-
-        //console.log("jobTemplate=>",jobTemplate);
+      
         //1.3 create job
         const job = new Job({
           JOB_NAME: jobTemplate.JOB_TEMPLATE_NAME,
@@ -366,32 +423,41 @@ export const POST = async (req, res) => {
           JOB_APPROVERS: approvers.map((approverss) => approverss.USER_ID),
           TIMEOUT: jobTemplate.TIMEOUT,
           LINE_NAME: schedulers.LINE_NAME,
+          WD_TAG: schedulers?.MC_TAG?.WD_TAG || "",
           PICTURE_EVEDENT_REQUIRE: jobTemplate.PICTURE_EVEDENT_REQUIRE || false,
           AGILE_SKIP_CHECK : jobTemplate.AGILE_SKIP_CHECK || false,
           SORT_ITEM_BY_POSITION : jobTemplate.SORT_ITEM_BY_POSITION || false,
-        });
+          PROFILE_GROUP: schedulers.PROFILE_GROUP || "Unknown",
+        
+          createdAt: activateDate, //แบบระบุเวลา
+          updatedAt: activateDate, //แบบระบุเวลา
 
-         await job.save();
+        });        
+        // await job.save(); // แบบไม่ระบุเวลา
+        await job.save({ timestamps: false }); // แบบระบุเวลา 
 
-        //console.log("Submit job Done. JOB_APPROVERS=>",job.JOB_APPROVERS);
-        //return NextResponse.json({ status: 200 });  //-->Check
-         
+        //return NextResponse.json({ status: 200 });  //-->Check         
         //  //2 update to jobtemplateactivate
         const jobTemplateActivate = new JobTemplateActivate({
           JobTemplateID: jobTemplate._id,
           JobTemplateCreateID: jobTemplate.JobTemplateCreateID,
           JOB_ID: job._id,
         });
-
-        // console.log("jobTemplateActivate=>",jobTemplateActivate);
-
-        await jobTemplateActivate.save();
-
+         await jobTemplateActivate.save();
+        
+       
         //3 create job item
-        //3.1 find job item template where jobtemplateid = jobtemplateid and jobtemplatecreateid = jobtemplatecreateid
-        const jobItemTemplates = await JobItemTemplate.find({
-          JOB_TEMPLATE_ID: jobTemplate._id,
-        });
+        // const jobItemTemplates = await JobItemTemplate.find({
+        //   JOB_TEMPLATE_ID: jobTemplate._id,
+        // });
+        //console.log('_id ที่ต้องการ ค้นหา ',jobTemplate._id.toString());
+
+       const jobTemplateId = jobTemplate?._id?.toString();
+        const jobItemTemplates = jobItemTemplatess.filter(t =>
+          t?.JOB_TEMPLATE_ID?.toString() === jobTemplateId
+        );
+        //console.log('jobItemTemplates ที่ค้นหา ',jobItemTemplates);
+
         if (!jobItemTemplates) {
           //return NextResponse.json({ status: 404, file: __filename, error: "Job item templates not found" });
           console.log(
@@ -400,79 +466,63 @@ export const POST = async (req, res) => {
           return;
         }
 
-        //3.2 create job item
-        await Promise.all(
-          jobItemTemplates.map(async (jobItemTemplate) => {
-           // console.log("jobItemTemplate=>",jobItemTemplate);
-            const jobItem = new JobItem({
-              JOB_ID: job._id,
-              JOB_ITEM_TITLE: jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE,
-              JOB_ITEM_NAME: jobItemTemplate.JOB_ITEM_TEMPLATE_NAME,
-              UPPER_SPEC: jobItemTemplate.UPPER_SPEC,
-              LOWER_SPEC: jobItemTemplate.LOWER_SPEC,
-              TEST_METHOD: jobItemTemplate.TEST_METHOD,
-              TEST_LOCATION_ID: jobItemTemplate.TEST_LOCATION_ID,
-              JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
-              BEFORE_VALUE2: null,
-              INPUT_TYPE:jobItemTemplate.INPUT_TYPE||"All",
-              POS:jobItemTemplate.pos||0,
-            });
-           // console.log("jobItem=>",jobItem);
-            await jobItem.save();
+       // 3.2 create job item (sequential)
+        let countItemIndex = 1;
+        for (const jobItemTemplate of jobItemTemplates) {
+          const jobItem = new JobItem({
+            JOB_ID: job._id,
+            JOB_ITEM_TITLE: jobItemTemplate.JOB_ITEM_TEMPLATE_TITLE,
+            JOB_ITEM_NAME: jobItemTemplate.JOB_ITEM_TEMPLATE_NAME,
+            UPPER_SPEC: jobItemTemplate.UPPER_SPEC,
+            LOWER_SPEC: jobItemTemplate.LOWER_SPEC,
+            TEST_METHOD: jobItemTemplate.TEST_METHOD,
+            TEST_LOCATION_ID: jobItemTemplate.TEST_LOCATION_ID,
+            JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
+            BEFORE_VALUE2: null,
+            BEFORE_VALUE: "None",
+            INPUT_TYPE: jobItemTemplate.INPUT_TYPE || "All",
+            POS:(jobItemTemplate.pos ?? 0) > 0
+                ? jobItemTemplate.pos
+                : countItemIndex,
+            createdAt: new Date(),
+          });
 
-            const currentJobItems = await JobItem.find({
-              JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
-            });
-            // if there is no job item yet
-            if (currentJobItems.length === 1) {
-              jobItem.BEFORE_VALUE = "None";
-            } else {
-              // Initialize BEFORE_VALUE with a default value
-              let BEFORE_VALUE = "None";
-              // Iterate to find the last job item with an actual value
-              for (let i = currentJobItems.length - 2; i >= 0; i--) {
-                if (currentJobItems[i].ACTUAL_VALUE) {
-                  BEFORE_VALUE = currentJobItems[i].ACTUAL_VALUE;
-                  break;
-                }
-              }
-              // Set BEFORE_VALUE based on the found actual value or default value
-              jobItem.BEFORE_VALUE = BEFORE_VALUE;
-            }
+          await jobItem.save();
 
-            await jobItem.save();
-
-            //4.update approves jobitemtemplateactivate
-            const jobItemTemplateActivate = new JobItemTemplateActivate({
-              JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
-              JobItemTemplateCreateID: jobItemTemplate.JobItemTemplateCreateID,
-              JOB_ITEM_ID: jobItem._id,
-            });
-             await jobItemTemplateActivate.save();
-          })
-        );
-
+          const jobItemTemplateActivate = new JobItemTemplateActivate({
+            JOB_ITEM_TEMPLATE_ID: jobItemTemplate._id,
+            JobItemTemplateCreateID: jobItemTemplate.JobItemTemplateCreateID,
+            JOB_ITEM_ID: jobItem._id,
+          });
+          await jobItemTemplateActivate.save();
+         // console.log('countItemIndex=>',countItemIndex);  
+          countItemIndex++;
+        }
+        
+        
+         //-------------------ส่ง email หาคนที่ จะรับแจ้งเตือน---------------------------
         var userEmailNotified = [];
         try {
-          // ใช้ await เพื่อรอให้คำสั่ง find สำเร็จ
+          // ใช้ await เพื่อรอให้คำสั่ง find สำเร็จ  1234
           const notified = await Notifies.find({
             JOB_TEMPLATE_ID: jobTemplate._id,
           });
           // ใช้ for...of loop เพื่อรองรับการใช้ await ในลูป
           for (const element of notified) {
             //console.log("element->USER_ID", element.USER_ID); // แสดง USER_ID ที่ได้รับ
-            const email = await getEmailfromUserID(element.USER_ID); // รอให้ getEmailfromUserID คืนค่า
+            const email = userMap[element.USER_ID]; // await getEmailfromUserID(element.USER_ID); // รอให้ getEmailfromUserID คืนค่า
             //console.log("element->USER_ID->Email", email); // แสดง email ที่ได้รับ
             userEmailNotified.push(email); // เก็บข้อมูลใน array
           }
         } catch (error) {
           console.error("Error:", error);
         }
-
+        
+       //-------------------ส่ง email หาคนที่ จะ Approve---------------------------
         var emailFromApprover = [];
         try {
           for (const element of job.JOB_APPROVERS) {
-            const approveEmail = await getEmailfromUserID(element);
+            const approveEmail =userMap[element]; //await getEmailfromUserID(element);
             emailFromApprover.push(approveEmail);
           }
 
@@ -483,19 +533,60 @@ export const POST = async (req, res) => {
         const activater = "Scheduler";
         const jobData = {
           name: job.JOB_NAME,
+          mc_tag: schedulers.MC_TAG || "",
           activatedBy: activater,
           timeout: job.TIMEOUT,
           linename:job.LINE_NAME,
         };
-
+        //-------------------------------------------------------------------------
         // console.log("jobData=>", jobData);
         // console.log("userEmails=>", scheduler);
+        //console.log("กำลังลบ schedulers._id ",schedulers._id);
         await Schedule.deleteOne({ _id: new ObjectId(schedulers._id) });
         await saveDatatoEmailStack(userEmails, jobData);
-      //  await sendEmails(userEmails, jobData);
-      //}
     });
-    //console.log("Success Auto Activated!!");
+
+    //console.timeEnd("schedual-check-start");
+    console.log("--Done--");
+    try{
+
+             for (const element of workgroup_id_list) {
+               const topic = String(element);
+
+              //-------------------------SSE----------------------------->>
+                      try{
+                              var workgroup_id="";
+                              //if(isJob){
+                                  workgroup_id=topic;
+                              //}else{
+                              //   workgroup_id=findSchedual.WORKGROUP_ID;
+                              // }
+                              if (typeof workgroup_id === 'object' && workgroup_id !== null) {
+                                // ตรวจสอบว่าเป็น ObjectId ของ MongoDB จริง ๆ
+                                if (workgroup_id.toString) {
+                                  workgroup_id = workgroup_id.toString();
+                                }
+                              }
+
+                                try {
+                                  //const payload = { JOB_ID: job._id};
+                                  broadcast(workgroup_id, "refresh");
+                                } catch (err) {
+                                  console.error("emit error:", err);
+                                } 
+                              
+                      }catch(err){
+                            console.log("SSE error ",err);
+                      }
+
+                //--------------------------------------------------------->>
+
+             }
+      
+    }catch(err){
+          console.log("schedual-checker error");
+    }
+   //console.log("Success Auto Activated!!");
     return NextResponse.json({ status: 200 ,message:"Success Auto Activated!!"});
   } catch (error) {
     console.error("Check schedual Error: ", error);

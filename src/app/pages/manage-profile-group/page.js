@@ -11,6 +11,8 @@ import { getSession } from "@/lib/utils/utils.js";
 import Swal from "sweetalert2";
 import Image from "next/image";
 import useFetchUser from "@/lib/hooks/useFetchUser";
+import useFetchCards from "@/lib/hooks/useFetchCards";
+import { usePathname } from "next/navigation";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { FaPlus } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -26,6 +28,10 @@ const Page = () => {
 
   const [isLoading, setIsLoading] = useState(false); 
   const { user, isLoading: userLoading, error: userError } = useFetchUser();
+  const { cards } = useFetchCards(false);
+  const pathname = usePathname();
+  const pageCard = (cards || []).find((c) => Array.isArray(c.LINK) && c.LINK.includes(pathname));
+  const logoPath = pageCard?.LOGO_PATH || "/assets/card-logo/manageLineName.png";
   const [profileGroups, setProfileGroups] = useState([]); // ✅ ต้องมีบรรทัดนี้
 
 
@@ -128,6 +134,9 @@ const handleDeleteProfile = async (profile) => {
             }
             alert(data.message);
           }catch(err){
+                      console.log("Error Code : 128");
+
+                 console.error("📄 Stack trace:\n", err.stack);
                 console.log(err);
           }
 };
@@ -167,7 +176,9 @@ const handleRenameProfile = async (profile) => {
             const data = await res.json();
             console.log('data',data);
           }catch(err){
+                      console.log("Error Code : 129");
 
+                 console.error("📄 Stack trace:\n", err.stack);
           }
       // try {
       //   const res = await fetch(`/api/profile-group/update-profile-group`, {
@@ -288,8 +299,8 @@ const handleRenameProfile = async (profile) => {
             <ArrowBackIosNewIcon />
           </Link>
           <Image
-            src="/assets/card-logo/manageLineName.png"
-            alt="wd logo"
+            src={logoPath}
+            alt="page logo"
             width={50}
             height={50}
           />

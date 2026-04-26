@@ -5,6 +5,11 @@ import { NextResponse } from 'next/server';
 import { JobApproves } from "@/lib/models/JobApprove";
 import { User } from "@/lib/models/User.js";
 
+
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
 export const POST = async (req, res) => {
     await connectToDb();
     const body = await req.json();
@@ -35,9 +40,28 @@ export const POST = async (req, res) => {
         });
 
         await jobApprove.save();
+        
+
+
+
+
+      //----------------SSE------------------------------->>
+            try {
+              const payload = { JOB_ID: job_id};
+              broadcast(job.WORKGROUP_ID, payload);
+            } catch (err) {
+              console.error("emit error:", err);
+            }
+      //--------------------------------------------------->>    
+
+
+
         return NextResponse.json({ status: 200,  message: isApproved ? "Job has been approved" : "Job has been rejected" });
     }
     catch (err) {
+        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 010");
+        }
         return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
 }

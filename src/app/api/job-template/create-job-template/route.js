@@ -74,6 +74,9 @@ export const POST = async (req, res) => {
 
     return NextResponse.json({ status: 200, jobTemplate });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 055");
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

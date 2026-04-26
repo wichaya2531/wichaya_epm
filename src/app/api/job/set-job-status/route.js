@@ -59,7 +59,10 @@ export const GET = async (req, res) => {
         status: 200,message:'job not found'  
       });
   } catch (err) {
-      console.log(err);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+        console.log(err);
+        console.log("Error Code : 035");
+     }
       return NextResponse.json({
         status: 500,      
         error: err.message,

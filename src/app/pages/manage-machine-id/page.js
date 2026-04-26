@@ -17,16 +17,16 @@ const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useFetchUser();
   const [machines, setMachines] = useState([]);
-  
-  //const [loading, error,setLoading ] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  //const { machines, loading, error, setMachines }=useFetchMachines(user);
-
   const [currentUser, setcurrentUser] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [wdTag, setWdTag] = useState("");
   const [machineName, setMachineName] = useState("");
+
+  // ── Search + PageSize state ───────────────────────────────────────────────────
+  const [searchWdTag, setSearchWdTag]             = useState("");
+  const [searchMachineName, setSearchMachineName] = useState("");
+  const [pageSize, setPageSize]                   = useState(10);
   const lineNameHeader = [
     "ID",
     "WD_TAG",
@@ -47,6 +47,8 @@ const Page = () => {
         const data = await res.json();
         setMachines(data.machines);
       } catch (err) {
+                  console.log("Error Code : 127");
+
         setError(err);
       } finally {
         setLoading(false);
@@ -58,7 +60,14 @@ const Page = () => {
 
 
   
-  const machineTableBody = machines?.map((machine, index) => ({
+  // ── Filtered list ────────────────────────────────────────────────────────────
+  const filteredMachines = machines?.filter((machine) => {
+    const matchWd   = machine.wd_tag?.toLowerCase().includes(searchWdTag.toLowerCase());
+    const matchName = machine.name?.toLowerCase().includes(searchMachineName.toLowerCase());
+    return matchWd && matchName;
+  }) ?? [];
+
+  const machineTableBody = filteredMachines.map((machine, index) => ({
     ID: index + 1,
     WD_TAG: machine.wd_tag || "Unknown",
     "MACHINE NAME": machine.name || "Unknown",
@@ -165,20 +174,43 @@ const Page = () => {
   const handleUpdate = async (machine) => {
     const { value: inputs } = await Swal.fire({
       title: "Update Machine",
-      html: `
-<div style="display: flex; flex-direction: column;">
-    <label for="wdTag">WD TAG</label>
-    <input id="wdTag" class="swal2-input" placeholder="Enter new WD_TAG" value="${
-      machine.wd_tag || ""
-    }">
+      html: `<div style="display:flex; flex-direction:column; gap:16px;">
 
-    <label for="machineName" style="margin-top: 10px;">MACHINE NAME</label>
-    <input id="machineName" class="swal2-input" placeholder="Enter new Machine Name" value="${
-      machine.name || ""
-    }">
-</div>
+  <!-- WD TAG -->
+  <div style="position:relative;">
+    <label for="wdTag"
+      class="pointer-events-none absolute left-3 top-1 bg-white px-1
+             text-gray-500 text-sm transition-all z-10
+             peer-focus:top-[-6px] peer-focus:text-xs peer-focus:text-blue-600
+             peer-valid:top-[-6px] peer-valid:text-xs">
+      WD TAG
+    </label>
 
-      `,
+    <input id="wdTag"
+      class="swal2-input peer w-[320px] border border-gray-300 rounded-md
+             px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+      placeholder=" "
+      value="${machine.wd_tag || ""}">
+  </div>
+
+  <!-- MACHINE NAME -->
+  <div style="position:relative;">
+    <label for="machineName"
+      class="pointer-events-none absolute left-3 top-1 bg-white px-1
+             text-gray-500 text-sm transition-all z-10
+             peer-focus:top-[-6px] peer-focus:text-xs peer-focus:text-blue-600
+             peer-valid:top-[-6px] peer-valid:text-xs">
+      MACHINE NAME
+    </label>
+
+    <input id="machineName"
+      class="swal2-input peer w-[320px] border border-gray-300 rounded-md
+             px-3 pt-5 pb-2 focus:outline-none focus:border-blue-500"
+      placeholder=" "
+      value="${machine.name || ""}">
+  </div>
+
+</div>`,
       focusConfirm: false,
       showCancelButton: true,
       cancelButtonText: "Cancel",
@@ -310,34 +342,45 @@ const Page = () => {
         </h2>
         <div className="mb-6 max-w-lg space-y-4 flex flex-col h-full">
           <div className="flex flex-row gap-4">
-            <div className="flex flex-col w-1/2">
+            <div className="relative flex flex-col w-1/2">
               <label
                 htmlFor="wdTag"
-                className="text-sm font-medium mb-2 text-gray-700"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 WD TAG
               </label>
               <input
                 type="text"
                 id="wdTag"
-                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                
+                    //className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 value={wdTag}
                 onChange={(e) => setWdTag(e.target.value)}
                 placeholder="Enter WD_TAG"
               />
             </div>
             {/* MACHINE NAME */}
-            <div className="flex flex-col w-1/2">
+            <div className="relative flex flex-col w-1/2">
               <label
                 htmlFor="machineName"
-                className="text-sm font-medium mb-2 text-gray-700"
+                className="pointer-events-none absolute left-3 top-0 bg-white px-1
+                          text-gray-500 text-sm transition-all z-10
+                          peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-600
+                          peer-valid:top-1 peer-valid:text-xs"
               >
                 MACHINE NAME
               </label>
               <input
                 type="text"
                 id="machineName"
-                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                //className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
+                       focus:outline-none focus:border-blue-500"
                 value={machineName}
                 onChange={(e) => setMachineName(e.target.value)}
                 placeholder="Enter MACHINE NAME"
@@ -366,14 +409,83 @@ const Page = () => {
             </div>
           </div>
         </div>
+        {/* ── Search + Rows Bar ──────────────────────────────────────────── */}
+        <div className="flex items-end gap-3 mb-0">
+          {/* Search WD_TAG */}
+          <div className="relative w-[200px]">
+            <label className="pointer-events-none absolute left-3 top-1 bg-white px-1 text-gray-500 text-xs z-10">
+              Search WD TAG
+            </label>
+            <input
+              type="text"
+              value={searchWdTag}
+              onChange={(e) => { setSearchWdTag(e.target.value); setCurrentPage(1); }}
+              placeholder="e.g. WD-001"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 text-sm
+                         focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Search MACHINE NAME */}
+          <div className="relative w-[200px]">
+            <label className="pointer-events-none absolute left-3 top-1 bg-white px-1 text-gray-500 text-xs z-10">
+              Search Machine Name
+            </label>
+            <input
+              type="text"
+              value={searchMachineName}
+              onChange={(e) => { setSearchMachineName(e.target.value); setCurrentPage(1); }}
+              placeholder="e.g. CNC-01"
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 text-sm
+                         focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Rows */}
+          <div className="relative w-[100px]">
+            <label className="pointer-events-none absolute left-3 top-1 bg-white px-1 text-gray-500 text-xs z-10">
+              Rows
+            </label>
+            <select
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+              className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2 text-sm
+                         focus:outline-none focus:border-blue-500"
+            >
+              {[5, 10, 15, 20, 25, 50, 100].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Clear Button */}
+          {(searchWdTag || searchMachineName) && (
+            <button
+              type="button"
+              onClick={() => { setSearchWdTag(""); setSearchMachineName(""); setCurrentPage(1); }}
+              className="shrink-0 px-4 py-2 text-sm rounded-lg border border-red-400 text-red-500 hover:bg-red-50 transition"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Result count */}
+        {(searchWdTag || searchMachineName) && (
+          <p className="text-sm text-gray-500 mb-0">
+            Found <span className="font-semibold text-gray-700">{filteredMachines.length}</span> result{filteredMachines.length !== 1 ? "s" : ""}
+          </p>
+        )}
+
         <TableComponent
           headers={lineNameHeader}
           datas={machineTableBody}
           TableName="Machine list"
-          searchColumn="WD_TAG"
-          filterColumn="WD_TAG"
           currentPage={currentPage}
           onPageChange={(page) => setCurrentPage(page)}
+          controlledPageSize={pageSize}
+          disablePageSize
+          disableFilter
         />
       </div>
     </Layout>

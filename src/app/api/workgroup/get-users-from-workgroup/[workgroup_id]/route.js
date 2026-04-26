@@ -42,12 +42,18 @@ export const GET = async (req, {params}) => {
                         
                     }
                 );
-            }catch(err){}
+            }catch(err){
+                 if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                        console.log("Error Code : 102.1");
+                        console.error("📄 Stack trace:\n", err.stack);
+                 }
+            }
         }
         //console.log("users",users);
         return NextResponse.json({ status: 200, users });
     } catch (err) {
        // console.log("Err",err);
+                       console.log("Error Code : 102");
         return NextResponse.json({ status: 500, file: __filename, error: err.message });
     }
 

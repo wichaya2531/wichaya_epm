@@ -2,25 +2,58 @@ import { NextResponse } from "next/server";
 import { Job } from "@/lib/models/Job";
 import { Status } from "@/lib/models/Status";
 import { connectToDb } from "@/app/api/mongo/index.js";
+import { User } from "@/lib/models/User";
+
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
 
 export const PUT = async (req, res) => {
   await connectToDb();
   const body = await req.json();
   const { JOB_ID } = body;
+  const { user_id } = body; 
+  const { workgroup_id } = body; 
+  
+  //console.log("JOB_ID", JOB_ID);
+  //console.log("workgroup_id", workgroup_id);
+  const user = await User.findOne({ _id: user_id });
+  //console.log("user", user);
+  //return NextResponse.json({ status: 200 });
+
+//----------------SSE------------------------------->>
+      try {
+        const payload = { JOB_ID: JOB_ID};
+        broadcast(workgroup_id, payload);
+      } catch (err) {
+        console.error("emit error:", err);
+      }
+//--------------------------------------------------->>        
+
   try {
+
     const job = await Job.findOne({ _id: JOB_ID });
+    //console.log("monitor job ", job);
+
     const jobStatus = await Status.findOne({ _id: job.JOB_STATUS_ID });
     const jobStatusName = jobStatus.status_name;
     const ongoing_status = await Status.findOne({ status_name: "ongoing" });
-
+    
     // Update the job status to ongoing if the current status is new
     if (jobStatusName === "new" || jobStatusName === "renew") {
       job.JOB_STATUS_ID = ongoing_status._id;
+      job.LAST_GET_BY = user.EMP_NAME || "Unknown"; // Set LAST_GET to current date and time
+      job.LAST_GET_TIME = new Date();
       await job.save();
     }
 
-    return NextResponse.json({ status: 200 });
+    return NextResponse.json({ status: 200 ,infojson:job});
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 037");
+            console.log('JOB_ID',JOB_ID);
+     }
     console.error("Error occurred:", err); // Log the error
     return NextResponse.json({
       status: 500,

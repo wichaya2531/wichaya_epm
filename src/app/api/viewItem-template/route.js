@@ -23,6 +23,9 @@ export const GET = async (req, res) => {
       },
     });
   } catch (err) {
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 094");
+     }
     // ถ้าเกิดข้อผิดพลาด (เช่น ไฟล์ไม่เจอ) ให้ส่งสถานะ 404 กลับไป
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }

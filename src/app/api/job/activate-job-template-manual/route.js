@@ -32,7 +32,16 @@ function asInt(v, def = 1) {
   return Number.isFinite(n) && n > 0 ? n : def;
 }
 
+
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
+
 export async function POST(req) {
+
+  //console.log("flush from activate-job-template-manual");
+
   await connectToDb();
 
   let body;
@@ -71,12 +80,12 @@ export async function POST(req) {
       return NextResponse.json({ status: 404, error: "Status 'new' not found" });
     }
 
-    const approverUserIds = (approves || [])
-      .map(a => toObjectId(a?.USER_ID))
-      .filter(Boolean);
+   const approverUserIds = (approves || [])
+    .map(a => a?.USER_ID)
+    .filter(Boolean);
 
     const overdueNotifyUserIds = (overdueNotifies || [])
-      .map(n => toObjectId(n?.USER_ID))
+      .map(n => n?.USER_ID)
       .filter(Boolean);
 
     const jobItemTemplates = await JobItemTemplate.find({ JOB_TEMPLATE_ID: JobTemplateID }).lean();
@@ -103,6 +112,7 @@ export async function POST(req) {
       initialBeforeValueByTemplate.set(key, latestByTemplate.get(key) ?? "None");
     }
 
+    //console.log('approverUserIds',approverUserIds);
     // ----- phase 3: create jobs -----
     const baseJobDoc = {
       JOB_TEMPLATE_ID: jobTemplate._id,
@@ -121,7 +131,11 @@ export async function POST(req) {
       AGILE_SKIP_CHECK: jobTemplate.AGILE_SKIP_CHECK || false,
       SORT_ITEM_BY_POSITION: jobTemplate.SORT_ITEM_BY_POSITION || false,
       PUBLIC_EDIT_IN_WORKGROUP: jobTemplate.PUBLIC_EDIT_IN_WORKGROUP || false,
+      TYPE:jobTemplate.TYPE || "Unknown",
+      PROFILE_GROUP:jobTemplate.PROFILE_GROUP || "Unknown",
     };
+    
+    //console.log("baseJobDoc for create new ",baseJobDoc);  
 
     let createdJobs = [];
     if (jobCount > 1) {
@@ -212,6 +226,35 @@ export async function POST(req) {
     };
 
 
+          //-----------------------SSE-------------------------------------->>
+                try{
+                       // console.log('SSE flush',baseJobDoc);
+                        var workgroup_id="";
+                         //if(isJob){
+                             workgroup_id=baseJobDoc.WORKGROUP_ID;
+                         //}else{
+                         //   workgroup_id=findSchedual.WORKGROUP_ID;
+                        // }
+                        if (typeof workgroup_id === 'object' && workgroup_id !== null) {
+                          // ตรวจสอบว่าเป็น ObjectId ของ MongoDB จริง ๆ
+                          if (workgroup_id.toString) {
+                            workgroup_id = workgroup_id.toString();
+                          }
+                        }
+      
+                          try {
+                            //const payload = { JOB_ID: job._id};
+                            broadcast(workgroup_id, "refresh");
+                          } catch (err) {
+                            console.error("emit error:", err);
+                          } 
+                        
+                }catch(err){
+                      console.log("SSE error ",err);
+                }
+          //---------------------------------------------------------------->>
+
+
     //console.log("uniqueEmails: ", uniqueEmails);  
 
     try {
@@ -231,7 +274,10 @@ export async function POST(req) {
       },
     });
   } catch (err) {
-    console.error("[activate-job-template-manual] error:", err);
+    if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 022");
+            console.error("[activate-job-template-manual] error:", err);
+    }
     return NextResponse.json({
       status: 500,
       error: err?.message ?? "Internal Server Error",

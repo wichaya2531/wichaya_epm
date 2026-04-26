@@ -8,6 +8,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 export const POST = async (req, res) => {
    await connectToDb();
+
   const body = await req.json();
   const { username, password } = body;
  // console.log("body:", body);
@@ -74,6 +75,10 @@ export const POST = async (req, res) => {
     // Return the response with user data and token
     return NextResponse.json({ status: 200, user: data, token: token });
   } catch (err) {
+            if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                  console.log("Error Code : 015");
+            }        
+
     // Handle errors and return a failure response
     return NextResponse.json({
       message: "User login failed",

@@ -25,7 +25,6 @@ export const POST = async (req, res) => {
           .resize(1024, 1024, { fit: "inside" }) // จำกัดขนาดไม่เกิน 1024x1024 px
           .toFormat("jpeg", { quality: 80 }) // แปลงเป็น JPEG และลดคุณภาพลงเหลือ 80%
           .toBuffer();
-
         fs.writeFileSync(filePath, compressedBuffer);
       } else {
         fs.writeFileSync(filePath, buffer); // ถ้าไม่ใช่ไฟล์รูป ให้บันทึกตามปกติ
@@ -41,7 +40,10 @@ export const POST = async (req, res) => {
 
     // return NextResponse.json({ status: 200, result: "Hello World",path:responsePath });
   } catch (err) {
-    console.log("Error: ", err.message);
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 084");
+           console.log("Error: ", err.message);
+     }
     return NextResponse.json({
       result: false,
       file: __filename,

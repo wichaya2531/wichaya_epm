@@ -21,6 +21,10 @@ export const POST = async (req, res) => {
         return NextResponse.json({ status: 200, testLocation });
     }
     catch(err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+                console.log("Error Code : 065");
+         }
+         console.error("📄 Stack trace:\n", err.stack);
         return NextResponse.json({status: 500, file: __filename, error: err.message});
     }
      

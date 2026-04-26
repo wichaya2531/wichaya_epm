@@ -156,7 +156,7 @@ const Page = ({searchParams}) => {
       Name: user.name,
       Username:user.username,
       Role: user.role,
-      action: [
+      Action: [
         <span className="pl-4">
           <button
             onClick={() => handleDelete(user._id)}
@@ -180,7 +180,7 @@ const Page = ({searchParams}) => {
     Name: user.name,
     Username:user.username,
     Role: user.role,
-    action: [
+    Action: [
       <span className="pl-4" key={user._id}>
         <button
           onClick={() => handleAdd(user._id)}

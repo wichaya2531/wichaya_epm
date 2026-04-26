@@ -11,16 +11,21 @@ import Swal from "sweetalert2";
 import JobPlan from "@/components/JobPlan";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+//import useFetchProfiles from "@/lib/hooks/useFetchProfiles.js";
 import Link from "next/link";
 import Image from "next/image";
 import TableComponentAdmin from "@/components/TableComponentAdmin";
 import VerifiedIcon from '@mui/icons-material/Verified';
+import DashboardSummary from "@/components/DashboardSummary";
 
 import JobsTable from "@/components/JobsTable";
 
 import SelectContainer from "@/components/SelectContainer.js"; // นำเข้า SelectContainer
 import { toggleButtonClasses } from "@mui/material";
+import Cookies from "js-cookie";
 
+
+import {  useRef, useCallback } from "react";
 
 
 const Page = () => {
@@ -40,15 +45,72 @@ const Page = () => {
   const [currentPageJobTemplate, setCurrentPageJobTemplate] = useState(1);
 
   const [showPlanningColumns, setShowPlanningColumns] = useState(false);
+  const [viewMode,setviewMode]=useState(false);
+  
+    const [machines, setMachines] =useState([]);
+  //const { profiles, loading: profilesLoading, error: profilesError } = useFetchProfiles(user?.workgroup_id);
+  
+// ----------------Cookie---------------------
+useEffect(() => {
+  const v = Cookies.get("manageJobPage_summaryView"); // "true" | "false" | undefined
+  setviewMode(v === "true");
+}, []);
 
-   //---------------------------------------------------------------->>
+const handleClickViewMode = (checked) => {
+  setviewMode(checked);
+  Cookies.set("manageJobPage_summaryView", String(checked), { expires: 365 });
+};
+// -------------------------------------------
+
+
+//------------SSE------------------------------------------>>
+const jobsRef = useRef([]); // ✅ สร้าง ref เก็บค่า jobs ล่าสุด
+const userRef = useRef([]); // ✅ สร้าง ref เก็บค่า users ล่าสุด
+// อัปเดตค่า ref ทุกครั้งที่ state jobs เปลี่ยน
+useEffect(() => {
+  jobsRef.current = jobs;
+}, [jobs]);
+useEffect(() => {
+  userRef.current = user;
+}, [user]);
+
+useEffect(() => {
+  // ถ้ายังไม่มี userRef.current หรือไม่มี workgroup_id ให้ return ออกไปก่อน
+  if (!userRef.current || !userRef.current.workgroup_id) {
+    console.log("⏳ รอ userRef พร้อมก่อน...");
+    return;
+  }
+
+  console.log("✅ เริ่มเชื่อมต่อ SSE ของกลุ่ม:", userRef.current.workgroup_id);
+
+  const es = new EventSource(`/api/events?group=${userRef.current.workgroup_id}`);
+
+  es.onmessage = async (ev) => {
+    console.log('data receive',ev.data);
+   
+  };
+
+  es.onerror = (err) => console.error("❌ SSE error:", err);
+  setTimeout(() => {
+          console.log("🧹 ปิดการเชื่อมต่อ SSE.....");
+          es.close();
+  }, Number(process.env.NEXT_PUBLIC_PAGE_TIMEOUT)*1000);
+
+  return () => {
+    console.log("🧹 ปิดการเชื่อมต่อ SSE");
+    es.close();
+  };
+}, [userRef.current?.workgroup_id]); // ✅ จะ re-run เมื่อมีค่า workgroup_id
+
+
+
     const jobTemplatesHeader = [
       "ID",
       ...(showPlanningColumns ? ["Plan Start", "Plan End"] : []),
       "Checklist Template Name",
       "Version",
       "Line Name",
-      "Create At",
+      "Profile Group",      
       "Action",
     ];
 
@@ -87,7 +149,43 @@ const Page = () => {
           prevSelected.includes(jobId) ? prevSelected.filter((id) => id !== jobId): [...prevSelected, jobId]
     );
   };
-  var [allLineName, setAllLineName] = useState(false);
+
+  //var [allLineName, setAllLineName] = useState(false);
+  const [allLineName, setAllLineName] = useState([]);  // ✅ array  
+  //const bufLineName = await fetchLineNames(session);
+  //setAllLineName(Array.isArray(bufLineName) ? bufLineName : []);
+
+
+
+ useEffect(() => {
+      // use effect เพื่ออ่านค่า machines จากฐานข้อมูลมาเก็บไว้ ซึ่งถ้าหากว่าเคยอ่านแล้ว จะไม่ต้องเสียเวลาอ่านใหม่ แต่
+      // หากว่ายังไม่เคยอ่านมาเลย จำเป็นจะต้องอ่าน เพื่อเข้าไปบันทึกเก็บไว้ใน Local Storage
+      const loadMachines = async () => {
+        let localStorageMachines = localStorage.getItem("machines");
+        if (localStorageMachines !== null) {
+            localStorageMachines = JSON.parse(localStorageMachines);
+            setMachines(localStorageMachines);
+        } else {
+            console.log("โหลด Machines จากฐานข้อมูล...");
+            const url = `/api/machine/get-machines`;
+            const res = await fetch(url, {
+              cache: "no-store",
+              headers: {
+                Accept: "application/json",
+              },
+            });
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`);
+            }
+            const dataResponse = await res.json();
+            setMachines(dataResponse.machines);
+            localStorage.setItem("machines", JSON.stringify(dataResponse.machines));
+        }
+      };
+      loadMachines();
+  }, []);
+
+
 
   const filteredJobs =
     jobs &&
@@ -111,9 +209,13 @@ const Page = () => {
     const session = await getSession();
     setSession(session);
     await fetchUser(session.user_id);
-    var bufLineName = await fetchLineNames(session);
+
+    const bufLineName = await fetchLineNames(session);
+    setAllLineName(Array.isArray(bufLineName) ? bufLineName : []);
+
+    //var bufLineName = await fetchLineNames(session);
     //console.log("tt..=>",tt);
-    setAllLineName(bufLineName);
+    //setAllLineName(bufLineName);
     // try {
     //       const lineNamesResponse = await fetch(
     //         "/api/select-line-name/get-line-name"
@@ -163,7 +265,7 @@ const Page = () => {
       setUser(data.user);
       setUserEnableFunctions(data.user.actions);
       await fetchJobTemplates(data.user.workgroup_id);
-      await fetchJobs(data.user.workgroup_id);
+      await fetchJobs(data.user.workgroup_id);   เพื่อทดสอบ
     } catch (error) {
       console.error(error);
     }
@@ -182,7 +284,10 @@ const Page = () => {
       //console.log('active-remove-job template data',data);
 
     } catch (err) {
-      console.log("err", err);
+       if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 108");
+            console.log("err", err);
+       }
     }
     //showInvalidLineNamePopup;
   };
@@ -228,10 +333,6 @@ const Page = () => {
       }
       event.target.value = "";
     });
-    
-   
-        
-  
 
   };
 
@@ -320,6 +421,7 @@ const Page = () => {
                 //await fetchJobs(user.workgroup_id);
                 //setRefresh(true);
                 setRefresh((prev) => !prev);
+                //handleEventToMqtt();
         });
       }
     } catch (error) {
@@ -486,6 +588,12 @@ const Page = () => {
     setPlanData(data);
     setIsShowPlan((prev) => !prev);
   };
+  const handleSelectProfileGroup = (value) => {
+    //setPlanData(data);
+    //setIsShowPlan((prev) => !prev);
+    alert('handleSelectProfileGroup',value); 
+  };
+
 
   // const fetchJobs = async (workgroup_id) => {
   //           setJobs([]);  
@@ -568,7 +676,7 @@ const Page = () => {
             if (data.status === 200) {
               swalWithBootstrapButtons.fire({
                 title: "Deleted!",
-                text: "Your job has been deleted.",
+                text: " Your job has been deleted ." + selectedJobs.length + " items",
                 icon: "success",
               });
               setRefresh((prev) => !prev);
@@ -593,53 +701,56 @@ const Page = () => {
   };
 
   // ฟังก์ชันลบงานที่เลือก
-  const handleDeleteSelected = async () => {
-    // alert('handleDeleteSelected');   
+  // const handleDeleteSelected = async () => {
+  //   // alert('handleDeleteSelected');   
 
 
-    if (selectedJobs.length === 0) return;
+  //   if (selectedJobs.length === 0) return;
 
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete them!",
-      cancelButtonText: "No, cancel!",
-      reverseButtons: true,
-    });
+  //   const result = await Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "You won't be able to revert this!",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonText: "Yes, delete them!",
+  //     cancelButtonText: "No, cancel!",
+  //     reverseButtons: true,
+  //   });
 
-   //console.log("selectedJobs",selectedJobs);
+  //  //console.log("selectedJobs",selectedJobs);
 
-    //return;
-    if (result.isConfirmed) {
-      try {
-        const response = await fetch(`/api/job/remove-job`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ job_ids: selectedJobs }), // ส่ง array
-        });
+  //   //return;
+  //   if (result.isConfirmed) {
+  //     try {
+  //       const response = await fetch(`/api/job/remove-job`, {
+  //         method: "DELETE",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ job_ids: selectedJobs }), // ส่ง array
+  //       });
 
-        const result = await response.json();
-        if (response.ok) {
-          Swal.fire("Deleted!", "Selected jobs have been deleted.", "success");
-          setJobs((prevJobs) =>
-            prevJobs.filter((job) => !selectedJobs.includes(job._id))
-          );
-          setSelectedJobs([]);
-        } else {
-          Swal.fire(
-            "Error!",
-            result.error || "Failed to delete jobs.",
-            "error"
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        Swal.fire("Error!", "Failed to delete jobs.", "error");
-      }
-    }
-  };
+  //       const result = await response.json();
+  //       if (response.ok) {
+  //         Swal.fire("Deleted!", "Selected jobs have been deleted." + selectedJobs.length + " Items", "success");
+  //         setJobs((prevJobs) =>
+  //           prevJobs.filter((job) => !selectedJobs.includes(job._id))
+  //         );
+  //         setSelectedJobs([]);
+  //       } else {
+  //         Swal.fire(
+  //           "Error!",
+  //           result.error || "Failed to delete jobs.",
+  //           "error"
+  //         );
+  //       }
+  //     } catch (err) {
+  //        if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+  //             console.error(err);
+  //             console.log("Error Code : 109");
+  //        }
+  //       Swal.fire("Error!", "Failed to delete jobs.", "error");
+  //     }
+  //   }
+  // };
 
 
 
@@ -649,11 +760,11 @@ const Page = () => {
       jobTemplateName:jobTemplate.JOB_TEMPLATE_NAME,
       jobTemplateCreateID: jobTemplate.JobTemplateCreateID,
       ACTIVATER_ID: user._id,
-      LINE_NAME: jobTemplate.LINE_NAME,
+      LINE_NAME: jobTemplate.LINE_NAME,     
     };
 
     //console.log("allLineNamev=>", allLineName);
-     //console.log("jobTemplate=>", jobTemplate);
+    // console.log("jobTemplate=>", jobTemplate);
     const planStart =jobTemplate.onPlanStatus.start ?  new Date(jobTemplate.onPlanStatus.start).toISOString().split('T')[0] : "";
     const planEnd = jobTemplate.onPlanStatus.end ? new Date(jobTemplate.onPlanStatus.end).toISOString().split('T')[0] : "";
 
@@ -669,7 +780,8 @@ const Page = () => {
       "Checklist Template Name": jobTemplate.JOB_TEMPLATE_NAME,
       "Version":jobTemplate.CHECKLIST_VERSION,
       "Line Name": jobTemplate.LINE_NAME,
-      "Create At": jobTemplate.createdAt,
+      //"Create At": jobTemplate.createdAt,
+      "Profile Group":jobTemplate?.PROFILE_GROUP||"Unknow",
       Action: (
         <div
           className="flex gap-1 items-center justify-center"
@@ -698,6 +810,30 @@ const Page = () => {
                 Plan
               </button>
             </div>
+            &nbsp;
+            <div className="py-3 inline-block " style={{display:'none'}}>
+              <button
+                className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-5 rounded "
+                onClick={() => handlePlan(data)}
+                disabled={
+                  !userEnableFunctions.some(
+                    (action) =>
+                      action._id === enabledFunction["activate-job-template"]
+                  )
+                }
+                style={{
+                  cursor: !userEnableFunctions.some(
+                    (action) =>
+                      action._id === enabledFunction["activate-job-template"]
+                  )
+                    ? "not-allowed"
+                    : "pointer",
+                }}
+              >
+                Plan+
+              </button>
+            </div>
+
             &nbsp;&nbsp;
             <button
               className="bg-orange-500 hover:bg-orange-700 text-white font-semibold py-2 px-2 rounded"
@@ -746,20 +882,40 @@ const Page = () => {
               style={{ display: "none" }}
             >
               <center style={{ padding: "5px", border: "1px solid none" }}>
-                <select                  
-                  onChange={(event) =>
-                    onLineNameSelected(event.target.value, data,event)
-                  }
-                  style={{ padding: "10px" }}
-                >
-                  <option value="">Select Line</option>{" "}
-                  {/* Option เริ่มต้น */}
-                  {allLineName.map((lineName) => (
-                    <option key={lineName} value={lineName}>
-                      {lineName}
-                    </option>
-                  ))}
-                </select>
+
+                <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl shadow-inner">
+                  {/* <label className="text-sm font-semibold text-gray-600">
+                    Select Production Line
+                  </label> */}
+
+                  <select
+                    onChange={(event) =>
+                      onLineNameSelected(event.target.value, data, event)
+                    }
+                    className="
+                      w-full
+                      px-4 py-2
+                      rounded-lg
+                      border border-gray-300
+                      bg-white
+                      text-gray-700
+                      focus:outline-none
+                      focus:ring-2
+                      focus:ring-blue-400
+                      transition
+                    "
+                  >
+                    <option value="">— Please select —</option>
+
+                    {(Array.isArray(allLineName) ? allLineName : []).map((lineName) => (
+                      <option key={lineName} value={lineName}>
+                        {lineName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                
               </center>
             </div>
           </div>
@@ -942,93 +1098,76 @@ const Page = () => {
         />
         WorkGroup: {user?.workgroup}{" "}
       </h1>
-      <div className="mb-4 p-4 bg-white rounded-xl" style={{position:'relative'}}>
-        <h1 className="text-2xl font-bold">Checklist Templates 
-          
-         
-               
-        </h1> 
+      <div className="mb-4 p-2 bg-white rounded-xl" style={{position:'relative'}}>
+        <h1 className="text-2xl font-bold">Checklist Templates</h1> 
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  
            <label className="inline-flex items-center space-x-2 select-none "
               style={{position:'absolute',right:'5px',top:'5px'}}
            >
-              <input
-                type="checkbox"
-               checked={showPlanningColumns}
-               onChange={() => setShowPlanningColumns(!showPlanningColumns)}
-                className="form-checkbox"
-              />
-              <span><p>Hide/Show</p>
-                 <p>Columns Plan</p></span>
-             </label>
+              <label
+                  className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium 
+                            text-gray-700 bg-blue-100 cursor-pointer select-none
+                            hover:bg-blue-500 hover:text-white
+                            focus:outline-none focus:ring-2 focus:ring-blue-400
+                            active:scale-95 transition-all duration-150 shadow-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={showPlanningColumns}
+                    onChange={() => setShowPlanningColumns(!showPlanningColumns)}
+                    className="hidden"
+                  />
+                  <span className="ml-2">Columns Plan</span>
+                </label>
+
+             
+             </label>   
         <TableComponent
           headers={jobTemplatesHeader}
           datas={jobTemplatesBody}
           TableName="Checklist Templates"
           searchColumn="Checklist Template Name"
           filterColumn="Line Name"
+          filterColumn1="Profile Group"
           //onPageChange={handleOnpageChange}
-
+          handleSelectProfileGroup={handleSelectProfileGroup}
           onPageChange={(page) => setCurrentPageJobTemplate(page)}
           currentPage={currentPageJobTemplate}
         />
       </div>
-
+      
       <div className="mb-4 p-4 bg-white rounded-xl">
-        {/* <h1 className="mb-4 text-2xl font-bold">Active Jobs</h1> */}
-        {/* ฟิลเตอร์สถานะ */}
-        
-        {/* <div className="flex items-center">
-          <label htmlFor="status-filter" className="mr-2 font-semibold">
-            Filter by Status:
-          </label>
-          <select
-            id="status-filter"
-            className="border border-gray-300 rounded p-2 "
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            {statusOptions.map((status, index) => (
-              <option key={index} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </div> */}
-
-
-        {/* { user.role==="Admin Group" || user.role === "Owner" ? (
-                 <TableComponentAdmin
-                 headers={jobsHeader}
-                 datas={jobsBody}
-                 TableName="Active Checklist"
-                 PageSize={5}
-                 searchColumn={"Checklist Name"}
-                 filterColumn="Line Name"
-                 searchHidden={true}
-                 filteredJobs={filteredJobs}
-                 selectedJobs={selectedJobs}
-                 handleDeleteSelected={handleDeleteSelected}
-                 currentPage={currentPageJob}
-                 onPageChange={(page) => setCurrentPageJob(page)}
-                 setSelectedJobs={setSelectedJobs}
-               />
-              ) : (
-                <TableComponent
-                    headers={jobsHeader}
-                    datas={jobsBody}
-                    TableName="Active Checklist"
-                    searchColumn="Checklist Name"
-                    filterColumn="Line Name"
-                    currentPage={currentPageJob}
-                    onPageChange={(page) => setCurrentPageJob(page)}
-                  />
-              )
-
-        } */}
-        <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
-          <JobsTable refresh={refresh} />
-        </div>
+      <span>
+                <label htmlFor="summaryView" style={{ paddingRight: "5px", cursor: "pointer" }}>
+                  Summary View&nbsp;:
+                </label>
+                &nbsp;&nbsp;
+                <input
+                  id="summaryView"                     // ✅ ใช้ id เพื่อเชื่อมกับ label
+                  type="checkbox"
+                  checked={viewMode}
+                  onChange={(e) => handleClickViewMode(e.target.checked)}
+                  style={{
+                    transform: "scale(1.8)",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }}
+                />
+          </span>     
+         {viewMode===true ? (
+            <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
+              <DashboardSummary refresh={refresh} />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5 w-full text-sm font-thin bg-white rounded-xl p-4">
+              <JobsTable
+                  refresh={refresh} 
+                  //handleEventToMqtt={handleEventToMqtt}
+                  date_range={1}
+              />
+              
+            </div>
+          )} 
 
       </div>
       {isShowDetail && <ShowDetailModal />}
@@ -1037,6 +1176,7 @@ const Page = () => {
           data={planData}
           onClose={() => setIsShowPlan(false)} // Close modal handler
           setRefresh={setRefresh}
+           //handleEventToMqtt={handleEventToMqtt}
         />
       )}
     </Layout>

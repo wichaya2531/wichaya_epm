@@ -98,6 +98,8 @@ const Page = () => {
       const session = await getSession();
       await fetchUser(session.user_id);
     } catch (err) {
+                console.log("Error Code : 124");
+
       console.log("err", err);
       //return { message: "Wrong credential Please try again" };
     }
@@ -115,6 +117,8 @@ const Page = () => {
       setUser(() => data.user);
       setUserEnableFunctions(() => data.user.actions);
     } catch (err) {
+                console.log("Error Code : 125");
+
       console.log("err", err);
     }
   };
@@ -137,6 +141,8 @@ const Page = () => {
       setOptions(userOptions);
       //fetchLineNames(data.users);
     } catch (err) {
+                console.log("Error Code : 126");
+
       console.log("err", err);
     }
   };

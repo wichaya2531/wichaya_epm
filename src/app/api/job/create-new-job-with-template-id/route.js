@@ -15,6 +15,14 @@ import { ObjectId } from "mongodb";
 import { Notified, Notifies } from "@/lib/models/Notifies.js";
 import { NotifiesOverdue } from "@/lib/models/NotifiesOverdue";
 
+
+//------------------สำหรับการ เชื่อมต่อ SSE ------->>
+//import { eventsBus } from "@/lib/server/eventsBus";
+import { addClient, removeClient, broadcast } from "@/lib/server/sseHub";
+//--------------------------------------------->>
+
+
+
 async function getEmailfromUserID(userID) {
   try {
     const user = await User.findOne({ _id: new ObjectId(userID) });
@@ -43,14 +51,14 @@ async function getApproversUserEmail(job) {
 }
 
 export const POST = async (req, res) => {
-  console.log("Activate Job Template By Manual");  // เปิดเพื่อทดสอบ
+  //console.log("Activate Job Template By Manual");  // เปิดเพื่อทดสอบ
   await connectToDb();
   const body = await req.json();
   const JobTemplateID = body.template_id;
   const LINE_NAME = body.linename;
   const ACTIVATER_ID = body.activate_user_id;
-  console.log("JobTemplateID",JobTemplateID);
-  console.log("LINE_NAME",LINE_NAME);
+  //console.log("JobTemplateID",JobTemplateID);
+  //console.log("LINE_NAME",LINE_NAME);
   //const { JobTemplateID, ACTIVATER_ID, JobTemplateCreateID, LINE_NAME } = body;
     
 
@@ -118,6 +126,7 @@ export const POST = async (req, res) => {
       CHECKLIST_VERSION: jobTemplate.CHECKLIST_VERSION,
       WORKGROUP_ID: jobTemplate.WORKGROUP_ID,
       ACTIVATE_USER: ACTIVATER_ID,
+      PROFILE_GROUP:jobTemplate.PROFILE_GROUP,
       JOB_APPROVERS: approvers.map((approver) => approver.USER_ID),
       OVERDUE_NOTIFYS:notisOnOverdues.map((notisOnOverdue) => notisOnOverdue.USER_ID),
       OVERDUE_ACK:"",
@@ -244,11 +253,39 @@ export const POST = async (req, res) => {
 
     //console.log('uniqueEmails',uniqueEmails);
     await sendEmailsFromManual(uniqueEmails, jobData);
+    //-------------------------SSE----------------------------->>
+          try{
+                  var workgroup_id="";
+                   //if(isJob){
+                       workgroup_id=job.WORKGROUP_ID;
+                   //}else{
+                   //   workgroup_id=findSchedual.WORKGROUP_ID;
+                  // }
+                  if (typeof workgroup_id === 'object' && workgroup_id !== null) {
+                    // ตรวจสอบว่าเป็น ObjectId ของ MongoDB จริง ๆ
+                    if (workgroup_id.toString) {
+                      workgroup_id = workgroup_id.toString();
+                    }
+                  }
+
+                    try {
+                      broadcast(workgroup_id, "refresh");
+                    } catch (err) {
+                      console.error("emit error:", err);
+                    } 
+                  
+          }catch(err){
+                console.log("SSE error ",err);
+          }
+
+    //--------------------------------------------------------->>
 
     return NextResponse.json({ status: 200, response: job });
   } catch (err) {
-    console.error("Error in activating job template:", err);
-  
+     if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+            console.log("Error Code : 026");
+            console.error("Error in activating job template:", err);
+     }
     return NextResponse.json({
       status: 500,
       file: __filename,

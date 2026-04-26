@@ -14,6 +14,9 @@ export const PUT = async (req, {params}) => {
         }
         return NextResponse.json({ message: "Workgroup updated successfully", workgroup });
     } catch (err) {
+         if(process.env.NEXT_PUBLIC_DEBUG=="true"){
+              console.log("Error Code : 106");
+         }
         return NextResponse.json({ message: "Workgroup update failed", file: __filename, error: err.message });
     }
 };

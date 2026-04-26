@@ -434,7 +434,12 @@ const TableReportDoc = ({
                 {num}
               </option>
             ))}
-          </select>
+          </select> &nbsp;
+           <span style={{color:'blue'}}>
+                 {"/ "+filteredData.length}
+            </span> 
+           
+        
         </div>
       </div>
       <div className="overflow-x-auto relative">
@@ -527,11 +532,14 @@ const TableReportDoc = ({
                   <td className="sticky hidden left-0 z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
                     {row.docNumber}
                   </td>
-                  <td className="sticky cursor-default left-[0px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
+                  <td className="sticky cursor-default left-[0px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100 
+                                w-[15%] max-w-[150px] break-words whitespace-normal">
                     {row.jobItemTitle}
                   </td>
-                  <td className="sticky cursor-default left-[100px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
-                    {row.jobItemName}
+
+                  <td className="sticky cursor-default left-[150px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100 
+                                w-[15%] max-w-[150px] break-words whitespace-normal">
+                    {row.jobItemName?.replace(/\{[^}]*\}/g, "").trim()}
                   </td>
                    <td className="sticky cursor-default left-[220px] z-20 border px-4 py-2 text-sm text-gray-700 bg-white group-hover:bg-gray-100">
                     {row.upper_lower}
@@ -606,10 +614,6 @@ const TableReportDoc = ({
                                   ):""
                                 }
 
-                                
-                                
-                                
-                                
                                 { /* { <FaHourglassHalf style={{ color: 'orange', fontSize: '0.85em' }} /> } */}
                               </span>
                             </td>
@@ -625,31 +629,43 @@ const TableReportDoc = ({
                        var ampm_am,value_am,ampm_pm,value_pm,amValue,pmValue;
                        try{
                           ampm_am = dateData ? dateData.ampm_am : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                         
                        try{
                           value_am = dateData ? dateData.actualValue_am : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                         
                        
                        //const time_pm = dateData ? dateData.time_pm : "-";
                        try{
                           ampm_pm = dateData ? dateData.ampm_pm : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                         
                        try{
                             value_pm = dateData ? dateData.actualValue_pm : "-";
-                       }catch(err){} 
+                       }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                       } 
                        
                         
 
                       // เปลี่ยนค่า ampm ให้เหมือนกับ value หาก ampm เป็น "AM" หรือ "PM"
                       try{
                        amValue = ampm_am !== "-" ? value_am : ampm_am;
-                      }catch(err){}
+                      }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                      }
                       try{
                            pmValue = ampm_pm !== "-" ? value_pm : ampm_pm;  
-                      }catch(err){}
+                      }catch(err){
+                         console.error("📄 Stack trace:\n", err.stack);
+                      }
                       
                        //console.log(date+"  # "+ampmValue+" # "+ampm); 
                        return (

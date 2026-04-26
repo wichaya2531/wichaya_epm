@@ -1,62 +1,84 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
-import VerifiedIcon from '@mui/icons-material/Verified';
-import NotificationImportantSharpIcon from '@mui/icons-material/NotificationImportantSharp';
+import VerifiedIcon from "@mui/icons-material/Verified";
+import NotificationImportantSharpIcon from "@mui/icons-material/NotificationImportantSharp";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
+import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 
-const ShowmoreData = ({ data, close,showOptionAfterClickEvent ,handleDeleteEventFromShowMoreData,loginUser,selectedWorkgroup,workgroups}) => {
-  //console.log('loginUser=',loginUser);
-  //console.log( "selectedWorkgroup=\""+selectedWorkgroup+"\"");
-  var openOptionDeleteJob=false;
-  var selectWorkgroupName="";
-  workgroups.forEach(element => {
-          if(element._id===selectedWorkgroup){
-                selectWorkgroupName=element.WORKGROUP_NAME;
-                //console.log(element);
-          }
+const ShowmoreData = ({
+  data,
+  close,
+  showOptionAfterClickEvent,
+  handleDeleteEventFromShowMoreData,
+  handleMoveEventFromShowMoreData,
+  loginUser,
+  selectedWorkgroup,
+  workgroups,
+}) => {
+
+  //console.log('showmoreData page data=',data);
+
+
+  var openOptionDeleteJob = false;
+  var selectWorkgroupName = "";
+
+  workgroups.forEach((element) => {
+    if (element._id === selectedWorkgroup) {
+      selectWorkgroupName = element.WORKGROUP_NAME;
+    }
   });
-//  console.log('selectWorkgroupName',selectWorkgroupName);
-  if(loginUser.workgroup===selectWorkgroupName && loginUser.role==="Admin Group"){
-       // console.log("อยู่ใน Workgroup ");
-       openOptionDeleteJob=true;
+
+  if (
+    loginUser.workgroup === selectWorkgroupName &&
+    loginUser.role === "Admin Group"
+  ) {
+    openOptionDeleteJob = true;
   }
 
-  //console.log('workgroups',workgroups);
   const router = useRouter();
   const { events, date } = data;
-  const [showCheckbox, setShowCheckbox] = useState(false); // เริ่มต้นให้แสดง checkbox
+  const [showCheckbox, setShowCheckbox] = useState(false);
   const formattedDate = new Date(date).toLocaleDateString();
   const [checkedIds, setCheckedIds] = useState([]);
-  //console.log("data", data);
+  const [sortedEvents, setSortedEvents] = useState([]);
+  const [sortKey, setSortKey] = useState("");
 
-const [sortedEvents, setSortedEvents] = useState([]);
-const [sortKey, setSortKey] = useState(""); // "line_name" | "job_name"
+  useEffect(() => {
+    handleSort("line_name");
+  }, []);
 
-useEffect(() => {
-  handleSort("line_name");
-}, []);
+  useEffect(() => {
+    if (!showCheckbox) {
+      setCheckedIds([]);
+    }
+  }, [showCheckbox]);
 
 
+ const handleMove = () => {
+    if (checkedIds.length === 0) {
+      return;
+    }
+
+    handleMoveEventFromShowMoreData(checkedIds);
+  };
 
 
-const handleSort = (key) => {
-  setSortKey(key);
-  const sorted = [...data.events].sort((a, b) =>
-    (a[key] || "").localeCompare(b[key] || "")
-  );
-  setSortedEvents(sorted);
-};
-
+  const handleSort = (key) => {
+    setSortKey(key);
+    const sorted = [...data.events].sort((a, b) =>
+      (a[key] || "").localeCompare(b[key] || "")
+    );
+    setSortedEvents(sorted);
+  };
 
   const handleSelectEvent = (event) => {
-    //console.log('use handleSelectEvent click on event');
-    
     if (router) {
       let viewMode = "";
+
       if (event.status_name === "plan") {
         close();
         Swal.fire({
@@ -93,47 +115,46 @@ const handleSort = (key) => {
       ) {
         viewMode = "false";
       }
+
       sessionStorage.setItem("viewMode", viewMode);
-      // router.push(`/pages/view-jobs?job_id=${event.job_id}`);
-       const url = `/pages/view-jobs?job_id=${event.job_id}`;
-       window.open(url, "_blank"); // เปิดหน้าใหม่ในแท็บใหม่
+      const url = `/pages/view-jobs?job_id=${event.job_id}`;
+      window.open(url, "_blank");
     }
   };
 
-  
-const handleCheckboxChange = (eventId, isChecked) => {
-  console.log('eventId',eventId);
-  // setCheckedIds((prev) => {
-  //   if (isChecked) {
-  //     return [...prev, eventId];
-  //   } else {
-  //     return prev.filter((id) => id !== eventId);
-  //   }
-  // });
-};
+  const getEventUniqueId = (event) => `${event.event_type}-${event.event_id}`;
 
-const handleDelete = () => {
-  // ค้นหา checkbox ที่ติ๊กอยู่
-  const checkedCheckboxes = document.querySelectorAll(
-    '.checkable-event:checked'
-  );
+  const handleCheckboxChange = (eventId, isChecked) => {
+    setCheckedIds((prev) => {
+      if (isChecked) {
+        if (prev.includes(eventId)) return prev;
+        return [...prev, eventId];
+      } else {
+        return prev.filter((id) => id !== eventId);
+      }
+    });
+  };
 
-  if (checkedCheckboxes.length === 0) {
-    //Swal.fire("No checklist selected", "Please select at least one item", "info");
-    return;
-  }
+  const handleSelectAll = () => {
+    const allIds = sortedEvents.map((event) => getEventUniqueId(event));
 
-  // ดึง job_id ที่ถูกเลือก
-  const selectedJobIds = Array.from(checkedCheckboxes).map(
-    (checkbox) => checkbox.dataset.jobId
-  );
+    if (checkedIds.length === allIds.length && allIds.length > 0) {
+      setCheckedIds([]);
+    } else {
+      setCheckedIds(allIds);
+    }
+  };
 
-  //console.log("Deleting job_ids:", selectedJobIds);
+  const handleDelete = () => {
+    if (checkedIds.length === 0) {
+      return;
+    }
 
-  handleDeleteEventFromShowMoreData(selectedJobIds);
+    handleDeleteEventFromShowMoreData(checkedIds);
+  };
 
-  
-};
+  const isAllSelected =
+    sortedEvents.length > 0 && checkedIds.length === sortedEvents.length;
 
   return (
     <div
@@ -144,115 +165,195 @@ const handleDelete = () => {
         WebkitScrollbar: "none",
       }}
     >
-
-      <div 
-            id="header-bar"
-            className="sticky top-0 z-10 bg-white"
-            style={{border:'1px solid none',width:'100%',height:'5em',top:'-19px'}}
+      <div
+        id="header-bar"
+        className="sticky top-0 z-10 bg-white"
+        style={{
+          border: "1px solid none",
+          width: "100%",
+          height: "5em",
+          top: "-19px",
+        }}
       >
-          <div className="flex justify-between items-start">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Checklists on {formattedDate}
-            </h2>
-            <IconButton onClick={close} className="absolute top-2 right-2">
-              <CloseIcon />
-            </IconButton>
-          </div>
-          <div>
-            <li className="text-sm font-semibold text-gray-600">
-              Total Checklists: {events.length}
-            </li>
-          </div>
-          <div style={{borderBottom:'1px solid none',width:'100%',position:'relative'}}>
-            <div className="flex items-center">
-                  
-                    <label className="ml-2 flex items-center">
-                      <input
-                        type="radio"
-                        name="sorting"
-                        className="w-5 h-5 text-red-500"
-                        checked={sortKey === "line_name"}
-                        onChange={() => handleSort("line_name")}
-                         disabled={showCheckbox}
-                      />
-                      <span className="ml-1"> Line Name</span>
-                    </label>
+        <div className="flex justify-between items-start">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Checklists on {formattedDate} :: Total Checklists: {events.length}
+          </h2>
+          <IconButton onClick={close} className="absolute top-2 right-2">
+            <CloseIcon />
+          </IconButton>
+        </div>
 
-                    <label className="ml-4 flex items-center" >
-                      <input
-                        type="radio"
-                        name="sorting"
-                        className="w-5 h-5 text-red-500"
-                        checked={sortKey === "job_name"}
-                        onChange={() => handleSort("job_name")}
-                         disabled={showCheckbox}
-                      />
-                      <span className="ml-1"> Job Name</span>
-                    </label>            
-              &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
+        <div
+          style={{
+            borderBottom: "1px solid none",
+            width: "100%",
+            position: "relative",
+            fontSize: "0.8em",
+          }}
+        >
+          <div className="flex items-start flex-wrap gap-3">
+            <fieldset className="border border-gray-300 rounded-md px-3 py-2 min-w-fit">
+              <legend className="px-1 text-gray-700 font-semibold">Sort</legend>
+              <div className="flex items-center flex-wrap gap-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="sorting"
+                    className="w-5 h-5 text-red-500"
+                    checked={sortKey === "line_name"}
+                    onChange={() => handleSort("line_name")}
+                    disabled={showCheckbox}
+                  />
+                  <span className="ml-1">Line Name</span>
+                </label>
 
-              {openOptionDeleteJob &&(
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="sorting"
+                    className="w-5 h-5 text-red-500"
+                    checked={sortKey === "job_name"}
+                    onChange={() => handleSort("job_name")}
+                    disabled={showCheckbox}
+                  />
+                  <span className="ml-1">Job Name</span>
+                </label>
+              </div>
+            </fieldset>
+
+            {openOptionDeleteJob && (
+              <fieldset className="border border-gray-300 rounded-md px-3 py-2 min-w-fit">
+                <legend className="px-1 text-gray-700 font-semibold">Action</legend>
+
+                <div className="flex items-center flex-wrap gap-2">
+                  <input
+                    type="checkbox"
+                    id="hidden-show-select"
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                    onChange={(e) => setShowCheckbox(e.target.checked)}
+                    checked={showCheckbox}
+                    disabled={!openOptionDeleteJob}
+                  />
+
+                  <label
+                    htmlFor="hidden-show-select"
+                    className="ml-1 cursor-pointer select-none"
+                  >
+                    Sel
+                  </label>
+
+                  {showCheckbox && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleSelectAll}
+                        className="px-1 py-1 text-[0.8em] rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 transition"
+                      >
+                        {isAllSelected ? "Unselect All" : "Select All"}
+                      </button>
+
+                      <DeleteIcon
+                        onClick={checkedIds.length > 0 ? handleDelete : undefined}
+                        className={`w-5 h-5 ml-1 transition-shadow duration-200 ${
+                          checkedIds.length > 0
+                            ? "text-red-500 cursor-pointer hover:shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]"
+                            : "text-gray-300 cursor-not-allowed"
+                        }`}
+                      />
+
+                      <CompareArrowsIcon
+                        onClick={checkedIds.length > 0 ? handleMove : undefined}
+                        className={`w-5 h-5 ml-1 transition-shadow duration-200 ${
+                          checkedIds.length > 0
+                            ? "text-blue-500 cursor-pointer hover:shadow-[0_0_8px_2px_rgba(59,130,246,0.7)]"
+                            : "text-gray-300 cursor-not-allowed"
+                        }`}
+                      />
+
+                    </div>
+                  )}
+                </div>
+              </fieldset>
+            )}
+          </div>
+        </div>
+      </div>
+      <p className="text-sm text-gray-600 mt-2 mb-4"></p>      
+      <hr className="border-gray-300 my-4" />
+
+      <ul className="flex flex-col gap-3">
+        <ul className="flex flex-wrap gap-2 overflow-auto max-h-96 custom-scroll">
+          
+          {sortedEvents.map((event, index) => {
+            const eventId = getEventUniqueId(event);
+            const isChecked = checkedIds.includes(eventId);
+
+            return (
+              <li key={index} className="flex items-center justify-between gap-2">
+                {showCheckbox && (
                   <div className="flex items-center">
                     <input
                       type="checkbox"
-                      id="hidden-show-select"
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-                      onChange={(e) => setShowCheckbox(e.target.checked)}
-                      disabled={!openOptionDeleteJob} //1234
+                      data-job-id={eventId}
+                      className="checkable-event w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
+                      checked={isChecked}
+                      onChange={(e) =>
+                        handleCheckboxChange(eventId, e.target.checked)
+                      }
                     />
-
-                  <label htmlFor="hidden-show-select" className="ml-2 cursor-pointer select-none">
-                    Deletes
-                  </label>&nbsp;&nbsp;&nbsp;
-
-                    {showCheckbox && (
-                      <DeleteIcon
-                        className="w-5 h-5 text-red-500 ml-2 cursor-pointer transition-shadow duration-200 hover:shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]"
-                        onClick={handleDelete}
-                      />
-                    )}
+                    <span className="ml-2">-</span>
                   </div>
-              )}
-              
-            </div>
-          </div>         
-      </div>  
-      
-      { <hr className="border-gray-300 my-4" />}
-      <ul className="flex flex-col gap-3">
-        
-        <ul className="flex flex-wrap gap-2 overflow-auto max-h-96 custom-scroll">
-          {sortedEvents.map((event, index) => (
-            <li key={index} className="flex items-center justify-between gap-2">
-             { showCheckbox && (
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    data-job-id={event.event_type + "-" + event.event_id}
-                    className="checkable-event w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-400"
-                  />
-                  <span className="ml-2">-</span>
-                </div>
-            )}
-              <span
-                className="text-sm font-semibold p-3 text-white rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => showOptionAfterClickEvent(event)}
-                style={{
-                  backgroundColor: event.color || "#f0f0f0",
-                }}
-              >
-                {event.title}
-
-                {event.abnormal_item === 1 && (
-                  <NotificationImportantSharpIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
                 )}
-                {event.sticker_verify === true && (
-                  <VerifiedIcon style={{ marginLeft: 4, color: "white", fontSize: "1.5em" }} />
-                )}
-              </span>
-            </li>
 
-          ))}
+                <span
+                  className="text-sm font-semibold p-1 text-white rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => showOptionAfterClickEvent(event)}
+                  style={{
+                    backgroundColor: event.color || "#f0f0f0",
+                  }}
+                >
+                  <div>
+                  {
+                        event.title
+                  }
+
+                    <div style={{ fontSize: '10px', padding: '1px', color: 'blue' }}>
+                      {[event.machine_name, event.wd_tag].filter(Boolean).join(" : ")}
+                    </div>
+                  </div>
+                  
+                  {event.last_get_by && event.status_name === "ongoing" && (
+                    <AssignmentIndIcon
+                      style={{
+                        marginLeft: 4,
+                        color: "white",
+                        fontSize: "1.5em",
+                      }}
+                    />
+                  )}
+                  {event.abnormal_item === 1 && (
+                    <NotificationImportantSharpIcon
+                      style={{
+                        marginLeft: 4,
+                        color: "white",
+                        fontSize: "1.5em",
+                      }}
+                    />
+                  )}
+                  {event.sticker_verify === true && (
+                    <VerifiedIcon
+                      style={{
+                        marginLeft: 4,
+                        color: "white",
+                        fontSize: "1.5em",
+                      }}
+                    />
+                  )}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </ul>
     </div>
