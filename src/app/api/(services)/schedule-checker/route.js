@@ -355,7 +355,7 @@ export const POST = async (req, res) => {
          $lte: endTime, // เวลาที่น้อยกว่าหรือเท่ากับ endTime (60 นาทีถัดไป)
        },
       STATUS:"plan", 
-    }).limit(50);
+    }).limit(120);
       
     console.log("scheduler ที่ค้นหาเจอ=>", scheduler.length);
     //  console.log("***********schedual ที่ค้นเจอ**********************");

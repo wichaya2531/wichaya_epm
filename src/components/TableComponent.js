@@ -306,7 +306,6 @@ const TableComponent = ({
               <select
                 value={selectedFilter1}
                 onChange={handleFilterChange1}
-                //className="border border-gray-300 rounded-md p-2 flex-shrink-0 max-w-[200px]"
                 className="peer w-full border border-gray-300 rounded-md px-3 pt-5 pb-2
                           focus:outline-none focus:border-blue-500"
                 id="table-filter-profile-group"
@@ -318,6 +317,30 @@ const TableComponent = ({
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {/* Search */}
+          {searchColumn && searchHidden !== true && (
+            <div className="relative inline-block ml-auto">
+              <label
+                htmlFor="table-search-input"
+                className="pointer-events-none absolute left-9 top-0 bg-white px-1
+                        text-gray-500 text-sm transition-all z-10"
+              >
+                Search ({searchColumn})
+              </label>
+              <div className="flex items-center border border-gray-300 rounded-md px-3 pt-5 pb-2 focus-within:border-blue-500 bg-white gap-2 min-w-[280px]">
+                <SearchIcon className="text-gray-400" fontSize="small" />
+                <input
+                  id="table-search-input"
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  placeholder={`Search...`}
+                  className="w-full focus:outline-none text-sm bg-transparent"
+                />
+              </div>
             </div>
           )}
 

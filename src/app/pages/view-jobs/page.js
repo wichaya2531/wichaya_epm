@@ -1,7 +1,7 @@
 "use client";
 import Layout from "@/components/Layout.js";
 import useFetchJobValue from "@/lib/hooks/useFetchJobValue";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback, memo, useTransition } from "react";
 import Swal from "sweetalert2";
 import TestMethodDescriptionModal from "@/components/TestMethodDescriptionModal";
 import ItemInformationModal from "@/components/ItemInformationModal";
@@ -11,6 +11,7 @@ import useFetchUser from "@/lib/hooks/useFetchUser.js";
 
 const Page = ({ searchParams }) => {
   const [refresh, setRefresh] = useState(false);
+  const [, startTransition] = useTransition();
 
   const [wdTagEnabled, setWdTagEnabled] = useState(true);
   const [wdTagInitDone, setWdTagInitDone] = useState(false);
@@ -20,11 +21,17 @@ const Page = ({ searchParams }) => {
   const job_id = searchParams.job_id;
   const [view, setView] = useState(true);
 
-  const [selectedMachine, setSelectedMachine] = useState(null);
   const [machines, setMachines] = useState([]);
+  const [machinesLoaded, setMachinesLoaded] = useState(false);
+
+  // -------------------- LocalStorage key --------------------
+  const WD_TAG_LS_KEY = "viewJobs_wdTagEnabled";
 
   const handleWdTagEnabledChange = (enabled) => {
-    setWdTagEnabled(!!enabled);
+    const val = !!enabled;
+    setWdTagEnabled(val);
+    // บันทึกการตั้งค่าลง LocalStorage
+    try { localStorage.setItem(WD_TAG_LS_KEY, String(val)); } catch {}
   };
 
   const toId = (v) => {
@@ -114,6 +121,8 @@ const Page = ({ searchParams }) => {
         }
       } catch (err) {
         console.error("loadMachines error:", err);
+      } finally {
+        setMachinesLoaded(true); // ✅ โหลดเสร็จแล้ว (ไม่ว่าจะสำเร็จหรือ error)
       }
     };
 
@@ -131,44 +140,31 @@ const Page = ({ searchParams }) => {
   const [isShowJobItem, setIsShowJobItem] = useState(true);
   const [jobItemDetail, setJobItemDetail] = useState(null);
   const [testMethodDescription, setTestMethodDescription] = useState(null);
-  const [machineName, setMachineName] = useState(null);
   const [showDetail, setShowDetail] = useState(null);
   const [wdtagImg_1, setWdtagImg_1] = useState(null);
   const [wdtagImg_2, setWdtagImg_2] = useState(null);
   const [preview_1, setPreview_1] = useState(null);
   const [preview_2, setPreview_2] = useState(null);
 
-  const [machineAsLinename, setMachineAsLinename] = useState({
-    value: "....",
-    label: "Select...",
-  });
 
-  useEffect(() => {
-    if (!Array.isArray(machines) || machines.length < 1 || !jobData) return;
-
-    if (jobData.WD_TAG) {
-      handleWdChange({
-        value: jobData.WD_TAG,
-        label: jobData.WD_TAG,
-      });
-    } else {
-      machines.forEach((element) => {
-        if (element.wd_tag === jobData.LINE_NAME) {
-          handleWdChange({
-            value: element.wd_tag,
-            label: element.wd_tag,
-          });
-        }
-      });
-    }
-  }, [machines, jobData]);
-
+  // -------------------- init wdTagEnabled: LocalStorage → jobData fallback --------------------
+  // รวมเป็น effect เดียวเพื่อกัน race condition (localStorage อาจถูก jobData override ถ้าแยก effect)
   useEffect(() => {
     if (wdTagInitDone) return;
     if (!jobData) return;
 
-    const hasWdTag = !!String(jobData?.WD_TAG || "").trim();
+    // 1) ตรวจ LocalStorage ก่อนเสมอ
+    try {
+      const saved = localStorage.getItem(WD_TAG_LS_KEY);
+      if (saved !== null) {
+        setWdTagEnabled(saved === "true");
+        setWdTagInitDone(true);
+        return; // ใช้ค่าจาก LocalStorage → ไม่ต้อง auto-init จาก jobData
+      }
+    } catch {}
 
+    // 2) ไม่มีใน LocalStorage → ใช้ค่าจาก jobData (logic เดิม)
+    const hasWdTag = !!String(jobData?.WD_TAG || "").trim();
     setWdTagEnabled(!hasWdTag);
     setWdTagInitDone(true);
   }, [jobData, wdTagInitDone]);
@@ -611,14 +607,14 @@ const Page = ({ searchParams }) => {
     });
   };
 
-  const wdTagOptions = uniqueBy(
+  const wdTagOptions = useMemo(() => uniqueBy(
     (Array.isArray(machinesFiltered) ? machinesFiltered : [])
       .filter((m) => m?.wd_tag)
       .map((m) => ({ value: m.wd_tag, label: m.wd_tag })),
     (x) => x.value
-  );
+  ), [machinesFiltered]);
 
-  const machineOptions = uniqueBy(
+  const machineOptions = useMemo(() => uniqueBy(
     (Array.isArray(machinesFiltered) ? machinesFiltered : [])
       .filter((m) => m?.name)
       .map((m) => ({
@@ -627,66 +623,20 @@ const Page = ({ searchParams }) => {
         wd_tag: m.wd_tag || "",
       })),
     (x) => x.value
-  );
+  ), [machinesFiltered]);
 
-  const handleWdChange = (selectedOption) => {
-    const wd_tag = selectedOption?.value;
-    if (!wd_tag) return;
-
-    const m = machinesFiltered.find((x) => x.wd_tag === wd_tag);
-    if (!m) {
-      setMachineAsLinename({ value: wd_tag, label: wd_tag });
-      setMachineName("");
-      setSelectedMachine(null);
-      return;
-    }
-
-    setMachineAsLinename({ value: wd_tag, label: wd_tag });
-    setMachineName(m.name);
-    setSelectedMachine({
-      value: m._id || m.name,
-      label: m.name,
-      wd_tag: m.wd_tag,
-    });
-  };
-
-  const handleMachineChange = (opt) => {
-    if (!opt) return;
-
-    setSelectedMachine(opt);
-    setMachineName(opt.label);
-
-    if (opt.wd_tag) {
-      setMachineAsLinename({ value: opt.wd_tag, label: opt.wd_tag });
-    }
-  };
-
-  useEffect(() => {
-    if (!machines?.length || !jobData) return;
-
-    if (jobData?.WD_TAG) {
-      handleWdChange({ value: jobData.WD_TAG, label: jobData.WD_TAG });
-      return;
-    }
-
-    const m = machines.find((x) => x.wd_tag === jobData?.LINE_NAME);
-    if (m) handleWdChange({ value: m.wd_tag, label: m.wd_tag });
-  }, [machines, jobData]);
 
   return (
     <Layout className="container flex flex-col left-0 right-0 mx-auto justify-start font-sans mt-2 px-6">
       <JobForm
         jobData={jobData || {}}
         jobItems={jobItems || []}
-        machineName={machineName}
         machines={machinesFiltered}
         wdTagEnabled={wdTagEnabled}
         onWdTagEnabledChange={handleWdTagEnabledChange}
         handleInputChange={handleInputChange}
         handleOptionInputChange={handleOptionInputChange}
         handleBeforeValue={handleBeforeValue}
-        handleWdChange={handleWdChange}
-        handleMachineChange={handleMachineChange}
         handleSubmit={handleSubmit}
         handleShowJobItemDescription={handleShowJobItemDescription}
         handleShowTestMethodDescription={handleShowTestMethodDescription}
@@ -701,11 +651,10 @@ const Page = ({ searchParams }) => {
         preview_1={preview_1}
         preview_2={preview_2}
         onclicktoShow={handleToShowOnClick}
-        machineAsLinename={machineAsLinename}
         user={user || {}}
         wdTagOptions={wdTagOptions}
         machineOptions={machineOptions}
-        selectedMachine={selectedMachine}
+        machinesLoaded={machinesLoaded}
       />
 
       {testMethodDescription && (

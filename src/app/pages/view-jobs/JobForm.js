@@ -3,7 +3,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import InfoIcon from "@mui/icons-material/Info";
 import Select from "react-select";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import Swal from "sweetalert2";
@@ -19,12 +19,9 @@ const JobForm = ({
   jobData,
   jobItems,
   machines,
-  machineName,
   handleInputChange,
   handleBeforeValue,
   handleOptionInputChange,
-  handleWdChange,
-  handleMachineChange,
   handleSubmit,
   handleShowJobItemDescription,
   handleShowTestMethodDescription,
@@ -39,18 +36,76 @@ const JobForm = ({
   preview_1,
   preview_2,
   onclicktoShow,
-  machineAsLinename,
   user,
   wdTagOptions,
   machineOptions,
-  selectedMachine,
   wdTagEnabled,
   onWdTagEnabledChange,
+  machinesLoaded = false,
 }) => {
+  // -------------------- Machine state (ย้ายมาอยู่ใน JobForm เพื่อกัน page.js re-render) --------------------
+  const [machineAsLinename, setMachineAsLinename] = useState({ value: "....", label: "Select..." });
+  const [machineName, setMachineName] = useState(null);
+  const [selectedMachine, setSelectedMachine] = useState(null);
+
+  const handleWdChange = useCallback((selectedOption) => {
+    const wd_tag = selectedOption?.value;
+    if (!wd_tag) return;
+    const m = (machines || []).find((x) => x.wd_tag === wd_tag);
+    if (!m) {
+      setMachineAsLinename({ value: wd_tag, label: wd_tag });
+      setMachineName("");
+      setSelectedMachine(null);
+      return;
+    }
+    setMachineAsLinename({ value: wd_tag, label: wd_tag });
+    setMachineName(m.name);
+    setSelectedMachine({ value: m._id || m.name, label: m.name, wd_tag: m.wd_tag });
+  }, [machines]);
+
+  const handleMachineChange = useCallback((opt) => {
+    if (!opt) return;
+    setSelectedMachine(opt);
+    setMachineName(opt.label);
+    if (opt.wd_tag) setMachineAsLinename({ value: opt.wd_tag, label: opt.wd_tag });
+  }, []);
+
+  // init จาก jobData เมื่อ machines พร้อม
+  useEffect(() => {
+    if (!machines?.length || !jobData) return;
+    if (jobData?.WD_TAG) {
+      handleWdChange({ value: jobData.WD_TAG, label: jobData.WD_TAG });
+      return;
+    }
+    const m = machines.find((x) => x.wd_tag === jobData?.LINE_NAME);
+    if (m) handleWdChange({ value: m.wd_tag, label: m.wd_tag });
+  }, [machines, jobData]);
+
   const [pageLoading, setPageLoading] = useState(true);
   const [showWdTagTip, setShowWdTagTip] = useState(false);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [rotation, setRotation] = useState(0);
+
+  // -------------------- Portrait mode: hide Item Title column --------------------
+  const [isPortrait, setIsPortrait] = useState(false);
+  // auto-hide on mount if portrait; user can still toggle manually after that
+  const [showTitleCol, setShowTitleCol] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= window.innerHeight; // true = landscape → show, false = portrait → hide
+  });
+  const [showAttachCol, setShowAttachCol] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= window.innerHeight;
+  });
+
+  useEffect(() => {
+    const onResize = () => {
+      setIsPortrait(window.innerWidth < window.innerHeight);
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const [showPanel, setShowPanel] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -665,11 +720,11 @@ const handleMultiChange = (item, key, value) => {
             {!view ? (
               <label className="text-sm text-gray-600 font-semibold flex items-center gap-2">
                 <span>
-                  {process.env.NEXT_PUBLIC_LABEL_WD_TAG || "WD Tag"} [{machines.length}]
+                  {process.env.NEXT_PUBLIC_LABEL_WD_TAG || "WD Tag"}
                 </span>
 
                 <Tooltip
-                  title="ปุ่มสำหรับกรองเครื่องที่ถูกสร้างภายใน workgroup นี้ Slide ปิด เพื่อแสดงจำนวนเครื่องทั้งหมด"
+                  title="" /*</label>"ปุ่มสำหรับกรองเครื่องที่ถูกสร้างภายใน workgroup นี้ Slide ปิด เพื่อแสดงจำนวนเครื่องทั้งหมด"*/
                   placement="top"
                   arrow
                   open={showWdTagTip}
@@ -727,14 +782,161 @@ const handleMultiChange = (item, key, value) => {
                 disabled
               />
             ) : (
-              <Select
-                inputId="my-wd-tag-select"
-                options={wdTagOptions}
-                value={selectedWdTagValue}
-                onChange={handleWdChange}
-                name="wd_tag"
-                placeholder="Select WD-Tag..."
-              />
+              <>
+                {/* hidden input เพื่อให้ form submit อ่านค่าได้ */}
+                <input
+                  type="hidden"
+                  id="my-wd-tag-select"
+                  name="wd_tag"
+                  value={selectedWdTagValue?.value || ""}
+                  readOnly
+                />
+                {/* ปุ่มเปิด Swal แทน select — ไม่ render options ใน DOM */}
+                <button
+                  type="button"
+                  disabled={!machinesLoaded}
+                  onClick={() => {
+                    const openWdSwal = () => {
+                      const opts = (machines || [])
+                        .filter((m) => m?.wd_tag)
+                        .map((m) => ({
+                          value: m.wd_tag,
+                          wdTag: m.wd_tag,
+                          machineName: m.name || m.MACHINE_NAME || "-",
+                          search: (m.wd_tag + " " + (m.name || m.MACHINE_NAME || "")).toLowerCase(),
+                        }));
+
+                      // สร้าง HTML rows จาก array (เร็วกว่า forEach toggle)
+                      const buildRows = (list, selectedVal) =>
+                        list.map((o) => `
+                          <tr
+                            data-value="${o.value}"
+                            style="cursor:pointer;background:${o.value === selectedVal ? "#dbeafe" : "white"};"
+                          >
+                            <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;">${o.wdTag}</td>
+                            <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151;">${o.machineName}</td>
+                          </tr>`).join("");
+
+                      let currentVal = selectedWdTagValue?.value || "";
+
+                      Swal.fire({
+                        title: process.env.NEXT_PUBLIC_LABEL_WD_TAG || "Select WD-Tag",
+                      width: "520px",
+                      html: `
+                        <div style="display:flex;gap:6px;margin-bottom:8px;">
+                          <input
+                            id="swal-wd-search"
+                            type="text"
+                            placeholder="🔍  Search WD-Tag or Machine Name..."
+                            style="flex:1;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;"
+                          />
+                          <button
+                            id="swal-wd-search-btn"
+                            type="button"
+                            style="padding:8px 14px;background:#1e40af;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;"
+                          >ค้นหา</button>
+                        </div>
+                        <div style="max-height:300px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;">
+                          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                            <thead>
+                              <tr style="background:#1e40af;color:white;position:sticky;top:0;">
+                                <th style="padding:7px 10px;text-align:left;font-weight:600;">WD-Tag</th>
+                                <th style="padding:7px 10px;text-align:left;font-weight:600;">Machine Name</th>
+                              </tr>
+                            </thead>
+                            <tbody id="swal-wd-tbody">
+                              ${buildRows(opts, currentVal)}
+                            </tbody>
+                          </table>
+                        </div>
+                        <input type="hidden" id="swal-wd-value" value="${currentVal}" />
+                      `,
+                      showCancelButton: true,
+                      confirmButtonText: "OK",
+                      cancelButtonText: "Cancel",
+                      didOpen: () => {
+                        const searchEl = document.getElementById("swal-wd-search");
+                        const tbody    = document.getElementById("swal-wd-tbody");
+
+                        // เลื่อน scroll ไปหา row ที่ selected
+                        const scrollToSelected = () => {
+                          const sel = tbody.querySelector(`tr[data-value="${currentVal}"]`);
+                          if (sel) sel.scrollIntoView({ block: "center" });
+                        };
+                        scrollToSelected();
+
+                        // Event delegation — click บน tbody ทั้งก้อน (ไม่ต้อง attach ทีละ row)
+                        tbody.addEventListener("click", (e) => {
+                          const row = e.target.closest("tr[data-value]");
+                          if (!row) return;
+                          currentVal = row.dataset.value;
+                          document.getElementById("swal-wd-value").value = currentVal;
+                          // highlight row ที่เลือก
+                          tbody.querySelectorAll("tr").forEach((r) => {
+                            r.style.background = r === row ? "#dbeafe" : "white";
+                          });
+                        });
+
+                        // Double-click → confirm ทันที
+                        tbody.addEventListener("dblclick", (e) => {
+                          if (e.target.closest("tr[data-value]")) Swal.clickConfirm();
+                        });
+
+                        // Search — fire เฉพาะเมื่อกดปุ่ม "ค้นหา" หรือกด Enter
+                        const doSearch = () => {
+                          const q = searchEl.value.toLowerCase().trim();
+                          const filtered = q ? opts.filter((o) => o.search.includes(q)) : opts;
+                          tbody.innerHTML = buildRows(filtered, currentVal);
+                        };
+
+                        document.getElementById("swal-wd-search-btn").addEventListener("click", doSearch);
+
+                        searchEl.addEventListener("keydown", (e) => {
+                          if (e.key === "Enter") { e.preventDefault(); doSearch(); }
+                        });
+
+                        searchEl.focus();
+                      },
+                      preConfirm: () => {
+                        const val = document.getElementById("swal-wd-value").value;
+                        if (!val) {
+                          Swal.showValidationMessage("Please select a WD-Tag");
+                          return false;
+                        }
+                        return val;
+                      },
+                      }).then((result) => {
+                        if (result.isConfirmed && result.value) {
+                          handleWdChange({ value: result.value, label: result.value });
+                        }
+                      });
+                    }; // end openWdSwal
+
+                    // Toggle ปิด (แสดงเครื่องทั้งหมด) → มีข้อมูลมาก → แสดง Loading ก่อน
+                    if (!wdTagEnabled) {
+                      Swal.fire({
+                        title: "กำลังโหลด...",
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                          Swal.showLoading();
+                          setTimeout(openWdSwal, 50);
+                        },
+                      });
+                    } else {
+                      // Toggle เปิด (กรองเฉพาะ workgroup) → ข้อมูลน้อย → เปิดตรงได้เลย
+                      openWdSwal();
+                    }
+                  }}
+                  className="w-full text-left border border-gray-300 rounded-md px-3 py-2 bg-white hover:bg-gray-50 focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400 flex items-center justify-between"
+                >
+                  <span className={selectedWdTagValue?.value ? "text-gray-900" : "text-gray-400"}>
+                    {selectedWdTagValue?.value || (machinesLoaded ? "Select WD-Tag..." : "Wait..")}
+                  </span>
+                  <span className="text-gray-400 ml-2">▼</span>
+                </button>
+              </>
             )}
           </div>
 
@@ -960,12 +1162,55 @@ const handleMultiChange = (item, key, value) => {
               ))}
             </div>
 
+            {/* Toggle column buttons */}
+            <div className="flex justify-end gap-2 mb-1">
+              <button
+                type="button"
+                onClick={() => setShowTitleCol((v) => !v)}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 text-gray-600 shadow-sm"
+                title={showTitleCol ? "ซ่อนคอลัมน์ Item Title" : "แสดงคอลัมน์ Item Title"}
+              >
+                {showTitleCol ? (
+                  <>
+                    <VisibilityOffIcon style={{ fontSize: 14 }} />
+                    <span>ซ่อน {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE || "Item Title"}</span>
+                  </>
+                ) : (
+                  <>
+                    <VisibilityIcon style={{ fontSize: 14 }} />
+                    <span>แสดง {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE || "Item Title"}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowAttachCol((v) => !v)}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 text-gray-600 shadow-sm"
+                title={showAttachCol ? "ซ่อนคอลัมน์ Attach" : "แสดงคอลัมน์ Attach"}
+              >
+                {showAttachCol ? (
+                  <>
+                    <VisibilityOffIcon style={{ fontSize: 14 }} />
+                    <span>ซ่อน Attach</span>
+                  </>
+                ) : (
+                  <>
+                    <VisibilityIcon style={{ fontSize: 14 }} />
+                    <span>แสดง Attach</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             <table className="table-auto border-collapse w-full text-sm">
               <thead className="text-center">
                 <tr className="bg-gray-200">
-                  <th className="w-[50px]">
-                    {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE}[{jobItems.length}]
-                  </th>
+                  {showTitleCol && (
+                    <th className="w-[50px]">
+                      {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_TITLE}[{jobItems.length}]
+                    </th>
+                  )}
                   <th className="w-[50px]">
                     {process.env.NEXT_PUBLIC_ITEM_TEMPLATE_NAME}
                   </th>
@@ -973,18 +1218,20 @@ const handleMultiChange = (item, key, value) => {
                     {process.env.NEXT_PUBLIC_UPPER_SPEC}/{process.env.NEXT_PUBLIC_LOWER_SPEC}
                   </th>
                   <th className="w-[150px] px-4 py-2">Actual Value</th>
-                  <th className="w-[150px] px-4 py-2">Attach</th>
+                  {showAttachCol && <th className="w-[150px] px-4 py-2">Attach</th>}
                 </tr>
               </thead>
 
               <tbody className="text-center">
                 {jobItems.map((item, index) => (
                   <tr key={index}>
-                    <td className="border px-4 py-2 w-[25vw] max-w-[25vw] align-middle">
-                      <div className="whitespace-normal break-words">
-                        {item.JobItemTitle}
-                      </div>
-                    </td>
+                    {showTitleCol && (
+                      <td className="border px-4 py-2 w-[25vw] max-w-[25vw] align-middle">
+                        <div className="whitespace-normal break-words">
+                          {item.JobItemTitle}
+                        </div>
+                      </td>
+                    )}
 
                     <td className="border px-3 py-2 relative w-[25vw] max-w-[25vw]">
                       <div
@@ -1223,7 +1470,7 @@ const handleMultiChange = (item, key, value) => {
                       </div>
                     </td>
 
-                    <td className="border py-2 relative">
+                    {showAttachCol && <td className="border py-2 relative">
                       <center>
                         {item.IMG_ATTACH && (
                           <img
@@ -1301,7 +1548,7 @@ const handleMultiChange = (item, key, value) => {
                           </div>
                         </div>
                       )}
-                    </td>
+                    </td>}
                   </tr>
                 ))}
               </tbody>
@@ -1329,4 +1576,4 @@ const handleMultiChange = (item, key, value) => {
   );
 };
 
-export default JobForm;
+export default memo(JobForm);
